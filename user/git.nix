@@ -7,7 +7,7 @@
     userEmail = "monk@unboiled.info";
     extraConfig = {
       alias.ci = "commit";
-      alias.co = "checkout";
+      alias.sw = "switch";
       alias.ff = "pull --ff-only";
       alias.tree = "log --graph --oneline --all";
       diff.algorithm = "patience";
