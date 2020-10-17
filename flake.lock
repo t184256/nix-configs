@@ -1,0 +1,60 @@
+{
+  "nodes": {
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1602535872,
+        "narHash": "sha256-5dnSqYNzwuL2tiQfSFCbX97Hfl4Lf6q4nghQBwm9pD8=",
+        "owner": "rycee",
+        "repo": "home-manager",
+        "rev": "e7d5531cfa770afc591f8dc5542eb4fba9962885",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rycee",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1602857722,
+        "narHash": "sha256-Bbgex55BKTtMD9QF5HZl6uMyB1HUhmF1GEdgzKLr2vU=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "7ca4469122ec00a16821b60131ef9e41fa0f6872",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1602830940,
+        "narHash": "sha256-ptzFOudtf44/B65RZZbrfxFCwzYf7ZoFaXZVz0/Pxck=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f1e7afd21d98cf82c91822daac133a2869473567",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "release-20.09",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "home-manager": "home-manager",
+        "nixpkgs": "nixpkgs_2"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
