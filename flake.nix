@@ -3,7 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/release-20.09";
-    home-manager.url = "github:rycee/home-manager";
+
+    home-manager.url = "github:rycee/home-manager/release-20.09";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs: 
