@@ -4,7 +4,7 @@
   programs.git = {
     enable = true;
     userName = "Alexander Sosedkin";
-    userEmail = "monk@unboiled.info";
+    userEmail = config.identity.email;
     extraConfig = {
       alias.ci = "commit";
       alias.sw = "switch";
