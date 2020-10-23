@@ -27,9 +27,4 @@
   };
 
   system.stateVersion = "20.09";
-
-  nix.package = pkgs.nixFlakes;
-  nix.extraOptions = ''
-    experimental-features = nix-command flakes
-  '';
 }
