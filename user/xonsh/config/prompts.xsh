@@ -1,5 +1,5 @@
 #$ENABLE_ASYNC_PROMPT = True  # coloring issues
-$PROMPT = "{#aaa}$ {RESET}"
+$PROMPT = "{RESET}{#555}$ {RESET}"
 if 'TMUX' in ${...}:
     $TITLE = '{current_job:{}}'
     $PROMPT = '{prompt_end} '
