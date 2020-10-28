@@ -6,7 +6,7 @@
 
   # calling exa via wraplings
   home.wraplings = rec {
-    l = "${pkgs.exa}/bin/exa --color=never -F -b";
+    l = "${pkgs.exa}/bin/exa --group-directories-first --sort Name -F -b";
     ll = l + " --time-style=iso -lm --git" + (
       if config.system.os == "Android" then "" else " -g"
     );
