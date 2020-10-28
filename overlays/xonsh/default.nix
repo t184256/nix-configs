@@ -7,10 +7,10 @@ let
   # fixes https://github.com/xonsh/xonsh/issues/3810
   ptk-3810 = super.python3Packages.prompt_toolkit.overridePythonAttrs (o: {
     src = super.fetchFromGitHub {
-      owner = "bobhy";
+      owner = "t184256";
       repo = "python-prompt-toolkit";
-      rev = "20760cb39598321a3cad57794358a461d7944767";
-      sha256 = "1iizblv0f2ccmb358rz353i9gwcwg12v7fwyjnv0ry8n5ijlp8f6";
+      rev = "t184256";
+      sha256 = "1xs48g50ans9bw1hm1cgw3v6j3zdx90gv2i3a1cvbl22afd63dvl";
     };
   });
 
