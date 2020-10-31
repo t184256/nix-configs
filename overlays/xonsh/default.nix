@@ -4,13 +4,14 @@ let
   xontribs = builtins.mapAttrs (_: f: (f { pkgs = super; }))
                                ((import ../../.autoimport).asAttrs ./xontribs);
 
-  # fixes https://github.com/xonsh/xonsh/issues/3810
-  ptk-3810 = super.python3Packages.prompt_toolkit.overridePythonAttrs (o: {
+  # avoids https://github.com/xonsh/xonsh/issues/3810
+  ptk = super.python3Packages.prompt_toolkit.overridePythonAttrs (o: rec {
+    version = "3.0.4";
     src = super.fetchFromGitHub {
-      owner = "t184256";
+      owner = "prompt-toolkit";
       repo = "python-prompt-toolkit";
-      rev = "t184256";
-      sha256 = "1xs48g50ans9bw1hm1cgw3v6j3zdx90gv2i3a1cvbl22afd63dvl";
+      rev = version;
+      sha256 = "040lcqha16rsddiymlrjx32p92rra27zal78gv8v9pqg1xky18vy";
     };
   });
 
@@ -19,7 +20,7 @@ let
                           meta shellPath;
     propagatedBuildInputs = with super.python3Packages; [
       ply pygments
-      ptk-3810
+      ptk
     ];
     pname = "xonsh";
     version = "0.9.24";
