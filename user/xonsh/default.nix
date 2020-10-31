@@ -24,10 +24,10 @@ in
     xontrib load direnv
     xontrib load readable-traceback
   '' + (readConfigBit ./config/general.xsh)
+     + (readConfigBit ./config/styling.xsh)
      + (readConfigBit ./config/prompts.xsh)
      + (readConfigBit ./config/completions.xsh)
      + (readConfigBit ./config/history.xsh)
-     + (readConfigBit ./config/styling.xsh)
      + (readConfigBit ./config/nx-commands.xsh)
      + (readConfigBit ./config/w.xsh)
   ;
