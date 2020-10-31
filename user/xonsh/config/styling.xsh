@@ -71,6 +71,7 @@ t184256 = {
 }
 
 register_custom_style('t184256', t184256)
+del register_custom_style
 $XONSH_COLOR_STYLE="t184256"
 
 LS_COLORS = {}
