@@ -15,8 +15,17 @@
       vim-eunuch  # helpers for UNIX: :SudoWrite, :Rename, ...
       vim-lastplace  # remember position
       vim-nix  # syntax files and indentation
+      vim-repeat  # better repetition
+      vim-sleuth  # guess indentation
+      tcomment_vim  # <gc> comment action
       vim-undofile-warn   # undofile enabled + warning on overundoing
       vimagit  # my preferred git interface for committing
+      {
+        plugin = vim-better-whitespace;  # trailing whitespace highlighting
+        config = ''
+          let g:show_spaces_that_precede_tabs = 1
+	'';
+      }
       {
         plugin = vim-easymotion;  # faster motion bound to <s>
         config = ''
