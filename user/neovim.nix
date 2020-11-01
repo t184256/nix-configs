@@ -1,5 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  withLang = lang: builtins.elem lang config.language-support;
+in
 {
   programs.neovim = {
     enable = true;
@@ -8,8 +11,20 @@
     withRuby = false;
     #withNodeJs = true;
 
-    extraPackages = with pkgs; [];
-    extraPython3Packages = (ps: with ps; []);
+    extraPackages = with pkgs; [
+    ] ++ lib.optionals (withLang "bash") [
+      shellcheck
+    ] ++ lib.optionals (withLang "python") [
+      (python3Packages.python-language-server.override {
+        providers = [ "autopep" "mccabe" "pycodestype" "pydocstyle"
+                      "pyflakes" "yapf"];
+      })
+      python3Packages.isort
+      python3Packages.yapf
+    ];
+    extraPython3Packages = (ps: with ps; [
+    ] ++ lib.optionals (withLang "python") [
+    ]);
 
     plugins = with pkgs.vimPlugins; [
       vim-eunuch  # helpers for UNIX: :SudoWrite, :Rename, ...
