@@ -15,6 +15,7 @@
       vim-eunuch  # helpers for UNIX: :SudoWrite, :Rename, ...
       vim-lastplace  # remember position
       vim-nix  # syntax files and indentation
+      vim-undofile-warn   # undofile enabled + warning on overundoing
       vimagit  # my preferred git interface for committing
       {
         plugin = vim-easymotion;  # faster motion bound to <s>

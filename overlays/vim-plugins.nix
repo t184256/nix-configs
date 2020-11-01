@@ -12,5 +12,15 @@ self: super:
         sha256 = "0wyz5biw6vqgrlq1k2354mda6r36wga30rjaj06div05k3g7xhq4";
       };
     };
+
+    vim-undofile-warn = super.pkgs.vimUtils.buildVimPluginFrom2Nix {
+      name = "undofile-warn";
+      src = super.fetchFromGitHub {
+        owner = "Carpetsmoker";
+        repo = "undofile_warn.vim";
+        rev = "version-1.3";
+        sha256 = "1sxq5gxyw7y3rb74j94jsl6k06klrvc0kijcxcjwd11kb6gnrs2a";
+      };
+    };
   };
 }
