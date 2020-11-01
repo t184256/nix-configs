@@ -20,6 +20,6 @@ aliases['nxs'] = _in_tmpdir('sudo', 'nixos-rebuild', 'switch')
 aliases['nxe'] = _in_tmpdir('sh', '-c',
  			     'find /etc/nixos | '
 			     'entr -rc env time -f "%Ew %Uu %Ss %PCPU" '
-			     '         nixos-rebuild --fast build')
+			     '         nixos-rebuild --no-build-nix build')
 
 del _in_tmpdir
