@@ -27,6 +27,7 @@
   };
 
   system.stateVersion = "20.09";
+  home-manager.users.monk.home.stateVersion = "20.09";
 
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
