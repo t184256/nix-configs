@@ -27,4 +27,6 @@
   };
 
   system.stateVersion = "20.09";
+
+  system.noGraphics = true;
 }
