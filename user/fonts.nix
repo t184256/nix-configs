@@ -1,7 +1,6 @@
-{ pkgs, config, ... }:
+{ pkgs, lib, config, ... }:
 
-{
-  fonts.fontconfig.enable = true;
+lib.mkIf (! config.system.noGraphics) {
   home.packages = with pkgs; [
     iosevka-t184256                     # overlay: iosevka-t184256
     google-fonts.just.RobotoCondensed   # overlay: select-google-fonts
