@@ -77,7 +77,7 @@ $XONSH_COLOR_STYLE="t184256"
 $LS_COLORS = {}
 for k in ('pi', 'do', 'bd', 'cd', 'so'):
     $LS_COLORS[k] = (yellowish,)
-for k in ('ow', 'tw', 'su', 'sg'):
+for k in ('su', 'sg'):
     $LS_COLORS[k] = (orange,)
 for k in ('ca', 'mh'):  # IDK what are those
     $LS_COLORS[k] = (fuchsia,)
@@ -86,6 +86,8 @@ for k in ('ca', 'mh'):  # IDK what are those
 $LS_COLORS['fi'] = (white,)      # normal file
 $LS_COLORS['di'] = (white,)     # directory
 $LS_COLORS['st'] = (white,)     # directory with a sticky bit set
+$LS_COLORS['ow'] = (white,)     # non-sticky-other-writable
+$LS_COLORS['tw'] = (white,)     # sticky-other-writable
 $LS_COLORS['ex'] = (greenish,)  # executable
 $LS_COLORS['ln'] = (white,)     # symlink
 $LS_COLORS['mi'] = (reddish,)   # target of an orphaned symlink
