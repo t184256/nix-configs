@@ -17,14 +17,27 @@
       vim-nix  # syntax files and indentation
       vimagit  # my preferred git interface for committing
       {
-        plugin = vim-easymotion;
-        # faster motion bound to <s>
+        plugin = vim-easymotion;  # faster motion bound to <s>
         config = ''
           nmap s <Plug>(easymotion-overwin-f)
           let g:EasyMotion_smartcase = 1
           let g:EasyMotion_keys="tnaowyfu'x.c,rise"  " combos start with last
 	'';
       }
+      {
+	plugin = vim-monotone;  # non-clownish color theme
+        config = ''
+          set termguicolors
+          let g:monotone_color = [0, 0, 100]
+          let g:monotone_contrast_factor = 1
+          "let g:monotone_secondary_hue_offset = 200
+          let g:monotone_emphasize_whitespace = 1
+          colorscheme monotone
+          hi MatchParen gui=reverse
+          hi EndOfBuffer guifg=#303030
+          hi normal guibg=black
+        '';
+       }
     ];
 
     extraConfig = ''
