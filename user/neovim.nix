@@ -49,12 +49,26 @@ in
 	'';
       }
       {
+        plugin = vim-gitgutter;  # color changed lines
+        config = ''
+          " but don't show signs column and don't do that until I press <gl>
+          autocmd BufWritePost * GitGutter
+          let g:gitgutter_highlight_lines = 0
+          :set signcolumn=no
+          autocmd VimEnter,Colorscheme * :hi GitGutterAddLine guibg=#002200
+          autocmd VimEnter,Colorscheme * :hi GitGutterChangeLine guibg=#222200
+          autocmd VimEnter,Colorscheme * :hi GitGutterDeleteLine guibg=#220000
+          autocmd VimEnter,Colorscheme * :hi GitGutterChangeDeleteLine guibg=#220022
+          nnoremap <silent> gl :GitGutterLineHighlightsToggle<CR>:IndentGuidesToggle<CR>
+	'';
+      }
+      {
         plugin = vim-indent-guides;  # indent guides
         config = ''
           let g:indent_guides_enable_on_vim_startup = 1
           let g:indent_guides_auto_colors = 0
-          autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg='#000000'
-          autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg='#121212'
+          autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg=#000000
+          autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg=#121212
         '';
       }
       {
