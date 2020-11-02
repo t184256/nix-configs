@@ -34,7 +34,6 @@ in
       vim-sleuth  # guess indentation
       tcomment_vim  # <gc> comment action
       vim-undofile-warn   # undofile enabled + warning on overundoing
-      vimagit  # my preferred git interface for committing
       {
         plugin = vim-better-whitespace;  # trailing whitespace highlighting
         config = ''
@@ -50,6 +49,15 @@ in
 	'';
       }
       {
+        plugin = vim-indent-guides;  # indent guides
+        config = ''
+          let g:indent_guides_enable_on_vim_startup = 1
+          let g:indent_guides_auto_colors = 0
+          autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg='#000000'
+          autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg='#121212'
+        '';
+      }
+      {
 	plugin = vim-monotone;  # non-clownish color theme
         config = ''
           set termguicolors
@@ -63,11 +71,18 @@ in
           hi normal guibg=black
         '';
        }
+      {
+        plugin = vimagit;  # my preferred git interface for committing
+        config = ''
+          let g:magit_auto_close = 1
+        '';
+      }
     ];
 
     extraConfig = ''
       set shell=/bin/sh
       set laststatus=1  " display statusline if there are at least two windows
+      set suffixes+=.pdf  " don't offer to open pdfs
       nnoremap <C-L> :nohlsearch<CR><C-L>  " clear search highlighting
     '';
 
