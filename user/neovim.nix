@@ -60,6 +60,8 @@ in
       {
 	plugin = vim-monotone;  # non-clownish color theme
         config = ''
+          let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
+          let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
           set termguicolors
           let g:monotone_color = [0, 0, 100]
           let g:monotone_contrast_factor = 1
