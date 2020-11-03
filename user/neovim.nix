@@ -84,7 +84,14 @@ in
           colorscheme monotone
           hi MatchParen gui=reverse
           hi EndOfBuffer guifg=#303030
+          hi Search guifg=#000000 guibg=#bbbbdd
           hi normal guibg=black
+          set colorcolumn=80
+          hi ColorColumn guifg=#ddbbbb guibg=#0a0a0a
+          hi diffAdded guifg=#e0ffe0
+          hi diffRemoved guifg=#ffe0e0
+          hi diffLine guifg=#bbbbbb
+          hi gitHunk guifg=#dddddd
         '';
        }
       {
@@ -99,7 +106,9 @@ in
       set shell=/bin/sh
       set laststatus=1  " display statusline if there are at least two windows
       set suffixes+=.pdf  " don't offer to open pdfs
+      set scrolloff=5
       nnoremap <C-L> :nohlsearch<CR><C-L>  " clear search highlighting
+      set diffopt+=algorithm:patience
     '';
 
     viAlias = true;
