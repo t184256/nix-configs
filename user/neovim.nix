@@ -92,6 +92,10 @@ in
           hi diffRemoved guifg=#ffe0e0
           hi diffLine guifg=#bbbbbb
           hi gitHunk guifg=#dddddd
+          set wildoptions=pum
+          set pumblend=20
+          set winblend=20
+          hi Pmenu guifg=#ffffff
         '';
        }
       {
