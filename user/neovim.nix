@@ -2,31 +2,100 @@
 
 let
   withLang = lang: builtins.elem lang config.language-support;
+
+  python-language-server-lighter = pkgs.python3Packages.python-language-server.override {
+      providers = [ "rope" "pyflakes" "mccabe" "pycodestype" "pydocstyle"
+                    "yapf" ];
+  };
+  cocConfig = {
+    "codeLens.enable" = true;
+    "diagnostic.enableMessage" = "jump";  # always, jump, never
+    "diagnostic.level" = "hint";
+    "diagnostic.virtualText" = true;
+    "diagnostic.virtualTextCurrentLineOnly" = false;
+    "coc.preferences.hoverTarget" = "echo";
+    #suggest.acceptSuggestionOnCommitCharacter = true;
+    suggest.autoTrigger = "none";
+    languageserver.python = {
+      command = "nvim-python3"; args = [ "-m" "pyls" ];
+      filetypes = [ "python" ];
+      settings.pyls = {
+        enable = true;
+        plugins = {
+          jedi_completion.enabled = false;
+          jedi_hover.enabled = false;
+          jedi_references.enabled = false;
+          jedi_signature_help.enabled = false;
+          jedi_symbols = { enabled = false; all_scopes = true; };
+          rope_completion.enabled = true;
+          mccabe = { enabled = true; threshold = 15; };
+          preload.enabled = true;
+          pycodestyle.enabled = true;
+          pydocstyle = {
+            enabled = false;
+            match = "(?!test_).*\\.py";
+            matchDir = "[^\\.].*";
+          };
+          pyflakes.enabled = true;
+          yapf.enabled = true;
+        };
+      };
+    };
+  };
+  tabNineConfig = {
+    disable_auto_update = true;
+    enable_telemetry = false;
+  };
 in
 {
+  xdg.configFile."nvim/coc-settings.json".source =
+    builtins.toFile "coc-settings.json" (builtins.toJSON cocConfig);
+  xdg.configFile."TabNine/tabnine_config.json".source =
+    builtins.toFile "tabnine_config.json" (builtins.toJSON tabNineConfig);
   programs.neovim = {
     enable = true;
 
     withPython = false;  # it's 2020!
     withRuby = false;
-    #withNodeJs = true;
+    withNodeJs = true;  # coc
 
     extraPackages = with pkgs; [
     ] ++ lib.optionals (withLang "bash") [
-      shellcheck
-    ] ++ lib.optionals (withLang "python") [
-      (python3Packages.python-language-server.override {
-        providers = [ "autopep" "mccabe" "pycodestype" "pydocstyle"
-                      "pyflakes" "yapf"];
-      })
-      python3Packages.isort
-      python3Packages.yapf
-    ];
+      nodePackages.bash-language-server
+    ] ++ lib.optionals (withLang "python") (with python3Packages; [
+    ]);
     extraPython3Packages = (ps: with ps; [
     ] ++ lib.optionals (withLang "python") [
     ]);
 
     plugins = with pkgs.vimPlugins; [
+      # coc world
+      {
+        plugin = coc-nvim;  # kitchen sink
+        config = ''
+          inoremap <silent><expr> <TAB>
+            \ pumvisible() ? coc#_select_confirm() :
+            \ coc#expandableOrJumpable() ?
+            \ "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump','''])\<CR>" :
+            \ <SID>check_back_space() ? "\<TAB>" :
+            \ coc#refresh()
+          function! s:check_back_space() abort
+            let col = col('.') - 1
+            return !col || getline('.')[col - 1]  =~# '\s'
+          endfunction
+          let g:coc_snippet_next = '<tab>'
+          nmap <silent> { <Plug>(coc-diagostic-prev)
+          nmap <silent> } <Plug>(coc-diagostic-next)
+        '';
+      }
+      #coc-diagnostic  # non-LSP linting, not in 20.09
+      coc-highlight  # nice coloring for colors
+      coc-json
+      coc-snippets
+      coc-tabnine  # universal autocompleter
+      coc-yaml
+
+      # vim world
       vim-eunuch  # helpers for UNIX: :SudoWrite, :Rename, ...
       vim-lastplace  # remember position
       vim-nix  # syntax files and indentation
@@ -92,6 +161,13 @@ in
           hi diffRemoved guifg=#ffe0e0
           hi diffLine guifg=#bbbbbb
           hi gitHunk guifg=#dddddd
+          hi CocFloating guibg=#222222
+          hi CocErrorVirtualText guifg=#800000
+          hi CocErrorFloat guifg=#800000
+          hi CocWarningVirtualText guifg=#703000
+          hi CocWarningFloat guifg=#ff6000
+          hi CocInfoVirtualText guifg=#003070
+          hi CocInfoFloat guifg=#3030ff
           set wildoptions=pum
           set pumblend=20
           set winblend=20
