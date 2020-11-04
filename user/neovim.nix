@@ -189,6 +189,18 @@ in
       set scrolloff=5
       nnoremap <C-L> :nohlsearch<CR><C-L>  " clear search highlighting
       set diffopt+=algorithm:patience
+      set updatetime=500
+      set title noruler noshowmode
+      function! NiceMode()
+        let mode_map = {
+          \   'n': ''', 'i': '[INS]', 'R': '[RPL]',
+          \   'v': '[VIS]', 'V': '[VIL]', "\<C-v>": '[VIB]',
+          \   'c': '[CMD]', 's': '[SEL]', 'S': '[S-L]', "\<C-s>": '[S-B]',
+          \   't': '[TRM]'
+          \ }
+        return get(mode_map, mode(), '[???]')
+      endfunction
+      let &titlestring = hostname() . " > vi > %t%H%R > %P/%LL %-13.(%l:%c%V %{NiceMode()}%)"
     '';
 
     viAlias = true;
