@@ -3,7 +3,7 @@
 {
   options.language-support = lib.mkOption {
     default = [];
-    type = lib.types.listOf (lib.types.enum [ "bash" "python" ]);
+    type = lib.types.listOf (lib.types.enum [ "nix" "python" "bash" ]);
     description = "Which languages to install tools for";
   };
 }

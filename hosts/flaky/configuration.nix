@@ -32,5 +32,5 @@
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
 
-  home-manager.users.monk.language-support = [ "bash" "python" ];
+  home-manager.users.monk.language-support = [ "nix" "python" "bash" ];
 }

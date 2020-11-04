@@ -3,17 +3,21 @@
 let
   withLang = lang: builtins.elem lang config.language-support;
 
-  python-language-server-lighter = pkgs.python3Packages.python-language-server.override {
-      providers = [ "rope" "pyflakes" "mccabe" "pycodestype" "pydocstyle"
-                    "yapf" ];
-  };
+  python-language-server-lighter =
+    pkgs.python3Packages.python-language-server.override { providers = [
+      "rope" "pyflakes" "mccabe" "pycodestype" "pydocstyle" "yapf"
+    ]; };
   cocConfig = {
-    "codeLens.enable" = true;
-    "diagnostic.enableMessage" = "jump";  # always, jump, never
+    "codeLens.enable" = true;  # nothing supports it, but in case smth will
+    "diagnostic.enableMessage" = "always";  # always, jump, never
+    "diagnostic.messageDelay" = 50;
     "diagnostic.level" = "hint";
+    "diagnostic.refreshOnInsertMode" = true;
     "diagnostic.virtualText" = true;
     "diagnostic.virtualTextCurrentLineOnly" = false;
-    "coc.preferences.hoverTarget" = "echo";
+    #"coc.preferences.hoverTarget" = "echo";
+    "signature.target" = "echo";
+    "diagnostic.messageTarget" = "echo";
     #suggest.acceptSuggestionOnCommitCharacter = true;
     suggest.autoTrigger = "none";
     languageserver.python = {
@@ -22,11 +26,11 @@ let
       settings.pyls = {
         enable = true;
         plugins = {
-          jedi_completion.enabled = false;
-          jedi_hover.enabled = false;
-          jedi_references.enabled = false;
-          jedi_signature_help.enabled = false;
-          jedi_symbols = { enabled = false; all_scopes = true; };
+          jedi_completion.enabled = true;
+          jedi_hover.enabled = true;
+          jedi_references.enabled = true;
+          jedi_signature_help.enabled = true;
+          jedi_symbols = { enabled = true; all_scopes = true; };
           rope_completion.enabled = true;
           mccabe = { enabled = true; threshold = 15; };
           preload.enabled = true;
@@ -40,6 +44,15 @@ let
           yapf.enabled = true;
         };
       };
+    };
+    languageserver.bash = {
+      command = "bash-language-server";
+      args = [ "start" ];
+      filetypes = [ "sh" ];
+    };
+    languageserver.nix = {
+      command = "rnix-lsp";
+      filetypes = ["nix"];
     };
   };
   tabNineConfig = {
@@ -62,11 +75,19 @@ in
     extraPackages = with pkgs; [
     ] ++ lib.optionals (withLang "bash") [
       nodePackages.bash-language-server
+    ] ++ lib.optionals (withLang "nix") [
+      rnix-lsp
     ] ++ lib.optionals (withLang "python") (with python3Packages; [
     ]);
+
     extraPython3Packages = (ps: with ps; [
-    ] ++ lib.optionals (withLang "python") [
-    ]);
+    ] ++ (lib.optional (withLang "python") (
+      ps.python-language-server.override {
+        providers = [
+          "rope" "pyflakes" "mccabe" "pycodestype" "pydocstyle" "yapf"
+        ];
+      }
+    )));
 
     plugins = with pkgs.vimPlugins; [
       # coc world
@@ -84,8 +105,29 @@ in
             return !col || getline('.')[col - 1]  =~# '\s'
           endfunction
           let g:coc_snippet_next = '<tab>'
-          nmap <silent> { <Plug>(coc-diagostic-prev)
-          nmap <silent> } <Plug>(coc-diagostic-next)
+          nmap <silent> { <Plug>(coc-diagnostic-prev)
+          nmap <silent> } <Plug>(coc-diagnostic-next)
+          autocmd InsertEnter *.py call GiveMeContextI()
+          autocmd CursorMovedI *.py call GiveMeContextI()
+          autocmd CursorHoldI *.py call GiveMeContextI()
+          autocmd InsertLeave * echo ""
+          function! GiveMeContextI()
+            echo ""
+            call CocAction('showSignatureHelp')  " Async?
+          endfunction
+          nnoremap <silent> K :call <SID>show_documentation()<CR>
+          function! s:show_documentation()
+            if (index(['vim','help'], &filetype) >= 0)
+              execute 'h '.expand('<cword>')
+            else
+              call CocAction('doHover')
+            endif
+          endfunction
+          nnoremap <silent> <C-K> call CocAction('showSignatureHelp')<CR>
+          nnoremap <silent> <C-Space> :CocList commands<CR>
+          au CursorHoldI call CocActionAsync('showSignatureHelp')
+          au User CocJumpPlaceholder call
+            \ CocActionAsync('showSignatureHelp')
         '';
       }
       #coc-diagnostic  # non-LSP linting, not in 20.09
@@ -107,7 +149,7 @@ in
         plugin = vim-better-whitespace;  # trailing whitespace highlighting
         config = ''
           let g:show_spaces_that_precede_tabs = 1
-	'';
+        '';
       }
       {
         plugin = vim-easymotion;  # faster motion bound to <s>
@@ -115,7 +157,7 @@ in
           nmap s <Plug>(easymotion-overwin-f)
           let g:EasyMotion_smartcase = 1
           let g:EasyMotion_keys="tnaowyfu'x.c,rise"  " combos start with last
-	'';
+        '';
       }
       {
         plugin = vim-gitgutter;  # color changed lines
@@ -129,7 +171,7 @@ in
           autocmd VimEnter,Colorscheme * :hi GitGutterDeleteLine guibg=#220000
           autocmd VimEnter,Colorscheme * :hi GitGutterChangeDeleteLine guibg=#220022
           nnoremap <silent> gl :GitGutterLineHighlightsToggle<CR>:IndentGuidesToggle<CR>
-	'';
+        '';
       }
       {
         plugin = vim-indent-guides;  # indent guides
@@ -137,11 +179,11 @@ in
           let g:indent_guides_enable_on_vim_startup = 1
           let g:indent_guides_auto_colors = 0
           autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg=#000000
-          autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg=#121212
+          autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg=#0e0e0e
         '';
       }
       {
-	plugin = vim-monotone;  # non-clownish color theme
+        plugin = vim-monotone;  # non-clownish color theme
         config = ''
           let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
           let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
@@ -162,12 +204,9 @@ in
           hi diffLine guifg=#bbbbbb
           hi gitHunk guifg=#dddddd
           hi CocFloating guibg=#222222
-          hi CocErrorVirtualText guifg=#800000
-          hi CocErrorFloat guifg=#800000
-          hi CocWarningVirtualText guifg=#703000
-          hi CocWarningFloat guifg=#ff6000
-          hi CocInfoVirtualText guifg=#003070
-          hi CocInfoFloat guifg=#3030ff
+          hi CocErrorVirtualText guifg=#700000
+          hi CocWarningVirtualText guifg=#602000
+          hi CocInfoVirtualText guifg=#002060
           set wildoptions=pum
           set pumblend=20
           set winblend=20
