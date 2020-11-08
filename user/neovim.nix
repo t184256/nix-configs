@@ -61,6 +61,9 @@ let
   };
 in
 {
+  imports = [ ./config/language-support.nix ];
+  nixpkgs.overlays = [ (import ../overlays/vim-plugins.nix) ];
+
   xdg.configFile."nvim/coc-settings.json".source =
     builtins.toFile "coc-settings.json" (builtins.toJSON cocConfig);
   xdg.configFile."TabNine/tabnine_config.json".source =
