@@ -20,7 +20,7 @@ let
     "diagnostic.messageTarget" = "echo";
     #suggest.acceptSuggestionOnCommitCharacter = true;
     suggest.autoTrigger = "none";
-    languageserver.python = {
+    languageserver.python = if (withLang "python") then {
       command = "nvim-python3"; args = [ "-m" "pyls" ];
       filetypes = [ "python" ];
       settings.pyls = {
@@ -44,16 +44,16 @@ let
           yapf.enabled = true;
         };
       };
-    };
-    languageserver.bash = {
+    } else {};
+    languageserver.bash = if (withLang "bash") then {
       command = "bash-language-server";
       args = [ "start" ];
       filetypes = [ "sh" ];
-    };
-    languageserver.nix = {
+    } else {};
+    languageserver.nix = if (withLang "nix") then {
       command = "rnix-lsp";
       filetypes = ["nix"];
-    };
+    } else {};
   };
   tabNineConfig = {
     disable_auto_update = true;
