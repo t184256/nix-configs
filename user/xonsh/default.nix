@@ -13,6 +13,7 @@ let
 in
 
 {
+  nixpkgs.overlays = [ (import ../../overlays/xonsh) ];
   home.packages = [
     ((pkgs.xonsh.withXontribs my-xontribs).withPythonPackages my-extra-pypkgs)
   ];
