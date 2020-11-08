@@ -8,7 +8,7 @@ let
     readable-traceback
   ];
   my-extra-pypkgs = pps: with pps; [
-    nixpkgs
+    # nixpkgs  # disable until it gets unmarked as broken in 20.09
   ];
 in
 
