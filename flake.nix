@@ -16,13 +16,15 @@
       system = "x86_64-linux";
       modules = [ ./hosts/flaky/configuration.nix ] ++
                 [ home-manager.nixosModules.home-manager {
-                    home-manager.useGlobalPkgs = true;
+                    # false as overlays are pulled in where needed
+                    home-manager.useGlobalPkgs = false;
                     home-manager.useUserPackages = true;
                 }] ++
                 [ (_: {
                   home-manager.users.monk =
                           autoimport.merge ./user;
-                  nixpkgs.overlays = autoimport.asList ./overlays;
+                  # disabled as all overlays are user/-side now
+                  # nixpkgs.overlays = autoimport.asList ./overlays;
                 }) ] ++
                 (autoimport.asPaths ./nixos);
     };
