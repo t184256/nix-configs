@@ -1,6 +1,8 @@
 { pkgs, config, ... }:
 
 {
+  imports = [ ./wraplings.nix ./config/os.nix ];
+
   # calling exa directly
   home.packages = [ pkgs.exa ];
 
