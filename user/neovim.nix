@@ -20,7 +20,8 @@ let
     "diagnostic.messageTarget" = "echo";
     #suggest.acceptSuggestionOnCommitCharacter = true;
     suggest.autoTrigger = "none";
-    languageserver.python = if (withLang "python") then {
+  } // (if (! withLang "python") then {} else {
+    languageserver.python = {
       command = "nvim-python3"; args = [ "-m" "pyls" ];
       filetypes = [ "python" ];
       settings.pyls = {
@@ -44,17 +45,19 @@ let
           yapf.enabled = true;
         };
       };
-    } else {};
-    languageserver.bash = if (withLang "bash") then {
+    };
+  }) // (if (! withLang "bash") then {} else {
+    languageserver.bash = {
       command = "bash-language-server";
       args = [ "start" ];
       filetypes = [ "sh" ];
-    } else {};
-    languageserver.nix = if (withLang "nix") then {
+    };
+  }) // (if (! withLang "nix") then {} else {
+    languageserver.nix = {
       command = "rnix-lsp";
       filetypes = ["nix"];
-    } else {};
-  };
+    };
+  });
   tabNineConfig = {
     disable_auto_update = true;
     enable_telemetry = false;
@@ -76,6 +79,7 @@ in
     withNodeJs = true;  # coc
 
     extraPackages = with pkgs; [
+      glibc  # coc needs getconf
     ] ++ lib.optionals (withLang "bash") [
       nodePackages.bash-language-server
     ] ++ lib.optionals (withLang "nix") [
@@ -110,14 +114,6 @@ in
           let g:coc_snippet_next = '<tab>'
           nmap <silent> { <Plug>(coc-diagnostic-prev)
           nmap <silent> } <Plug>(coc-diagnostic-next)
-          autocmd InsertEnter *.py call GiveMeContextI()
-          autocmd CursorMovedI *.py call GiveMeContextI()
-          autocmd CursorHoldI *.py call GiveMeContextI()
-          autocmd InsertLeave * echo ""
-          function! GiveMeContextI()
-            echo ""
-            call CocAction('showSignatureHelp')  " Async?
-          endfunction
           nnoremap <silent> K :call <SID>show_documentation()<CR>
           function! s:show_documentation()
             if (index(['vim','help'], &filetype) >= 0)
@@ -131,7 +127,15 @@ in
           au CursorHoldI call CocActionAsync('showSignatureHelp')
           au User CocJumpPlaceholder call
             \ CocActionAsync('showSignatureHelp')
-        '';
+        '' + (if (! withLang "python") then "" else ''
+          autocmd InsertEnter *.py call GiveMeContextI()
+          autocmd CursorMovedI *.py call GiveMeContextI()
+          autocmd CursorHoldI *.py call GiveMeContextI()
+          function! GiveMeContextI()
+            echo ""
+            call CocAction('showSignatureHelp')  " Async?
+          endfunction
+        '');
       }
       #coc-diagnostic  # non-LSP linting, not in 20.09
       coc-highlight  # nice coloring for colors
@@ -243,6 +247,7 @@ in
         return get(mode_map, mode(), '[???]')
       endfunction
       let &titlestring = hostname() . " > vi > %t%H%R > %P/%LL %-13.(%l:%c%V %{NiceMode()}%)"
+      autocmd InsertLeave * echo ""
     '';
 
     viAlias = true;
