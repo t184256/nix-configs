@@ -3,6 +3,6 @@
 {
   options.system.os = lib.mkOption {
     default = "NixOS";
-    type = lib.types.str;
+    type = lib.types.enum [ "NixOS" "OtherLinux" "Nix-on-Droid" ];
   };
 }
