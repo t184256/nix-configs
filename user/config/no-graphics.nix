@@ -1,8 +1,10 @@
 { config, lib, ... }:
 
 {
+  imports = [ ./os.nix ];
+
   options.system.noGraphics = lib.mkOption {
-    default = false;
+    default = config.system.os == "Nix-on-Droid";
     type = lib.types.bool;
   };
 
