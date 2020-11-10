@@ -23,7 +23,7 @@
     '';
   };
 
-  home.file.".tmux-inner.sh" = { executable = true; text = ''
+  home.file.".tmux.sh" = { executable = true; text = ''
     #!/bin/sh
     unset TMUX
     exec tmux new-session -A -t main
@@ -65,7 +65,7 @@
     clear; echo "$METHOD to $TO..."
     case $METHOD in
       shell)  exec bash ;;
-      attach) exec ~/.tmux-inner.sh ;;
+      attach) exec ~/.tmux.sh ;;
       mosh)   TERM=xterm-256color exec mosh $TO -a -- ~/.tmux.sh ;;
       mosh-)  TERM=xterm-256color exec mosh $TO -a -- tmux new-session -A ;;
       ssh)    exec ssh $TO -t ~/.tmux.sh ;;
