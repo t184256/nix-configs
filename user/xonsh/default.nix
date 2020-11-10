@@ -10,12 +10,17 @@ let
   my-extra-pypkgs = pps: with pps; [
     # nixpkgs  # disable until it gets unmarked as broken in 20.09
   ];
+  my-xonsh = (pkgs.xonsh.withXontribs my-xontribs)
+                        .withPythonPackages my-extra-pypkgs;
 in
 
 {
-  nixpkgs.overlays = [ (import ../../overlays/xonsh) ];
+  nixpkgs.overlays = [
+    (import ../../overlays/xonsh)
+    ( self: super: { inherit my-xonsh; } )  # I refer to it in user/tmux
+  ];
   home.packages = [
-    ((pkgs.xonsh.withXontribs my-xontribs).withPythonPackages my-extra-pypkgs)
+    my-xonsh
   ];
 
   programs.direnv.enable = true;
