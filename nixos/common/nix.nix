@@ -1,4 +1,5 @@
 { pkgs, ... }:
+
 {
   nix.package = pkgs.nixFlakes;
   nix.extraOptions = ''
