@@ -62,6 +62,15 @@ let
         command = "rnix-lsp";
         filetypes = ["nix"];
       };});
+    diagnostic-languageserver.mergeConfig = true;
+    diagnostic-languageserver.linters.nix-linter.args = [ "--json" "%filepath"];
+    diagnostic-languageserver.filetypes =
+      (if (! withLang "bash") then {} else { sh = "shellcheck"; }) //
+      # https://github.com/iamcco/coc-diagnostic/issues/61
+      (if (! withLang "nix") then {} else { nix = "nix-linter"; });
+    diagnostic-languageserver.formatFiletypes =
+      (if (! withLang "nix") then {} else { sh = "nixfmt"; });
+
   };
   tabNineConfig = {
     disable_auto_update = true;
@@ -89,8 +98,11 @@ in
       gnumake  # for :make
       ccls
     ] ++ lib.optionals (withLang "bash") [
+      shellcheck
       nodePackages.bash-language-server
     ] ++ lib.optionals (withLang "nix") [
+      nix-linter
+      nixfmt
       rnix-lsp
     ] ++ lib.optionals (withLang "python") (with python3Packages; [
     ]);
@@ -145,11 +157,13 @@ in
           endfunction
         '');
       }
-      #coc-diagnostic  # non-LSP linting, not in 20.09
+      coc-diagnostic
       coc-highlight  # nice coloring for colors
-      coc-json
       coc-snippets
       coc-tabnine  # universal autocompleter
+
+      coc-markdownlint
+      coc-json
       coc-yaml
 
       # vim world
