@@ -8,7 +8,6 @@ let
       "rope" "pyflakes" "mccabe" "pycodestype" "pydocstyle" "yapf"
     ]; };
   cocConfig = {
-    "codeLens.enable" = true;  # nothing supports it, but in case smth will
     "diagnostic.enableMessage" = "always";  # always, jump, never
     "diagnostic.messageDelay" = 50;
     "diagnostic.level" = "hint";
@@ -46,6 +45,14 @@ let
           };
         };
       };}) //
+      (if (! withLang "c") then {} else { ccls = {
+        command = "ccls";
+        filetypes = ["c"];
+        initializationOptions = {
+          cache.directory = ".ccls-cache";
+          client.snippetSupport = true;
+        };
+      };}) //
       (if (! withLang "bash") then {} else { bash = {
         command = "bash-language-server";
         args = [ "start" ];
@@ -78,6 +85,9 @@ in
 
     extraPackages = with pkgs; [
       glibc  # coc needs getconf
+    ] ++ lib.optionals (withLang "c") [
+      gnumake  # for :make
+      ccls
     ] ++ lib.optionals (withLang "bash") [
       nodePackages.bash-language-server
     ] ++ lib.optionals (withLang "nix") [
