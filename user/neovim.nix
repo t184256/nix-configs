@@ -20,44 +20,42 @@ let
     "diagnostic.messageTarget" = "echo";
     #suggest.acceptSuggestionOnCommitCharacter = true;
     suggest.autoTrigger = "none";
-  } // (if (! withLang "python") then {} else {
-    languageserver.python = {
-      command = "nvim-python3"; args = [ "-m" "pyls" ];
-      filetypes = [ "python" ];
-      settings.pyls = {
-        enable = true;
-        plugins = {
-          jedi_completion.enabled = true;
-          jedi_hover.enabled = true;
-          jedi_references.enabled = true;
-          jedi_signature_help.enabled = true;
-          jedi_symbols = { enabled = true; all_scopes = true; };
-          rope_completion.enabled = true;
-          mccabe = { enabled = true; threshold = 15; };
-          preload.enabled = true;
-          pycodestyle.enabled = true;
-          pydocstyle = {
-            enabled = false;
-            match = "(?!test_).*\\.py";
-            matchDir = "[^\\.].*";
+    languageserver =
+      (if (! withLang "python") then {} else { python = {
+        command = "nvim-python3"; args = [ "-m" "pyls" ];
+        filetypes = [ "python" ];
+        settings.pyls = {
+          enable = true;
+          plugins = {
+            jedi_completion.enabled = true;
+            jedi_hover.enabled = true;
+            jedi_references.enabled = true;
+            jedi_signature_help.enabled = true;
+            jedi_symbols = { enabled = true; all_scopes = true; };
+            rope_completion.enabled = true;
+            mccabe = { enabled = true; threshold = 15; };
+            preload.enabled = true;
+            pycodestyle.enabled = true;
+            pydocstyle = {
+              enabled = false;
+              match = "(?!test_).*\\.py";
+              matchDir = "[^\\.].*";
+            };
+            pyflakes.enabled = true;
+            yapf.enabled = true;
           };
-          pyflakes.enabled = true;
-          yapf.enabled = true;
         };
-      };
-    };
-  }) // (if (! withLang "bash") then {} else {
-    languageserver.bash = {
-      command = "bash-language-server";
-      args = [ "start" ];
-      filetypes = [ "sh" ];
-    };
-  }) // (if (! withLang "nix") then {} else {
-    languageserver.nix = {
-      command = "rnix-lsp";
-      filetypes = ["nix"];
-    };
-  });
+      };}) //
+      (if (! withLang "bash") then {} else { bash = {
+        command = "bash-language-server";
+        args = [ "start" ];
+        filetypes = [ "sh" ];
+      };}) //
+      (if (! withLang "nix") then {} else { nix = {
+        command = "rnix-lsp";
+        filetypes = ["nix"];
+      };});
+  };
   tabNineConfig = {
     disable_auto_update = true;
     enable_telemetry = false;
