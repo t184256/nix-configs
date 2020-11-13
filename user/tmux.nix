@@ -12,6 +12,7 @@
     secureSocket = false;  # survives user logout
     shortcut = "a";
     extraConfig = ''
+      set -ga terminal-overrides ",*256col*:Tc"
       set -g set-titles on
       set -g set-titles-string "#I > #T"
       set -g status-style bg=white,fg=black
@@ -35,6 +36,7 @@
   ''; };
 
   home.file.".tmux-hopper.conf".text = ''
+    set -ga terminal-overrides ",*256col*:Tc"
     set -g base-index 0
     set -g escape-time 0
     set -g default-terminal tmux-256color
