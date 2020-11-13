@@ -35,7 +35,13 @@
   ''; };
 
   home.file.".tmux-hopper.conf".text = ''
+    set -g base-index 0
+    set -g escape-time 0
+    set -g default-terminal tmux-256color
+    set -g aggressive-resize on
     set -g status off
+    set-option -g prefix C-b
+    unbind C-a
     bind b send-prefix
     bind C-b last-window
     set -g status-style bg=colour234,fg=white
