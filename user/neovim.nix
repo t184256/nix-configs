@@ -3,10 +3,6 @@
 let
   withLang = lang: builtins.elem lang config.language-support;
 
-  python-language-server-lighter =
-    pkgs.python3Packages.python-language-server.override { providers = [
-      "rope" "pyflakes" "mccabe" "pycodestype" "pydocstyle" "yapf"
-    ]; };
   cocConfig = {
     "diagnostic.enableMessage" = "always";  # always, jump, never
     "diagnostic.messageDelay" = 50;
@@ -63,14 +59,19 @@ let
         filetypes = ["nix"];
       };});
     diagnostic-languageserver.mergeConfig = true;
-    diagnostic-languageserver.linters.nix-linter.args = [ "--json" "%filepath"];
+    # https://github.com/iamcco/coc-diagnostic/issues/61
+    diagnostic-languageserver.linters.nix-linter.args = [ "%filepath" ];
+    diagnostic-languageserver.linters.nix-linter.command =
+      pkgs.writeShellScript "nix-linter-json-fix" ''
+        echo '['
+        ${pkgs.nix-linter}/bin/nix-linter --json-stream "$1" | sed '$!s/$/,/'
+        echo ']'
+      '';
     diagnostic-languageserver.filetypes =
       (if (! withLang "bash") then {} else { sh = "shellcheck"; }) //
-      # https://github.com/iamcco/coc-diagnostic/issues/61
       (if (! withLang "nix") then {} else { nix = "nix-linter"; });
     diagnostic-languageserver.formatFiletypes =
       (if (! withLang "nix") then {} else { sh = "nixfmt"; });
-
   };
   tabNineConfig = {
     disable_auto_update = true;
@@ -82,7 +83,10 @@ in
   nixpkgs.overlays = [ (import ../overlays/vim-plugins.nix) ];
 
   xdg.configFile."nvim/coc-settings.json".source =
-    builtins.toFile "coc-settings.json" (builtins.toJSON cocConfig);
+    pkgs.writeTextFile {
+      name = "coc-settings.json";
+      text = (builtins.toJSON cocConfig);
+    };
   xdg.configFile."TabNine/tabnine_config.json".source =
     builtins.toFile "tabnine_config.json" (builtins.toJSON tabNineConfig);
   programs.neovim = {
