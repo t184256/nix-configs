@@ -60,13 +60,15 @@ let
       };});
     diagnostic-languageserver.mergeConfig = true;
     # https://github.com/iamcco/coc-diagnostic/issues/61
-    diagnostic-languageserver.linters.nix-linter.args = [ "%filepath" ];
-    diagnostic-languageserver.linters.nix-linter.command =
-      pkgs.writeShellScript "nix-linter-json-fix" ''
-        echo '['
-        ${pkgs.nix-linter}/bin/nix-linter --json-stream "$1" | sed '$!s/$/,/'
-        echo ']'
-      '';
+    diagnostic-languageserver.linters.nix-linter =
+      if (! withLang "nix") then {} else {
+        args = [ "%filepath" ];
+        command = pkgs.writeShellScript "nix-linter-json-fix" ''
+          echo '['
+          ${pkgs.nix-linter}/bin/nix-linter --json-stream "$1" | sed '$!s/$/,/'
+          echo ']'
+        '';
+      };
     diagnostic-languageserver.filetypes =
       (if (! withLang "bash") then {} else { sh = "shellcheck"; }) //
       (if (! withLang "nix") then {} else { nix = "nix-linter"; });
