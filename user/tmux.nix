@@ -1,6 +1,8 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 {
+  imports = [ ./config/os.nix ];
+
   programs.tmux = {
     enable = true;
     baseIndex = 1;
@@ -55,13 +57,21 @@
     set -g set-titles-string "#W > #T"
     bind-key c command-prompt -p "hop to:" "new-window -n %1 ~/.tmux-hop.sh %1"
     set -g destroy-unattached on
-  '';
+  '' + (if (config.system.os != "Nix-on-Droid") then "" else ''
+    set -g status-style bg=black,fg=colour244
+    set -g status
+    set -g status-position top
+    set -g status-justify centre
+    set -g status-left ""
+    set -g status-right ""
+    set -g window-status-current-format "#T"
+  '');
 
   home.file.".tmux-hop.sh" = { executable = true; text = ''
     #!/usr/bin/env bash
     set +ue
     export MOSH_TITLE_NOPREFIX=1
-    LOCAL=''$(hostname)
+    LOCAL=''$(${pkgs.hostname}/bin/hostname)
     TO=''${1:-$LOCAL}
     case $TO in
       -)      TO=$LOCAL-;     METHOD=shell ;;
@@ -70,7 +80,7 @@
       m*)     TO=mango;       METHOD=mosh ;;
     esac
     tmux rename-window $TO 2> /dev/null
-    clear; echo "$METHOD to $TO..."
+    ${pkgs.ncurses}/bin/clear; echo "$METHOD to $TO..."
     case $METHOD in
       shell)  exec bash ;;
       attach) exec ~/.tmux.sh ;;
