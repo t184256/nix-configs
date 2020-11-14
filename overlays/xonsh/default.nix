@@ -54,7 +54,7 @@ let
   };
 
   makeXonshEnv = { extras }: super.python3.buildEnv.override {
-      extraLibs = [ xonshLib ] ++ extras;
+      extraLibs = [ self.xonshLib ] ++ extras;
   };
 
   makeXonshWrapper = args: super.writeShellScriptBin "xonsh" ''
@@ -76,5 +76,5 @@ let
   xonsh = makeCustomizableXonsh { extras = []; };
 in
 {
-  inherit xonsh xontribs;
+  inherit xonsh xontribs xonshLib;
 }

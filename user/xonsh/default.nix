@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 let
   readConfigBit = p: "\n\n#${builtins.baseNameOf p}\n${builtins.readFile p}";
@@ -15,13 +15,22 @@ let
 in
 
 {
+  imports = [ ../config/os.nix ];
   nixpkgs.overlays = [
     (import ../../overlays/xonsh)
+    (
+      self: super: { xonshLib =
+        if (config.system.os != "Nix-on-Droid") then super.xonshLib else
+        (super.xonshLib.overridePythonAttrs (o: {
+          doCheck = false;
+          doInstallCheck = false;
+        }));
+      }
+    )
     ( self: super: { inherit my-xonsh; } )  # I refer to it in user/tmux
   ];
-  home.packages = [
-    my-xonsh
-  ];
+
+  home.packages = [ my-xonsh ];
 
   programs.direnv.enable = true;
   programs.direnv.enableNixDirenvIntegration = true;
