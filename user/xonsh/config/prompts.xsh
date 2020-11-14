@@ -3,7 +3,7 @@ if 'TMUX' in ${...}:
     $PROMPT_FIELDS['title'] = lambda: $PROMPT_FIELDS['current_job']() or 'xonsh'
     $TITLE = '{title}'
     $PROMPT = "{#555}{prompt_end} "
-    if $PROMPT_FIELDS['user'] != 'monk':  # TODO: parametrize
+    if $PROMPT_FIELDS['user'] not in ('monk', 'nix-on-droid', 'asosedki'):
         $PROMPT = '{user}@{hostname}' + $PROMPT
     $PROMPT = '{RESET}' + $PROMPT + '{RESET}'
 
