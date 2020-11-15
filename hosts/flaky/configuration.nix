@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   imports = [
@@ -33,4 +33,6 @@
   home-manager.users.monk.system.noGraphics = true;
 
   home-manager.users.monk.language-support = [ "nix" "python" "bash" ];
+
+  system.buildserver-aarch64.enable = true;
 }
