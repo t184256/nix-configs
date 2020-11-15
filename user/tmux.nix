@@ -84,8 +84,8 @@
     case $METHOD in
       shell)  exec bash ;;
       attach) exec ~/.tmux.sh ;;
-      mosh)   exec mosh $TO -a -- ~/.tmux.sh ;;
-      mosh-)  exec mosh $TO -a -- tmux new-session -A ;;
+      mosh)   exec mosh $TO -o -- ~/.tmux.sh ;;
+      mosh-)  exec mosh $TO -o -- tmux new-session -A ;;
       ssh)    exec ssh $TO -t ~/.tmux.sh ;;
       ssh-)   exec ssh $TO -t sh -c 'tmux new-session -A -t main' ;;
     esac
