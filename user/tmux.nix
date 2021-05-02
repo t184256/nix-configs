@@ -29,7 +29,7 @@
   home.file.".tmux.sh" = { executable = true; text = ''
     #!/bin/sh
     unset TMUX
-    exec tmux new-session -A -t main
+    exec tmux new-session -A -t main -s $(date +%s)
   ''; };
 
   home.file.".tmux-hopper.sh" = { executable = true; text = ''
@@ -85,9 +85,9 @@
       shell)  exec bash ;;
       attach) exec ~/.tmux.sh ;;
       mosh)   exec mosh $TO -o -- ~/.tmux.sh ;;
-      mosh-)  exec mosh $TO -o -- tmux new-session -A ;;
+      mosh-)  exec mosh $TO -o -- sh -c 'exec tmux new-session -A -t main -s $(date +%s)';;
       ssh)    exec ssh $TO -t ~/.tmux.sh ;;
-      ssh-)   exec ssh $TO -t sh -c 'tmux new-session -A -t main' ;;
+      ssh-)   exec ssh $TO -t sh -c 'exec tmux new-session -A -t main -s $(date +%s)' ;;
     esac
   ''; };
 
