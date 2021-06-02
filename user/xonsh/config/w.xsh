@@ -8,7 +8,7 @@ def _w(args):
         w - ncdu /
         w py:numpy,notebook -- python -m notebook
     """
-    DEFAULT_PACKAGE_SOURCE = 'nixpkgs/release-20.09'
+    DEFAULT_PACKAGE_SOURCE = 'nixpkgs/release-21.05'
 
     def expand_arg(arg):  # what to turn a dependency word into?
         if arg.endswith('.nix'):  # a file

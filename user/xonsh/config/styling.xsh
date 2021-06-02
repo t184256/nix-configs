@@ -117,7 +117,7 @@ del orange, pink, fuchsia
 
 $DYNAMIC_CWD_ELISION_CHAR = '…'
 
-$PTK_STYLE_OVERRIDES = {
+$XONSH_STYLE_OVERRIDES = {
   'completion-menu': 'bg:black ansibrightblack',
   'completion-menu.completion': 'ansibrightblack',
   'completion-menu.completion.current': 'bg:ansibrightblack grey',

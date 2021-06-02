@@ -12,7 +12,7 @@ let
     };
     meta = {
       homepage = "https://github.com/nir0s/backtrace";
-      license = pkgs.stdenv.lib.licenses.asl20;
+      license = pkgs.lib.licenses.asl20;
       description = "Makes Python tracebacks human friendly";
     };
     prePatch = ''
@@ -34,7 +34,7 @@ pkgs.python3Packages.buildPythonPackage rec {
   };
   meta = {
     homepage = "https://github.com/vaaaaanquish/xontrib-readable-traceback";
-    license = pkgs.stdenv.lib.licenses.mit;
+    license = pkgs.lib.licenses.mit;
     description = "Make traceback easier to see for xonsh.";
   };
   propagatedBuildInputs = [ backtrace ];

@@ -23,12 +23,12 @@ let
       ptk
     ];
     pname = "xonsh";
-    version = "0.9.24";
+    version = "0.9.27";
     src = super.fetchFromGitHub {
       owner = "xonsh";
       repo = "xonsh";
       rev = version;
-      sha256 = "1nk7kbiv7jzmr6narsnr0nyzkhlc7xw3b2bksyq2j6nda67b9b3y";
+      sha256 = "09w6bl3qsygfs2ph2r423ndnbd74bzf67vp8587h2dkkfxlzjbad";
     };
     prePatch = ''
       substituteInPlace xonsh/completers/bash_completion.py --replace \

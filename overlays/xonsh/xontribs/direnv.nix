@@ -12,7 +12,7 @@ pkgs.python3Packages.buildPythonPackage {
   propagatedBuildInputs = [ pkgs.direnv ];
   meta = {
     homepage = "https://github.com/74th/xonsh-direnv";
-    license = pkgs.stdenv.lib.licenses.mit;
+    license = pkgs.lib.licenses.mit;
     description = "xonsh direnv";
   };
 }

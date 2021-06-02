@@ -94,7 +94,6 @@ in
   programs.neovim = {
     enable = true;
 
-    withPython = false;  # it's 2020!
     withRuby = false;
     withNodeJs = true;  # coc
 
