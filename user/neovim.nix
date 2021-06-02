@@ -273,7 +273,7 @@ in
           \ }
         return get(mode_map, mode(), '[???]')
       endfunction
-      let &titlestring = "vi > %t%H%R > %P/%LL %-13.(%l:%c%V %{NiceMode()}%)"
+      let &titlestring = "vi > %y %t%H%R > %P/%LL %-13.(%l:%c%V %{NiceMode()}%)"
       autocmd InsertLeave * echo ""
     '';
 
