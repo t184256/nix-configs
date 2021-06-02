@@ -6,15 +6,28 @@
 
     home-manager.url = "github:nix-community/home-manager/release-21.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    alacritty-autoresizing = {
+      url = "github:t184256/alacritty-autoresizing";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs:
+  outputs = {
+    self,
+    nixpkgs,
+    home-manager,
+    alacritty-autoresizing,
+    ...
+  }@inputs:
   let
     autoimport = (import ./.autoimport);
+    specialArgs = { inherit inputs; };
     common_modules = [ home-manager.nixosModules.home-manager {
                          # false as overlays are pulled in where needed
                          home-manager.useGlobalPkgs = false;
                          home-manager.useUserPackages = true;
+                         home-manager.extraSpecialArgs = specialArgs;
                      }] ++
                      [ (_: {
                        home-manager.users.monk =
@@ -23,17 +36,16 @@
                        # nixpkgs.overlays = autoimport.asList ./overlays;
                      }) ] ++
                      (autoimport.asPaths ./nixos);
+    mkSystem = system: hostcfg:
+      nixpkgs.lib.nixosSystem {
+        inherit system specialArgs;
+        modules = [ hostcfg ] ++ common_modules;
+      };
   in
   {
-    # an example host configuration one can nixos-rebuild from
-    nixosConfigurations.flaky = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [ ./hosts/flaky/configuration.nix ] ++ common_modules;
-    };
-    # another host
-    nixosConfigurations.lychee = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [ ./hosts/lychee/configuration.nix ] ++ common_modules;
+    nixosConfigurations = {
+      flaky = mkSystem "x86_64-linux" ./hosts/flaky/configuration.nix;
+      lychee = mkSystem "x86_64-linux" ./hosts/lychee/configuration.nix;
     };
     nixosModules = {
       nixos = autoimport.asAttrs ./nixos;

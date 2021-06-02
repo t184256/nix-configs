@@ -1,5 +1,41 @@
 {
   "nodes": {
+    "alacritty-autoresizing": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1620729143,
+        "narHash": "sha256-xILQCtAOp1cteEaiU4qpdku+9OeLUupj2Vk9lO6uemk=",
+        "owner": "t184256",
+        "repo": "alacritty-autoresizing",
+        "rev": "33ef287127797e7b629a4b72143252a89fe0aa6c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "t184256",
+        "repo": "alacritty-autoresizing",
+        "type": "github"
+      }
+    },
+    "flake-utils": {
+      "locked": {
+        "lastModified": 1619345332,
+        "narHash": "sha256-qHnQkEp1uklKTpx3MvKtY6xzgcqXDsz5nLilbbuL+3A=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "2ebf2558e5bf978c7fb8ea927dfaed8fefab2e28",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -39,6 +75,7 @@
     },
     "root": {
       "inputs": {
+        "alacritty-autoresizing": "alacritty-autoresizing",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs"
       }

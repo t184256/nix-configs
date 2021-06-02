@@ -1,6 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 let
+  alacritty-autoresizing =
+    inputs.alacritty-autoresizing.defaultPackage.${pkgs.system};
+
   baseSettings = {
     env = { TERM = "xterm-256color"; };
     window.padding = { x = 0; y = 0; };
@@ -19,39 +22,20 @@ let
     selection.save_to_clipboard = true;
     live_config_reload = false;
   };
+
 in
+
 {
   programs.alacritty = {
     enable = true;
     settings = baseSettings;
   };
 
-  # TODO: 640, 1280, 2560
-  xdg.configFile."alacritty/alacritty-960.yml".text =
-    builtins.toJSON (baseSettings // { font = {
-      size = 24;
-      offset = { x = -2; y = -2; };
-      glyph_offset = { x = -1; y = -1; };
-    };});
-  xdg.configFile."alacritty/alacritty-1920.yml".text =
-    builtins.toJSON (baseSettings // { font = {
-      size = 48;
-      offset = { x = -4; y = -2; };
-      glyph_offset = { x = -2; y = -1; };
-    };});
+  xdg.configFile."alacritty/autoresizing.cfg.py".source =
+    "${inputs.alacritty-autoresizing}/autoresizing.cfg.py";
 
-  home.wraplings =
-    let
-      hopper = "--class TermHopper -e ~/.tmux-hopper.sh";
-      config = w: "--config-file ~/.config/alacritty/alacritty-${toString w}.yml";
-      mkWidth = w: {
-        "term-${toString w}" = "alacritty ${config w}";
-        "term-hopper-${toString w}" = "alacritty ${config w} ${hopper}";
-      };
-    in
-    {
-      term = "alacritty";
-      term-hopper = "alacritty ${hopper}";
-    } // (mkWidth 960)
-      // (mkWidth 1920);
+  home.wraplings = rec {
+    term = "${alacritty-autoresizing}/bin/alacritty-autoresizing";
+    term-hopper = "${term} --class TermHopper -e ~/.tmux-hopper.sh";
+  };
 }
