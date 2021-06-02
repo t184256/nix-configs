@@ -4,27 +4,31 @@ self: super:
     set = "t184256";
     privateBuildPlan = {
       family = "Iosevka Term";
-      snapshotFamily = "iosevka";
+      spacing = "term";
+      no-ligation = "true";
 
-      design = [
-        "sp-fixed"  # sp-force-monospace + no-ligation
-        "ss20"  # default to curly style
-        "v-i-zshaped"
-        "v-l-zshaped"
-        "v-a-singlestorey"  # TODO: try "v-a-singlestorey-earless-corner" with next update
-        # TODO: try "v-b-toothless-corner" with next update
-        # TODO: try "v-d-toothless-corner" with next update
-        "v-g-singlestorey" # TODO: try "v-g-earless-corner" with next update
-        "v-j-straight"
-        "v-k-curly"
-        # TODO: try "v-p-toothless-corner" with next update
-        # TODO: try "v-q-toothless-corner" with next update
-        "v-asterisk-low"
-        # TODO: try "v-at-long" with next update
-        "v-brace-straight"
-        "v-dollar-open"
-        "v-percent-dots"
-      ];
+      variants = {
+        # TODO: try something closer to Ubuntu Mono style?
+        inherits = "ss20";  # default to curly style
+        design = {
+          a = "single-storey-earless-corner";
+          b = "toothless-corner";
+          d = "toothless-corner";
+          g = "single-storey";
+          i = "zshaped";
+          j = "serifed";
+          k = "curly";
+          l = "zshaped";
+          p = "earless-corner";
+          q = "earless-corner";
+          u = "toothless-corner";
+          asterisk = "low";
+          brace = "straight";
+          dollar = "open";
+          percent = "dots";
+        };
+        # TODO: italic
+      };
 
       # less weights => faster rebuilding
       weights = {
