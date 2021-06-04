@@ -7,6 +7,6 @@
 
   services.gpg-agent = {
     enable = true;
-    pinentryFlavor = if config.system.noGraphics then "tty" else "gtk2";
+    pinentryFlavor = if config.system.noGraphics then "tty" else "gnome3";
   };
 }

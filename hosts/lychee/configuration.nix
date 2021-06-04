@@ -26,13 +26,6 @@
   #   keyMap = "us";
   # };
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # Enable the GNOME 3 Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-  
   # Configure keymap in X11
   # services.xserver.layout = "us";
   # services.xserver.xkbOptions = "eurosign:e";
@@ -60,9 +53,9 @@
     extraGroups = [ "wheel" ];
   };
 
+  system.role.desktop.enable = true;
 
 
   system.stateVersion = "21.05";
   home-manager.users.monk.home.stateVersion = "21.05";
 }
-
