@@ -9,6 +9,7 @@
 
   boot.kernelPackages = pkgs.linuxPackages_5_12;
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 3;  # small /boot
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = "lychee"; # Define your hostname.
