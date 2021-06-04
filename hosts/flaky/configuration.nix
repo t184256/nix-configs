@@ -13,7 +13,6 @@
   time.timeZone = "Europe/Prague";
 
   environment.systemPackages = with pkgs; [
-    git wget vim
   ];
 
   services.openssh.enable = true;
