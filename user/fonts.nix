@@ -9,10 +9,10 @@
   ];
 
   home = if config.system.noGraphics then {} else {
-   packages = with pkgs; [
-     iosevka-t184256                     # overlay: iosevka-t184256
-     google-fonts.just.RobotoCondensed   # overlay: select-google-fonts
-     noto-fonts-extracondensed           # overlay: noto-fonts-extracondensed
+   packages = with pkgs; [                  # overlays:
+     iosevka-t184256                        # * iosevka-t184256
+     (google-fonts.just "RobotoCondensed")  # * select-google-fonts
+     noto-fonts-extracondensed              # * noto-fonts-extracondensed
    ];
    file.".config/fontconfig/fonts.conf".text = ''
      <?xml version="1.0"?>
