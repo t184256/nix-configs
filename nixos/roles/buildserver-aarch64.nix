@@ -15,10 +15,10 @@ let
     installPhase = "install -D -m 0755 $src $out/bin/qemu-aarch64-static";
   };
 
-  cfg = config.system.buildserver-aarch64;
+  cfg = config.system.role.buildserver-aarch64;
 in {
   options = {
-    system.buildserver-aarch64.enable = mkOption {
+    system.role.buildserver-aarch64.enable = mkOption {
       default = false;
       example = true;
       description = ''
