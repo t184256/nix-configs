@@ -51,8 +51,11 @@
     extraGroups = [ "wheel" ];
   };
 
-  system.role.desktop.enable = true;
-
+  system.role = {
+    desktop.enable = true;
+    physical.enable = true;
+    physical.portable = true;
+  };
 
   system.stateVersion = "21.05";
   home-manager.users.monk.home.stateVersion = "21.05";
