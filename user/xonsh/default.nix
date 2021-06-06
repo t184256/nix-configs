@@ -8,7 +8,7 @@ let
     readable-traceback
   ];
   my-extra-pypkgs = pps: with pps; [
-    # nixpkgs  # disable until it gets unmarked as broken in 20.09
+    # nixpkgs  # disabled since it's not updated for flakes
   ];
   my-xonsh = (pkgs.xonsh.withXontribs my-xontribs)
                         .withPythonPackages my-extra-pypkgs;
