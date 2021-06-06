@@ -26,15 +26,19 @@ let
 in
 
 {
-  programs.alacritty = {
+  imports = [ ./config/no-graphics.nix ];
+
+  programs.alacritty = if config.system.noGraphics then {} else {
     enable = true;
     settings = baseSettings;
   };
 
-  xdg.configFile."alacritty/autoresizing.cfg.py".source =
-    "${inputs.alacritty-autoresizing}/autoresizing.cfg.py";
+  xdg.configFile = if config.system.noGraphics then {} else {
+    "alacritty/autoresizing.cfg.py".source =
+      "${inputs.alacritty-autoresizing}/autoresizing.cfg.py";
+  };
 
-  home.wraplings = rec {
+  home.wraplings = if config.system.noGraphics then {} else rec {
     term = "${alacritty-autoresizing}/bin/alacritty-autoresizing";
     term-hopper = "${term} --class TermHopper -e ~/.tmux-hopper.sh";
   };
