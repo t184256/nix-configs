@@ -4,6 +4,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/release-21.05";
 
+    nixos-hardware.url = "github:t184256/nixos-hardware/onenetbook4";
+    nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
+
     home-manager.url = "github:nix-community/home-manager/release-21.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -16,6 +19,7 @@
   outputs = {
     self,
     nixpkgs,
+    nixos-hardware,
     home-manager,
     alacritty-autoresizing,
     ...

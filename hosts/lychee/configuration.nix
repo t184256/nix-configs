@@ -1,7 +1,8 @@
-{ pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [
+    "${inputs.nixos-hardware}/onenetbook/4"
     ./hardware-configuration.nix
     ./onemix-keyboard-remap.nix
   ];
