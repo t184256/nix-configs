@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   imports = [
@@ -60,4 +60,36 @@
 
   system.stateVersion = "21.05";
   home-manager.users.monk.home.stateVersion = "21.05";
+
+  nixpkgs.overlays = [
+    (self: super: {
+      iio-sensor-proxy =
+        if (lib.versionOlder super.iio-sensor-proxy.version "3.0") then
+          (super.iio-sensor-proxy.overrideAttrs (oa: rec {
+            version = "3.0";
+            src = pkgs.fetchFromGitLab {
+              domain = "gitlab.freedesktop.org";
+              owner = "hadess";
+              repo = "iio-sensor-proxy";
+              rev = version;
+              sha256 = "0ngbz1vkbjci3ml6p47jh6c6caipvbkm8mxrc8ayr6vc2p9l1g49";
+            };
+          }))
+        else super.iio-sensor-proxy;
+    })
+
+    (self: super: {
+      gnome = super.gnome //
+      {
+        mutter = super.gnome.mutter.overrideAttrs (oa: {
+          patches = oa.patches ++ [
+            (pkgs.fetchpatch {
+              url = "https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/1846.patch";
+              sha256 = "0znhipxdis7f9v8b6sk4fbn42ls8sh12wdw306jsh5xg2gzkcm80";
+            })
+          ];
+        } );
+      };
+    })
+  ];
 }
