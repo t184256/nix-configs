@@ -7,7 +7,7 @@ let
   baseSettings = {
     env = { TERM = "xterm-256color"; };
     window.padding = { x = 0; y = 0; };
-    dynamic_padding = true;  # I don't think it works
+    window.dynamic_padding = true;
     font = {
       normal.family = "Iosevka Term";
       bold = { family = "Iosevka Term Medium"; style = "Normal"; };
@@ -18,9 +18,15 @@ let
     };
     colors.primary = { background = "#000000"; foreground = "#ffffff"; };
     bell = { animation = "EaseOutExpo"; duration = 100; color = "#7f7f7f"; };
-    mouse.hide_when_typing = true;
     selection.save_to_clipboard = true;
     live_config_reload = false;
+
+    # Gotta love GNOME 40. What do they smoke, huh?
+    # lack of server-side decorations, mouse never reappearing...
+    mouse.hide_when_typing = true;  # broken
+    window.decorations = "none";  # CSD is unusable with touch or stylus anyway
+    window.startup_mode = "maximized";
+    gtk_theme_variant = "dark";
   };
 
 in
@@ -42,4 +48,28 @@ in
     term = "${alacritty-autoresizing}/bin/alacritty-autoresizing";
     term-hopper = "${term} --class TermHopper -e ~/.tmux-hopper.sh";
   };
+
+  xdg.dataFile = if config.system.noGraphics then {} else {
+    "applications/term.desktop".text = ''
+      [Desktop Entry]
+      Categories=TerminalEmulator;
+      Exec=term
+      GenericName=Term
+      Icon=org.gnome.Terminal
+      Name=Term
+      Terminal=false
+      Type=Application
+    '';
+  };
+  # TODO: in 21.11, use
+  # xdg.desktopEntries = {
+  #   term = {
+  #     name = "Term";
+  #     genericName = "Term";
+  #     icon = "org.gnome.Terminal";
+  #     exec = "term";
+  #     terminal = false;
+  #     categories = [ "TerminalEmulator" ];
+  #   };
+  # };
 }
