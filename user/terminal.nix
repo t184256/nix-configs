@@ -60,6 +60,16 @@ in
       Terminal=false
       Type=Application
     '';
+    "applications/term-hopper.desktop".text = ''
+      [Desktop Entry]
+      Categories=TerminalEmulator;
+      Exec=term-hopper
+      GenericName=Term-Hopper
+      Icon=org.gnome.Terminal
+      Name=Term-Hopper
+      Terminal=false
+      Type=Application
+    '';
   };
   # TODO: in 21.11, use
   # xdg.desktopEntries = {
