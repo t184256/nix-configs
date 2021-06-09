@@ -46,7 +46,7 @@ in
 
   home.wraplings = if config.system.noGraphics then {} else rec {
     term = "${alacritty-autoresizing}/bin/alacritty-autoresizing";
-    term-hopper = "${term} --class TermHopper -e ~/.tmux-hopper.sh";
+    term-hopper = "${term} --class Console -e ~/.tmux-hopper.sh";
   };
 
   xdg.dataFile = if config.system.noGraphics then {} else {
@@ -60,13 +60,13 @@ in
       Terminal=false
       Type=Application
     '';
-    "applications/term-hopper.desktop".text = ''
+    "applications/console.desktop".text = ''
       [Desktop Entry]
       Categories=TerminalEmulator;
       Exec=term-hopper
-      GenericName=Term-Hopper
+      GenericName=Console
       Icon=org.gnome.Terminal
-      Name=Term-Hopper
+      Name=Console
       Terminal=false
       Type=Application
     '';
