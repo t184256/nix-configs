@@ -24,7 +24,11 @@ in {
     };
 
     environment = {
-      gnome.excludePackages = with pkgs.gnome; [ epiphany cheese ];
+      gnome.excludePackages = with pkgs.gnome; [
+        cheese
+        epiphany
+        geary
+      ];
       systemPackages = with pkgs.gnomeExtensions; [
         gsconnect
         autohide-battery
@@ -36,6 +40,7 @@ in {
     };
 
     services.gnome.gnome-initial-setup.enable = false;
+    services.gnome.gnome-remote-desktop.enable = true;
 
     # KDE Connect
     networking.firewall.allowedUDPPortRanges = [ { from = 1714; to = 1764; } ];

@@ -92,4 +92,10 @@
       };
     })
   ];
+
+  # currently manual:
+  # * touchpad speed bump in GNOME
+  # * screen locking in GNOME
+  # * syncthing
+  # * thunderbird
 }
