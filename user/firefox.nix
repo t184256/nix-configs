@@ -23,6 +23,7 @@
           "browser.search.suggest.enabled" = false;
           "browser.startup.homepage" = "about:blank";
           "browser.startup.page" = 3;  # restore session
+          "browser.tabs.closeWindowWithLastTab" = 0;
           "browser.tabs.drawInTitlebar" = false;  # kills the close button
           "browser.toolbars.bookmarks.visibility" = "never";
           "browser.uidensity" = 1;  # compact, let's see how long will it last
