@@ -28,6 +28,10 @@
           "browser.toolbars.bookmarks.visibility" = "never";
           "browser.uidensity" = 1;  # compact, let's see how long will it last
           "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";
+          "extensions.formautofill.creditCards.available" = false;
+          "extensions.formautofill.creditCards.enabled" = false;
+          "services.sync.engine.creditcards" = false;
+          "services.sync.engine.creditcards.available" = false;
           "services.sync.engine.passwords" = false;
           "signon.rememberSignons" = false;
           "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
