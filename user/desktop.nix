@@ -4,8 +4,10 @@
   imports = [ ./config/no-graphics.nix ];
 
   # Random assortment of GUI tools
-  home.packages = lib.mkIf (! config.system.noGraphics) [
-    pkgs.dino
-    pkgs.transmission-remote-gtk
-  ];
+  home.packages = lib.mkIf (! config.system.noGraphics) (with pkgs; [
+    dino
+    transmission-remote-gtk
+    giara
+    kodi-wayland
+  ]);
 }
