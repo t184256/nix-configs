@@ -57,6 +57,9 @@
     physical.enable = true;
     physical.portable = true;
   };
+  home-manager.users.monk = {
+    services.syncthing.enable = true;
+  };
 
   system.stateVersion = "21.05";
   home-manager.users.monk.home.stateVersion = "21.05";
