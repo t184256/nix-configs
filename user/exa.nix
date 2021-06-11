@@ -4,7 +4,7 @@
   imports = [ ./wraplings.nix ./config/os.nix ];
 
   # calling exa directly
-  home.packages = [ pkgs.exa ];
+  programs.exa.enable = true;
 
   # calling exa via wraplings
   home.wraplings = rec {
@@ -14,5 +14,6 @@
     );
     la = l + " -a";
     lt = l + " -T";
+    lla = l + " -la";
   };
 }
