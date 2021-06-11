@@ -2,7 +2,7 @@
   description = "t184256's personal configuration files";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/release-21.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.05";
 
     nixos-hardware.url = "github:t184256/nixos-hardware";
     nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
