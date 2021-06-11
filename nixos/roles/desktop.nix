@@ -21,6 +21,8 @@ in {
       enable = true;
       displayManager.gdm.enable = true;
       desktopManager.gnome.enable = true;
+      layout = "us,ru";
+      xkbOptions = "grp:lctrl_lwin_rtrl_menu";
     };
 
     environment = {
