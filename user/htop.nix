@@ -21,23 +21,23 @@
     sort_key = config.lib.htop.fields.PERCENT_MEM;
   } // (with config.lib.htop; leftMeters (
     if config.system.os != "Nix-on-Droid"
-    then {
-      AllCPUs2 = modes.Bar;
-      Memory = modes.Bar;
-      Swap = modes.Bar;
-    } else {
-      Memory = modes.Bar;
-      Swap = modes.Bar;
-    }
+    then [
+      (bar "AllCPUs2")
+      (bar "Memory")
+      (bar "Swap")
+    ] else [
+      (bar "Memory")
+      (bar "Swap")
+    ]
   )) // (with config.lib.htop; rightMeters (
     if config.system.os != "Nix-on-Droid"
-    then {
-      Battery = modes.Bar;
-      Uptime = modes.Text;
-      Tasks = modes.Text;
-      LoadAverage = modes.Text;
-    } else {
-      Tasks = modes.Text;
-    }
+    then [
+      (bar "Battery")
+      (text "Uptime")
+      (text "Tasks")
+      (text "LoadAverage")
+    ] else [
+      (text "Tasks")
+    ]
   ));
 }
