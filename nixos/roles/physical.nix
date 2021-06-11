@@ -30,7 +30,7 @@ in {
     })
     (mkIf cfg.portable {
       powerManagement.powertop.enable = true;
-      environment.systemPackages = with pkgs; [ powertop ];
+      environment.systemPackages = with pkgs; [ acpi powertop ];
     })
   ];
 }
