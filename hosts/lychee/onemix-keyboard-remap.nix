@@ -8,8 +8,8 @@ let
     src = pkgs.fetchFromGitHub {
       owner = "t184256";
       repo = "keyboard-remap";
-      rev = "5e866ca78a57623790e630cbc59be5b1fd66f98b";
-      sha256 = "0ivf5zfbszn3spa07sd4dvsz8f8w0mn3qzbmb8ckmd0aczrd893i";
+      rev = "279de48be7301b1130559372d4c38a5b5e112425";
+      sha256 = "0bp8p6127wyrdi52fjk96w45wyip5c3xv9xypz0vvx8n202vvj75";
     };
     patchPhase = ''
       patchShebangs ./preprocessor.py

@@ -76,11 +76,5 @@
     "org/gnome/nautilus/preferences" = {
       default-folder-viewer = "list-view";
     };
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-      binding = "<Super>F11"; command="true"; name="nothing";
-    };
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
-      binding = "<Super>F12"; command="true"; name="nothing";
-    };
   };
 }
