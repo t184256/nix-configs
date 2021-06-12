@@ -43,9 +43,7 @@
       plus-emph-style = "#e0ffe0";
     };
   };
-  programs.gh = {
-    enable = true;
-    gitProtocol = "ssh";
-  };
+  #programs.gh = { enable = true; gitProtocol = "ssh"; };  # h-m#1654
+  home.packages = [ pkgs.gh ];
   programs.lazygit.enable = true;
 }
