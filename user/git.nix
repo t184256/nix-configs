@@ -41,6 +41,7 @@
       minus-emph-style = "#ffe0e0";
       plus-style = "#e0ffe0";
       plus-emph-style = "#e0ffe0";
+      color-only = true;
     };
   };
   #programs.gh = { enable = true; gitProtocol = "ssh"; };  # h-m#1654
