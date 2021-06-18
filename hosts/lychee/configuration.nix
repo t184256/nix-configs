@@ -87,7 +87,7 @@
         mutter = super.gnome.mutter.overrideAttrs (oa: {
           patches = oa.patches ++ [
             (pkgs.fetchpatch {
-              url = "https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/1846.patch";
+              url = "https://gitlab.gnome.org/simonraindrum/mutter/-/commit/74ff3dc31a495dfea655e9591cf3cd3e4536eb6c.patch";
               sha256 = "0znhipxdis7f9v8b6sk4fbn42ls8sh12wdw306jsh5xg2gzkcm80";
             })
           ];
