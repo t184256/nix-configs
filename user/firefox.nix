@@ -30,6 +30,7 @@
           "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";
           "extensions.formautofill.creditCards.available" = false;
           "extensions.formautofill.creditCards.enabled" = false;
+          "gfx.webrender.all" = true;
           "services.sync.engine.creditcards" = false;
           "services.sync.engine.creditcards.available" = false;
           "services.sync.engine.passwords" = false;
