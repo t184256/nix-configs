@@ -9,5 +9,6 @@
     transmission-remote-gtk
     giara
     kodi-wayland
+    moonlight-qt
   ]);
 }
