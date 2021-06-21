@@ -33,7 +33,7 @@ in
   home.packages = [ my-xonsh ];
 
   programs.direnv.enable = true;
-  programs.direnv.enableNixDirenvIntegration = true;
+  programs.direnv.nix-direnv.enable = true;
 
   home.file.".xonshrc".text = ''
     xontrib load direnv
