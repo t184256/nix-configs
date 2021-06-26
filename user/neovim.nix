@@ -89,8 +89,6 @@ in
       name = "coc-settings.json";
       text = (builtins.toJSON cocConfig);
     };
-  xdg.configFile."TabNine/tabnine_config.json".source =
-    builtins.toFile "tabnine_config.json" (builtins.toJSON tabNineConfig);
   programs.neovim = {
     enable = true;
 
@@ -165,7 +163,6 @@ in
       coc-diagnostic
       coc-highlight  # nice coloring for colors
       coc-snippets
-      coc-tabnine  # universal autocompleter
 
       coc-markdownlint
       coc-json
