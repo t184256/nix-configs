@@ -30,14 +30,16 @@ in {
         epiphany
         geary
       ];
-      systemPackages = with pkgs.gnomeExtensions; [
+      systemPackages = (with pkgs; [
+        wl-clipboard
+      ]) ++ (with pkgs.gnomeExtensions; [
         gsconnect
         autohide-battery
         just-perfection
         quake-mode
         unite
         syncthing-indicator
-      ];
+      ]);
     };
 
     services.gnome.gnome-initial-setup.enable = false;
