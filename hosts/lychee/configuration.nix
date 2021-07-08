@@ -39,6 +39,7 @@
   hardware.pulseaudio.enable = true;
 
   environment.systemPackages = with pkgs; [
+    inputs.deploy-rs.defaultPackage.${pkgs.system}
     firefox-wayland
     alacritty
   ];

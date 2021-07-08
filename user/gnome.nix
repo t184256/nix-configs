@@ -3,7 +3,9 @@
 {
   imports = [ ./config/no-graphics.nix ];
 
-  home.packages = [ pkgs.moka-icon-theme ];
+  home.packages = if config.system.noGraphics then [
+    pkgs.moka-icon-theme
+  ] else [];
 
   dconf.settings = if config.system.noGraphics then {} else {
     "org/gnome/shell" = {

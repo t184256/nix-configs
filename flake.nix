@@ -10,6 +10,9 @@
     home-manager.url = "github:nix-community/home-manager/release-21.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+    deploy-rs.url = "github:serokell/deploy-rs";
+    deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
+
     alacritty-autoresizing = {
       url = "github:t184256/alacritty-autoresizing";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -21,6 +24,7 @@
     nixpkgs,
     nixos-hardware,
     home-manager,
+    deploy-rs,
     alacritty-autoresizing,
     ...
   }@inputs:
@@ -50,7 +54,21 @@
     nixosConfigurations = {
       flaky = mkSystem "x86_64-linux" ./hosts/flaky/configuration.nix;
       lychee = mkSystem "x86_64-linux" ./hosts/lychee/configuration.nix;
+      duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
     };
+
+    deploy.nodes.duckweed = {
+      hostname = "duckweed.unboiled.info";
+      profiles.system = {
+        sshUser = "monk"; user = "root"; hostname = "duckweed.unboiled.info";
+        path = deploy-rs.lib.x86_64-linux.activate.nixos
+               self.nixosConfigurations.duckweed;
+      };
+    };
+    checks = builtins.mapAttrs
+             (system: deployLib: deployLib.deployChecks self.deploy)
+             deploy-rs.lib;
+
     nixosModules = {
       nixos = autoimport.asAttrs ./nixos;
     };
