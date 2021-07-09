@@ -15,6 +15,8 @@
   };
   boot.kernelParams = [ "console=ttyS0" ];
 
+  nix.autoOptimiseStore = true;  # it's tight on disk space
+
   users.users.monk = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
