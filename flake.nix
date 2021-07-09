@@ -60,7 +60,7 @@
     deploy.nodes.duckweed = {
       hostname = "duckweed.unboiled.info";
       profiles.system = {
-        sshUser = "monk"; user = "root"; hostname = "duckweed.unboiled.info";
+        sshUser = "root"; user = "root"; hostname = "duckweed.unboiled.info";
         path = deploy-rs.lib.x86_64-linux.activate.nixos
                self.nixosConfigurations.duckweed;
       };
