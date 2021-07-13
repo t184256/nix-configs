@@ -8,7 +8,7 @@
   ];
 
 
-  boot.kernelPackages = pkgs.linuxPackages_5_13;
+  boot.kernelPackages = pkgs.linuxPackages_5_12;  # 5.13 breaks temp sensor
   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.configurationLimit = 3;  # small /boot
   boot.loader.efi.canTouchEfiVariables = true;
