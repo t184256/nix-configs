@@ -8,5 +8,7 @@
     strace ltrace
     wget curl
     vis  # as an emergency text editor
+    mtr
+    gnutar gzip bzip2 xz lz4 p7zip
   ];
 }
