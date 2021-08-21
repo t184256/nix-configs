@@ -8,7 +8,7 @@
     dino
     transmission-remote-gtk
     giara
-    kodi-wayland
+    kodi-wayland kodi-cli
     moonlight-qt
   ]);
 }
