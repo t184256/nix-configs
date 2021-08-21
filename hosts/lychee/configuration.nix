@@ -44,6 +44,7 @@
     desktop.enable = true;
     physical.enable = true;
     physical.portable = true;
+    yubikey.enable = true;
   };
   home-manager.users.monk = {
     services.syncthing.enable = true;
