@@ -52,7 +52,7 @@ in
             aliases['ls'] = _ls_alias
         del _ls_alias
 
-    xontrib load direnv
+    # xontrib load direnv  # https://github.com/xonsh/xonsh/issues/4460
     xontrib load readable-traceback
   '' + (readConfigBit ./config/general.xsh)
      + (readConfigBit ./config/styling.xsh)
