@@ -36,6 +36,22 @@ in
   programs.direnv.nix-direnv.enable = true;
 
   home.file.".xonshrc".text = ''
+    if not ''${...}.get('__NIXOS_SET_ENVIRONMENT_DONE'):
+        # The NixOS environment and thereby also $PATH
+        # haven't been fully set up at this point. But
+        # `source-bash` below requires `bash` to be on $PATH,
+        # so add an entry with bash's location:
+        $PATH.add('${pkgs.bash}/bin')
+        # Stash xonsh's ls alias, so that we don't get a collision
+        # with Bash's ls alias from environment.shellAliases:
+        _ls_alias = aliases.pop('ls', None)
+        # Source the NixOS environment config.
+        source-bash /etc/profile
+        # Restore xonsh's ls alias, overriding that from Bash (if any).
+        if _ls_alias is not None:
+            aliases['ls'] = _ls_alias
+        del _ls_alias
+
     xontrib load direnv
     xontrib load readable-traceback
   '' + (readConfigBit ./config/general.xsh)

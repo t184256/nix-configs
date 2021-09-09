@@ -16,30 +16,49 @@ let
   });
 
   xonshLib = super.python3Packages.buildPythonPackage rec {
-    inherit (super.xonsh) postPatch installCheckPhase
+    inherit (super.xonsh) postPatch
                           meta shellPath;
-    propagatedBuildInputs = with super.python3Packages; [
-      ply pygments
-      ptk
-    ];
     pname = "xonsh";
-    version = "0.9.27";
+    version = "0.10.1";
     src = super.fetchFromGitHub {
       owner = "xonsh";
       repo = "xonsh";
       rev = version;
-      sha256 = "09w6bl3qsygfs2ph2r423ndnbd74bzf67vp8587h2dkkfxlzjbad";
+      sha256 = "03ahay2rl98a9k4pqkxksmj6mcg554jnbhw9jh8cyvjrygrpcpch";
     };
+    propagatedBuildInputs = with super.python3Packages; [
+      ply
+      pygments
+      ptk
+    ];
     prePatch = ''
       substituteInPlace xonsh/completers/bash_completion.py --replace \
         '{source}' \
         'PS1=x [ -r /etc/bashrc ] && source /etc/bashrc; {source}'
-      '';
-    checkInputs = with super; [
-      python3Packages.pytest
-      python3Packages.pytest-rerunfailures
-      glibcLocales
-      git
+    '';
+    preCheck = ''
+      HOME=$TMPDIR
+    '';
+    checkInputs = with super; [ glibcLocales git ] ++ (with python3Packages; [
+      pytestCheckHook pytest-subprocess pytest-rerunfailures
+    ]);
+    disabledTests = [
+      # fails on sandbox
+      "test_colorize_file"
+      "test_loading_correctly"
+      "test_no_command_path_completion"
+      # fails on non-interactive shells
+      "test_capture_always"
+      "test_casting"
+      "test_command_pipeline_capture"
+      "test_dirty_working_directory"
+      "test_man_completion"
+      "test_vc_get_branch"
+    ];
+    disabledTestPaths = [
+      # fails on non-interactive shells
+      "tests/prompt/test_gitstatus.py"
+      "tests/completers/test_bash_completer.py"
     ];
     postInstall = ''
       site_packages=$(python -c "import site; print(site.__file__.rsplit('/', 2)[-2])")
