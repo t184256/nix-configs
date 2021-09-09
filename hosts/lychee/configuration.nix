@@ -8,7 +8,7 @@
   ];
 
 
-  boot.kernelPackages = pkgs.linuxPackages_5_13;
+  boot.kernelPackages = pkgs.linuxPackages_5_14;
   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.configurationLimit = 2;  # small /boot
   boot.loader.efi.canTouchEfiVariables = true;
