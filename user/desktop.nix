@@ -10,5 +10,6 @@
     giara
     kodi-wayland kodi-cli
     moonlight-qt
+    gnome.gnome-session  # for gnome-session-inhibit
   ]);
 }
