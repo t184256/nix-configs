@@ -77,7 +77,6 @@ let
   };
 
   makeXonshWrapper = args: super.writeShellScriptBin "xonsh" ''
-    unset XONSH_COLOR_STYLE
     exec ${makeXonshEnv args}/bin/python3 -Ou -m xonsh "$@"
   '';
 
