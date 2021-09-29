@@ -24,6 +24,16 @@
   # Enable sound.
   sound.enable = true;
   hardware.pulseaudio.enable = true;
+  systemd.services.depop = {
+    wantedBy = [ "powertop.service" ];
+    after = [ "powertop.service" ];
+    description = "Cancel previous power savings";
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = "yes";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'echo 0 > /sys/module/snd_hda_intel/parameters/power_save'";
+    };
+  };
 
   environment.systemPackages = with pkgs; [
     inputs.deploy-rs.defaultPackage.${pkgs.system}
