@@ -10,7 +10,8 @@
     home-manager.url = "github:nix-community/home-manager/release-21.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    deploy-rs.url = "github:serokell/deploy-rs";
+    # unpin when updating past 21.05
+    deploy-rs.url = "github:serokell/deploy-rs/e5546f9c2503c26d175f08a81fc0a0f330be4cbe";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
 
     alacritty-autoresizing = {
