@@ -60,6 +60,23 @@
     services.syncthing.enable = true;
   };
 
+  # unplug Yubikey = lock screen
+  services.udev.extraRules =
+    let
+      script = pkgs.writeScript "usb-script" ''
+        uid=$(id -u monk)
+        export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus
+        ${pkgs.su}/bin/su monk -c 'dbus-send --session --type=method_call \
+                                             --dest=org.gnome.ScreenSaver \
+                                             /org/gnome/ScreenSaver \
+                                             org.gnome.ScreenSaver.Lock'
+      '';
+    in
+      ''
+        SUBSYSTEM=="usb", ACTION=="remove", ENV{PRODUCT}=="1050/404/543", \
+          RUN+="${pkgs.bash}/bin/bash ${script}"
+      '';
+
   system.stateVersion = "21.05";
   home-manager.users.monk.home.stateVersion = "21.05";
 
