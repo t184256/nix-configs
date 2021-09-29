@@ -5,6 +5,7 @@
     pv
     fd
     ripgrep
+    tokei
     hyperfine
   ];
 }
