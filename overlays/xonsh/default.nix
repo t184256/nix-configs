@@ -36,6 +36,10 @@ let
         '{source}' \
         'PS1=x [ -r /etc/bashrc ] && source /etc/bashrc; {source}'
     '';
+    patches = [
+      ./style-separator.patch
+      ./hide-branch.patch
+    ];
     preCheck = ''
       HOME=$TMPDIR
     '';
