@@ -14,7 +14,8 @@ self: super:
     };
 
     vim-undofile-warn = super.pkgs.vimUtils.buildVimPluginFrom2Nix {
-      name = "undofile-warn";
+      pname = "undofile-warn";
+      version = "1.3";
       src = super.fetchFromGitHub {
         owner = "Carpetsmoker";
         repo = "undofile_warn.vim";
