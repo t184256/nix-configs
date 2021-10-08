@@ -1,5 +1,22 @@
 { config, pkgs, ... }:
 
+let
+  git-t = (pkgs.writeShellScriptBin "git-t" ''
+    set -ueo pipefail
+    refs=""; opts=""; ((c=0))||true
+    for arg in $@; do
+      if [[ $arg == -* ]]; then
+        opts+=" $arg"
+      else
+        refs+=" $arg"
+        ((c++))||true
+      fi
+    done
+    (( $c == 0 )) && exec git log --oneline --graph $opts --all
+    (( $c == 1 )) && refs="HEAD $refs"
+    exec git log --oneline --graph $opts $refs --not $(git merge-base $refs)^
+  '');
+in
 {
   programs.git = {
     enable = true;
@@ -45,6 +62,16 @@
     };
   };
   #programs.gh = { enable = true; gitProtocol = "ssh"; };  # h-m#1654
-  home.packages = [ pkgs.gh ];
   programs.lazygit.enable = true;
+
+  home.packages = [
+    pkgs.gh
+
+    git-t
+    (pkgs.writeShellScriptBin "git-v" ''
+      (( $# == 0 )) && \
+        exec ${git-t}/bin/git-t --ancestry-path "$@" HEAD origin/HEAD
+      exec ${git-t}/bin/git-t --ancestry-path "$@"
+    '')
+  ];
 }
