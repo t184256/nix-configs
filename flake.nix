@@ -2,16 +2,15 @@
   description = "t184256's personal configuration files";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.05";
+    nixpkgs.url = "github:t184256/nixpkgs/rebased-gnome-41";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
 
-    home-manager.url = "github:nix-community/home-manager/release-21.05";
+    home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    # unpin when updating past 21.05
-    deploy-rs.url = "github:serokell/deploy-rs/e5546f9c2503c26d175f08a81fc0a0f330be4cbe";
+    deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
 
     alacritty-autoresizing = {

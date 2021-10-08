@@ -11,21 +11,32 @@ self: super:
         # TODO: try something closer to Ubuntu Mono style?
         inherits = "ss20";  # default to curly style
         design = {
-          a = "single-storey-earless-corner";
+          a = "single-storey-earless-corner-serifless";
           b = "toothless-corner";
-          d = "toothless-corner";
-          g = "single-storey";
+          d = "toothless-corner-serifless";
+          f = "flat-hook";
+          g = "single-storey-earless-corner-flat-hook";
           i = "zshaped";
-          j = "serifed";
-          k = "curly";
+          j = "flat-hook-serifed";
+          k = "curly-serifless";
           l = "zshaped";
+          m = "earless-corner-double-arch";
+          n = "earless-corner-straight";
           p = "earless-corner";
           q = "earless-corner";
+          r = "earless-corner";
+          t = "flat-hook";
           u = "toothless-corner";
-          asterisk = "low";
+          v = "curly";
+          w = "curly";
+          x = "curly-serifless";
+          y = "curly";
+          z = "curly-serifless";
+          asterisk = "penta-low";
           brace = "straight";
           dollar = "open";
           percent = "dots";
+          # TODO: capitals, cyrillics, digits...
         };
         # TODO: italic
       };

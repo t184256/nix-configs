@@ -5,13 +5,13 @@ let
                                ((import ../../.autoimport).asAttrs ./xontribs);
 
   # avoids https://github.com/xonsh/xonsh/issues/3810
-  ptk = super.python3Packages.prompt_toolkit.overridePythonAttrs (o: rec {
-    version = "3.0.4";
+  ptk = super.python3Packages.prompt_toolkit.overridePythonAttrs (_: rec {
+    version = "3.0.20+";
     src = super.fetchFromGitHub {
-      owner = "prompt-toolkit";
+      owner = "t184256";
       repo = "python-prompt-toolkit";
-      rev = version;
-      sha256 = "040lcqha16rsddiymlrjx32p92rra27zal78gv8v9pqg1xky18vy";
+      rev = "03f43de881c96419748a1dd1e690fed9f826fe64";
+      sha256 = "0hiym1ydyp6mk97qxibqb0qkyp5rilyzn1a82abp64aihyyl11hp";
     };
   });
 
@@ -30,6 +30,7 @@ let
       ply
       pygments
       ptk
+      pyte
     ];
     prePatch = ''
       substituteInPlace xonsh/completers/bash_completion.py --replace \
@@ -38,7 +39,7 @@ let
     '';
     patches = [
       ./style-separator.patch
-      ./hide-branch.patch
+      #./hide-branch.patch
     ];
     preCheck = ''
       HOME=$TMPDIR
@@ -72,7 +73,6 @@ let
       install -D -m644 xonsh/history/__amalgam__.py $xonsh/history/
       install -D -m644 xonsh/prompt/__amalgam__.py $xonsh/prompt/
       python -m compileall --invalidation-mode unchecked-hash $xonsh
-      python -O -m compileall --invalidation-mode unchecked-hash $xonsh
     '';
   };
 
@@ -81,7 +81,7 @@ let
   };
 
   makeXonshWrapper = args: super.writeShellScriptBin "xonsh" ''
-    exec ${makeXonshEnv args}/bin/python3 -Ou -m xonsh "$@"
+    exec ${makeXonshEnv args}/bin/python3 -u -m xonsh "$@"
   '';
 
   makeCustomizableXonsh = args:
