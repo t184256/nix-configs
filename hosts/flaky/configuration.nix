@@ -34,5 +34,5 @@
   home-manager.users.monk.language-support = [ "nix" "python" "bash" ];
 
   system.role.buildserver.enable = true;
-  system.role.buildserver.aarch64.enable = true;
+  #system.role.buildserver.aarch64.enable = true;
 }

@@ -49,13 +49,16 @@
         inherit system specialArgs;
         modules = [ hostcfg ] ++ common_modules;
       };
-  in
-  {
     nixosConfigurations = {
       flaky = mkSystem "x86_64-linux" ./hosts/flaky/configuration.nix;
       lychee = mkSystem "x86_64-linux" ./hosts/lychee/configuration.nix;
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
     };
+  in
+  {
+    inherit nixosConfigurations;
+    hydraJobs = builtins.mapAttrs (_: v: v.config.system.build.toplevel)
+                                  nixosConfigurations;
 
     deploy.nodes.duckweed = {
       hostname = "duckweed.unboiled.info";
