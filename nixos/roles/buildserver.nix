@@ -29,7 +29,7 @@ in {
   config = mkMerge [
     (mkIf cfg.enable {
       nix.extraOptions = ''
-        trusted-users = monk
+        trusted-users = monk hydra-queue-runner
         keep-derivations = true
         keep-outputs = true
       '';
