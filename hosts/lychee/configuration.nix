@@ -36,7 +36,7 @@
   };
 
   environment.systemPackages = with pkgs; [
-    inputs.deploy-rs.defaultPackage.${pkgs.system}
+    inputs.deploy-rs.defaultPackage.${pkgs.system} hydra-cli
     firefox-wayland
     alacritty
   ];
