@@ -42,33 +42,14 @@
 
   system.role.buildserver.enable = true;
   system.role.buildserver.aarch64.enable = true;
-
-  services.hydra = {
-    enable = true;
-    hydraURL = "https://hydra.unboiled.info";
-    notificationSender = "hydra@localhost";
-    useSubstitutes = true;
-    port = 3000;
-    #debugServer = true;
-    #extraConfig = ''
-    #  #store_uri = file:///nix/store?secret-key=/var/secrets/nix-cache-priv-key.pem
-    #  binary_cache_secret_key_file = /var/secrets/nix-cache-priv-key.pem
-    #  binary_cache_dir = /nix/store
-    #'';
-  };
-  services.nix-serve = {
-    enable = true;
-    secretKeyFile = "/var/secrets/nix-cache-priv-key.pem";
-  };
-  networking.firewall.allowedTCPPorts = [ 3000 5000 ];
-  nix.buildMachines = [
-    {
-      hostName = "localhost";
-      system = "x86_64-linux";
-      supportedFeatures = ["kvm" "nixos-test" "big-parallel" "benchmark"];
-      maxJobs = 2;
-    }
-  ];
-  nix.buildCores = 2;
-  boot.tmpOnTmpfs = false;
+  system.role.buildserver.hydra.enable = true;
+  system.role.buildserver.nix-serve.enable = true;
+  nix.buildMachines = [ {
+    hostName = "localhost";
+    system = "x86_64-linux";
+    supportedFeatures = ["kvm" "nixos-test" "big-parallel" "benchmark"];
+    maxJobs = 2;
+  } ];
+  nix.buildCores = 2;  # we're not in a hurry, and this way we don't swap much
+  boot.tmpOnTmpfs = false;  # large builds are, well, large =(
 }
