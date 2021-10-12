@@ -66,16 +66,18 @@
         export PATH=${pkgs.git}/bin:${pkgs.nixFlakes}/bin:$PATH
         WD=/var/lib/autoupdate; mkdir -p $WD
         NEW=$WD/.new-t184256-nix-configs
+        FRZ=$WD/.frz-t184256-nix-configs
         OLD=$WD/.old-t184256-nix-configs
         LNK=$WD/t184256-nix-configs
         export GIT_AUTHOR_NAME="Auto Update"
         export GIT_AUTHOR_EMAIL="flake-autoupdate.service@flaky"
         export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
         export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
-        [[ -e $NEW ]] && rm -r $NEW
-        [[ -e $OLD ]] && ln -sfn $OLD $LNK
+        [[ -e $NEW ]] && rm -rf $NEW
+        [[ -e $OLD ]] && { cp -r $OLD $FRZ; ln -sfn $FRZ $LNK; }
         ${pkgs.git}/bin/git clone https://github.com/t184256/nix-configs $NEW \
-                                  --reference-if-able $OLD
+                                  --reference-if-able $OLD --dissociate
+        rm -rf $OLD
         pushd $NEW
           for branch in main staging; do
             git checkout $branch
@@ -90,10 +92,7 @@
             fi
           done
         popd
-        ln -sfn $NEW $LNK
-        [[ -e $OLD ]] && rm -rf $OLD
-        cp -r $NEW $OLD
-        ln -sfn $OLD $LNK
+        mv $NEW $OLD; ln -sfn $OLD $LNK; rm -rf $FRZ $NEW
       '';
     };
   };
