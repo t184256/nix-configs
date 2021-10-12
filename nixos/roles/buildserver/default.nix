@@ -66,6 +66,9 @@ in {
         notificationSender = "hydra@localhost";
         useSubstitutes = true;
         port = 3000;
+        package = pkgs.hydra-unstable.overrideAttrs (oa: {
+          patches = oa.patches ++ [ ./hydra-336.patch ];
+        });
         #debugServer = true;
         #extraConfig = ''
         #  #store_uri = file:///nix/store?secret-key=/var/secrets/nix-cache-priv-key.pem
