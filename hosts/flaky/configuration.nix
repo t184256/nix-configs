@@ -52,4 +52,49 @@
   } ];
   nix.buildCores = 2;  # we're not in a hurry, and this way we don't swap much
   boot.tmpOnTmpfs = false;  # large builds are, well, large =(
+
+  systemd = {
+    timers.flake-autoupdate = {
+      wantedBy = [ "timers.target" ];
+      partOf = [ "flake-autoupdate.service" ];
+      timerConfig.OnCalendar = "*:08/10";  # once in 10 minutes, offset by 8
+    };
+    services.flake-autoupdate = {
+      serviceConfig.Type = "oneshot";
+      script = ''
+        set -uexo pipefail
+        export PATH=${pkgs.git}/bin:${pkgs.nixFlakes}/bin:$PATH
+        WD=/var/lib/autoupdate; mkdir -p $WD
+        NEW=$WD/.new-t184256-nix-configs
+        OLD=$WD/.old-t184256-nix-configs
+        LNK=$WD/t184256-nix-configs
+        export GIT_AUTHOR_NAME="Auto Update"
+        export GIT_AUTHOR_EMAIL="flake-autoupdate.service@flaky"
+        export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+        export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+        [[ -e $NEW ]] && rm -r $NEW
+        [[ -e $OLD ]] && ln -sfn $OLD $LNK
+        ${pkgs.git}/bin/git clone https://github.com/t184256/nix-configs $NEW \
+                                  --reference-if-able $OLD
+        pushd $NEW
+          for branch in main staging; do
+            git checkout $branch
+            git checkout -b $branch-autoupdate
+            time=$(date +%FT%T)
+            nix flake update
+            if [[ -n "$(git status --porcelain)" ]]; then
+              git add flake.lock
+              git commit -m "AUTOUPDATE $branch $time"
+            else
+              echo "no updates found for $branch $time"
+            fi
+          done
+        popd
+        ln -sfn $NEW $LNK
+        [[ -e $OLD ]] && rm -rf $OLD
+        cp -r $NEW $OLD
+        ln -sfn $OLD $LNK
+      '';
+    };
+  };
 }
