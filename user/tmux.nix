@@ -76,6 +76,7 @@
     case $TO in
       -)      TO=$LOCAL-;     METHOD=shell ;;
       $LOCAL) TO=$LOCAL;      METHOD=attach ;;
+      fl*)    TO=flaky;       METHOD=ssh ;;
       f*)     TO=fig;         METHOD=mosh ;;
       m*)     TO=mango;       METHOD=mosh ;;
       d*)     TO=duckweed;    METHOD=mosh ;;
