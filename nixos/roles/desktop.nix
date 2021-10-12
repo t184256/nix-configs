@@ -39,6 +39,7 @@ in {
         quake-mode
         unite
         syncthing-indicator
+        sound-output-device-chooser
       ]);
     };
 
