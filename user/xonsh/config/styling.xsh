@@ -117,12 +117,6 @@ del orange, pink, fuchsia
 
 $DYNAMIC_CWD_ELISION_CHAR = '…'
 
-$XONSH_STYLE_OVERRIDES = {
-  'completion-menu': 'bg:black ansibrightblack',
-  'completion-menu.completion': 'ansibrightblack',
-  'completion-menu.completion.current': 'bg:ansibrightblack grey',
-}
-
 #$XONSH_GITSTATUS_HASH = ':'
 $XONSH_GITSTATUS_BRANCH = '{#555}'
 $XONSH_GITSTATUS_OPERATION = '{#fff}'
