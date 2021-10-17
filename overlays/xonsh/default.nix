@@ -19,12 +19,12 @@ let
     inherit (super.xonsh) postPatch
                           meta shellPath;
     pname = "xonsh";
-    version = "0.10.1";
+    version = "0.10.1+";
     src = super.fetchFromGitHub {
       owner = "xonsh";
       repo = "xonsh";
-      rev = version;
-      sha256 = "03ahay2rl98a9k4pqkxksmj6mcg554jnbhw9jh8cyvjrygrpcpch";
+      rev = "e762dc57ab9e195f90a4600d4fe547df0bc09b46";
+      sha256 = "1617dq4h7rfkh44mhiy418jk22j3cbq9lp44zl6fjcivn99bpp03";
     };
     propagatedBuildInputs = with super.python3Packages; [
       ply
@@ -37,15 +37,11 @@ let
         '{source}' \
         'PS1=x [ -r /etc/bashrc ] && source /etc/bashrc; {source}'
     '';
-    patches = [
-      ./style-separator.patch
-      #./hide-branch.patch
-    ];
     preCheck = ''
       HOME=$TMPDIR
     '';
     checkInputs = with super; [ glibcLocales git ] ++ (with python3Packages; [
-      pytestCheckHook pytest-subprocess pytest-rerunfailures
+      pytestCheckHook pytest-subprocess pytest-rerunfailures pytest-mock
     ]);
     disabledTests = [
       # fails on sandbox
