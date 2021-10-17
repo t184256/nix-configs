@@ -10,7 +10,7 @@
     narinfo-cache-negative-ttl = 300
     narinfo-cache-positive-ttl = 7200
     log-lines = 20
-    cores = 0
-    max-jobs = auto
   '';
+  nix.daemonIONiceLevel = 4;
+  nix.daemonNiceLevel = 10;
 }
