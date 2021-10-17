@@ -18,6 +18,7 @@
       disable-user-extensions = false;
       enabled-extensions = [
         "autohide-battery@sitnik.ru"
+        "autohide-volume@unboiled.info"
         "gsconnect@andyholmes.github.io"
         "just-perfection-desktop@just-perfection"
         "syncthing@gnome.2nv2u.com"
