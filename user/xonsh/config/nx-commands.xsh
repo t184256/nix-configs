@@ -2,11 +2,11 @@
 # TODO: combinations
 
 def _in_tmpdir(*cmd):
-    def _nxt(*extra_args):
+    def _nxt(extra_args):
         TMP_DIR = $(mktemp -d).rstrip()
         pushd -q @(TMP_DIR)
 	try:
-		@(cmd + extra_args)
+		@(cmd + tuple(extra_args))
 	finally:
 		rm -f result
 		popd -q
