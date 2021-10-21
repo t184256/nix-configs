@@ -4,6 +4,45 @@ let
   withLang = lang: builtins.elem lang config.language-support;
 
   cocConfig = {
+    # work laptop:
+    #"codelens.enable": true,
+    #"coc.preferences.noselect": false,
+    #"diagnostic.enableMessage": "jump",
+    #"diagnostic.refreshMode": true,
+    #"diagnostic.virtualText": true,
+    #"diagnostic.errorSign": ">",
+    #"diagnostic.warningSign": ">",
+    #"python.flake8Enabled": true,
+    #"python.jediEnabled": false,
+    #"python.linting.enabled": true,
+    #"python.pylintEnabled": false,
+    #"suggest.acceptSuggestionOnCommitCharacter": true,
+    #"suggest.autoTrigger": "trigger",
+
+    #"coc.preferences.formatOnType": false,
+    #"coc.preferences.useQuickfixForLocations": false,
+    #"coc.yank.highlight.duration": 100,
+
+    #"languageserver.bash": {
+    #  "command": "bash-language-server",
+    #  "args": ["start"],
+    #  "filetypes": ["sh"],
+    #  "ignoredRootPaths": ["~"]
+    #},
+
+    #"diagnostic-languageserver.filetypes": {
+    #  "sh": "shellcheck"
+    #},
+    #"diagnostic-languageserver.linters.shellcheck": {
+    #  "sourceName": "shellcheck", "command": "shellcheck",
+    #  "args": [ "--format=gcc", "-x", "-"],
+    #  "debounce": 100,
+    #  "offsetLine": 0, "offsetColumn": 0, "formatLines": 1,
+    #  "formatPattern": ["^[^:]+:(\\d+):(\\d+):\\s+([^:]+):\\s+(.*)$",
+    #                    {"line": 1, "column": 2, "message": 4, "security": 3}],
+    #  "securities": { "error": "error", "warning": "warning", "note": "info" }
+    #}
+
     "diagnostic.enableMessage" = "always";  # always, jump, never
     "diagnostic.messageDelay" = 50;
     "diagnostic.level" = "hint";
