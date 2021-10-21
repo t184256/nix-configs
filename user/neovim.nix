@@ -272,6 +272,7 @@ in
       endfunction
       let &titlestring = "vi > %y %t%H%R > %P/%LL %-13.(%l:%c%V %{NiceMode()}%)"
       autocmd InsertLeave * echo ""
+      set titlelen=200
     '';
 
     viAlias = true;
