@@ -23,7 +23,7 @@ let
 
     # Gotta love GNOME 40. What do they smoke, huh?
     # lack of server-side decorations, mouse never reappearing...
-    mouse.hide_when_typing = true;  # broken
+    mouse.hide_when_typing = false;  # broken
     window.decorations = "none";  # CSD is unusable with touch or stylus anyway
     window.startup_mode = "maximized";
     gtk_theme_variant = "dark";
