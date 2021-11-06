@@ -35,6 +35,7 @@ in {
       ]) ++ (with pkgs.gnomeExtensions; [
         gsconnect
         autohide-battery
+        autohide-volume
         just-perfection
         quake-mode
         unite
