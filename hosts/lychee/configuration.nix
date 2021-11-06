@@ -13,7 +13,7 @@
   boot.loader.systemd-boot.configurationLimit = 2;  # small /boot
   boot.loader.efi.canTouchEfiVariables = true;
 
-  zramSwap = { enable = true; memoryPercent = 25; };
+  #zramSwap = { enable = true; memoryPercent = 25; };
 
   networking.hostName = "lychee"; # Define your hostname.
   networking.networkmanager.enable = true;
