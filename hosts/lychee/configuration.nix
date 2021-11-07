@@ -39,7 +39,10 @@
     inputs.deploy-rs.defaultPackage.${pkgs.system} hydra-cli
     firefox-wayland
     alacritty
+    config.boot.kernelPackages.bpftrace
   ];
+  programs.bcc.enable = true;
+
   services.openssh.enable = true;
 
   # networking.firewall.allowedTCPPorts = [ ... ];
