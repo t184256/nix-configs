@@ -11,6 +11,7 @@
     narinfo-cache-positive-ttl = 7200
     log-lines = 20
   '';
-  nix.daemonIONiceLevel = 4;
-  nix.daemonNiceLevel = 10;
+  nix.daemonCPUSchedPolicy = "batch";
+  nix.daemonIOSchedClass = "idle";
+  nix.daemonIOSchedPriority = -1;
 }
