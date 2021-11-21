@@ -78,7 +78,11 @@ in {
       };
       networking.firewall.allowedTCPPorts = [ 3000 ];
     })
+
     (mkIf cfg.nix-serve.enable {
+      nixpkgs.overlays = [ (_: super: {
+        nix-serve = super.nix-serve.override { nix = super.nix_2_3; };
+      } ) ];
       services.nix-serve = {
         enable = true;
         secretKeyFile = "/var/secrets/nix-cache-priv-key.pem";
