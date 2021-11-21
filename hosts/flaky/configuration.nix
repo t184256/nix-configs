@@ -48,7 +48,7 @@
     hostName = "localhost";
     system = "x86_64-linux";
     supportedFeatures = ["kvm" "nixos-test" "big-parallel" "benchmark"];
-    maxJobs = 2;
+    maxJobs = 1;
   } ];
   nix.buildCores = 2;  # we're not in a hurry, and this way we don't swap much
   boot.tmpOnTmpfs = false;  # large builds are, well, large =(
