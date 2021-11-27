@@ -19,12 +19,12 @@ let
     inherit (super.xonsh) postPatch
                           meta shellPath;
     pname = "xonsh";
-    version = "0.10.1+";
+    version = "0.11.0";
     src = super.fetchFromGitHub {
       owner = "xonsh";
       repo = "xonsh";
-      rev = "e762dc57ab9e195f90a4600d4fe547df0bc09b46";
-      sha256 = "1617dq4h7rfkh44mhiy418jk22j3cbq9lp44zl6fjcivn99bpp03";
+      rev = "337cf25a40e18e95050e812a1d1b7ac8bf6f3335";
+      sha256 = "sha256-jfxQMEVABTOhx679V0iGVX9RisuY42lSdztYXMLwdcw=";
     };
     propagatedBuildInputs = with super.python3Packages; [
       ply
