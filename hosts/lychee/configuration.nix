@@ -13,6 +13,10 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  hardware.cpu.intel.updateMicrocode = true;
+  hardware.opengl.extraPackages = [ pkgs.intel-media-driver ];
+  hardware.wirelessRegulatoryDatabase = true;
+
   zramSwap = { enable = true; memoryPercent = 25; };
 
   networking.hostName = "lychee"; # Define your hostname.
