@@ -4,6 +4,9 @@
   imports = [ config/no-graphics.nix ];
 
   programs.password-store.enable = true;
+  programs.password-store.package = if config.system.noGraphics
+    then pkgs.pass.override { x11Support = false; }
+    else pkgs.pass-wayland;
 
   services.gpg-agent = {
     enable = true;
