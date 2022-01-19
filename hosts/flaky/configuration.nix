@@ -52,6 +52,8 @@
   } ];
   nix.buildCores = 2;  # we're not in a hurry, and this way we don't swap much
   boot.tmpOnTmpfs = false;  # large builds are, well, large =(
+  nix.gc.automatic = true;
+  nix.autoOptimiseStore = true;
 
   systemd = {
     timers.flake-autoupdate = {
