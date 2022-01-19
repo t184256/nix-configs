@@ -10,6 +10,13 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+    nix.url = "github:NixOS/nix";
+    nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    hydra.url = "github:thufschmitt/hydra/nix-ca";
+    hydra.inputs.nixpkgs.follows = "nixpkgs";
+    hydra.inputs.nix.follows = "nix";
+
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -24,6 +31,7 @@
     nixpkgs,
     nixos-hardware,
     home-manager,
+    hydra,
     deploy-rs,
     alacritty-autoresizing,
     ...

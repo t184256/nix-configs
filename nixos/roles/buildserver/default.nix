@@ -1,9 +1,16 @@
-{ lib, pkgs, config, ... }:
+{ lib, pkgs, config, inputs, ... }:
 
 with lib;
 
 let
   cfg = config.system.role.buildserver;
+  hydraPkg = inputs.hydra.defaultPackage.${pkgs.system}.overrideAttrs (_: {
+    patches = [
+      ./hydra-336.patch
+      ./hydra-feature-check.patch
+    ];
+    doCheck = false;
+  });
 in {
   options = {
     system.role.buildserver.enable = mkOption {
@@ -66,9 +73,7 @@ in {
         notificationSender = "hydra@localhost";
         useSubstitutes = true;
         port = 3000;
-        package = pkgs.hydra-unstable.overrideAttrs (oa: {
-          patches = oa.patches ++ [ ./hydra-336.patch ];
-        });
+        package = hydraPkg;
         #debugServer = true;
         #extraConfig = ''
         #  #store_uri = file:///nix/store?secret-key=/var/secrets/nix-cache-priv-key.pem
