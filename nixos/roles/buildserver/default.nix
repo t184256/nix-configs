@@ -7,7 +7,6 @@ let
   hydraPkg = inputs.hydra.defaultPackage.${pkgs.system}.overrideAttrs (_: {
     patches = [
       ./hydra-336.patch
-      ./hydra-feature-check.patch
     ];
     doCheck = false;
   });
