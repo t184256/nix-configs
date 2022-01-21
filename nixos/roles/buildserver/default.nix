@@ -6,7 +6,7 @@ let
   cfg = config.system.role.buildserver;
   hydraPkg = inputs.hydra.defaultPackage.${pkgs.system}.overrideAttrs (_: {
     patches = [
-      ./hydra-336.patch
+      ./hydra-366.patch
     ];
     doCheck = false;
   });
