@@ -5,6 +5,7 @@
 
   # Random assortment of GUI tools
   home.packages = lib.mkIf (! config.system.noGraphics) (with pkgs; [
+    meld
     dino
     transmission-remote-gtk
     giara
