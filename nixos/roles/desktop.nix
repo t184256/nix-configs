@@ -36,10 +36,12 @@ in {
         gsconnect
         autohide-battery
         autohide-volume
+        focus-changer
+        noannoyance
         just-perfection
         quake-mode
-        unite
         syncthing-indicator
+        unite
         sound-output-device-chooser
       ]);
     };

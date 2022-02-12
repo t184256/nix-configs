@@ -19,8 +19,10 @@
       enabled-extensions = [
         "autohide-battery@sitnik.ru"
         "autohide-volume@unboiled.info"
+        "focus-changer@heartmire"
         "gsconnect@andyholmes.github.io"
         "just-perfection-desktop@just-perfection"
+        "noannoyance@daase.net"
         "syncthing@gnome.2nv2u.com"
         "unite@hardpixel.eu"
       ];
