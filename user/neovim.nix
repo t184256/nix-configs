@@ -43,13 +43,15 @@ let
     #  "securities": { "error": "error", "warning": "warning", "note": "info" }
     #}
 
+    "codeLens.enable" = true;
+    "codeLens.position" = "right_align";
     "diagnostic.enableMessage" = "always";  # always, jump, never
     "diagnostic.messageDelay" = 50;
     "diagnostic.level" = "hint";
     "diagnostic.refreshOnInsertMode" = true;
     "diagnostic.virtualText" = true;
     "diagnostic.virtualTextCurrentLineOnly" = false;
-    #"coc.preferences.hoverTarget" = "echo";
+    #"hover.target" = "echo";
     "signature.target" = "echo";
     "diagnostic.messageTarget" = "echo";
     #suggest.acceptSuggestionOnCommitCharacter = true;
@@ -96,6 +98,11 @@ let
       (if (! withLang "nix") then {} else { nix = {
         command = "rnix-lsp";
         filetypes = ["nix"];
+      };}) //
+      (if (! withLang "haskell") then {} else { haskell = {
+        command = "haskell-language-server-wrapper";
+        args = [ "--lsp" ];
+        filetypes = [ "haskell" "lhaskell" ];
       };});
     diagnostic-languageserver.mergeConfig = true;
     # https://github.com/iamcco/coc-diagnostic/issues/61
@@ -146,6 +153,10 @@ in
       nix-linter
       nixfmt
       rnix-lsp
+    ] ++ lib.optionals (withLang "haskell") [
+      ghc
+      haskell-language-server
+      haskellPackages.hls-eval-plugin
     ] ++ lib.optionals (withLang "python") (with python3Packages; [
     ]);
 
@@ -184,7 +195,9 @@ in
               call CocAction('doHover')
             endif
           endfunction
-          nnoremap <silent> <C-K> call CocAction('showSignatureHelp')<CR>
+          xmap <silent><C-K> <Plug>(coc-codelens-action)
+          nmap <silent><C-K> <Plug>(coc-codelens-action)
+          "nnoremap <silent> <C-M> :call CocActionAsync('doHover')<CR>
           nnoremap <silent> <C-Space> :CocList commands<CR>
           au CursorHoldI call CocActionAsync('showSignatureHelp')
           au User CocJumpPlaceholder call

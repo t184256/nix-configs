@@ -9,6 +9,7 @@
       "bash"
       "tex"
       "c"
+      "haskell"
     ]);
     description = ''
       Which languages to install additional tools for.

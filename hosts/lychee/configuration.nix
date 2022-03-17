@@ -87,6 +87,10 @@
   system.stateVersion = "21.05";
   home-manager.users.monk.home.stateVersion = "21.05";
 
+  home-manager.users.monk.language-support = [
+    "nix" "bash" "haskell"
+  ];
+
   # currently manual:
   # * touchpad speed bump in GNOME
   # * screen locking in GNOME
