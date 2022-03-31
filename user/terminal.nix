@@ -65,7 +65,7 @@ in
       Categories=TerminalEmulator;
       Exec=term-hopper
       GenericName=Console
-      Icon=org.gnome.Terminal
+      Icon=org.gnome.Console
       Name=Console
       Terminal=false
       Type=Application
