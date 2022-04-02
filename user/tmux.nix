@@ -80,6 +80,7 @@
       f*)     TO=fig;         METHOD=mosh ;;
       m*)     TO=mango;       METHOD=mosh ;;
       d*)     TO=duckweed;    METHOD=mosh ;;
+      l*)     TO=loquat;      METHOD=mosh ;;
     esac
     tmux rename-window $TO 2> /dev/null
     ${pkgs.ncurses}/bin/clear; echo "$METHOD to $TO..."
