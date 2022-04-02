@@ -25,6 +25,10 @@
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
 
+  systemd.services.nix-daemon.serviceConfig = {
+    MemoryHigh = "12G"; MemoryMax = "13G"; MemorySwapMax = "13G";
+  };
+
   home-manager.users.monk.language-support = [ "nix" "bash" ];
 
   system.stateVersion = "22.05";
