@@ -6,6 +6,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../nixos/services/dns.nix
+    ../../nixos/services/syncthing-relay.nix
   ];
 
   boot.loader.systemd-boot.enable = true;

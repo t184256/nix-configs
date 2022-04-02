@@ -43,6 +43,7 @@ let
     hydra           IN CNAME fig
     nix-cache       IN CNAME fig
     nix-on-droid    IN CNAME mango
+    syncthing-relay IN CNAME duckweed
 
     @               IN TXT   "v=spf1 a:unboiled.info -all"
     _dmarc          IN TXT   "v=DMARC1;p=none;pct=100;rua=mailto:postmaster@unboiled.info"
