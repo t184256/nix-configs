@@ -1,12 +1,14 @@
 { pkgs, ... }:
 
 {
+  networking.hostName = "loquat";
+
   imports = [
     ./hardware-configuration.nix
+    ../../nixos/services/dns.nix
   ];
-  boot.loader.grub = { enable = true; version = 2; device = "/dev/sda"; };
 
-  networking.hostName = "loquat"; # Define your hostname.
+  boot.loader.grub = { enable = true; version = 2; device = "/dev/sda"; };
 
   time.timeZone = "Europe/Prague";
 

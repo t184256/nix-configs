@@ -5,6 +5,7 @@
 
   imports = [
     ./hardware-configuration.nix
+    ../../nixos/services/dns.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
