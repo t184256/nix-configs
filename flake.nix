@@ -60,6 +60,7 @@
     nixosConfigurations = {
       flaky = mkSystem "x86_64-linux" ./hosts/flaky/configuration.nix;
       lychee = mkSystem "x86_64-linux" ./hosts/lychee/configuration.nix;
+      loquat = mkSystem "x86_64-linux" ./hosts/loquat/configuration.nix;
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
     };
   in
@@ -68,6 +69,14 @@
     hydraJobs = builtins.mapAttrs (_: v: v.config.system.build.toplevel)
                                   nixosConfigurations;
 
+    deploy.nodes.loquat = {
+      hostname = "loquat.unboiled.info";
+      profiles.system = {
+        sshUser = "root"; user = "root"; hostname = "loquat.unboiled.info";
+        path = deploy-rs.lib.x86_64-linux.activate.nixos
+               self.nixosConfigurations.loquat;
+      };
+    };
     deploy.nodes.duckweed = {
       hostname = "duckweed.unboiled.info";
       profiles.system = {
