@@ -26,6 +26,8 @@
 
   home-manager.users.monk.language-support = [ "nix" "bash" ];
 
+  home-manager.users.monk.services.syncthing.enable = true;
+
   system.stateVersion = "22.05";
   home-manager.users.monk.home.stateVersion = "22.05";
 }
