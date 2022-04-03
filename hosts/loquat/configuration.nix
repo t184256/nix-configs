@@ -12,15 +12,10 @@
 
   time.timeZone = "Europe/Prague";
 
-  environment.systemPackages = with pkgs; [
-  ];
-
   users.users.monk = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
   };
-
-  services.openssh.enable = true;
 
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
