@@ -6,6 +6,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../nixos/services/dns.nix
+    ../../nixos/services/nix-on-droid.nix
   ];
 
   boot.loader.grub = { enable = true; version = 2; device = "/dev/sda"; };

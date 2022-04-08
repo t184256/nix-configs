@@ -42,7 +42,7 @@ let
     transmission    IN CNAME fig
     hydra           IN CNAME fig
     nix-cache       IN CNAME fig
-    nix-on-droid    IN CNAME mango
+    nix-on-droid    IN CNAME loquat
     syncthing-relay IN CNAME duckweed
 
     @               IN TXT   "v=spf1 a:unboiled.info -all"
