@@ -20,11 +20,7 @@
   nix.autoOptimiseStore = true;  # it's tight on disk space
 
   users.mutableUsers = false;
-  users.users.monk = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ];
-    passwordFile = "/mnt/persist/passwords/monk";
-  };
+  users.users.monk.passwordFile = "/mnt/persist/passwords/monk";
   users.users.root.passwordFile = "/mnt/persist/passwords/root";
 
   system.noGraphics = true;

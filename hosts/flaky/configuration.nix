@@ -27,11 +27,6 @@
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
 
-  users.users.monk = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ];
-  };
-
   system.stateVersion = "20.09";
   home-manager.users.monk.home.stateVersion = "20.09";
 

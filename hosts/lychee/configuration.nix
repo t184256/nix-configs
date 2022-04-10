@@ -52,11 +52,6 @@
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
 
-  users.users.monk = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ];
-  };
-
   system.role = {
     desktop.enable = true;
     physical.enable = true;
