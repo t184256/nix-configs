@@ -7,6 +7,9 @@
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
 
+    impermanence.url = "github:nix-community/impermanence";
+    impermanence.inputs.nixpkgs.follows = "nixpkgs";
+
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -30,6 +33,7 @@
     self,
     nixpkgs,
     nixos-hardware,
+    impermanence,
     home-manager,
     hydra,
     deploy-rs,
@@ -39,7 +43,8 @@
   let
     autoimport = (import ./.autoimport);
     specialArgs = { inherit inputs; };
-    common_modules = [ home-manager.nixosModules.home-manager {
+    common_modules = [ impermanence.nixosModule
+                       home-manager.nixosModules.home-manager {
                          # false as overlays are pulled in where needed
                          home-manager.useGlobalPkgs = false;
                          home-manager.useUserPackages = true;

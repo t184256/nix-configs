@@ -13,10 +13,13 @@
 
   time.timeZone = "Europe/Prague";
 
+  users.mutableUsers = false;
   users.users.monk = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
+    passwordFile = "/mnt/persist/passwords/monk";
   };
+  users.users.root.passwordFile = "/mnt/persist/passwords/root";
 
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
@@ -31,4 +34,35 @@
 
   system.stateVersion = "22.05";
   home-manager.users.monk.home.stateVersion = "22.05";
+
+  environment.persistence."/mnt/persist" = {
+    hideMounts = true;
+    directories = [
+      "/srv/nix-on-droid"
+      "/var/lib/acme"
+      "/var/log"
+    ];
+    files =
+      let
+        mode = { mode = "0700"; };
+      in
+      [
+        "/etc/machine-id"
+        { file = "/etc/ssh/ssh_host_rsa_key"; parentDirectory = mode; }
+        { file = "/etc/ssh/ssh_host_rsa_key.pub"; parentDirectory = mode; }
+        { file = "/etc/ssh/ssh_host_ed25519_key"; parentDirectory = mode; }
+        { file = "/etc/ssh/ssh_host_ed25519_key.pub"; parentDirectory = mode; }
+      ];
+    users.monk = {
+      directories = [
+        ".config/syncthing"
+        ".local/share/pygments-cache"
+        ".local/share/xonsh"
+        ".sync"
+      ];
+      files = [
+        ".bash_history"
+      ];
+    };
+  };
 }

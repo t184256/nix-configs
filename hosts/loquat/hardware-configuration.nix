@@ -15,19 +15,28 @@
   boot.kernelModules = [ "dm-snapshot" ];  # so is this, IDK why
   boot.extraModulePackages = [ ];
 
-  fileSystems."/" =
-    { device = "/dev/disk/by-uuid/cfac8c7b-ef88-4874-afe8-af7b8faa4365";
-      fsType = "xfs";
-    };
+  fileSystems."/" = {
+    device = "none";
+    fsType = "tmpfs";
+    options = [ "defaults" "size=2G" "mode=755" ];
+    neededForBoot = true;
+  };
+  fileSystems."/mnt/persist" = {
+    device = "/dev/disk/by-uuid/cfac8c7b-ef88-4874-afe8-af7b8faa4365";
+    fsType = "xfs";
+    neededForBoot = true;
+  };
 
-  fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/31d876c9-cb02-4d82-8b89-583e84cd353d";
-      fsType = "ext4";
-    };
+  fileSystems."/nix" = { device = "/mnt/persist/nix"; options = [ "bind" ]; };
 
-  swapDevices =
-    [ { device = "/dev/disk/by-uuid/3efc594c-e4c6-4706-a7f9-315b283d44d2"; }
-    ];
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-uuid/31d876c9-cb02-4d82-8b89-583e84cd353d";
+    fsType = "ext4";
+  };
+
+  swapDevices = [
+    { device = "/dev/disk/by-uuid/3efc594c-e4c6-4706-a7f9-315b283d44d2"; }
+  ];
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
