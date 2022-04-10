@@ -1,6 +1,12 @@
 # t184256's personal configs
 
-This is an attempt to
+These are my NixOS, Nix-on-Droid and even Nix on Fedora configs.
+Not all of my hosts are covered yet.
 
-1. slowly open up my configuration files
-2. get a taste of Nix flakes
+Flakes are used when on NixOS.
+
+[deploy-rs](https://github.com/serokell/deploy-rs) is used for some hosts.
+
+[Impermanence](https://github.com/nix-community/impermanence) +
+[tmpfs root](https://elis.nu/blog/2020/05/nixos-tmpfs-as-root)
+is used for some hosts.
