@@ -5,21 +5,21 @@ let
                                ((import ../../.autoimport).asAttrs ./xontribs);
 
   # avoids https://github.com/xonsh/xonsh/issues/3810
-  ptk = super.python3Packages.prompt_toolkit.overridePythonAttrs (_: rec {
-    version = "3.0.20+";
-    src = super.fetchFromGitHub {
-      owner = "t184256";
-      repo = "python-prompt-toolkit";
-      rev = "03f43de881c96419748a1dd1e690fed9f826fe64";
-      sha256 = "0hiym1ydyp6mk97qxibqb0qkyp5rilyzn1a82abp64aihyyl11hp";
-    };
+  ptk = super.python3Packages.prompt_toolkit.overridePythonAttrs ({
+    patches = [
+      (super.fetchpatch {
+        url = "https://github.com/prompt-toolkit/python-prompt-toolkit/pull/1591/commits/ee552ea900efd384647246c3f443bf7484859877.patch";
+        sha256 = "sha256-KbM1FECVs+6MKyvEOTzyfR5s825ejunr4q2blJXOmJ0=";
+      })
+    ];
+    patchFlags = [ "-p2" ];
   });
 
   xonshLib = super.python3Packages.buildPythonPackage rec {
     inherit (super.xonsh) postPatch
                           meta shellPath;
     pname = "xonsh";
-    version = "0.11.0";
+    version = "0.12.1";
     src = super.fetchFromGitHub {
       owner = "xonsh";
       repo = "xonsh";
@@ -28,8 +28,8 @@ let
     };
     propagatedBuildInputs = with super.python3Packages; [
       ply
-      pygments
       ptk
+      pygments
       pyte
     ];
     prePatch = ''
