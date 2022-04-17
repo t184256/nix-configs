@@ -10,6 +10,10 @@
     impermanence.url = "github:nix-community/impermanence";
     impermanence.inputs.nixpkgs.follows = "nixpkgs";
 
+    simple-nixos-mailserver.url =
+      "gitlab:simple-nixos-mailserver/nixos-mailserver";
+    simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
+
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -34,6 +38,7 @@
     nixpkgs,
     nixos-hardware,
     impermanence,
+    simple-nixos-mailserver,
     home-manager,
     hydra,
     deploy-rs,
@@ -44,6 +49,7 @@
     autoimport = (import ./.autoimport);
     specialArgs = { inherit inputs; };
     common_modules = [ impermanence.nixosModule
+                       simple-nixos-mailserver.nixosModule
                        home-manager.nixosModules.home-manager {
                          # false as overlays are pulled in where needed
                          home-manager.useGlobalPkgs = false;

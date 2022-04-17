@@ -11,26 +11,27 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    ns1.unboiled.info. admin.unboiled.info. (
-                                 2022040101; serial number
+                                 2022041701; serial number
                                  3600      ; refresh
                                  900       ; retry
                                  1209600   ; expire
                                  1800      ; ttl
                              )
-                    MX 10    mango.unboiled.info.
+                    MX 10    loquat.unboiled.info.
                     NS       a.ns.unboiled.info.
                     NS       b.ns.unboiled.info.
     a.ns            IN A     ${IP.duckweed}
     b.ns            IN A     ${IP.loquat}
 
-    @               IN A     ${IP.mango}
+    @               IN A     ${IP.loquat}
     duckweed        IN A     ${IP.duckweed}
     fig             IN A     ${IP.fig}
     loquat          IN A     ${IP.loquat}
     mango           IN A     ${IP.mango}
 
-    git             IN CNAME mango
-    edit            IN CNAME mango
+    conference.xmpp IN CNAME loquat
+    upload.xmpp     IN CNAME loquat
+    git             IN CNAME loquat
     natali          IN CNAME fig
     www.natali      IN CNAME fig
     nica            IN CNAME fig
@@ -44,6 +45,9 @@ let
     nix-cache       IN CNAME fig
     nix-on-droid    IN CNAME loquat
     syncthing-relay IN CNAME duckweed
+
+    _xmpp-client._tcp 86400 IN SRV 5 0 5222 unboiled.info.
+    _xmpp-server._tcp 86400 IN SRV 5 0 5269 unboiled.info.
 
     @               IN TXT   "v=spf1 a:unboiled.info -all"
     _dmarc          IN TXT   "v=DMARC1;p=none;pct=100;rua=mailto:postmaster@unboiled.info"

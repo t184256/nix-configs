@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ ... }:
 
 {
   networking.hostName = "loquat";
@@ -6,7 +6,10 @@
   imports = [
     ./hardware-configuration.nix
     ../../nixos/services/dns.nix
+    ../../nixos/services/git.nix
+    ../../nixos/services/mail.nix
     ../../nixos/services/nix-on-droid.nix
+    ../../nixos/services/xmpp.nix
   ];
 
   boot.loader.grub = { enable = true; version = 2; device = "/dev/sda"; };
