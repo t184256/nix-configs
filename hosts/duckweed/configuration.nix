@@ -33,7 +33,6 @@
   environment.persistence."/mnt/persist" = {
     hideMounts = true;
     directories = [
-      "/var/lib/private/syncthing-relay"
       "/var/log"
     ];
     files =
