@@ -17,8 +17,8 @@
   time.timeZone = "Europe/Prague";
 
   users.mutableUsers = false;
-  users.users.monk.passwordFile = "/mnt/persist/passwords/monk";
-  users.users.root.passwordFile = "/mnt/persist/passwords/root";
+  users.users.monk.passwordFile = "/mnt/persist/secrets/login/monk";
+  users.users.root.passwordFile = "/mnt/persist/secrets/login/root";
 
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;

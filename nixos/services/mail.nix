@@ -12,7 +12,7 @@
     localDnsResolver = false;  # I have a DNS server on the same host
     loginAccounts = {
         "monk@unboiled.info" = {
-            hashedPasswordFile = "/mnt/persist/passwords/mail-monk";
+            hashedPasswordFile = "/mnt/persist/secrets/mail/monk";
             aliases = [
                 "abuse@unboiled.info"
                 "info@unboiled.info"
