@@ -7,6 +7,7 @@
     ./hardware-configuration.nix
     ../../nixos/services/dns.nix
     ../../nixos/services/syncthing-relay.nix
+    ../../nixos/services/wireguard-nl.nix
   ];
 
   boot.loader.systemd-boot.enable = true;

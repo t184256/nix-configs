@@ -2,10 +2,9 @@
 
 let
   IP = {
-    duckweed = "51.158.183.199";
+    duckweed = "51.15.87.8";
     fig = "212.164.221.47";
     loquat = "38.242.251.25";
-    mango = "51.15.87.8";
   };
   zones."unboiled.info".data = ''
     $ORIGIN        unboiled.info.
@@ -27,7 +26,6 @@ let
     duckweed        IN A     ${IP.duckweed}
     fig             IN A     ${IP.fig}
     loquat          IN A     ${IP.loquat}
-    mango           IN A     ${IP.mango}
 
     conference.xmpp IN CNAME loquat
     upload.xmpp     IN CNAME loquat
