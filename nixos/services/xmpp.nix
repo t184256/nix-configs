@@ -74,6 +74,7 @@
       persistent_by_default = true;
     };
   };
+  systemd.services.prosody.postStart = "${pkgs.coreutils}/bin/sleep 3";  # HACKY
   systemd.services.biboumi.requires = [ "prosody.service" ];
   security.acme.certs = {
     "unboiled.info-prosody" = {
