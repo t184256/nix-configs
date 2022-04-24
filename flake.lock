@@ -90,6 +90,21 @@
         "type": "github"
       }
     },
+    "flake-utils_2": {
+      "locked": {
+        "lastModified": 1649676176,
+        "narHash": "sha256-OWKJratjt2RW151VUlJPRALb7OU2S5s+f0vLj4o1bHM=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "a4b154ebbdc88c8498a5c7b01589addc9e9cb678",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -242,7 +257,8 @@
         "nix": "nix",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
-        "simple-nixos-mailserver": "simple-nixos-mailserver"
+        "simple-nixos-mailserver": "simple-nixos-mailserver",
+        "wait-for-keypress": "wait-for-keypress"
       }
     },
     "simple-nixos-mailserver": {
@@ -294,6 +310,27 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "wait-for-keypress": {
+      "inputs": {
+        "flake-utils": "flake-utils_2",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1650798878,
+        "narHash": "sha256-g70lXOXiRDUauCBzpnXCIVhJEynNUS3f/cf6Dn68F+s=",
+        "owner": "t184256",
+        "repo": "wait-for-keypress",
+        "rev": "bb0ee1a8caef4060664816bbb2763f0cdd7b1244",
+        "type": "github"
+      },
+      "original": {
+        "owner": "t184256",
+        "repo": "wait-for-keypress",
         "type": "github"
       }
     }

@@ -31,6 +31,10 @@
       url = "github:t184256/alacritty-autoresizing";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    wait-for-keypress = {
+      url = "github:t184256/wait-for-keypress";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -43,6 +47,7 @@
     hydra,
     deploy-rs,
     alacritty-autoresizing,
+    wait-for-keypress,
     ...
   }@inputs:
   let
