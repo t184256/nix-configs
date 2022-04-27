@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 {
-  networking.firewall.allowedTCPPorts = [ 5222 5269 7777 ];  # not 5347
+  networking.firewall.allowedTCPPorts = [ 5222 5281 5269 7777 ];  # not 5347
   networking.firewall.allowedUDPPorts = [ 7777 ];
   services.prosody = {
     enable = true;
