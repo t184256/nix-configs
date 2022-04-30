@@ -28,15 +28,16 @@
     hostName = "localhost";
     system = "x86_64-linux";
     supportedFeatures = ["kvm" "nixos-test" "big-parallel" "benchmark"];
-    maxJobs = 1;
+    maxJobs = 1;  # we're not in a hurry, we save RAM/SWAP
   } ];
-  nix.buildCores = 2;  # we're not in a hurry, and this way we don't swap much
-  boot.tmpOnTmpfs = false;  # large builds are, well, large =(
+  nix.buildCores = 3;  # we're not in a hurry, we save RAM/SWAP
+  boot.tmpOnTmpfs = true;  # large builds are, well, large =(
+  boot.tmpOnTmpfsSize = "10G";
   nix.gc.automatic = true;
   #nix.autoOptimiseStore = true;
   systemd.services.nix-daemon.serviceConfig = {
     CPUAffinity = "0-3";
-    MemoryHigh = "12G"; MemoryMax = "13G"; MemorySwapMax = "13G";
+    MemoryHigh = "10G"; MemoryMax = "11G"; MemorySwapMax = "10G";
   };
 
   home-manager.users.monk.language-support = [ "nix" "bash" ];
