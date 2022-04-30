@@ -8,7 +8,6 @@
   ];
 
 
-  boot.kernelPackages = pkgs.linuxPackages_5_15;
   boot.loader.systemd-boot.configurationLimit = 15;  # small-ish /boot
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
