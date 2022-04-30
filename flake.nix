@@ -20,9 +20,12 @@
     nix.url = "github:NixOS/nix";
     nix.inputs.nixpkgs.follows = "nixpkgs";
 
-    hydra.url = "github:thufschmitt/hydra/nix-ca";
-    hydra.inputs.nixpkgs.follows = "nixpkgs";
-    hydra.inputs.nix.follows = "nix";
+    hydra.url = "github:t184256/hydra/nix-ca";
+    hydra.inputs.nixpkgs.follows = "nixpkgs_21_11";
+    nixpkgs_21_11.url = "github:NixOS/nixpkgs/release-21.11";
+    hydra.inputs.nix.follows = "nix_2_6";
+    nix_2_6.url = "github:NixOS/nix/2.6-maintenance";
+    nix_2_6.inputs.nixpkgs.follows = "nixpkgs";
 
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
@@ -74,7 +77,6 @@
         modules = [ hostcfg ] ++ common_modules;
       };
     nixosConfigurations = {
-      flaky = mkSystem "x86_64-linux" ./hosts/flaky/configuration.nix;
       lychee = mkSystem "x86_64-linux" ./hosts/lychee/configuration.nix;
       loquat = mkSystem "x86_64-linux" ./hosts/loquat/configuration.nix;
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;

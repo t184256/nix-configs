@@ -7,6 +7,7 @@
     ./hardware-configuration.nix
     ../../nixos/services/dns.nix
     ../../nixos/services/git.nix
+    ../../nixos/services/hydra.nix
     ../../nixos/services/mail.nix
     ../../nixos/services/nix-on-droid.nix
     ../../nixos/services/xmpp.nix
@@ -23,6 +24,16 @@
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
 
+  nix.buildMachines = [ {
+    hostName = "localhost";
+    system = "x86_64-linux";
+    supportedFeatures = ["kvm" "nixos-test" "big-parallel" "benchmark"];
+    maxJobs = 1;
+  } ];
+  nix.buildCores = 2;  # we're not in a hurry, and this way we don't swap much
+  boot.tmpOnTmpfs = false;  # large builds are, well, large =(
+  nix.gc.automatic = true;
+  #nix.autoOptimiseStore = true;
   systemd.services.nix-daemon.serviceConfig = {
     MemoryHigh = "12G"; MemoryMax = "13G"; MemorySwapMax = "13G";
   };

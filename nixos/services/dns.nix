@@ -39,8 +39,7 @@ let
     monk            IN CNAME fig
     www.monk        IN CNAME fig
     transmission    IN CNAME fig
-    hydra           IN CNAME fig
-    nix-cache       IN CNAME fig
+    hydra           IN CNAME loquat
     nix-on-droid    IN CNAME loquat
     syncthing-relay IN CNAME duckweed
 
