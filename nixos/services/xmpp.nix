@@ -75,7 +75,14 @@
     };
   };
   systemd.services.prosody.postStart = "${pkgs.coreutils}/bin/sleep 3";  # HACKY
-  systemd.services.biboumi.requires = [ "prosody.service" ];
+  systemd.services.biboumi = {
+    requires = [ "prosody.service" ];
+    serviceConfig = {
+      StartLimitIntervalSec = 60;
+      StartLimitBurst = 12;
+      RestartSec = 5;
+    };
+  };
   security.acme.certs = {
     "unboiled.info-prosody" = {
       domain = "unboiled.info";
