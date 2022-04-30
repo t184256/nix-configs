@@ -17,6 +17,7 @@
       ];
       disable-user-extensions = false;
       enabled-extensions = [
+        "allowlockedremotedesktop@kamens.us"
         "autohide-battery@sitnik.ru"
         "autohide-volume@unboiled.info"
         "focus-changer@heartmire"

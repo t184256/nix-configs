@@ -34,15 +34,16 @@ in {
         wl-clipboard
       ]) ++ (with pkgs.gnomeExtensions; [
         gsconnect
+        allow-locked-remote-desktop
         autohide-battery
         autohide-volume
         focus-changer
-        noannoyance
         just-perfection
+        noannoyance
         quake-mode
+        sound-output-device-chooser
         syncthing-indicator
         unite
-        sound-output-device-chooser
       ]);
     };
 
