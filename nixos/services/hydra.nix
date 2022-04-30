@@ -42,12 +42,6 @@ in
     };
   };
 
-  users.users.flake-autoupdate = {
-    isSystemUser = true;
-    group = "flake-autoupdate";
-    home = "/var/lib/flake-autoupdate";
-  };
-  users.groups.flake-autoupdate = {};
   systemd = {
     timers.flake-autoupdate = {
       wantedBy = [ "timers.target" ];
@@ -55,7 +49,7 @@ in
       timerConfig.OnCalendar = "*:08/10";  # once in 10 minutes, offset by 8
     };
     services.flake-autoupdate = {
-      serviceConfig.User = "flake-autoupdate";
+      serviceConfig.User = "hydra";
       serviceConfig.Type = "oneshot";
       script = ''
         set -uexo pipefail
@@ -66,7 +60,7 @@ in
         OLD=$WD/.old-t184256-nix-configs
         LNK=$WD/t184256-nix-configs
         export GIT_AUTHOR_NAME="Auto Update"
-        export GIT_AUTHOR_EMAIL="flake-autoupdate.service@unboiled.info"
+        export GIT_AUTHOR_EMAIL="hydra@unboiled.info"
         export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
         export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
         [[ -e $NEW ]] && rm -rf $NEW
@@ -108,7 +102,7 @@ in
     }
     {
       directory = "/var/lib/flake-autoupdate";
-      user = "flake-autoupdate"; group = "flake-autoupdate";
+      user = "hydra"; group = "hydra";
     }
   ];
 }
