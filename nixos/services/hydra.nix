@@ -1,9 +1,7 @@
 { pkgs, inputs, ... }:
 
 let
-  hydraPkg = inputs.hydra.defaultPackage.${pkgs.system}.overrideAttrs (_: {
-    doCheck = false;
-  });
+  hydraPkg = inputs.hydra.defaultPackage.${pkgs.system};
 in
 {
   # hydra-create-user monk --full-name 'Alexander Sosedkin' \
