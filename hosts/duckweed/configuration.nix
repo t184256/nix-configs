@@ -18,6 +18,8 @@
   };
   boot.kernelParams = [ "console=ttyS0" ];
 
+  time.timeZone = "Europe/Prague";
+
   nix.autoOptimiseStore = true;  # it's tight on disk space
 
   users.mutableUsers = false;
