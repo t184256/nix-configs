@@ -35,6 +35,7 @@
   nix.gc.automatic = true;
   #nix.autoOptimiseStore = true;
   systemd.services.nix-daemon.serviceConfig = {
+    CPUAffinity = "0-3";
     MemoryHigh = "12G"; MemoryMax = "13G"; MemorySwapMax = "13G";
   };
 
