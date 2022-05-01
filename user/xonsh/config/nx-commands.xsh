@@ -18,6 +18,16 @@ def _nxu():
         popd -q
 
 
+def _nxd(hosts):
+    pushd -q /etc/nixos
+    try:
+        for host in hosts:
+            echo deploy --skip-checks @(f'.#{host}')
+            deploy --skip-checks @(f'.#{host}')
+    finally:
+        popd -q
+
+
 def _in_tmpdir(*cmd):
     def _nxt(extra_args):
         TMP_DIR = $(mktemp -d).rstrip()
@@ -30,7 +40,9 @@ def _in_tmpdir(*cmd):
             rm -d @(TMP_DIR)
     return _nxt
 
+
 aliases['nxu'] = _nxu
+aliases['nxd'] = _nxd
 aliases['nxb'] = _in_tmpdir('nixos-rebuild', 'build')
 aliases['nxt'] = _in_tmpdir('sudo', 'nixos-rebuild', 'test')
 aliases['nxf'] = _in_tmpdir('sudo', 'nixos-rebuild', 'test', '--fast')
@@ -41,4 +53,5 @@ aliases['nxe'] = _in_tmpdir('sh', '-c',
                             '         nixos-rebuild --no-build-nix build')
 
 del _nxu
+del _nxd
 del _in_tmpdir
