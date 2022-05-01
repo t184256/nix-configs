@@ -30,6 +30,21 @@
       locations."/".proxyPass = "http://127.0.0.1:3000";
     };
   };
+  systemd = {
+    timers.gitea-dump-cleanup = {
+      wantedBy = [ "timers.target" ];
+      partOf = [ "gitea-dump-cleanup.service" ];
+      timerConfig.OnCalendar = "@daily";
+    };
+    services.gitea-dump-cleanup = {
+      serviceConfig.Type = "oneshot";
+      script = ''
+        set -uexo pipefail
+        find /var/lib/gitea/dump -type f | head -n-2
+        find /var/lib/gitea/dump -type f | head -n-2 | xargs rm
+      '';
+    };
+  };
   environment.persistence."/mnt/persist".directories = [
     {
       directory = "/var/lib/gitea";
