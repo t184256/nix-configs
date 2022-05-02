@@ -7,8 +7,8 @@ _: super:
     src = super.fetchFromGitHub {
       owner = "mobile-shell";
       repo = "mosh";
-      rev = "e023e81c08897c95271b4f4f0726ec165bb6e1bd";
-      sha256 = "136967mf51k7x51xd9997zq92gychg2l4q1niyig9zmr4054jv2z";
+      rev = "dbe419d0e069df3fedc212d456449f64d0280c76";
+      sha256 = "sha256-oQ0r1DezTnYHBQrk6u8jx4UOxQXvuzkzJ25S1n+auyY=";
     };
     patchFlags = [ "-p1" "-t" "--verbose" ];
     patches = (
