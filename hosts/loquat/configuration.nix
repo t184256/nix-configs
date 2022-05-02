@@ -24,6 +24,8 @@
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
 
+  zramSwap = { enable = true; memoryPercent = 50; };
+
   nix.buildMachines = [ {
     hostName = "localhost";
     system = "x86_64-linux";
@@ -32,13 +34,19 @@
   } ];
   nix.buildCores = 3;  # we're not in a hurry, we save RAM/SWAP
   boot.tmpOnTmpfs = true;  # large builds are, well, large =(
-  boot.tmpOnTmpfsSize = "10G";
+  boot.tmpOnTmpfsSize = "8G";
   nix.gc.automatic = true;
   #nix.autoOptimiseStore = true;
   systemd.services.nix-daemon.serviceConfig = {
     CPUAffinity = "0-3";
-    MemoryHigh = "10G"; MemoryMax = "11G"; MemorySwapMax = "10G";
+    MemoryHigh = "6G"; MemoryMax = "7G"; MemorySwapMax = "16G";
+    # 7/8 GB RAM, 8/8 GB zswap, 8/24 GB swap - leaves ~8+8GB
   };
+  swapDevices = [{
+    device = "/mnt/persist/.swapfile";
+    priority = -10;  # last resort
+    size = (1024 * 8);
+  }];
 
   home-manager.users.monk.language-support = [ "nix" "bash" ];
 
