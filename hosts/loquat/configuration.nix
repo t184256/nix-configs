@@ -33,20 +33,16 @@
     maxJobs = 1;  # we're not in a hurry, we save RAM/SWAP
   } ];
   nix.buildCores = 3;  # we're not in a hurry, we save RAM/SWAP
-  boot.tmpOnTmpfs = true;  # large builds are, well, large =(
-  boot.tmpOnTmpfsSize = "8G";
+  boot.tmpOnTmpfs = true;
+  boot.tmpOnTmpfsSize = "2G";
+  systemd.services.nix-daemon.environment.TMPDIR = "/nix/tmp";  # large builds
+  system.activationScripts.nixtmpdir.text = "mkdir -p /nix/tmp";
   nix.gc.automatic = true;
   #nix.autoOptimiseStore = true;
   systemd.services.nix-daemon.serviceConfig = {
     CPUAffinity = "0-3";
-    MemoryHigh = "6G"; MemoryMax = "7G"; MemorySwapMax = "16G";
-    # 7/8 GB RAM, 8/8 GB zswap, 8/24 GB swap - leaves ~8+8GB
+    MemoryHigh = "14G"; MemoryMax = "15G";
   };
-  swapDevices = [{
-    device = "/mnt/persist/.swapfile";
-    priority = -10;  # last resort
-    size = (1024 * 8);
-  }];
 
   home-manager.users.monk.language-support = [ "nix" "bash" ];
 
