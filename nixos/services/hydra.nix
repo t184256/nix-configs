@@ -63,6 +63,12 @@ in
         export GIT_AUTHOR_EMAIL="hydra@unboiled.info"
         export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
         export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+        [[ -e $WD/nixpkgs ]] || \
+          ${pkgs.git}/bin/git clone https://github.com/NixOS/nixpkgs $WD/nixpkgs
+        pushd $WD/nixpkgs
+          ${pkgs.git}/bin/git pull --ff-only
+          LAGGING=$(git rev-parse 'master@{1 hour ago}')
+        popd
         [[ -e $NEW ]] && rm -rf $NEW
         [[ -e $OLD ]] && { cp -r $OLD $FRZ; ln -sfn $FRZ $LNK; }
         ${pkgs.git}/bin/git clone https://github.com/t184256/nix-configs $NEW \
@@ -73,7 +79,8 @@ in
             git checkout $branch
             git checkout -b $branch-autoupdate
             time=$(date +%FT%T)
-            nix flake update --show-trace
+            nix flake update --show-trace \
+                             --override-input nixpkgs $WD/nixpkgs?ref=$LAGGING
             if [[ -n "$(git status --porcelain)" ]]; then
               git add flake.lock
               git commit -m "AUTOUPDATE $branch $time"
