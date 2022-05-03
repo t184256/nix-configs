@@ -80,7 +80,8 @@ in
             git checkout -b $branch-autoupdate
             time=$(date +%FT%T)
             nix flake update --show-trace \
-                             --override-input nixpkgs $WD/nixpkgs?ref=$LAGGING
+                             --override-input nixpkgs \
+                                              github:NixOS/nixpkgs?ref=$LAGGING
             if [[ -n "$(git status --porcelain)" ]]; then
               git add flake.lock
               git commit -m "AUTOUPDATE $branch $time"
