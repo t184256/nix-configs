@@ -74,7 +74,7 @@
       persistent_by_default = true;
     };
   };
-  systemd.services.prosody.postStart = "${pkgs.coreutils}/bin/sleep 3";  # HACKY
+  systemd.services.prosody.postStart = "${pkgs.coreutils}/bin/sleep 7";  # HACKY
   systemd.services.biboumi = {
     requires = [ "prosody.service" ];
     serviceConfig = {
