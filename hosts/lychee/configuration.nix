@@ -90,4 +90,7 @@
   # * screen locking in GNOME
   # * syncthing
   # * thunderbird
+
+  programs.adb.enable = true;
+  users.extraGroups.plugdev.members = [ "monk" ];
 }
