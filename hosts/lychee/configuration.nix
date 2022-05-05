@@ -93,4 +93,5 @@
 
   programs.adb.enable = true;
   users.extraGroups.plugdev.members = [ "monk" ];
+  networking.firewall.allowedTCPPorts = [ 3389 ];  # RDP
 }
