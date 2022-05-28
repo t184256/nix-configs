@@ -13,21 +13,6 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Due to WLAN firmware issues and Ethernet link detection issues
-  # Brokenness matrix, cold boot:
-  # D = disk not found, even before LUKS password prompt
-  # K = keyboard is not responsive during LUKS password prompt
-  # W = wifi firmware fails to load
-  # B = bluetooth can sustain (re)connection to trackball over 1h
-  # E = Ethernet works OK
-  # . = OK, X = fails
-  #                                               # |DKWBE|
-  #boot.kernelPackages = pkgs.linuxPackages_4_14; # |...X?|  used previously
-  #boot.kernelPackages = pkgs.linuxPackages_4_19; # |..X.?|
-  #boot.kernelPackages = pkgs.linuxPackages_5_4;
-  #boot.kernelPackages = pkgs.linuxPackages_5_8;
-  boot.kernelPackages = pkgs.linuxPackages_5_11;  # luks/wifi works, random lockups
-
   environment.systemPackages = with pkgs; [
     hdparm
     lm_sensors

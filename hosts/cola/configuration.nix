@@ -3,9 +3,9 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./laptop-X2x0-jap-keyboard-remap.nix
-    ./laptop-X2x0-nitrocaster-mod.nix
     ./laptop-X2x0.nix
+    ./laptop-X2x0-jap-keyboard-remap.nix
+    ./nitrocaster
   ];
 
   boot.loader.systemd-boot.enable = true;
@@ -43,6 +43,11 @@
   home-manager.users.monk.language-support = [
     "nix" "bash" "haskell"
   ];
+
+  #zramSwap = { enable = true; memoryPercent = 50; };
+
+  systemd.services.nix-daemon.environment.TMPDIR = "/nix/tmp";  # large builds
+  system.activationScripts.nixtmpdir.text = "mkdir -p /nix/tmp";
 
   programs.adb.enable = true;
   users.extraGroups.plugdev.members = [ "monk" ];
