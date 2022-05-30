@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [
@@ -25,6 +25,7 @@
   };
 
   environment.systemPackages = with pkgs; [
+    inputs.deploy-rs.defaultPackage.${pkgs.system} hydra-cli
     firefox-wayland
   ];
 
