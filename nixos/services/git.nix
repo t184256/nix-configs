@@ -34,7 +34,7 @@
     timers.gitea-dump-cleanup = {
       wantedBy = [ "timers.target" ];
       partOf = [ "gitea-dump-cleanup.service" ];
-      timerConfig.OnCalendar = "@daily";
+      timerConfig.OnCalendar = "daily";
     };
     services.gitea-dump-cleanup = {
       serviceConfig.Type = "oneshot";
