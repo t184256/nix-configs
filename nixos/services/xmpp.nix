@@ -74,15 +74,12 @@
       persistent_by_default = true;
     };
   };
-  systemd.services.prosody.postStart = "${pkgs.coreutils}/bin/sleep 7";  # HACKY
-  systemd.services.biboumi = {
-    requires = [ "prosody.service" ];
-    serviceConfig = {
-      StartLimitIntervalSec = 60;
-      StartLimitBurst = 12;
-      RestartSec = 5;
-    };
-  };
+  systemd.services.prosody.postStart = ''
+    #!${pkgs.bash}/bin/bash
+    while sleep .5; do (: </dev/tcp/localhost/5347) 2>/dev/null && break; done
+  '';
+  systemd.services.biboumi.requires = [ "prosody.service" ];
+  systemd.services.biboumi.after = [ "prosody.service" ];
   security.acme.certs = {
     "unboiled.info-prosody" = {
       domain = "unboiled.info";
