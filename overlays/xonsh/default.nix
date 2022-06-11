@@ -8,7 +8,7 @@ let
   ptk = super.python3Packages.prompt_toolkit.overridePythonAttrs ({
     patches = [
       (super.fetchpatch {
-        url = "https://github.com/prompt-toolkit/python-prompt-toolkit/pull/1591/commits/ee552ea900efd384647246c3f443bf7484859877.patch";
+        url = "https://github.com/prompt-toolkit/python-prompt-toolkit/pull/1591.patch";
         sha256 = "sha256-KbM1FECVs+6MKyvEOTzyfR5s825ejunr4q2blJXOmJ0=";
       })
     ];
