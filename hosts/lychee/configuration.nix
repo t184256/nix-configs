@@ -20,6 +20,9 @@
   hardware.opengl.extraPackages = [ pkgs.intel-media-driver ];
   hardware.wirelessRegulatoryDatabase = true;
 
+  services.logind.lidSwitch = "suspend-then-hibernate";
+  systemd.sleep.extraConfig = "HibernateDelaySec=90m";
+
   zramSwap = { enable = true; memoryPercent = 50; };
 
   networking.hostName = "lychee"; # Define your hostname.
