@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [
@@ -55,6 +55,8 @@
   #    ExecStart = "${pkgs.bash}/bin/bash -c 'echo 0 > /sys/module/snd_hda_intel/parameters/power_save'";
   #  };
   #};
+
+  boot.plymouth.enable = true;
 
   environment.systemPackages = with pkgs; [
     inputs.deploy-rs.defaultPackage.${pkgs.system} hydra-cli
