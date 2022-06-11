@@ -20,7 +20,7 @@
   hardware.opengl.extraPackages = [ pkgs.intel-media-driver ];
   hardware.wirelessRegulatoryDatabase = true;
 
-  zramSwap = { enable = true; memoryPercent = 25; };
+  zramSwap = { enable = true; memoryPercent = 50; };
 
   networking.hostName = "lychee"; # Define your hostname.
   networking.networkmanager.enable = true;
