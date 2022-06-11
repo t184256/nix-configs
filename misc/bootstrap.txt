@@ -5,3 +5,4 @@ git clone git@git.unboiled.info:monk/pass ~/.local/share/password-store
 gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys b0e9dd20b29f1432
 git clone git@github.com:t184256/nix-configs /etc/nixos
 (cd /etc/nixos && git set-url origin git@github.com:t184256/nix-configs)
+sudo git config --global --add safe.directory /etc/nixos

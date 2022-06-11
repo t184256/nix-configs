@@ -32,6 +32,7 @@ def _in_tmpdir(*cmd):
     def _nxt(extra_args):
         TMP_DIR = $(mktemp -d).rstrip()
         pushd -q @(TMP_DIR)
+        sudo git config --global --add safe.directory /etc/nixos
         try:
             @(cmd + tuple(extra_args))
         finally:
