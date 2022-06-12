@@ -52,8 +52,10 @@
     { device = "/dev/disk/by-uuid/e066e794-27df-40c8-b7d0-17fd463b0985"; }
   ];
   boot.initrd.secrets = { "/mnt/persist/secrets/luks.key" = null; };
-  boot.initrd.luks.devices."luks-c78b5858-ac06-4f6d-a0e5-f01569d78995".device = "/dev/disk/by-uuid/c78b5858-ac06-4f6d-a0e5-f01569d78995";
-  boot.initrd.luks.devices."luks-c78b5858-ac06-4f6d-a0e5-f01569d78995".keyFile = "/mnt/persist/secrets/luks.key";
+  boot.initrd.luks.devices."luks-c78b5858-ac06-4f6d-a0e5-f01569d78995" = {
+    device = "/dev/disk/by-uuid/c78b5858-ac06-4f6d-a0e5-f01569d78995";
+    keyFile = "/mnt/persist/secrets/luks.key";
+  };
 
   # CPU
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
