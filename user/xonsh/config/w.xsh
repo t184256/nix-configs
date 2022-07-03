@@ -8,7 +8,19 @@ def _w(args):
         w - ncdu /
         w py:numpy,notebook -- python -m notebook
     """
-    DEFAULT_PACKAGE_SOURCE = 'nixpkgs'
+    import os
+
+    nixpkgs = 'nixpkgs'
+    if os.path.exists('/etc/nixos/flake.lock'):
+        try:
+            import json
+	    with open('/etc/nixos/flake.lock') as f:
+                lockfile = json.load(f)
+	    rev = lockfile['nodes']['nixpkgs']['locked']['rev']
+	    nixpkgs = f'github:NixOS/nixpkgs?rev={rev}'
+	except e:
+            import sys
+	    print(e, file=sys.stderr)
 
     def expand_arg(arg):  # what to turn a dependency word into?
         if arg.endswith('.nix'):  # a file
@@ -27,7 +39,7 @@ def _w(args):
         elif '#' in arg:  # flake reference
             return [arg]
 	else:  # probably a package name
-            return [f'{DEFAULT_PACKAGE_SOURCE}#{arg}']
+            return [f'{nixpkgs}#{arg}']
 
     cmd = []
     if '--' in args:  # run cmd, ex: with ncdu -- ncdu /
