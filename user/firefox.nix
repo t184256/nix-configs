@@ -31,8 +31,9 @@
           "extensions.formautofill.creditCards.available" = false;
           "extensions.formautofill.creditCards.enabled" = false;
           "gfx.webrender.all" = true;
-          "gfx.webrender.compositor" = true;
-          "gfx.webrender.compositor.force-enabled" = true;
+          # bug: popups don't go away
+          #"gfx.webrender.compositor" = true;
+          #"gfx.webrender.compositor.force-enabled" = true;
           "media.ffmpeg.vaapi.enabled" = true;
           "services.sync.engine.creditcards" = false;
           "services.sync.engine.creditcards.available" = false;
