@@ -32,6 +32,7 @@
                 "monk+spotify-cz@unboiled.info"
                 "monk+paypal-cz@unboiled.info"
                 "monk+steampartner@unboiled.info"
+                "monk.cz@unboiled.info"
             ];
         };
     };
