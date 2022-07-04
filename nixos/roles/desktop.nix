@@ -33,7 +33,6 @@ in {
       systemPackages = (with pkgs; [
         wl-clipboard
       ]) ++ (with pkgs.gnomeExtensions; [
-        gsconnect
         allow-locked-remote-desktop
         autohide-battery
         autohide-volume
