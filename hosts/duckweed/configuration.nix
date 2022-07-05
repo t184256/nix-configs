@@ -10,7 +10,7 @@
     ../../nixos/services/wireguard-nl.nix
   ];
 
-  boot.loader.systemd-boot.configurationLimit = 15;  # small-ish /boot
+  boot.loader.systemd-boot.configurationLimit = 10;  # small-ish /boot
   boot.loader.systemd-boot.enable = true;
   fileSystems."/boot" = {
     device = "/dev/disk/by-uuid/A2EB-3AB7";
