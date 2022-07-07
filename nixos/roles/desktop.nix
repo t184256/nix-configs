@@ -17,6 +17,8 @@ in {
   };
 
   config = mkIf cfg.enable {
+    programs.dconf.enable = true;  # for h-m's dconf.settings
+
     services.xserver = {
       enable = true;
       displayManager.gdm.enable = true;

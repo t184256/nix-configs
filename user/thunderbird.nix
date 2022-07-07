@@ -1,7 +1,8 @@
 { pkgs, config, lib, ... }:
 
 {
-  imports = [ ./config/no-graphics.nix ];
+  imports = [ ./config/no-graphics.nix ./config/live.nix ];
 
-  home.packages = lib.mkIf (! config.system.noGraphics) [ pkgs.thunderbird ];
+  home.packages = lib.mkIf (! config.system.noGraphics && ! config.system.live)
+    [ pkgs.thunderbird ];
 }

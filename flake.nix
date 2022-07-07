@@ -29,6 +29,8 @@
 
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
+    nixos-generators.url = "github:nix-community/nixos-generators";
+    nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
 
     alacritty-autoresizing = {
       url = "github:t184256/alacritty-autoresizing";
@@ -38,6 +40,7 @@
       url = "github:t184256/wait-for-keypress";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
   };
 
   outputs = {
@@ -49,6 +52,7 @@
     home-manager,
     hydra,
     deploy-rs,
+    nixos-generators,
     alacritty-autoresizing,
     wait-for-keypress,
     ...
@@ -110,6 +114,14 @@
 
     nixosModules = {
       nixos = autoimport.asAttrs ./nixos;
+    };
+
+    packages.x86_64-linux = {
+      cookie = nixos-generators.nixosGenerate {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        modules = [ ./hosts/cookie/configuration.nix ] ++ common_modules;
+        format = "iso";
+      };
     };
   };
 }
