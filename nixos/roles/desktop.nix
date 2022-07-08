@@ -51,8 +51,5 @@ in {
 
     services.gnome.gnome-initial-setup.enable = false;
     services.gnome.gnome-remote-desktop.enable = true;
-
-    # KDE Connect
-    networking.firewall.allowedUDPPortRanges = [ { from = 1714; to = 1764; } ];
   };
 }
