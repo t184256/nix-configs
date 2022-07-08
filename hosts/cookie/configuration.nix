@@ -7,6 +7,7 @@
 
   system.live = true;
   home-manager.users.monk.system.live = true;
+  hardware.enableRedistributableFirmware = true;
 
   zramSwap = { enable = true; memoryPercent = 50; };
 
