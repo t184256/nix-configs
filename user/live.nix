@@ -59,11 +59,10 @@ in
 
   home.packages = lib.mkIf config.system.live [ live-network inst ];
 
-  dconf.settings =
-    lib.mkIf (! config.system.noGraphics && config.system.live) {
-      "/org/gnome/desktop/screensaver" = {
-        lock-enabled = false;
-        idle-activation-enabled = false;
-      };
-    };
+  #dconf.settings =
+  #  lib.mkIf (! config.system.noGraphics && config.system.live) {
+  #    "org/gnome/desktop/screensaver" = {
+  #      lock-enabled = false;
+  #    };
+  #  };
 }

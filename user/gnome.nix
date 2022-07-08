@@ -82,5 +82,8 @@
     "org/gnome/nautilus/preferences" = {
       default-folder-viewer = "list-view";
     };
+    "org/gnome/desktop/screensaver" = {
+      lock-enabled = false;
+    };
   };
 }
