@@ -36,6 +36,10 @@
       url = "github:t184256/alacritty-autoresizing";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    keyboard-remap = {
+      url = "github:t184256/keyboard-remap";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     wait-for-keypress = {
       url = "github:t184256/wait-for-keypress";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -54,6 +58,7 @@
     deploy-rs,
     nixos-generators,
     alacritty-autoresizing,
+    keyboard-remap,
     wait-for-keypress,
     ...
   }@inputs:
@@ -121,6 +126,7 @@
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         modules = [ ./hosts/cookie/configuration.nix ] ++ common_modules;
         format = "iso";
+        inherit specialArgs;
       };
     };
   };

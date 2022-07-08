@@ -1,7 +1,9 @@
 { pkgs, ... }:
 
 {
-  imports = [ ];
+  imports = [
+    ./keyboard-remap.nix
+  ];
 
   system.live = true;
   home-manager.users.monk.system.live = true;
