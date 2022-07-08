@@ -40,8 +40,8 @@
       url = "github:t184256/keyboard-remap";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    wait-for-keypress = {
-      url = "github:t184256/wait-for-keypress";
+    input-utils = {
+      url = "github:t184256/input-utils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -59,7 +59,7 @@
     nixos-generators,
     alacritty-autoresizing,
     keyboard-remap,
-    wait-for-keypress,
+    input-utils,
     ...
   }@inputs:
   let

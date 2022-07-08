@@ -92,11 +92,11 @@
     },
     "flake-utils_2": {
       "locked": {
-        "lastModified": 1656928814,
-        "narHash": "sha256-RIFfgBuKz6Hp89yRr7+NR5tzIAbn52h8vT6vXkYjZoM=",
+        "lastModified": 1649676176,
+        "narHash": "sha256-OWKJratjt2RW151VUlJPRALb7OU2S5s+f0vLj4o1bHM=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "7e2a3b3dfd9af950a856d66b0a7d01e3c18aa249",
+        "rev": "a4b154ebbdc88c8498a5c7b01589addc9e9cb678",
         "type": "github"
       },
       "original": {
@@ -107,11 +107,11 @@
     },
     "flake-utils_3": {
       "locked": {
-        "lastModified": 1649676176,
-        "narHash": "sha256-OWKJratjt2RW151VUlJPRALb7OU2S5s+f0vLj4o1bHM=",
+        "lastModified": 1656928814,
+        "narHash": "sha256-RIFfgBuKz6Hp89yRr7+NR5tzIAbn52h8vT6vXkYjZoM=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "a4b154ebbdc88c8498a5c7b01589addc9e9cb678",
+        "rev": "7e2a3b3dfd9af950a856d66b0a7d01e3c18aa249",
         "type": "github"
       },
       "original": {
@@ -180,7 +180,7 @@
         "type": "github"
       }
     },
-    "keyboard-remap": {
+    "input-utils": {
       "inputs": {
         "flake-utils": "flake-utils_2",
         "nixpkgs": [
@@ -188,11 +188,32 @@
         ]
       },
       "locked": {
-        "lastModified": 1657284955,
-        "narHash": "sha256-n8zoW7jlYMdUs4SLvcONa0PAeBv+TkaHJJoJd5BUhhs=",
+        "lastModified": 1657304940,
+        "narHash": "sha256-EQIYPd5Ac+2KNf4VJNmRy+wETjclrnxu+xPI14O8IT4=",
+        "owner": "t184256",
+        "repo": "input-utils",
+        "rev": "30deed8fa3c4a2cb58e09ee90900fff35d220abd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "t184256",
+        "repo": "input-utils",
+        "type": "github"
+      }
+    },
+    "keyboard-remap": {
+      "inputs": {
+        "flake-utils": "flake-utils_3",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1657291040,
+        "narHash": "sha256-uvYHKgJ+Cxc+XSm4q8G2lLI7Jny929FJvCJcmC/2fp4=",
         "owner": "t184256",
         "repo": "keyboard-remap",
-        "rev": "d80ba7ae776ea2dc59a8ad2fdfeda3340c7bd02e",
+        "rev": "a79a458109acafb73349fa02c94144a2a8570480",
         "type": "github"
       },
       "original": {
@@ -331,11 +352,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1657286857,
-        "narHash": "sha256-fJ6kMbvuWr+JaNaUPA1orrBU3c5CEsj4vY7wNdqXKcw=",
+        "lastModified": 1657299948,
+        "narHash": "sha256-lagzOblu7798bJwm+l2LlQBCcITO0oQ9zxIYl8eQu+0=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "19298c32ff2fc57386b98d4e5fd640ec0c00ee22",
+        "rev": "8487ab4c2589dec8214dfd9b911bfdddee41dcca",
         "type": "github"
       },
       "original": {
@@ -413,6 +434,7 @@
         "home-manager": "home-manager",
         "hydra": "hydra",
         "impermanence": "impermanence",
+        "input-utils": "input-utils",
         "keyboard-remap": "keyboard-remap",
         "nix": "nix",
         "nix_2_6": "nix_2_6",
@@ -420,8 +442,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nixpkgs_21_11": "nixpkgs_21_11",
-        "simple-nixos-mailserver": "simple-nixos-mailserver",
-        "wait-for-keypress": "wait-for-keypress"
+        "simple-nixos-mailserver": "simple-nixos-mailserver"
       }
     },
     "simple-nixos-mailserver": {
@@ -489,27 +510,6 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "wait-for-keypress": {
-      "inputs": {
-        "flake-utils": "flake-utils_3",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1650798878,
-        "narHash": "sha256-g70lXOXiRDUauCBzpnXCIVhJEynNUS3f/cf6Dn68F+s=",
-        "owner": "t184256",
-        "repo": "wait-for-keypress",
-        "rev": "bb0ee1a8caef4060664816bbb2763f0cdd7b1244",
-        "type": "github"
-      },
-      "original": {
-        "owner": "t184256",
-        "repo": "wait-for-keypress",
         "type": "github"
       }
     }
