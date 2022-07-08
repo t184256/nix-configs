@@ -15,7 +15,6 @@ let
     fi
 
     ${pkgs.gnupg}/bin/gpg -d /tmp/secrets.7z.gpg > /tmp/secrets.7z
-    mkdir /tmp
     pushd /tmp
       ${pkgs.p7zip}/bin/7z x /tmp/secrets.7z
     popd
@@ -29,7 +28,8 @@ let
       sudo cp /tmp/secrets/rhca.pem /etc/pki/tls/certs/2015-RH-IT-Root-CA.pem
       sudo chown root:root /etc/pki/tls/certs/2015-RH-IT-Root-CA.pem
       sudo chmod 640 /etc/pki/tls/certs/2015-RH-IT-Root-CA.pem
-      sudo cp rhvpn.ovpn /etc/NetworkManager/system-connections/rhvpn.ovpn
+      sudo cp /tmp/secrets/rhvpn.ovpn \
+        /etc/NetworkManager/system-connections/rhvpn.ovpn
       sudo chown root:root /etc/NetworkManager/system-connections/rhvpn.ovpn
       sudo chmod 600 /etc/NetworkManager/system-connections/rhvpn.ovpn
     fi
