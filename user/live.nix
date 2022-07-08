@@ -38,7 +38,9 @@ let
     touch /tmp/.network-configured
   '';
   inst = pkgs.writeShellScriptBin "inst" ''
-    echo success; read
+    set -uexo pipefail
+    ${pkgs.curl}/bin/curl https://monk.unboiled.info/.inst \
+      | ${pkgs.bash}/bin/bash -uexo pipefail
   '';
 in
 {
