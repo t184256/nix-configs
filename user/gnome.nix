@@ -10,7 +10,8 @@
   dconf.settings = if config.system.noGraphics then {} else {
     "org/gnome/shell" = {
       favorite-apps = [
-        "thunderbird.desktop"
+        (if ! config.system.live then "thunderbird.desktop" else
+                                      "live-network.desktop")
         "firefox.desktop"
         "console.desktop"
         "org.gnome.Nautilus.desktop"

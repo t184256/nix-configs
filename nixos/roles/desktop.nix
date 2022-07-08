@@ -31,6 +31,7 @@ in {
         cheese
         epiphany
         geary
+        pkgs.orca
       ];
       systemPackages = (with pkgs; [
         wl-clipboard

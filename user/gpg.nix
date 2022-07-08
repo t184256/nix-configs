@@ -8,6 +8,9 @@
     then pkgs.pass.override { x11Support = false; }
     else pkgs.pass-wayland;
 
+  programs.gpg.enable = true;
+  programs.gpg.publicKeys = [ { source = ../misc/pubkey.pgp; trust = 5; } ];
+
   services.gpg-agent = {
     enable = true;
     enableSshSupport = true;
