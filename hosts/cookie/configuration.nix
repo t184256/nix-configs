@@ -20,6 +20,7 @@
   environment.systemPackages = with pkgs; [
     firefox-wayland alacritty
     microdnf ansible
+    evtest
   ];
 
   services.xserver.displayManager.autoLogin = { enable = true; user = "monk"; };
