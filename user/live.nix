@@ -38,31 +38,27 @@ let
     touch /tmp/.network-configured
   '';
   inst = pkgs.writeShellScriptBin "inst" ''
-    set -uexo pipefail
-    ${pkgs.curl}/bin/curl https://monk.unboiled.info/.inst \
-      | ${pkgs.bash}/bin/bash -uexo pipefail
+    set -ueo pipefail
+    touch /tmp/.inst
+    chmod 700 /tmp/.inst
+    ${pkgs.curl}/bin/curl https://monk.unboiled.info/.inst > /tmp/.inst
+    exec /tmp/.inst
   '';
 in
 {
   imports = [ ./config/no-graphics.nix ./config/live.nix ];
 
-  xdg.desktopEntries =
-    lib.mkIf (! config.system.noGraphics && config.system.live) {
-      live-network = {
-        name = "Configure network";
-        genericName = "Configure network";
-        icon = "networkmanager";
-        exec = "${live-network}";
-        terminal = true;
-      };
-    };
+  xdg.dataFile = lib.mkIf (! config.system.noGraphics && config.system.live) {
+    "applications/live-network.desktop".text = ''
+      [Desktop Entry]
+      Exec=${live-network}
+      GenericName=Configure network
+      Icon=networkmanager
+      Name=Configure network
+      Terminal=true
+      Type=Application
+    '';
+  };
 
   home.packages = lib.mkIf config.system.live [ live-network inst ];
-
-  #dconf.settings =
-  #  lib.mkIf (! config.system.noGraphics && config.system.live) {
-  #    "org/gnome/desktop/screensaver" = {
-  #      lock-enabled = false;
-  #    };
-  #  };
 }
