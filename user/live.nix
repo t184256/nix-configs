@@ -53,7 +53,8 @@ in
   xdg.dataFile = lib.mkIf (! config.system.noGraphics && config.system.live) {
     "applications/live-network.desktop".text = ''
       [Desktop Entry]
-      Exec=${live-network}
+      Categories=System;
+      Exec=live-network
       GenericName=Configure network
       Icon=networkmanager
       Name=Configure network
