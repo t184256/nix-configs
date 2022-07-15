@@ -36,6 +36,8 @@ let
     rm -r /tmp/secrets.7z
     rm -r /tmp/secrets
     touch /tmp/.network-configured
+
+    ${pkgs.networkmanager}/bin/nm-online
   '';
   inst = pkgs.writeShellScriptBin "inst" ''
     set -ueo pipefail
