@@ -17,6 +17,7 @@
 
   environment.systemPackages = with pkgs; [
     firefox-wayland alacritty
+    gparted parted cryptsetup btrfs-progs
     microdnf ansible
     evtest
   ];
