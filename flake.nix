@@ -77,7 +77,7 @@
                        home-manager.users.monk =
                                autoimport.merge ./user;
                        # disabled as all overlays are user/-side now
-                       # nixpkgs.overlays = autoimport.asList ./overlays;
+                       nixpkgs.overlays = autoimport.asList ./overlays;
                      }) ] ++
                      (autoimport.asPaths ./nixos);
     mkSystem = system: hostcfg:
