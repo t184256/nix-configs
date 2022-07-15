@@ -9,8 +9,6 @@
   home-manager.users.monk.system.live = true;
   hardware.enableRedistributableFirmware = true;
 
-  zramSwap = { enable = true; memoryPercent = 50; };
-
   networking.hostName = "cookie";
   networking.wireless.enable = false;
   networking.networkmanager.enable = true;
