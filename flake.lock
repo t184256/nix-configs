@@ -209,11 +209,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1658152522,
-        "narHash": "sha256-5y4GdJgBJDEr93e/d+f239Q/pblDBN63p6kX/hLyo8k=",
+        "lastModified": 1658154306,
+        "narHash": "sha256-3ouL5mdgUxcqUAHooeKv5jGWkjh0iSOtft9K+ASBb40=",
         "owner": "t184256",
         "repo": "keyboard-remap",
-        "rev": "db4e7599c7a9bc823f9f380152aa6269bd622eef",
+        "rev": "4aca7eaffebb1685dc94e8dd8ab300cd72d1de1d",
         "type": "github"
       },
       "original": {
@@ -352,11 +352,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1658146185,
-        "narHash": "sha256-SdCCOnz7/mehkoE/2pRubbakzoBnPFWyKRDmuNoniYA=",
+        "lastModified": 1658146787,
+        "narHash": "sha256-e4RQ1qAYpRgUqMo/nbHItVapH3PpzCqPXfCuxZYwr+U=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "d9a59b22ee0a61cc59bd21d0a2f748fe3fd6af26",
+        "rev": "8b72dae17b40c9461baeab2f174b86c582c82902",
         "type": "github"
       },
       "original": {
