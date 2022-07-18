@@ -1,7 +1,7 @@
 { pkgs, config, ... }:
 
 {
-  imports = [ ./config/no-graphics.nix ];
+  imports = [ ./config/no-graphics.nix ./config/os.nix ];
 
   # manual bits:
   # * logging into sync
@@ -9,7 +9,7 @@
   programs = if config.system.noGraphics then {} else {
     browserpass = { enable = true; browsers = [ "firefox" ]; };
     firefox = {
-      enable = true;
+      enable = config.system.os == "NixOS";
       package = pkgs.firefox-wayland.override {
         cfg = {
           enableGnomeExtensions = true;

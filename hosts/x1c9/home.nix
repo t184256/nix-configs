@@ -13,19 +13,21 @@
   imports = [
     ./keyboard-remap-cz.nix
     ../../user/config/identity.nix
+    ../../user/assorted-tools.nix
     ../../user/entr.nix
     ../../user/exa.nix
+    ../../user/fonts.nix
     ../../user/git.nix
     ../../user/htop.nix
     ../../user/mosh.nix
     ../../user/neovim.nix
     ../../user/terminal.nix
     ../../user/tmux.nix
+    ../../user/xdg.nix
     ../../user/xonsh
   ];
 
   home.packages = with pkgs; [
     nixgl.nixGLIntel
-    ripgrep fd
   ];
 }
