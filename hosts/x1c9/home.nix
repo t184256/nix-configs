@@ -7,6 +7,7 @@
   programs.home-manager.enable = true;
   programs.man.enable = true;
 
+  system.os = "OtherLinux";
   identity.email = "asosedkin@redhat.com";
 
   imports = [
@@ -24,6 +25,7 @@
   ];
 
   home.packages = with pkgs; [
+    nixgl.nixGLIntel
     ripgrep fd
   ];
 }

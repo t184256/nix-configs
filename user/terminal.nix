@@ -1,6 +1,12 @@
 { config, pkgs, inputs, ... }:
 
 let
+  nixGLMaybe = (
+    if config.system.os == "OtherLinux"
+    then "${pkgs.nixgl.nixGLIntel}/bin/nixGLIntel"
+    else ""
+  );
+
   alacritty-autoresizing =
     inputs.alacritty-autoresizing.defaultPackage.${pkgs.system};
 
@@ -45,7 +51,7 @@ in
   };
 
   home.wraplings = if config.system.noGraphics then {} else rec {
-    term = "${alacritty-autoresizing}/bin/alacritty-autoresizing";
+    term = "${nixGLMaybe} ${alacritty-autoresizing}/bin/alacritty-autoresizing";
     term-hopper = "${term} --class term-hopper,Console -e ~/.tmux-hopper.sh";
   };
 

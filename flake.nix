@@ -17,6 +17,9 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+    nixgl.url = "github:guibou/nixGL";
+    nixgl.inputs.nixpkgs.follows = "nixpkgs";
+
     nix.url = "github:NixOS/nix";
     nix.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -54,6 +57,7 @@
     impermanence,
     simple-nixos-mailserver,
     home-manager,
+    nixgl,
     hydra,
     deploy-rs,
     nixos-generators,
@@ -92,7 +96,10 @@
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
     };
     homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pkgs =  import nixpkgs {
+        system = "x86_64-linux";
+        overlays = [ nixgl.overlay ];
+      };
       modules = [ ./hosts/x1c9/home.nix ];
       extraSpecialArgs = { inherit inputs; };
     };
