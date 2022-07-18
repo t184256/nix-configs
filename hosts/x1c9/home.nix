@@ -14,6 +14,7 @@
     ./keyboard-remap-cz.nix
     ../../user/config/identity.nix
     ../../user/assorted-tools.nix
+    ../../user/common.nix
     ../../user/entr.nix
     ../../user/exa.nix
     ../../user/fonts.nix
