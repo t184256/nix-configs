@@ -9,6 +9,10 @@
 
   #identity.email = "asosedkin@redhat.com";
 
+  imports = [
+    ../../user/exa.nix
+  ];
+
   home.packages = with pkgs; [
     ripgrep fd
   ];
