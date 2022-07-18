@@ -10,6 +10,7 @@
   identity.email = "asosedkin@redhat.com";
 
   imports = [
+    ./keyboard-remap-cz.nix
     ../../user/config/identity.nix
     ../../user/entr.nix
     ../../user/exa.nix
