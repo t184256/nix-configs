@@ -91,11 +91,18 @@
       loquat = mkSystem "x86_64-linux" ./hosts/loquat/configuration.nix;
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
     };
+    homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      modules = [ ./hosts/x1c9/home.nix ];
+      extraSpecialArgs = { inherit inputs; };
+    };
   in
   {
-    inherit nixosConfigurations;
-    hydraJobs = builtins.mapAttrs (_: v: v.config.system.build.toplevel)
-                                  nixosConfigurations;
+    inherit nixosConfigurations homeConfigurations;
+    hydraJobs =
+      (builtins.mapAttrs (_: v: v.config.system.build.toplevel)
+                         nixosConfigurations)
+      // (builtins.mapAttrs (_: v: v.activationPackage) homeConfigurations);
 
     deploy.nodes.loquat = {
       hostname = "loquat.unboiled.info";
@@ -130,10 +137,5 @@
       };
     };
 
-    homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      modules = [ ./hosts/x1c9/home.nix ];
-      extraSpecialArgs = { inherit inputs; };
-    };
   };
 }
