@@ -52,7 +52,7 @@ in
 
   home.wraplings = if config.system.noGraphics then {} else rec {
     term = "${nixGLMaybe} ${alacritty-autoresizing}/bin/alacritty-autoresizing";
-    term-hopper = "${term} --class term-hopper,Console -e ~/.tmux-hopper.sh";
+    term-hopper = "${term} --class Console,Console -e ~/.tmux-hopper.sh";
   };
 
   xdg.dataFile = if config.system.noGraphics then {} else {
