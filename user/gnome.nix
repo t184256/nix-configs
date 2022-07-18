@@ -9,13 +9,22 @@
 
   dconf.settings = if config.system.noGraphics then {} else {
     "org/gnome/shell" = {
-      favorite-apps = [
-        (if ! config.system.live then "thunderbird.desktop" else
-                                      "live-network.desktop")
-        "firefox.desktop"
-        "console.desktop"
-        "org.gnome.Nautilus.desktop"
-      ];
+      favorite-apps =
+        if ! config.system.live then
+          [
+            "thunderbird.desktop"
+            "firefox.desktop"
+            "console.desktop"
+            "org.gnome.Nautilus.desktop"
+          ]
+        else
+          [
+            "live.desktop"
+            "firefox.desktop"
+            "console.desktop"
+            "org.gnome.Nautilus.desktop"
+            "inst.desktop"
+          ];
       disable-user-extensions = false;
       enabled-extensions = [
         "allowlockedremotedesktop@kamens.us"

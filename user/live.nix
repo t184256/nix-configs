@@ -39,6 +39,11 @@ let
 
     ${pkgs.networkmanager}/bin/nm-online
   '';
+  live = pkgs.writeShellScriptBin "live" ''
+    set -uexo pipefail
+    ${pkgs.systemd}/bin/systemctl start keyboard-remap
+    ${live-network}/bin/live-network
+  '';
   inst = pkgs.writeShellScriptBin "inst" ''
     set -ueo pipefail
     touch /tmp/.inst
@@ -51,17 +56,27 @@ in
   imports = [ ./config/no-graphics.nix ./config/live.nix ];
 
   xdg.dataFile = lib.mkIf (! config.system.noGraphics && config.system.live) {
-    "applications/live-network.desktop".text = ''
+    "applications/live.desktop".text = ''
       [Desktop Entry]
       Categories=System;
-      Exec=live-network
-      GenericName=Configure network
+      Exec=${live}/bin/live
+      GenericName=Configure live system
       Icon=networkmanager
-      Name=Configure network
+      Name=Configure live system
+      Terminal=true
+      Type=Application
+    '';
+    "applications/inst.desktop".text = ''
+      [Desktop Entry]
+      Categories=System;
+      Exec=${inst}/bin/inst
+      GenericName=Reinstall a system
+      Icon=system-software-install
+      Name=Reinstall a system
       Terminal=true
       Type=Application
     '';
   };
 
-  home.packages = lib.mkIf config.system.live [ live-network inst ];
+  home.packages = lib.mkIf config.system.live [ live-network live inst ];
 }
