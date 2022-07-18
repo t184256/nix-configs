@@ -29,6 +29,7 @@ in {
     environment = {
       gnome.excludePackages = with pkgs.gnome; [
         cheese
+        pkgs.gnome-tour
         epiphany
         geary
         pkgs.orca
