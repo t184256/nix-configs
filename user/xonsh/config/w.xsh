@@ -18,7 +18,7 @@ def _w(args):
                 lockfile = json.load(f)
 	    rev = lockfile['nodes']['nixpkgs']['locked']['rev']
 	    nixpkgs = f'github:NixOS/nixpkgs?rev={rev}'
-	except e:
+	except Exception as e:
             import sys
 	    print(e, file=sys.stderr)
 
