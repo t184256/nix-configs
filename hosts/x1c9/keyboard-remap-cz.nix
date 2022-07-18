@@ -3,10 +3,8 @@
 let
   keyboard-remap = inputs.keyboard-remap.defaultPackage.${pkgs.system};
   keyboard-remap-service = {
-    Unit = {
-      Description = "keyboard-remap";
-      WantedBy = [ "multi-user.target" ];
-    };
+    Unit.Description = "keyboard-remap";
+    Install.WantedBy = [ "default.target" ];
     Service = {
       Type = "simple";
       ExecStart = "sudo ${keyboard-remap}/bin/keyboard-remap-cz";
