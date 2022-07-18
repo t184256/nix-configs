@@ -21,7 +21,7 @@
 
   time.timeZone = "Europe/Prague";
 
-  nix.autoOptimiseStore = true;  # it's tight on disk space
+  nix.settings.auto-optimise-store = true;  # it's tight on disk space
 
   users.mutableUsers = false;
   users.users.monk.passwordFile = "/mnt/persist/secrets/login/monk";

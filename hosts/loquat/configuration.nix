@@ -32,13 +32,13 @@
     supportedFeatures = ["kvm" "nixos-test" "big-parallel" "benchmark"];
     maxJobs = 1;  # we're not in a hurry, we save RAM/SWAP
   } ];
-  nix.buildCores = 3;  # we're not in a hurry, we save RAM/SWAP
+  nix.settings.cores = 3;  # we're not in a hurry, we save RAM/SWAP
   boot.tmpOnTmpfs = true;
   boot.tmpOnTmpfsSize = "2G";
   systemd.services.nix-daemon.environment.TMPDIR = "/nix/tmp";  # large builds
   system.activationScripts.nixtmpdir.text = "mkdir -p /nix/tmp";
   nix.gc.automatic = true;
-  #nix.autoOptimiseStore = true;
+  #nix.settings.auto-optimise-store = true;
   systemd.services.nix-daemon.serviceConfig = {
     CPUAffinity = "0-3";
     MemoryHigh = "14G"; MemoryMax = "15G";
