@@ -90,7 +90,6 @@
         modules = [ hostcfg ] ++ common_modules;
       };
     nixosConfigurations = {
-      cola = mkSystem "x86_64-linux" ./hosts/cola/configuration.nix;
       lychee = mkSystem "x86_64-linux" ./hosts/lychee/configuration.nix;
       loquat = mkSystem "x86_64-linux" ./hosts/loquat/configuration.nix;
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
