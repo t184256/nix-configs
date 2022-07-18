@@ -129,5 +129,11 @@
         inherit specialArgs;
       };
     };
+
+    homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      modules = [ ./hosts/x1c9/home.nix ];
+      extraSpecialArgs = { inherit inputs; };
+    };
   };
 }
