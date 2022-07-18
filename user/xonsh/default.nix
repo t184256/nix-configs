@@ -59,7 +59,13 @@ in
      + (readConfigBit ./config/prompts.xsh)
      + (readConfigBit ./config/completions.xsh)
      + (readConfigBit ./config/history.xsh)
-     + (readConfigBit ./config/nx-commands.xsh)
+     + (readConfigBit ./config/hydra-helper.xsh)
+     + (readConfigBit (
+        if (config.system.os == "other") then
+          ./config/nx-commands-other.xsh
+        else
+          ./config/nx-commands-nixos.xsh
+       ))
      + (readConfigBit ./config/w.xsh)
   ;
 }

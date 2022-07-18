@@ -11,21 +11,23 @@ def _w(args):
     import os
 
     nixpkgs = 'nixpkgs'
-    if os.path.exists('/etc/nixos/flake.lock'):
-        try:
-            import json
-	    with open('/etc/nixos/flake.lock') as f:
-                lockfile = json.load(f)
-	    rev = lockfile['nodes']['nixpkgs']['locked']['rev']
-	    nixpkgs = f'github:NixOS/nixpkgs?rev={rev}'
-	except Exception as e:
-            import sys
-	    print(e, file=sys.stderr)
+    USER_FLAKE_LOCK = os.path.expanduser('~/.nix-configs/flake.lock')
+    for flake_lock in ('/etc/nixos/flake.lock', USER_FLAKE_LOCK):
+        if os.path.exists(flake_lock):
+            try:
+                import json
+                with open(flake_lock) as f:
+                    lockfile = json.load(f)
+                rev = lockfile['nodes']['nixpkgs']['locked']['rev']
+                nixpkgs = f'github:NixOS/nixpkgs?rev={rev}'
+            except Exception as e:
+                import sys
+                print(e, file=sys.stderr)
 
     def expand_arg(arg):  # what to turn a dependency word into?
         if arg.endswith('.nix'):  # a file
             return ['-f', arg]
-	# No idea how to attain that using flakes
+    # No idea how to attain that using flakes
         #elif arg.startswith('py:'):  # ex: py:numpy,notebook
         #    return ['--expr',
         #            'python3.withPackages (ps: with ps; [ ' +
@@ -38,7 +40,7 @@ def _w(args):
         #            '])']
         elif '#' in arg:  # flake reference
             return [arg]
-	else:  # probably a package name
+        else:  # probably a package name
             return [f'{nixpkgs}#{arg}']
 
     cmd = []
