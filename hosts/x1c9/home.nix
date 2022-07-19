@@ -11,6 +11,7 @@
   identity.email = "asosedkin@redhat.com";
 
   imports = [
+    ./gnome.nix
     ./keyboard-remap-cz.nix
     ../../user/config/identity.nix
     ../../user/assorted-tools.nix
