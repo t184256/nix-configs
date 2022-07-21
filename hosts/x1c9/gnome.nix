@@ -65,6 +65,10 @@
       focus-right = [ "<Control><Alt><Super>Right" ];
       focus-up = [ "<Control><Alt><Super>Up" ];
     };
+    "org/gnome/settings-daemon/plugins/media-keys" = {
+      magnifier = [ ];
+      screensaver = [ "<Alt><Super>8" ];
+    };
     "org/gnome/desktop/wm/preferences" = {
       mouse-button-modifier = "<Control>";  # will break apps, but let's try
       num-workspaces = 5;
