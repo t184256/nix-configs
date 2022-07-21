@@ -53,6 +53,17 @@
       switch-to-workspace-3 = [ "<Super><Alt>f" ];
       switch-to-workspace-4 = [ "<Super><Alt>p" ];
       switch-to-workspace-5 = [ "<Super><Alt>g" ];
+      begin-move = [ "<Super><Alt>y" ];
+      move-to-monitor-left = [ "<Super><Left>" ];
+      move-to-monitor-down = [ "<Super><Down>" ];
+      move-to-monitor-right = [ "<Super><Right>" ];
+      move-to-monitor-up = [ "<Super><Up>" ];
+    };
+    "org/gnome/shell/extensions/focus-changer" = {
+      focus-left = [ "<Control><Alt><Super>Left" ];
+      focus-down = [ "<Control><Alt><Super>Down" ];
+      focus-right = [ "<Control><Alt><Super>Right" ];
+      focus-up = [ "<Control><Alt><Super>Up" ];
     };
     "org/gnome/desktop/wm/preferences" = {
       mouse-button-modifier = "<Control>";  # will break apps, but let's try
