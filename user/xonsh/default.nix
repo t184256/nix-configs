@@ -61,7 +61,7 @@ in
      + (readConfigBit ./config/history.xsh)
      + (readConfigBit ./config/hydra-helper.xsh)
      + (readConfigBit (
-        if (config.system.os == "other") then
+        if (config.system.os == "OtherLinux") then
           ./config/nx-commands-other.xsh
         else
           ./config/nx-commands-nixos.xsh
