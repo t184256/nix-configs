@@ -9,8 +9,7 @@ def _nxs():
     import os
     flake = os.path.expanduser('~/.nix-configs')
     nix build @(f'{flake}#homeConfigurations.{$HOSTNAME}.activationPackage') \
-        --out-link /tmp/h-m
-    /tmp/h-m/activate
+        --out-link /tmp/h-m && /tmp/h-m/activate
 
 
 aliases['nxu'] = _nxu
