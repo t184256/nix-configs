@@ -1,7 +1,7 @@
 { pkgs, lib, config, ... }:
 
 {
-  imports = [ ./config/no-graphics.nix ];
+  imports = [ ./config/no-graphics.nix ./config/os.nix ./wraplings.nix ];
   nixpkgs.overlays = [
    (import ../overlays/iosevka-t184256.nix)
    (import ../overlays/select-google-fonts.nix)
@@ -9,34 +9,53 @@
   ];
 
   home = if config.system.noGraphics then {} else {
-   packages = with pkgs; [                  # overlays:
-     iosevka-t184256                        # * iosevka-t184256
-     (google-fonts.just "RobotoCondensed")  # * select-google-fonts
-     noto-fonts-extracondensed              # * noto-fonts-extracondensed
-   ];
-   file.".config/fontconfig/fonts.conf".text = ''
-     <?xml version="1.0"?>
-     <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-     <fontconfig>
+    packages = with pkgs; [                  # overlays:
+      iosevka-t184256                        # * iosevka-t184256
+      (google-fonts.just "RobotoCondensed")  # * select-google-fonts
+      noto-fonts-extracondensed              # * noto-fonts-extracondensed
+    ];
+    file.".config/fontconfig/fonts.conf".text = ''
+      <?xml version="1.0"?>
+      <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+      <fontconfig>
 
-       <!-- Only works OK with firefox if there's no regular Noto -->
+        <!-- Only works OK with firefox if there's no regular Noto -->
 
-       <alias>
-         <family>sans-serif</family>
-         <prefer><family>Noto Sans ExtraCondensed</family></prefer>
-       </alias>
+        <alias>
+          <family>sans-serif</family>
+          <prefer><family>Noto Sans ExtraCondensed</family></prefer>
+        </alias>
 
-       <alias>
-         <family>serif</family>
-         <prefer><family>Noto Serif ExtraCondensed</family></prefer>
-       </alias>
+        <alias>
+          <family>serif</family>
+          <prefer><family>Noto Serif ExtraCondensed</family></prefer>
+        </alias>
 
-       <alias>
-         <family>monospace</family>
-         <prefer><family>Iosevka Term</family></prefer>
-       </alias>
+        <alias>
+          <family>monospace</family>
+          <prefer><family>Iosevka Term</family></prefer>
+        </alias>
 
-     </fontconfig>
-   '';
+      </fontconfig>
+    '';
+    file.".config/fontconfig/no-system-fonts.conf".text =
+      lib.mkIf (config.system.os == "OtherLinux") ''
+        <?xml version="1.0"?>
+        <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+        <fontconfig>
+          <include ignore_missing="yes">/etc/fonts/conf.d</include>
+          <include ignore_missing="yes">/etc/fonts/fonts.conf</include>
+          <include ignore_missing="yes" prefix="xdg">fontconfig/conf.d</include>
+          <include ignore_missing="yes" prefix="xdg">fontconfig/fonts.conf</include>
+          <cachedir>/home/asosedki/.cache/no-system-fonts</cachedir>
+          <rejectfont>
+            <glob>/usr/share/fonts/*</glob>
+          </rejectfont>
+        </fontconfig>
+      '';
+      wraplings = lib.mkIf (config.system.os == "OtherLinux") {
+        no-system-fonts =
+          "env FONTCONFIG_FILE=~/.config/fontconfig/no-system-fonts.conf";
+    };
   };
 }
