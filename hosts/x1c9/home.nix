@@ -29,6 +29,8 @@
     ../../user/xonsh
   ];
 
+  programs.password-store = {enable = true; package = pkgs.pass-wayland; };
+
   home.packages = with pkgs; [
     nixgl.nixGLIntel
   ];
