@@ -35,5 +35,6 @@
   home.packages = with pkgs; [
     nixgl.nixGLIntel
     tiny
+    wl-clipboard
   ];
 }
