@@ -38,8 +38,8 @@
 
       </fontconfig>
     '';
-    file.".config/fontconfig/no-system-fonts.conf".text =
-      lib.mkIf (config.system.os == "OtherLinux") ''
+    file.".config/fontconfig/no-system-fonts.conf" =
+      lib.mkIf (config.system.os == "OtherLinux") { text = ''
         <?xml version="1.0"?>
         <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
         <fontconfig>
@@ -52,7 +52,7 @@
             <glob>/usr/share/fonts/*</glob>
           </rejectfont>
         </fontconfig>
-      '';
+      '';};
       wraplings = lib.mkIf (config.system.os == "OtherLinux") {
         no-system-fonts =
           "env FONTCONFIG_FILE=~/.config/fontconfig/no-system-fonts.conf";
