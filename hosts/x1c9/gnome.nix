@@ -83,6 +83,10 @@
       document-font-name = "Noto Sans ExtraCondensed 14";
       monospace-font-name = "Iosevka Term 14";
     };
+    "org/gnome/settings-daemon/plugins/color" = {
+      night-light-enabled = true;
+      night-light-temperature = 3200;
+    };
     "org/gnome/shell/extensions/unite" = {
       desktop-name-text = "";
       show-window-buttons = "never";
