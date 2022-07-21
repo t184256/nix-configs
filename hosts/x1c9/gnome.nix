@@ -1,6 +1,24 @@
 { ... }:
 
 {
+  xdg.dataFile = {
+    # disable system fonts
+    "applications/firefox.desktop".text = ''
+      [Desktop Entry]
+      Exec=no-system-fonts firefox %u
+      Version=1.0
+      Name=Firefox
+      GenericName=Web Browser
+      Comment=Browse the Web
+      Icon=firefox
+      Terminal=false
+      Type=Application
+      MimeType=text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;text/mml;x-scheme-handler/http;x-scheme-handler/https;
+      StartupNotify=true
+      Categories=Network;WebBrowser;
+      Keywords=web;browser;internet;
+    '';
+  };
   dconf.settings = {
     "org/gnome/shell" = {
       favorite-apps = [
