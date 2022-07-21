@@ -28,14 +28,14 @@
       ];
       disable-user-extensions = false;
       enabled-extensions = [
-        "gnome-kinit@bonzini.gnu.org"
         #"allowlockedremotedesktop@kamens.us"
-        #"autohide-battery@sitnik.ru"
-        #"autohide-volume@unboiled.info"
-        #"focus-changer@heartmire"
-        #"just-perfection-desktop@just-perfection"
+        "autohide-battery@sitnik.ru"
+        "autohide-volume@unboiled.info"
+        "focus-changer@heartmire"
+        "gnome-kinit@bonzini.gnu.org"
+        "just-perfection-desktop@just-perfection"
         #"noannoyance@daase.net"
-        #"unite@hardpixel.eu"
+        "unite@hardpixel.eu"
       ];
     };
     "org/gnome/shell/keybindings" = {
