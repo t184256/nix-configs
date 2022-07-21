@@ -12,6 +12,7 @@
 
   imports = [
     ./gnome.nix
+    ./email.nix
     ./keyboard-remap-cz.nix
     ../../user/config/identity.nix
     ../../user/assorted-tools.nix
