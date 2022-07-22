@@ -51,6 +51,8 @@ in
         if _ls_alias is not None:
             aliases['ls'] = _ls_alias
         del _ls_alias
+        if 'll' in aliases:
+            del aliases['ll']
 
     xontrib load direnv
     xontrib load readable-traceback
