@@ -61,11 +61,17 @@
           u = "toggletags unread";
           "/" = "prompt 'search '";
         };
+        search = {
+          i = "select; fold *; unfold tag:unread; move next unfolded";
+          U = "search tag:unread; move last";
+        };
         thread = {
-          h = "bclose";
+          h = "bclose; refresh";
           n = "move next";
           e = "move previous";
           "' '" = "move page down";
+          o = "fold; untag unread; move next unfolded";
+          y = "pipeto urlscal -dW 2>/dev/null";
           r = "reply --all";
           R = "reply";
         };
@@ -86,7 +92,7 @@
   };
 
   home = {
-    packages = [ pkgs.w3m ];
+    packages = with pkgs; [ w3m urlscan ];
     file.".mailcap".text = "text/html;  w3m -dump -o document_charset=%{charset} '%s'; nametemplate=%s.html; copiousoutput";
     activation.notmuch-symlink = lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD ln -sf $VERBOSE_ARG \
