@@ -11,6 +11,16 @@ self: super:
         # TODO: try something closer to Ubuntu Mono style?
         inherits = "ss20";  # default to curly style
         design = {
+          capital-a = "curly-serifless";
+          capital-g = "toothless-corner-serifless-hooked";
+          capital-k = "curly-serifless";
+          capital-r = "curly";
+          capital-q = "straight";
+          capital-v = "curly";
+          capital-w = "curly";
+          capital-x = "curly-serifless";
+          capital-y = "curly-serifless";
+          capital-z = "curly-serifless";
           a = "single-storey-earless-corner-serifless";
           b = "toothless-corner";
           d = "toothless-corner-serifless";
@@ -32,19 +42,37 @@ self: super:
           x = "curly-serifless";
           y = "curly";
           z = "curly-serifless";
+          #cyrl-capital-zhe = "curly";
+          cyrl-capital-ka = "curly-serifless";
+          cyrl-capital-u = "curly";
+          cyrl-capital-ya = "curly";
+          cyrl-ka = "curly-serifless";
+          #cyrl-zhe = "curly";
+          #cyrl-u = "curly";
+          cyrl-ya = "curly";
+          at = "fourfold-solid-inner";
           asterisk = "penta-low";
           brace = "straight";
+          bar = "force-upright";
           dollar = "open";
+          cent = "open";
           percent = "dots";
-          # TODO: capitals, cyrillics, digits...
+          zero = "slashed";
+          #four = "semi-open-no-crossing";
+          six = "open-contour";
+          seven = "curly-serifless";
+          nine = "open-contour";
         };
-        # TODO: italic
+        # italic seems largely fine
       };
 
       # less weights => faster rebuilding
       weights = {
+        extralight = { css = 200; menu = 200; shape = 200; };
+        light = { css = 300; menu = 300; shape = 300; };
         regular = { css = 400; menu = 400; shape = 400; };
         medium = { css = 500; menu = 500; shape = 500; };
+        semibold = { css = 600; menu = 600; shape = 600; };
         bold = { css = 700; menu = 700; shape = 700; };
       };
 
