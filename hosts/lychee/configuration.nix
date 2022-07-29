@@ -71,13 +71,10 @@
   console.earlySetup = false;
   boot.loader.timeout = 0;
 
-  environment.systemPackages = with pkgs; [
+  home-manager.users.monk.home.packages = with pkgs; [
     inputs.deploy-rs.defaultPackage.${pkgs.system} hydra-cli
-    firefox-wayland
-    alacritty
-    config.boot.kernelPackages.bpftrace
+    alacritty freerdp
   ];
-  programs.bcc.enable = true;
 
   services.openssh.enable = true;
 
