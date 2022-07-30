@@ -7,7 +7,7 @@ if 'TMUX' in ${...}:
         $PROMPT = '{user}@{hostname}' + $PROMPT
     $PROMPT = '{RESET}' + $PROMPT + '{RESET}'
 
-    $RIGHT_PROMPT = '{#555}{short_cwd}'
+    $RIGHT_PROMPT = ''
     if 'WITH_FEATURES' in ${...}:
         fs_all = $WITH_FEATURES.split()
         fs_new = $WITH_FEATURES_IMMEDIATE.split()
@@ -17,8 +17,10 @@ if 'TMUX' in ${...}:
         $WITH_FEATURES_OLD = ' '.join(uniq(fs_actually_old))
         $WITH_FEATURES_NEW = ' '.join(uniq(fs_actually_new))
         if $WITH_FEATURES_NEW:
-            $RIGHT_PROMPT += ' {#777}{$WITH_FEATURES_NEW}{RESET}'
+            $RIGHT_PROMPT += '{#777}{$WITH_FEATURES_NEW}{RESET} '
         if $WITH_FEATURES_OLD:
-            $RIGHT_PROMPT += ' {#555}{$WITH_FEATURES_OLD}{RESET}'
+            $RIGHT_PROMPT += '{#555}{$WITH_FEATURES_OLD}{RESET} '
         del fs_all, fs_new, fs_actually_new, fs_actually_old, uniq
-    $RIGHT_PROMPT += '{gitstatus: {}}{RESET}'
+    # ordering is a workaround to https://github.com/xonsh/xonsh/issues/4900
+    $RIGHT_PROMPT += '{gitstatus:{} }{#555}{short_cwd}'
+    $RIGHT_PROMPT += '{RESET}'

@@ -117,18 +117,25 @@ del orange, pink, fuchsia
 
 $DYNAMIC_CWD_ELISION_CHAR = '…'
 
-#$XONSH_GITSTATUS_HASH = ':'
-$XONSH_GITSTATUS_BRANCH = '{#555}'
-$XONSH_GITSTATUS_OPERATION = '{#fff}'
-$XONSH_GITSTATUS_STAGED = '{BOLD_#0f0}~'
-$XONSH_GITSTATUS_CONFLICTS = '{BOLD_#f00}!'
-$XONSH_GITSTATUS_CHANGED = '{#fff}±'
-$XONSH_GITSTATUS_UNTRACKED = '{#555}…'
-$XONSH_GITSTATUS_STASHED = '{#fff}#'
-$XONSH_GITSTATUS_CLEAN = '{#555}='
-$XONSH_GITSTATUS_AHEAD = '{#fff}+'
-$XONSH_GITSTATUS_BEHIND = '{#fff}-'
-$XONSH_GITSTATUS_FIELDS_HIDDEN = ('LINES_ADDED', 'LINES_REMOVED')
-$XONSH_GITSTATUS_SEPARATOR = ' '
-$XONSH_GITSTATUS_BRANCHES_HIDDEN = ('main', 'master')
+$PROMPT_FIELDS['gitstatus.branch'].prefix = '{#555}'
+$PROMPT_FIELDS['gitstatus.operations'].prefix = '{#fff}'
+$PROMPT_FIELDS['gitstatus.staged'].prefix = '{BOLD_#0f0}~'
+$PROMPT_FIELDS['gitstatus.conflicts'].prefix = '{BOLD_#f00}!'
+$PROMPT_FIELDS['gitstatus.changed'].prefix = '{#fff}±'
+$PROMPT_FIELDS['gitstatus.untracked'].prefix = '{#555}…'
+$PROMPT_FIELDS['gitstatus.stash_count'].prefix = '{#fff}#'
+$PROMPT_FIELDS['gitstatus.clean'].prefix = '{#555}'
+$PROMPT_FIELDS['gitstatus.ahead'].prefix = '{#fff}+'
+$PROMPT_FIELDS['gitstatus.behind'].prefix = '{#fff}-'
 
+__old_updator = $PROMPT_FIELDS['gitstatus.branch'].updator
+def new_updator(fld, ctx):
+    __old_updator(fld, ctx)
+    if fld.value in {'main', 'master'}:
+        fld.value = ''
+$PROMPT_FIELDS['gitstatus.branch'].updator = new_updator
+del new_updator
+
+$PROMPT_FIELDS['gitstatus.hidden'] = ('.lines_added', '.lines_removed')
+$PROMPT_FIELDS['gitstatus.separator'] = ' '
+$PROMPT_FIELDS['gitstatus'].fragments = ('.branch', '.ahead', '.behind', '.operations', '.staged', '.conflicts', '.changed', '.deleted', '.untracked', '.stash_count', '.lines_added', '.lines_removed')
