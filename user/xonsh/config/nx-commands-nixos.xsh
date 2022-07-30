@@ -22,7 +22,7 @@ def _in_tmpdir(cmd):
         $_cmd = cmd
         sudo git config --global --add safe.directory /etc/nixos
         try:
-            sh -c @(f'cd {$_TMP_DIR} && $_cmd' + ' '.join(extra_args))
+            sh -c @(f'cd {$_TMP_DIR} && $_cmd ' + ' '.join(extra_args))
         finally:
             rm -f @($_TMP_DIR + '/result')
             rm -d $_TMP_DIR
