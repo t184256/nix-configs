@@ -50,13 +50,13 @@ self: super:
           x = "curly-serifless";
           y = "curly";
           z = "curly-serifless";
-          #cyrl-capital-zhe = "curly";
+          cyrl-capital-zhe = "curly";
           cyrl-capital-ka = "curly-serifless";
           cyrl-capital-u = "curly";
           cyrl-capital-ya = "curly";
           cyrl-ka = "curly-serifless";
-          #cyrl-zhe = "curly";
-          #cyrl-u = "curly";
+          cyrl-zhe = "curly";
+          cyrl-u = "curly";
           cyrl-ya = "curly";
           at = "fourfold-solid-inner";
           asterisk = "penta-low";
@@ -66,7 +66,7 @@ self: super:
           cent = "open";
           percent = "dots";
           zero = "slashed";
-          #four = "semi-open-no-crossing";
+          four = "semi-open-no-crossing";
           six = "open-contour";
           seven = "curly-serifless";
           nine = "open-contour";
