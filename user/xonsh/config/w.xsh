@@ -10,19 +10,10 @@ def _w(args):
     """
     import os
 
-    nixpkgs = 'nixpkgs'
-    USER_FLAKE_LOCK = os.path.expanduser('~/.nix-configs/flake.lock')
-    for flake_lock in ('/etc/nixos/flake.lock', USER_FLAKE_LOCK):
-        if os.path.exists(flake_lock):
-            try:
-                import json
-                with open(flake_lock) as f:
-                    lockfile = json.load(f)
-                rev = lockfile['nodes']['nixpkgs']['locked']['rev']
-                nixpkgs = f'github:NixOS/nixpkgs?rev={rev}'
-            except Exception as e:
-                import sys
-                print(e, file=sys.stderr)
+    nixpkgs = lambda s: f'nixpkgs#{s}'
+    for configdir in (os.path.expanduser('~/.nix-configs'), '/etc/nixos'):
+        if os.path.exists(os.path.join(configdir, 'flake.nix')):
+	    nixpkgs = lambda s: f'{configdir}#nixpkgs.{s}'
 
     def expand_arg(arg):  # what to turn a dependency word into?
         if arg.endswith('.nix'):  # a file
@@ -41,7 +32,10 @@ def _w(args):
         elif '#' in arg:  # flake reference
             return [arg]
         else:  # probably a package name
-            return [f'{nixpkgs}#{arg}']
+            return [nixpkgs(arg)]
+
+    def feature(arg):  # pretty-print feature name
+        return arg.split('#', 1)[1] if '#' in arg else arg
 
     cmd = []
     if '--' in args:  # run cmd, ex: with ncdu -- ncdu /
@@ -54,7 +48,7 @@ def _w(args):
         else:  # 'forgot sudo' scenario: with file - sudo file -s /dev/sdc*
             args, cmd = args[:i] + [args[i + 2]], ['sudo'] + args[i + 2:]
     dir_tail = $(pwd).strip().split('/')[-1]
-    features = ['+' + a for a in args] if args else ['@' + dir_tail]
+    features = ['+' + feature(a) for a in args] if args else ['@' + dir_tail]
     with_features = ' '.join(features + ${...}.get('WITH_FEATURES', '').split())
     flatten = lambda l: [item for sublist in l for item in sublist]
     args = flatten([expand_arg(a) for a in args])
