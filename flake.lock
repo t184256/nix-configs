@@ -447,6 +447,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_pre_185633": {
+      "locked": {
+        "lastModified": 1659550031,
+        "narHash": "sha256-Fw6zRNBonu9wwVSQ0Cj9zHliw6yChMQPf3GPQFJZ4us=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "0d440c18119406feb8a32cd5ec2ff0b83fc9104b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "0d440c18119406feb8a32cd5ec2ff0b83fc9104b",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "alacritty-autoresizing": "alacritty-autoresizing",
@@ -463,6 +479,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nixpkgs_21_11": "nixpkgs_21_11",
+        "nixpkgs_pre_185633": "nixpkgs_pre_185633",
         "simple-nixos-mailserver": "simple-nixos-mailserver"
       }
     },

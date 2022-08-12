@@ -1,8 +1,11 @@
-{ pkgs, lib, config, ... }:
+{ pkgs, lib, config, inputs, ... }:
 
 {
   imports = [ ./config/no-graphics.nix ./config/os.nix ./wraplings.nix ];
   nixpkgs.overlays = [
+   (_: _: {
+     iosevka = inputs.nixpkgs_pre_185633.legacyPackages.${pkgs.system}.iosevka;
+   })
    (import ../overlays/iosevka-t184256.nix)
    (import ../overlays/select-google-fonts.nix)
    (import ../overlays/noto-fonts-extracondensed.nix)

@@ -1,13 +1,13 @@
 self: super:
 {
   iosevka-t184256 = (super.iosevka.overrideAttrs (_: {
-    # temporary
-    src = super.fetchFromGitHub {
-      owner = "be5invis";
-      repo = "iosevka";
-      rev = "v15.6.3";
-      sha256 = "sha256-wsFx5sD1CjQTcmwpLSt97OYFI8GtVH54uvKQLU1fWTg=";
-    };
+    ## temporary
+    #src = super.fetchFromGitHub {
+    #  owner = "be5invis";
+    #  repo = "iosevka";
+    #  rev = "v15.6.3";
+    #  sha256 = "sha256-wsFx5sD1CjQTcmwpLSt97OYFI8GtVH54uvKQLU1fWTg=";
+    #};
   })).override {
     set = "t184256";
     privateBuildPlan = {
