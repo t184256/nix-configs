@@ -9,7 +9,6 @@
       meld
       dino
       transmission-remote-gtk
-      giara
       kodi-wayland kodi-cli
       moonlight-qt
       gnome.gnome-session  # for gnome-session-inhibit
