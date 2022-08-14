@@ -5,6 +5,7 @@ let
   keyboard-remap-service = {
     description = "keyboard-remap";
     wantedBy = [ "multi-user.target" ];
+    path = [ pkgs.dmidecode ];
 
     serviceConfig = {
       Type = "simple";
