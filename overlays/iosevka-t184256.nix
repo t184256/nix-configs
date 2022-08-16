@@ -1,13 +1,14 @@
 self: super:
 {
   iosevka-t184256 = (super.iosevka.overrideAttrs (_: {
-    ## temporary
-    #src = super.fetchFromGitHub {
-    #  owner = "be5invis";
-    #  repo = "iosevka";
-    #  rev = "v15.6.3";
-    #  sha256 = "sha256-wsFx5sD1CjQTcmwpLSt97OYFI8GtVH54uvKQLU1fWTg=";
-    #};
+    # temporary
+    version = "15.6.6";
+    src = super.fetchFromGitHub {
+      owner = "be5invis";
+      repo = "iosevka";
+      rev = "v15.6.3";
+      sha256 = "sha256-wsFx5sD1CjQTcmwpLSt97OYFI8GtVH54uvKQLU1fWTg=";
+    };
   })).override {
     set = "t184256";
     privateBuildPlan = {
@@ -50,12 +51,12 @@ self: super:
           x = "curly-serifless";
           y = "curly";
           z = "curly-serifless";
-          #cyrl-capital-zhe = "curly";
+          cyrl-capital-zhe = "curly";
           cyrl-capital-ka = "curly-serifless";
           cyrl-capital-u = "curly";
           cyrl-capital-ya = "curly";
           cyrl-ka = "curly-serifless";
-          #cyrl-zhe = "curly";
+          cyrl-zhe = "curly";
           #cyrl-u = "curly";
           cyrl-ya = "curly";
           at = "fourfold-solid-inner";

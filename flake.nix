@@ -23,9 +23,6 @@
     nix.url = "github:NixOS/nix";
     nix.inputs.nixpkgs.follows = "nixpkgs";
 
-    nixpkgs_pre_185633.url =
-      "github:NixOS/nixpkgs/0d440c18119406feb8a32cd5ec2ff0b83fc9104b";
-
     hydra.url = "github:t184256/hydra/nix-ca";
     hydra.inputs.nixpkgs.follows = "nixpkgs_21_11";
     nixpkgs_21_11.url = "github:NixOS/nixpkgs/release-21.11";
@@ -56,7 +53,6 @@
   outputs = {
     self,
     nixpkgs,
-    nixpkgs_pre_185633,
     nixos-hardware,
     impermanence,
     simple-nixos-mailserver,
