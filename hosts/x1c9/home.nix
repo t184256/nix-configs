@@ -36,5 +36,7 @@
     nixgl.nixGLIntel
     tiny
     wl-clipboard
+    git-absorb
+    sccache
   ];
 }
