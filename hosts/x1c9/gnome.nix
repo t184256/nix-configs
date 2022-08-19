@@ -73,6 +73,7 @@
       mouse-button-modifier = "<Control>";  # will break apps, but let's try
       num-workspaces = 5;
       titlebar-font = "Iosevka Term 14";
+      auto-raise = false;
     };
     "org/gnome/mutter".dynamic-workspaces = false;
     "org/gnome/desktop/interface" = {
