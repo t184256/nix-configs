@@ -10,8 +10,8 @@
     rootUrl = "https://git.unboiled.info";
     httpAddress = "127.0.0.1";
     httpPort = 3000;
-    cookieSecure = true;
-    disableRegistration = true;  # The first registered user becomes an admin.
+    settings.session.DISABLE_REGISTRATION = true;  # 1st user becomes an admin.
+    settings.session.COOKIE_SECURE = true;
     settings.service.REQUIRE_SIGNIN_VIEW = true;
     dump.enable = true;
   };
