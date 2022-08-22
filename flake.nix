@@ -97,7 +97,7 @@
     homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
       pkgs =  import nixpkgs {
         system = "x86_64-linux";
-        overlays = [ nixgl.overlay ];
+        overlays = [ nixgl.overlay.x86_64-linux ];
       };
       modules = [ ./hosts/x1c9/home.nix ];
       extraSpecialArgs = { inherit inputs; };
