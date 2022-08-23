@@ -1,5 +1,10 @@
 #$ENABLE_ASYNC_PROMPT = True  # coloring issues
 if 'TMUX' in ${...}:
+    class MyCurrentJobField($PROMPT_FIELDS["current_job"].__class__):
+        def update(self, ctx):
+            super().update(ctx)
+            self.value = self.value or 'xonsh'
+    $PROMPT_FIELDS["current_job"] = MyCurrentJobField()
     $TITLE = '{current_job}'
     $PROMPT = "{#555}{prompt_end} "
     if $PROMPT_FIELDS['user'] not in ('monk', 'nix-on-droid', 'asosedki'):
