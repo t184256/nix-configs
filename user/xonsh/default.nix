@@ -37,6 +37,7 @@ in
 
   home.file.".xonshrc".text = ''
     if not ''${...}.get('__NIXOS_SET_ENVIRONMENT_DONE'):
+        $FOREIGN_ALIASES_SUPPRESS_SKIP_MESSAGE = True  # matters on Fedora
         # The NixOS environment and thereby also $PATH
         # haven't been fully set up at this point. But
         # `source-bash` below requires `bash` to be on $PATH,
