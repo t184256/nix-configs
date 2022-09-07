@@ -4,6 +4,9 @@ let
   hydraPkg = inputs.hydra.defaultPackage.${pkgs.system};
 in
 {
+  # https://github.com/NixOS/nix/issues/6981
+  nix.package = pkgs.nixVersions.nix_2_10;
+
   # hydra-create-user monk --full-name 'Alexander Sosedkin' \
   #  --email-address 'monk@unboiled.info' --role admin
   # nix-store --generate-binary-cache-key hydra-unboiled-info \

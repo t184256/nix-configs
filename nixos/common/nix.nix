@@ -1,7 +1,6 @@
 { pkgs, ... }:
 
 {
-  nix.package = pkgs.nixFlakes;
   nix.settings = {
     substituters = [ "https://hydra.unboiled.info?priority=200" ];
     trusted-public-keys = [
