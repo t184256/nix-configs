@@ -486,11 +486,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1662714974,
-        "narHash": "sha256-1IC5l6qpG8No+UW7dDto8tNGBMqqnZMHFBp8gcv+4yU=",
+        "lastModified": 1662752665,
+        "narHash": "sha256-DLPx2dpHKlOJJ0D2sxDc0hm0F6zJ0NZ3L2D01wT8d0I=",
         "owner": "t184256",
         "repo": "podcastify",
-        "rev": "8dcbecfff2974ad5b8c88e1d2670c7fa7d84b1a1",
+        "rev": "eb7fc578ca14b725833547b6be8ef22ab032192a",
         "type": "github"
       },
       "original": {
