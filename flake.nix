@@ -47,6 +47,10 @@
       url = "github:t184256/input-utils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    podcastify = {
+      url = "github:t184256/podcastify";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
   };
 
@@ -64,6 +68,7 @@
     alacritty-autoresizing,
     keyboard-remap,
     input-utils,
+    podcastify,
     ...
   }@inputs:
   let
@@ -71,6 +76,7 @@
     specialArgs = { inherit inputs; };
     common_modules = [ impermanence.nixosModule
                        simple-nixos-mailserver.nixosModule
+                       podcastify.nixosModule
                        home-manager.nixosModules.home-manager {
                          # false as overlays are pulled in where needed
                          home-manager.useGlobalPkgs = false;
