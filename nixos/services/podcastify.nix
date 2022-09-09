@@ -14,6 +14,7 @@
       forceSSL = true;
       locations."/".proxyPass = "http://127.0.0.1:9696";
       extraConfig = ''
+        proxy_connect_timeout 120;
         proxy_read_timeout 180;
       '';
     };
