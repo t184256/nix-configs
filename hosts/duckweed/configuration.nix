@@ -37,6 +37,7 @@
   environment.persistence."/mnt/persist" = {
     hideMounts = true;
     directories = [
+      "/var/lib/acme"
       "/var/log"
     ];
     files =
