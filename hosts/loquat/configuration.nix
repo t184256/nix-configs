@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   networking.hostName = "loquat";
@@ -26,6 +26,11 @@
 
   zramSwap = { enable = true; memoryPercent = 50; };
 
+  services.hydra.buildMachinesFiles = [(
+    pkgs.writeText "machines" ''
+      localhost x86_64-linux - 1 1 kvm,nixos-test,big-parallel,benchmark  -
+    ''
+  )];
   nix.buildMachines = [ {
     hostName = "localhost";
     system = "x86_64-linux";
