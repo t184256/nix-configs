@@ -3,12 +3,11 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
+    flake-utils.url = "github:numtide/flake-utils";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
-    nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
 
     impermanence.url = "github:nix-community/impermanence";
-    impermanence.inputs.nixpkgs.follows = "nixpkgs";
 
     simple-nixos-mailserver.url =
       "gitlab:simple-nixos-mailserver/nixos-mailserver";
@@ -19,6 +18,7 @@
 
     nixgl.url = "github:guibou/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
+    nixgl.inputs.flake-utils.follows = "flake-utils";
 
     nix.url = "github:NixOS/nix";
     nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -38,18 +38,22 @@
     alacritty-autoresizing = {
       url = "github:t184256/alacritty-autoresizing";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
     };
     keyboard-remap = {
       url = "github:t184256/keyboard-remap";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
     };
     input-utils = {
       url = "github:t184256/input-utils";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
     };
     podcastify = {
       url = "github:t184256/podcastify";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
     };
 
   };
