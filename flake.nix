@@ -3,7 +3,13 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
+
     flake-utils.url = "github:numtide/flake-utils";
+
+    nix-on-droid.url = "github:t184256/nix-on-droid/testing";
+    nix-on-droid.inputs.nixpkgs.follows = "nixpkgs";
+    nix-on-droid.inputs.home-manager.follows = "home-manager";
+    nix-on-droid.inputs.flake-utils.follows = "flake-utils";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
@@ -61,6 +67,7 @@
   outputs = {
     self,
     nixpkgs,
+    nix-on-droid,
     nixos-hardware,
     impermanence,
     simple-nixos-mailserver,
@@ -112,9 +119,15 @@
       modules = [ ./hosts/x1c9/home.nix ];
       extraSpecialArgs = { inherit inputs; };
     };
+    nixOnDroidConfigurations = {
+      coconut = nix-on-droid.lib.nixOnDroidConfiguration {
+        config = ./hosts/coconut/nix-on-droid.nix;
+        system = "aarch64-linux";
+      };
+    };
   in
   {
-    inherit nixosConfigurations homeConfigurations;
+    inherit nixosConfigurations homeConfigurations nixOnDroidConfigurations;
     hydraJobs =
       (builtins.mapAttrs (_: v: v.config.system.build.toplevel)
                          nixosConfigurations)
