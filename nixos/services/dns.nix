@@ -4,17 +4,17 @@ let
   IP = {
     duckweed = "51.15.87.8";
     fig = "212.164.221.47";
-    loquat = "38.242.251.25";
+    loquat = "38.242.239.104";
   };
   zones."unboiled.info".data = ''
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2022041701; serial number
-                                 3600      ; refresh
-                                 900       ; retry
-                                 1209600   ; expire
-                                 1800      ; ttl
+                                 2022092202; serial number
+                                 360       ; refresh
+                                 90        ; retry
+                                 120960    ; expire
+                                 180       ; ttl
                              )
                     MX 10    loquat.unboiled.info.
                     NS       a.ns.unboiled.info.
