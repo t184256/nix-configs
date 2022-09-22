@@ -4,7 +4,8 @@ let
   inst = pkgs.writeShellScriptBin "inst" ''
     set -ueo pipefail
     BASEURL=https://raw.githubusercontent.com/t184256/nix-configs/staging
-    source <(${pkgs.curl}/bin/curl "$BASEURL/misc/inst/coconut")
+    export PATH=${pkgs.curl}/bin:$PATH
+    source <(curl "$BASEURL/misc/inst/coconut")
   '';
 in
 {

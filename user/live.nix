@@ -48,7 +48,8 @@ let
     set -ueo pipefail
     touch /tmp/.inst
     chmod 700 /tmp/.inst
-    ${pkgs.curl}/bin/curl https://monk.unboiled.info/.inst > /tmp/.inst
+    BASEURL=https://raw.githubusercontent.com/t184256/nix-configs/staging
+    ${pkgs.curl}/bin/curl "$BASEURL/misc/inst/auto" > /tmp/.inst
     exec /tmp/.inst
   '';
 in

@@ -1,0 +1,401 @@
+#!/usr/bin/env bash
+set -uexo pipefail
+
+INSPECT=${INSPECT-0}
+
+for cmd in blkid btrfs cryptsetup microdnf mkswap sed sudo; do
+    command -v $cmd
+done
+
+# ensure we're running on the right host
+[[ -e /dev/disk/by-partlabel/X1C9_ROOT ]]
+[[ -e /dev/disk/by-partlabel/X1C9_SWAP ]]
+ROOT_PUUID=$(sudo blkid -o value -s UUID /dev/disk/by-partlabel/X1C9_ROOT)
+SWAP_PUUID=$(sudo blkid -o value -s UUID /dev/disk/by-partlabel/X1C9_SWAP)
+HOST=x1c9
+
+# cryptsetup unlock and mount the right partitions, reformat swap
+[[ -e /dev/disk/by-label/X1C9_ROOT ]] \
+    || sudo cryptsetup open /dev/disk/by-partlabel/X1C9_ROOT X1C9_ROOT
+[[ -e /dev/disk/by-label/X1C9_ROOT ]]
+sudo mkdir -p /mnt/tgt
+! mountpoint /mnt/tgt || sudo umount -R /mnt/tgt
+sudo mount -o subvol=/ /dev/disk/by-label/X1C9_ROOT /mnt/tgt
+[[ -e /dev/disk/by-label/X1C9_SWAP ]] \
+    || sudo cryptsetup open /dev/disk/by-partlabel/X1C9_SWAP X1C9_SWAP \
+                            --key-file /mnt/tgt/secrets/swap.key
+[[ -e /dev/disk/by-label/X1C9_SWAP ]]
+#sudo mkswap -L X1C9_SWAP /dev/disk/by-label/X1C9_SWAP
+SWAP_UUID=$(sudo blkid -o value -s UUID /dev/disk/by-label/X1C9_SWAP)
+
+# check for the presence of secrets
+[[ -e /mnt/tgt/secrets ]]
+sudo [ -e /mnt/tgt/secrets/swap.key ]
+[[ ! -r /mnt/tgt/secrets/login/root ]]
+! ls /mnt/tgt/secrets 2>/dev/null
+! ls /mnt/tgt/secrets/login 2>/dev/null
+sudo [ -e /mnt/tgt/secrets/login/root ]
+sudo [ -e /mnt/tgt/secrets/login/monk ] || \
+    sudo [ -e /mnt/tgt/secrets/login/asosedki ]
+
+# snapshot home and persist subvolumes, create new root subvolume
+if [[ "$INSPECT" != 1 ]]; then
+    [[ -e /mnt/tgt/root ]] || sudo btrfs subvol create /mnt/tgt/root
+    [[ -e /mnt/tgt/home ]] || sudo btrfs subvol create /mnt/tgt/home
+    [[ -e /mnt/tgt/persist ]] || sudo btrfs subvol create /mnt/tgt/persist
+    if [[ -e /mnt/tgt/root/curr ]]; then
+        set +e
+        PRE_PREV=$(cat <(ls /mnt/tgt/root/) \
+                       <(ls /mnt/tgt/home/) \
+                       <(ls /mnt/tgt/persist/) \
+                       | grep -vx curr | sort -n | tail -n1)
+        set -e
+        if [[ ! -e /mnt/tgt/root/0000 ]]; then
+            PREV=0000
+        else
+            PRE_PREV=${PRE_PREV:-0}
+            PRE_PREV=$((10#$PRE_PREV))
+            PREV=$((PRE_PREV + 1))
+            PREV=$(printf %04d $PREV)
+        fi
+        sudo mv /mnt/tgt/root/curr /mnt/tgt/root/$PREV
+        if [[ -e /mnt/tgt/home/curr ]]; then
+            sudo btrfs subvolume snapshot -r /mnt/tgt/home/curr \
+                                             /mnt/tgt/home/$PREV
+        fi
+        if [[ -e /mnt/tgt/persist/curr ]]; then
+            sudo btrfs subvolume snapshot -r /mnt/tgt/persist/curr \
+                                             /mnt/tgt/persist/$PREV
+        fi
+    fi
+    sudo btrfs subvol create /mnt/tgt/root/curr
+    [[ -e /mnt/tgt/home/curr ]] || \
+        sudo btrfs subvolume create /mnt/tgt/home/curr
+    [[ -e /mnt/tgt/persist/curr ]] || \
+        sudo btrfs subvolume create /mnt/tgt/persist/curr
+fi
+
+# create misc subvolumes
+[[ -e /mnt/tgt/nix ]] || sudo btrfs subvol create /mnt/tgt/nix
+[[ -e /mnt/tgt/archive ]] || sudo btrfs subvol create /mnt/tgt/archive
+[[ -e /mnt/tgt/mail ]] || sudo btrfs subvol create /mnt/tgt/mail
+[[ -e /mnt/tgt/machines ]] || sudo btrfs subvol create /mnt/tgt/machines
+[[ -e /mnt/tgt/saviour ]] || sudo btrfs subvol create /mnt/tgt/saviour
+[[ -e /mnt/tgt/cache ]] || sudo btrfs subvol create /mnt/tgt/cache
+
+# prepare for invoking microdnf
+sudo rm -rf /tmp/.inst-files/dnf
+mkdir -p /tmp/.inst-files/dnf/yum.repos.d
+touch /tmp/.inst-files/dnf/dnf.conf
+cat > /tmp/.inst-files/dnf/yum.repos.d/fedora.repo << \EOF
+[fedora]
+name=Fedora $releasever - $basearch
+baseurl=https://download.fedoraproject.org/pub/fedora/linux/releases/$releasever/Everything/$basearch/os/
+enabled=1
+gpgcheck=0
+EOF
+cat > /tmp/.inst-files/dnf/yum.repos.d/fedora-updates.repo << \EOF
+[fedora-updates]
+name=Fedora Updates $releasever - $basearch
+baseurl=https://download.fedoraproject.org/pub/fedora/linux/updates/$releasever/Everything/$basearch/
+enabled=1
+gpgcheck=0
+EOF
+
+# mount what's needed for the chroot
+[[ -d /mnt/tgt/root/curr/dev ]] || sudo mkdir /mnt/tgt/root/curr/dev
+[[ -d /mnt/tgt/root/curr/proc ]] || sudo mkdir /mnt/tgt/root/curr/proc
+[[ -d /mnt/tgt/root/curr/sys ]] || sudo mkdir /mnt/tgt/root/curr/sys
+[[ -d /mnt/tgt/root/curr/etc ]] || sudo mkdir /mnt/tgt/root/curr/etc
+[[ -d /mnt/tgt/root/curr/boot ]] || sudo mkdir /mnt/tgt/root/curr/boot
+[[ -d /mnt/tgt/root/curr/nix ]] || sudo mkdir /mnt/tgt/root/curr/nix
+[[ -d /mnt/tgt/root/curr/home ]] || sudo mkdir /mnt/tgt/root/curr/home
+cleanup() {
+    set +x
+    sudo umount /mnt/tgt/root/curr/dev/pts || true
+    sudo umount /mnt/tgt/root/curr/dev || true
+    sudo umount /mnt/tgt/root/curr/proc || true
+    sudo umount /mnt/tgt/root/curr/sys/firmware/efi/efivars || true
+    sudo umount /mnt/tgt/root/curr/sys || true
+    sudo umount /mnt/tgt/root/curr/etc/resolv.conf || true
+    sudo umount /mnt/tgt/root/curr/boot || true
+    sudo umount /mnt/tgt/root/curr/nix || true
+    sudo umount /mnt/tgt/root/curr/home || true
+    sudo umount /mnt/tgt/root/curr || true
+    sudo ln -sf /run/systemd/resolve/stub-resolv.conf \
+                /mnt/tgt/root/curr/etc/resolv.conf
+}
+trap 'cleanup' EXIT
+sudo mount -o subvol=root/curr /dev/disk/by-label/X1C9_ROOT /mnt/tgt/root/curr  # GRUB needs it
+sudo mount --bind /dev /mnt/tgt/root/curr/dev
+sudo mount --bind /dev/pts /mnt/tgt/root/curr/dev/pts
+sudo mount --bind /proc /mnt/tgt/root/curr/proc
+sudo mount --bind /sys /mnt/tgt/root/curr/sys
+sudo mount --bind /sys/firmware/efi/efivars \
+                  /mnt/tgt/root/curr/sys/firmware/efi/efivars
+sudo mount --bind /mnt/tgt/nix /mnt/tgt/root/curr/nix
+sudo mount --bind /mnt/tgt/home/curr /mnt/tgt/root/curr/home
+sudo mount /dev/disk/by-partlabel/X1C9_BOOT /mnt/tgt/root/curr/boot
+sudo rm -rf /mnt/tgt/root/curr/boot/*
+sudo rm -f /mnt/tgt/root/curr/etc/resolv.conf
+sudo touch /mnt/tgt/root/curr/etc/resolv.conf
+sudo mount --bind -o ro /etc/resolv.conf /mnt/tgt/root/curr/etc/resolv.conf
+CHROOT='sudo chroot /mnt/tgt/root/curr /bin/env PATH=/bin:/sbin'
+
+# inspect if requested
+if [[ "$INSPECT" == 1 ]]; then $CHROOT bash; exit 0; fi
+
+# invoke microdnf to install the most basic system
+sudo microdnf -y \
+    --noplugins \
+    --releasever=36 \
+    --installroot=/mnt/tgt/root/curr \
+    --config /tmp/.inst-files/dnf/dnf.conf \
+    --setopt=reposdir=/tmp/.inst-files/dnf/yum.repos.d \
+    --setopt=varsdir=/tmp/.inst-files/dnf/vars \
+    --setopt=cachedir=/mnt/tgt/cache/dnf-first-install \
+    --refresh \
+    --setopt=install_weak_deps=0 \
+    --setopt=keepcache=1 \
+    install dnf dnf-plugins-core fedora-gpg-keys \
+            bash coreutils \
+            psmisc passwd \
+            glibc-minimal-langpack glibc-langpack-en \
+            kernel dracut zstd plymouth plymouth-system-theme \
+            linux-firmware iwlax2xx-firmware \
+            systemd systemd-resolved rootfiles \
+            selinux-policy-targeted policycoreutils \
+            zram-generator \
+            NetworkManager polkit \
+            NetworkManager-tui NetworkManager-wifi NetworkManager-openvpn \
+            openssh-server openssh-clients hostname firewalld iproute \
+	    iputils netcat \
+            cryptsetup parted btrfs-progs e2fsprogs \
+            sudo vim-minimal man-db time diffutils \
+            pcsc-lite opensc \
+            tar wget curl git-core ca-certificates \
+            htop iotop ncdu strace ltrace mtr bzip2 lz4 p7zip \
+            udisks \
+            mesa-dri-drivers \
+            gdm gnome-session gnome-online-accounts gnome-console \
+            gnome-extensions-app seahorse gedit gnome-calendar \
+	    nautilus evince file-roller cheese meld \
+            krb5-workstation krb5-auth-dialog \
+            fprintd fprintd-pam \
+            NetworkManager-openvpn-gnome \
+            bash-completion \
+            firefox
+
+            # busybox \
+            # sssd-common sssd-kcm \
+sudo tee /mnt/tgt/root/curr/etc/selinux/fixfiles_exclude_dirs <<EOF
+/nix/store
+/home
+/mnt
+EOF
+#sudo touch /mnt/tgt/root/curr/.autorelabel
+$CHROOT fixfiles -T0 onboot
+sudo sed -i 's|^\[main\]$|[main]\ninstall_weak_deps=0|' \
+         /mnt/tgt/root/curr/etc/dnf/dnf.conf
+sudo sed -i 's|^\[main\]$|[main]\ndeltarpm=0|' \
+         /mnt/tgt/root/curr/etc/dnf/dnf.conf
+sudo sed -i 's|^\[main\]$|[main]\nmax_parallel_downloads=10|' \
+         /mnt/tgt/root/curr/etc/dnf/dnf.conf
+
+# run a makecache in background
+if [[ -d /mnt/tgt/cache/dnf-cache ]]; then
+    sudo mkdir -p /mnt/tgt/root/curr/var/cache/dnf
+    sudo cp -ra /mnt/tgt/cache/dnf-cache/* /mnt/tgt/root/curr/var/cache/dnf/
+fi
+$CHROOT dnf makecache --refresh &>/dev/null &
+makecache_pid=$!
+
+# HACK, save myself a reboot
+#sudo sed -i \
+#    -e "s|systemctl --force reboot$|exit 0  #systemctl --force reboot|" \
+#    -e "s|sync$|echo 'syncing...'; sync; echo 'synced'|" \
+#    /mnt/tgt/root/curr/usr/libexec/selinux/selinux-autorelabel
+
+# configure some basic things
+$CHROOT systemd-firstboot \
+    --locale=C.UTF-8 --locale-messages=C.UTF-8 \
+    --timezone=Europe/Prague \
+    --hostname=$HOST \
+    --root-shell=/bin/bash
+$CHROOT groupadd -g 1000 asosedki
+$CHROOT useradd -g 1000 -u 1000 -M -d /home/asosedki -s /bin/bash asosedki
+$CHROOT usermod -a -G wheel,users,audio asosedki
+sudo sed -i \
+    -e "s|^root:\*:|root:$(sudo cat /mnt/tgt/secrets/login/root):|" \
+    -e "s|^asosedki:!!:|asosedki:$(sudo cat /mnt/tgt/secrets/login/asosedki):|"\
+    /mnt/tgt/root/curr/etc/shadow
+sudo sed -i "s|^%wheel.*|%wheel ALL=(ALL:ALL) NOPASSWD:SETENV: ALL|" \
+    /mnt/tgt/root/curr/etc/sudoers
+
+# install the bootloader using BLS scheme
+sudo mkdir /mnt/tgt/root/curr/boot/$(cat /mnt/tgt/root/curr/etc/machine-id)
+echo \
+    rd.luks.name=$ROOT_PUUID=X1C9_ROOT \
+    rd.luks.name=$SWAP_PUUID=X1C9_SWAP \
+    root=LABEL=X1C9_ROOT \
+    resume=UUID=$SWAP_UUID \
+    rootflags=subvol=root/curr \
+    quiet splash rhbg \
+    | sudo tee /mnt/tgt/root/curr/etc/kernel/cmdline
+$CHROOT bootctl install
+sudo mkdir -p /mnt/tgt/root/curr/boot/$(cat /mnt/tgt/root/curr/etc/machine-id)
+find /mnt/tgt/root/curr/boot
+
+# configure hybrid sleep
+sudo sed -i \
+    's|^#HandleLidSwitch=.*|HandleLidSwitch=suspend-then-hibernate|' \
+    /mnt/tgt/root/curr/etc/systemd/logind.conf
+sudo sed -i \
+    's|^#HibernateDelaySec=.*|HibernateDelaySec=90m|' \
+    /mnt/tgt/root/curr/etc/systemd/sleep.conf
+echo 'add_dracutmodules+=" resume "' \
+    | sudo tee /mnt/tgt/root/curr/etc/dracut.conf.d/99-resume.conf
+echo 'compress="zstd -9"' \
+    | sudo tee /mnt/tgt/root/curr/etc/dracut.conf.d/99-zstd.conf
+# $CHROOT dracut --regenerate-all -f  # will happen later anyway
+
+# add kernel
+ls /mnt/tgt/root/curr/boot/loader/entries || true
+KERNEL=$(ls /mnt/tgt/root/curr/lib/modules/)  # should be just one
+$CHROOT kernel-install -v add $KERNEL /lib/modules/$KERNEL/vmlinuz
+find /mnt/tgt/root/curr/boot
+cat /mnt/tgt/root/curr/boot/loader/entries/*
+
+# configure filesystems
+sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/curr/asosedki
+sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/curr/asosedki/archive
+sudo install -m 711 -o 0 -g 0 -d /mnt/secrets
+[[ ! -e /mnt/tgt/root/curr/etc/fstab ]]
+sudo tee /mnt/tgt/root/curr/etc/fstab <<EOF
+/dev/disk/by-label/X1C9_ROOT / btrfs subvol=root/curr
+/dev/disk/by-label/X1C9_ROOT /nix btrfs subvol=nix
+/dev/disk/by-label/X1C9_ROOT /home btrfs subvol=home/curr
+/dev/disk/by-label/X1C9_ROOT /home/asosedki/archive btrfs subvol=archive
+/dev/disk/by-label/X1C9_ROOT /home/asosedki/.mail btrfs subvol=mail
+/dev/disk/by-label/X1C9_ROOT /mnt/cache btrfs subvol=cache
+/dev/disk/by-label/X1C9_ROOT /mnt/secrets btrfs subvol=secrets
+/dev/disk/by-label/X1C9_ROOT /mnt/persist btrfs subvol=persist/curr
+/dev/disk/by-label/X1C9_ROOT /mnt/saviour btrfs subvol=saviour
+/dev/disk/by-label/X1C9_ROOT /mnt/machines btrfs subvol=machines
+/dev/disk/by-label/X1C9_SWAP none swap defaults,pri=-5
+/mnt/secrets/fprint /var/lib/fprint none bind
+/mnt/secrets/bluetooth /var/lib/bluetooth none bind
+EOF
+sudo tee /mnt/tgt/root/curr/etc/crypttab <<EOF
+X1C9_ROOT /dev/disk/by-partlabel/X1C9_ROOT - discard
+X1C9_SWAP /dev/disk/by-partlabel/X1C9_SWAP /mnt/secrets/swap.key discard
+EOF
+
+# configure zram
+sudo tee /mnt/tgt/root/curr/etc/systemd/zram-generator.conf <<EOF
+[zram0]
+zram-size = min(ram, 12228)
+EOF
+
+# configure networking
+sudo sh -c 'cp -va /etc/NetworkManager/system-connections/* \
+                   /mnt/tgt/root/curr/etc/NetworkManager/system-connections/'
+sudo chmod 700 /mnt/tgt/root/curr/etc/NetworkManager/system-connections
+vpn=$(sudo find /mnt/tgt/root/curr/etc/NetworkManager/system-connections \
+                -name '*.ovpn' | head -n1)
+vpn=$(sudo grep uuid= $vpn | sed 's|^uuid=||')
+sudo sh -c "sed -i 's|^\[connection\]$|[connection]\\nsecondaries=$vpn;|' \
+                /mnt/tgt/root/curr/etc/NetworkManager/system-co*/*.nmconnection"
+if sudo [ -e /etc/pki/tls/certs/2015-RH-IT-Root-CA.pem ]; then
+    sudo cp -va /etc/pki/tls/certs/2015-RH-IT-Root-CA.pem \
+                /mnt/tgt/root/curr/etc/pki/tls/certs/2015-RH-IT-Root-CA.pem
+fi
+
+# accounts
+if [[ ! -e /mnt/tgt/home/curr/asosedki/.local/share/keyrings/login.keyring ]]\
+        && [[ -e /mnt/tgt/secrets/login.keyring ]]; then
+    sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/curr/asosedki/.local
+    sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/curr/asosedki/.local/share
+    sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/curr/asosedki/.local/share/keyrings
+    sudo install -m 600 -o 1000 -g 1000 /mnt/tgt/secrets/login.keyring \
+        /mnt/tgt/home/curr/asosedki/.local/share/keyrings/login.keyring
+fi
+if [[ ! -e /mnt/tgt/home/curr/asosedki/.config/goa-1.0/accounts.conf ]] \
+        && [[ -e /mnt/tgt/secrets/accounts.conf ]]; then
+    sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/curr/asosedki/.config
+    sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/curr/asosedki/.config/goa-1.0
+    sudo install -m 600 -o 1000 -g 1000 /mnt/tgt/secrets/accounts.conf \
+        /mnt/tgt/home/curr/asosedki/.config/goa-1.0/accounts.conf
+fi
+
+# misc configuration
+if [[ -e /mnt/tgt/root/curr/etc/gdm/custom.conf ]]; then
+    sudo sed -i 's|^\[daemon\]$|[daemon]\nAutomaticLogin=asosedki|' \
+             /mnt/tgt/root/curr/etc/gdm/custom.conf
+    sudo sed -i 's|^\[daemon\]$|[daemon]\nAutomaticLoginEnable=True|' \
+             /mnt/tgt/root/curr/etc/gdm/custom.conf
+fi
+if [[ -e /mnt/tgt/root/curr/var/lib/fprint ]]; then
+    $CHROOT authselect enable-feature with-fingerprint
+fi
+sudo mkdir -p /mnt/tgt/root/curr/var/lib/fprint
+sudo mkdir -p /mnt/secrets/fprint
+sudo mkdir -p /mnt/secrets/bluetooth
+[[ ! -d /mnt/tgt/root/curr/var/lib/bluetooth/mesh ]] || \
+    sudo rm -d /mnt/tgt/root/curr/var/lib/bluetooth/mesh
+
+# setup post-inst
+sudo tee /mnt/tgt/root/curr/bin/post-inst <<\EOF
+#!/bin/bash
+exec bash <(curl -sL https://monk.unboiled.info/.post-inst) "$@"
+EOF
+sudo chmod +x /mnt/tgt/root/curr/bin/post-inst
+
+# install Nix
+NIX_URL=https://nix-community.github.io/nix-installers/x86_64
+[[ -e /mnt/tgt/cache/nix-multi-user.rpm ]] ||
+    sudo wget $NIX_URL/nix-multi-user-2.9.1.rpm \
+        -O /mnt/tgt/cache/nix-multi-user.rpm
+sudo cp /mnt/tgt/cache/nix-multi-user.rpm /mnt/tgt/root/curr/
+$CHROOT rpm -i nix-multi-user.rpm
+sudo rm /mnt/tgt/root/curr/nix-multi-user.rpm
+sudo sed -i \
+    -e "s|^substituters = .*|substituters = https://hydra.unboiled.info?priority=200 https://cache.nixos.org/|" \
+    -e "s|^trusted-public-keys = .*|trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.unboiled.info-1:c7i8vKOB30a+DaJ2M04F0EM8CPRfU+WpbqWie4n221M=|" \
+    /mnt/tgt/root/curr/etc/nix/nix.conf
+#$CHROOT /nix/var/nix/profiles/system/bin/nix-daemon &
+#nix_daemon_pid=$!  # TODO: obtain nix-daemon pid, not wrapping pid
+#$CHROOT su - asosedki -c "/nix/var/nix/profiles/system/bin/nix build 'github:t184256/nix-configs#homeConfigurations.x1c9.activationPackage' --out-link /home/asosedki/.first-activation"
+#sudo kill $nix_daemon_pid
+#sleep 1
+#sudo kill -9 $nix_daemon_pid || true
+#wait $nix_daemon_pid || true
+#sleep .5
+#sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/curr/asosedki/.config
+#sudo install -m 755 -o 1000 -g 1000 \
+#     -d /mnt/tgt/home/curr/asosedki/.config/systemd/user/default.target.wants
+#pushd /mnt/tgt/home/curr/asosedki/.config/systemd/user
+#sudo tee first-activation.service <<EOF
+#[Unit]
+#Description=First home-manager activation
+#ConditionPathExists=/home/asosedki/.first-activation
+#[Service]
+#ExecStart=/home/asosedki/.first-activation/activate
+#ExecStartPost=/bin/rm /home/asosedki/.first-activation
+#Type=oneshot
+#RemainAfterExit=no
+#[Install]
+#WantedBy=default.target
+#EOF
+#sudo ln -sf /home/asosedki/.config/systemd/user/first-activation.service \
+#            default.target.wants/first-activation.service
+#sudo chown -h 1000:1000 first-activation.service \
+#           default.target.wants/first-activation.service
+#popd
+
+# finish background tasks
+echo waiting for makecache to finish...
+wait $makecache_pid
+sudo rm -rf /mnt/tgt/cache/dnf-cache
+sudo cp -ra /mnt/tgt/root/curr/var/cache/dnf /mnt/tgt/cache/dnf-cache
+echo done
