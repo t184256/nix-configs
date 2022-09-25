@@ -56,7 +56,7 @@ in
       serviceConfig.Type = "oneshot";
       script = ''
         set -uexo pipefail
-        export PATH=${pkgs.git}/bin:${pkgs.nixFlakes}/bin:$PATH
+        export PATH=${pkgs.git}/bin:${pkgs.nix}/bin:$PATH
         WD=/var/lib/flake-autoupdate; mkdir -p $WD
         NEW=$WD/.new-t184256-nix-configs
         FRZ=$WD/.frz-t184256-nix-configs

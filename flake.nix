@@ -11,16 +11,19 @@
     nix-on-droid.inputs.home-manager.follows = "home-manager";
     nix-on-droid.inputs.flake-utils.follows = "flake-utils";
 
-    nixos-hardware.url = "github:NixOS/nixos-hardware";
+    #nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nixos-hardware.url = "github:t184256/nixos-hardware/fix-runcommandnocc";
 
     impermanence.url = "github:nix-community/impermanence";
 
     simple-nixos-mailserver.url =
       "gitlab:simple-nixos-mailserver/nixos-mailserver";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
+    simple-nixos-mailserver.inputs.flake-utils.follows = "flake-utils";
 
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager.inputs.utils.follows = "flake-utils";
 
     nixgl.url = "github:guibou/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
@@ -38,6 +41,7 @@
 
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
+    deploy-rs.inputs.utils.follows = "flake-utils";
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
 

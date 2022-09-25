@@ -5,7 +5,7 @@ let
                                ((import ../../.autoimport).asAttrs ./xontribs);
 
   # avoids https://github.com/xonsh/xonsh/issues/3810
-  ptk = super.python3Packages.prompt_toolkit.overridePythonAttrs ({
+  ptk = super.python3Packages.prompt-toolkit.overridePythonAttrs ({
     patches = [
       (super.fetchpatch {
         url = "https://github.com/prompt-toolkit/python-prompt-toolkit/commit/e5a86e270e7ee698c849d39196d5a6a0d6e5a331.patch";
