@@ -42,7 +42,7 @@ in {
         autohide-volume
         focus-changer
         just-perfection
-        noannoyance
+        noannoyance-2
         quake-mode
         sound-output-device-chooser
         syncthing-indicator
