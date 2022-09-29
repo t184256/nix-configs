@@ -38,6 +38,7 @@
 
   programs = {
     lieer.enable = true;
+    lieer.package = pkgs.lieer;  # TODO: remove later
 
     notmuch = {
       enable = true;
