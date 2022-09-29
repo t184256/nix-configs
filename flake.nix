@@ -11,8 +11,7 @@
     nix-on-droid.inputs.home-manager.follows = "home-manager";
     nix-on-droid.inputs.flake-utils.follows = "flake-utils";
 
-    #nixos-hardware.url = "github:NixOS/nixos-hardware";
-    nixos-hardware.url = "github:t184256/nixos-hardware/fix-runcommandnocc";
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
 
     impermanence.url = "github:nix-community/impermanence";
 
