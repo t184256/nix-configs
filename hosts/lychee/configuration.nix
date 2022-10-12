@@ -72,7 +72,7 @@
   boot.loader.timeout = 0;
 
   home-manager.users.monk.home.packages = with pkgs; [
-    inputs.deploy-rs.defaultPackage.${pkgs.system} hydra-cli
+    inputs.deploy-rs.defaultPackage.${pkgs.system}
     alacritty freerdp
   ];
 
