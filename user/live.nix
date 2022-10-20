@@ -14,6 +14,7 @@ let
       rm -d /tmp/VTOYEFI
     fi
 
+    ${pkgs.gnupg}/bin/gpg --card-status
     ${pkgs.gnupg}/bin/gpg -d /tmp/secrets.7z.gpg > /tmp/secrets.7z
     pushd /tmp
       ${pkgs.p7zip}/bin/7z x /tmp/secrets.7z
