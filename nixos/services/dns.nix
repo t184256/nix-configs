@@ -41,6 +41,7 @@ let
     transmission    IN CNAME fig
     hydra           IN CNAME loquat
     nix-on-droid    IN CNAME loquat
+    yousable        IN CNAME loquat
     syncthing-relay IN CNAME duckweed
     podcastify      IN CNAME duckweed
 

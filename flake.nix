@@ -64,6 +64,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+    yousable = {
+      url = "github:t184256/yousable";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
 
   };
 
@@ -83,6 +88,7 @@
     keyboard-remap,
     input-utils,
     podcastify,
+    yousable,
     ...
   }@inputs:
   let
@@ -91,6 +97,7 @@
     common_modules = [ impermanence.nixosModule
                        simple-nixos-mailserver.nixosModule
                        podcastify.nixosModule
+                       yousable.nixosModule
                        home-manager.nixosModules.home-manager {
                          # false as overlays are pulled in where needed
                          home-manager.useGlobalPkgs = false;
