@@ -49,6 +49,7 @@
     CPUAffinity = "0-3";
     MemoryHigh = "14G"; MemoryMax = "15G";
   };
+  systemd.services.yousable-back.serviceConfig.CPUAffinity = "0-3";
 
   home-manager.users.monk.language-support = [ "nix" "bash" ];
 
