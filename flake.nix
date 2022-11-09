@@ -118,6 +118,7 @@
       };
     nixosConfigurations = {
       lychee = mkSystem "x86_64-linux" ./hosts/lychee/configuration.nix;
+      jujube = mkSystem "x86_64-linux" ./hosts/jujube/configuration.nix;
       loquat = mkSystem "x86_64-linux" ./hosts/loquat/configuration.nix;
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
     };
@@ -134,6 +135,10 @@
         config = ./hosts/coconut/nix-on-droid.nix;
         system = "aarch64-linux";
       };
+    };
+    nixpkgs_with_overlays = import nixpkgs {
+      system = "x86_64-linux";
+      overlays = autoimport.asList ./overlays;
     };
   in
   {
@@ -169,15 +174,12 @@
 
     packages.x86_64-linux = {
       cookie = nixos-generators.nixosGenerate {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        pkgs = nixpkgs_with_overlays;
         modules = [ ./hosts/cookie/configuration.nix ] ++ common_modules;
         format = "iso";
         inherit specialArgs;
       };
-      nixpkgs =  import nixpkgs {
-        system = "x86_64-linux";
-        overlays = autoimport.asList ./overlays;
-      };
+      nixpkgs = nixpkgs_with_overlays;
     };
 
   };

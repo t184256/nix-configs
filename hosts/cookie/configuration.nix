@@ -8,6 +8,7 @@
   system.live = true;
   home-manager.users.monk.system.live = true;
   hardware.enableRedistributableFirmware = true;
+  boot.supportedFilesystems = [ "bcachefs" ];
 
   networking.hostName = "cookie";
   networking.wireless.enable = false;
@@ -17,7 +18,7 @@
 
   environment.systemPackages = with pkgs; [
     firefox-wayland alacritty
-    gparted parted cryptsetup btrfs-progs
+    gparted parted cryptsetup btrfs-progs bcachefs-tools
     microdnf ansible
     evtest
   ];

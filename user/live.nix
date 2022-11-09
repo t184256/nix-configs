@@ -53,6 +53,10 @@ let
     ${pkgs.curl}/bin/curl "$BASEURL/misc/inst/auto" > /tmp/.inst
     exec /tmp/.inst
   '';
+  clone-nix-configs = pkgs.writeShellScriptBin "clone-nix-configs" ''
+    set -ueo pipefail
+    exec ${pkgs.git}/bin/git clone git@github.com:t184256/nix-configs "$@"
+  '';
 in
 {
   imports = [ ./config/no-graphics.nix ./config/live.nix ];
@@ -80,5 +84,8 @@ in
     '';
   };
 
-  home.packages = lib.mkIf config.system.live [ live-network live inst ];
+  home.packages = lib.mkIf config.system.live [
+    live-network live inst
+    clone-nix-configs
+  ];
 }
