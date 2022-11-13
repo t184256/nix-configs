@@ -49,7 +49,7 @@ in
     timers.flake-autoupdate = {
       wantedBy = [ "timers.target" ];
       partOf = [ "flake-autoupdate.service" ];
-      timerConfig.OnCalendar = "*:08/10";  # once in 10 minutes, offset by 8
+      timerConfig.OnCalendar = "0/2:08";  # once in 2 hours, offset by 8 min
     };
     services.flake-autoupdate = {
       serviceConfig.User = "hydra";
@@ -70,7 +70,7 @@ in
           ${pkgs.git}/bin/git clone https://github.com/NixOS/nixpkgs $WD/nixpkgs
         pushd $WD/nixpkgs
           ${pkgs.git}/bin/git pull --ff-only
-          LAGGING=$(git rev-parse 'master@{1 hour ago}')
+          LAGGING=$(git rev-parse 'master@{2 hours ago}')
         popd
         [[ -e $NEW ]] && rm -rf $NEW
         [[ -e $OLD ]] && { cp -r $OLD $FRZ; ln -sfn $FRZ $LNK; }
