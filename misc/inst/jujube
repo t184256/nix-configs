@@ -23,6 +23,7 @@ set -uexo pipefail
 
 cleanup() {
 	sudo umount /mnt/boot 2>/dev/null || true
+	sudo cryptsetup close ${HOST}_SWAP 2>/dev/null || true
 	sudo umount /mnt/0 2>/dev/null || true
 	sudo umount /mnt/tgt/home 2>/dev/null || true
 	sudo umount /mnt/tgt/nix 2>/dev/null || true
@@ -45,9 +46,6 @@ if [[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]]; then
 	sudo mount /dev/disk/by-partlabel/${HOST}_BOOT /mnt/boot
 	if [[ ! -e /mnt/boot/key.gpg ]]; then
 		read -rsp 'Disk encryption passphrase: ' ENCRYPTION_PASSPHRASE
-		echo -n "$ENCRYPTION_PASSPHRASE" | \
-			gpg -er monk@unboiled.info | \
-			sudo tee /mnt/boot/key.gpg > /dev/null
 	else
 		echo 'Reusing previous disk encryption passphrase...'
 		ENCRYPTION_PASSPHRASE="$(gpg -d /mnt/boot/key.gpg)"
@@ -82,15 +80,24 @@ else
 	sudo parted /dev/nvme0n1 -- name 3 ${HOST}_SWAP
 	sudo mkfs.fat -F 32 -n ${HOST:0:6}_BOOT \
 		/dev/disk/by-partlabel/${HOST}_BOOT
-	# TODO: bcachefs encryption in case of bcachefs (--encrypted)
-	sudo bcachefs format -f -L ${HOST} /dev/disk/by-partlabel/${HOST} \
+	sudo bcachefs format -f -L ${HOST} \
+		--discard /dev/disk/by-partlabel/${HOST} \
 		--encrypted <<<"$ENCRYPTION_PASSPHRASE"
-	sudo mkswap -L ${HOST}_SWAP /dev/disk/by-partlabel/${HOST}_SWAP
 fi
 
 [[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]]
 [[ -e /dev/disk/by-partlabel/${HOST} ]]
 [[ -e /dev/disk/by-partlabel/${HOST}_SWAP ]]
+
+if [[ ! -e /dev/mapper/${HOST}_SWAP ]]; then
+	echo -n "$ENCRYPTION_PASSPHRASE" | \
+		sudo cryptsetup -q luksFormat \
+			/dev/disk/by-partlabel/${HOST}_SWAP -d-
+	echo -n "$ENCRYPTION_PASSPHRASE" | \
+		sudo cryptsetup -q open \
+			/dev/disk/by-partlabel/${HOST}_SWAP ${HOST}_SWAP -d-
+	sudo mkswap -L ${HOST}_SWAP /dev/mapper/${HOST}_SWAP
+fi
 
 ### Mounting and subvolume creation ###
 
@@ -120,6 +127,13 @@ sudo mount --bind /sys /mnt/tgt/sys
 sudo mount --bind /sys/firmware/efi/efivars \
 	/mnt/tgt/sys/firmware/efi/efivars
 
+### Encryption passphrase injection ###
+
+echo -n "$ENCRYPTION_PASSPHRASE" | \
+	gpg -er monk@unboiled.info | \
+	sudo tee /mnt/tgt/boot/key.gpg > /dev/null
+sudo chmod 400 /mnt/tgt/boot/key.gpg
+
 ### Impermanence data injection ###
 
 sudo mkdir -p /mnt/tgt/mnt/persist/etc
@@ -129,11 +143,13 @@ if [ ! -e /mnt/tgt/mnt/persist/secrets/login/monk ]; then
 	echo 'configuring `monk` user'
 	mkpasswd -s <<<"$ENCRYPTION_PASSPHRASE" \
 		| sudo tee /mnt/tgt/mnt/persist/secrets/login/monk
+	sudo chmod 600 /mnt/tgt/mnt/persist/secrets/login/monk
 fi
 if [ ! -e /mnt/tgt/mnt/persist/secrets/login/root ]; then
 	echo 'configuring `root` user'
 	mkpasswd -s <<<"$ENCRYPTION_PASSPHRASE" \
 		| sudo tee /mnt/tgt/mnt/persist/secrets/login/root
+	sudo chmod 600 /mnt/tgt/mnt/persist/secrets/login/root
 fi
 # /etc/machine-id:
 [[ -e /mnt/tgt/mnt/persist/etc/machine-id ]] || \
@@ -149,7 +165,7 @@ if [[ "$COPY_ETC_NIXOS" == 1 ]]; then
 		FLAKE='/mnt/tgt/mnt/persist/etc/nixos'
 		[[ -e /mnt/tgt/mnt/persist/etc/nixos ]] || \
 			sudo git clone git@github.com:t184256/nix-configs \
-				/mnt/tgt/mnt/persist/etc/ nixos
+				/mnt/tgt/mnt/persist/etc/nixos
 	fi
 	sudo chown -R 1000:100 /mnt/tgt/mnt/persist/etc/nixos
 else

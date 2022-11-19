@@ -6,7 +6,6 @@
   ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
-  boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
   boot.supportedFilesystems = [ "bcachefs" ];
@@ -39,17 +38,7 @@
     "/home" = { device = "/mnt/persist/home"; options = [ "bind" ]; };
   };
 
-  #boot.initrd.luks.devices."luks-d9deff2b-d668-4657-b620-d20ab34ac176".device = "/dev/disk/by-uuid/d9deff2b-d668-4657-b620-d20ab34ac176";
-
-  # Enable swap on luks with working hibernation
-  #swapDevices = [
-  #  { device = "/dev/disk/by-label/JUJUBE_SWAP"; }
-  #];
-  #boot.initrd.secrets = { "/mnt/persist/secrets/luks.key" = null; };
-  #boot.initrd.luks.devices."luks-c78b5858-ac06-4f6d-a0e5-f01569d78995" = {
-  #  device = "/dev/disk/by-uuid/c78b5858-ac06-4f6d-a0e5-f01569d78995";
-  #  keyFile = "/mnt/persist/secrets/luks.key";
-  #};
+  swapDevices = [ { device = "/dev/mapper/JUJUBE_SWAP"; } ];
 
   # CPU
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";

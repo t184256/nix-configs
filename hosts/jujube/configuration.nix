@@ -96,6 +96,9 @@
 
   environment.systemPackages = with pkgs; [ keyutils ];
 
+  services.xserver.displayManager.autoLogin = { enable = true; user = "monk"; };
+
+  boot.initrd.luks.forceLuksSupportInInitrd = true;
   boot.initrd.extraUtilsCommands = ''
     copy_bin_and_libs ${pkgs.bcachefs-tools}/bin/bcachefs
     copy_bin_and_libs ${pkgs.gnupg}/bin/gpg
@@ -103,6 +106,7 @@
     copy_bin_and_libs ${pkgs.gnupg}/bin/gpg-agent
     copy_bin_and_libs ${pkgs.gnupg}/libexec/scdaemon
     copy_bin_and_libs ${pkgs.keyutils}/bin/keyctl
+    copy_bin_and_libs ${pkgs.cryptsetup}/bin/cryptsetup
     mkdir $out/secrets
     cat ${../../misc/pubkey.pgp} > $out/secrets/pubkey.pgp
   '';
@@ -111,22 +115,24 @@
     mount -t ramfs none /crypt-ramfs
     mount -o ro /dev/disk/by-partlabel/JUJUBE_BOOT /boot
     cp -v /boot/key.gpg /crypt-ramfs/key.gpg
-    umount /boot
+    umount /boot & umount_pid=$$
 
     export GPG_TTY=$(tty)
     export GNUPGHOME=/crypt-ramfs/.gnupg
-    gpg-agent --daemon --scdaemon-program $out/bin/scdaemon
-    gpg_agent_pid=$$
+    gpg-agent --daemon --scdaemon-program $out/bin/scdaemon & gpg_agent_pid=$$
 
-    gpg --import /pubkey.pgp
+    gpg --import /pubkey.pgp & gpg_import_pid=$$
     gpg --card-status > /crypt-ramfs/cardstatus
     if [[ $? != 0 ]]; then
-        echo 'waiting for GPG card...'
-        sleep 2
+        echo 'waiting for GPG card for extra half a second...'
+        sleep .5
         echo 'retrying...'
         gpg --card-status > /crypt-ramfs/cardstatus
     fi
     grep -E '^(Serial|Name|Encryption)' /crypt-ramfs/cardstatus
+    echo 'waiting for gpg import to complete...'
+    wait $gpg_import_pid
+    echo 'gpg import completed.'
 
     stty -echo
     echo -n 'Yubikey PIN: '
@@ -135,11 +141,15 @@
         read -rsp 'Passphrase: ' ENCRYPTION_PASSPHRASE
         echo -n "$ENCRYPTION_PASSPHRASE" > /crypt-ramfs/key
     fi
-    keyctl padd user cryptsetup @u < /crypt-ramfs/key
+    kill $gpg_agent_pid  # note the second kill later on
+    keyctl padd user cryptsetup @u < /crypt-ramfs/key & keyctl_pid=$$
     stty echo
 
-    ls /dev/disk/by*label /dev/disk/nvme* /crypt-ramfs || true
-    echo -n 'unlocking root filesystem...'
+    echo 'unlocking swap...'
+    cryptsetup -q open /dev/disk/by-partlabel/JUJUBE_SWAP JUJUBE_SWAP \
+      -d /crypt-ramfs/key & swap_unlock_pid=$$
+
+    echo 'unlocking root filesystem...'
     if ! bcachefs unlock /dev/disk/by-partlabel/JUJUBE </crypt-ramfs/key
     then
       echo -n 'automatic unlock failed. manual unlock: '
@@ -147,14 +157,26 @@
         echo failed.
       fi
     fi
+    echo 'unlocking root filesystem has completed.'
 
-    kill $gpg_agent_pid
+    kill -9 $gpg_agent_pid
+    echo 'waiting for /boot umount...'
+    wait $umount_pid
+    echo 'waiting for keyctl injection...'
+    wait $keyctl_pid
+    echo 'waiting for swap unlocking...'
+    wait $swap_unlock_pid
+    echo 'waiting for gpg-agent...'
+    wait $gpg_agent_pid
+    echo 'waiting completed.'
+
+    echo 'cleaning up...'
     rm -f /crypt-ramfs/key.gpg /crypt-ramfs/key
     if ! umount /crypt-ramfs; then
       echo 'forcing umount /crypt-ramfs...'
       umount -l /crypt-ramfs
-      echo $?
     fi
     alias bcachefs=true  # prevent standard bcachefs.nix prompt from appearing
+    echo 'proceeding to boot...'
   '';
 }
