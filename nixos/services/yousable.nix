@@ -9,6 +9,12 @@
   };
   services.nginx = {
     enable = true;
+    appendConfig = ''
+        worker_processes auto;
+    '';
+    appendHttpConfig = ''
+        sendfile_max_chunk 512k;
+    '';
     virtualHosts."yousable.unboiled.info" = {
       enableACME = true;
       forceSSL = true;
@@ -35,7 +41,7 @@
     }
   ];
   fileSystems."/mnt/persist/cache/yousable/live" = {
-    device = "/mnt/persist//home/monk/.sync/livestreams";
+    device = "/mnt/persist/home/monk/.sync/livestreams";
     options = [ "bind" ];
   };
 }
