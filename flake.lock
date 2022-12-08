@@ -63,6 +63,29 @@
         "type": "github"
       }
     },
+    "diffoscope-server": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1670523247,
+        "narHash": "sha256-l1TW15NGwnuisbGjTDauLry8U/Pnuyn9aSYV0z3eqQA=",
+        "owner": "t184256",
+        "repo": "diffoscope-server",
+        "rev": "7f17d1239a31ebd09905dded9612c72a0fffa35a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "t184256",
+        "repo": "diffoscope-server",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -484,6 +507,7 @@
       "inputs": {
         "alacritty-autoresizing": "alacritty-autoresizing",
         "deploy-rs": "deploy-rs",
+        "diffoscope-server": "diffoscope-server",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "hydra": "hydra",

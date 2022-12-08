@@ -69,6 +69,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+    diffoscope-server = {
+      url = "github:t184256/diffoscope-server";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
 
   };
 
@@ -89,6 +94,7 @@
     input-utils,
     podcastify,
     yousable,
+    diffoscope-server,
     ...
   }@inputs:
   let
@@ -98,6 +104,7 @@
                        simple-nixos-mailserver.nixosModule
                        podcastify.nixosModule
                        yousable.nixosModule
+                       diffoscope-server.nixosModule
                        home-manager.nixosModules.home-manager {
                          # false as overlays are pulled in where needed
                          home-manager.useGlobalPkgs = false;

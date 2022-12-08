@@ -9,6 +9,7 @@
     ../../nixos/services/podcastify.nix
     ../../nixos/services/syncthing-relay.nix
     ../../nixos/services/wireguard-nl.nix
+    ../../nixos/services/diff.nix
   ];
 
   boot.loader.systemd-boot.configurationLimit = 10;  # small-ish /boot
