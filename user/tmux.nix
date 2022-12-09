@@ -23,6 +23,9 @@
       set -g message-command-style bg=white,fg=black
       set -g status off
       set -g default-shell ${pkgs.my-xonsh}/bin/xonsh
+      set -g display-time 1000
+      set-window-option -g visual-bell on
+      set-window-option -g bell-action other
     '';
   };
 
