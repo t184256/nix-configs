@@ -2,225 +2,249 @@
 
 let
   withLang = lang: builtins.elem lang config.language-support;
-
-  cocConfig = {
-    # work laptop:
-    #"codelens.enable": true,
-    #"coc.preferences.noselect": false,
-    #"diagnostic.enableMessage": "jump",
-    #"diagnostic.refreshMode": true,
-    #"diagnostic.virtualText": true,
-    #"diagnostic.errorSign": ">",
-    #"diagnostic.warningSign": ">",
-    #"python.flake8Enabled": true,
-    #"python.jediEnabled": false,
-    #"python.linting.enabled": true,
-    #"python.pylintEnabled": false,
-    #"suggest.acceptSuggestionOnCommitCharacter": true,
-    #"suggest.autoTrigger": "trigger",
-
-    #"coc.preferences.formatOnType": false,
-    #"coc.preferences.useQuickfixForLocations": false,
-    #"coc.yank.highlight.duration": 100,
-
-    #"languageserver.bash": {
-    #  "command": "bash-language-server",
-    #  "args": ["start"],
-    #  "filetypes": ["sh"],
-    #  "ignoredRootPaths": ["~"]
-    #},
-
-    #"diagnostic-languageserver.filetypes": {
-    #  "sh": "shellcheck"
-    #},
-    #"diagnostic-languageserver.linters.shellcheck": {
-    #  "sourceName": "shellcheck", "command": "shellcheck",
-    #  "args": [ "--format=gcc", "-x", "-"],
-    #  "debounce": 100,
-    #  "offsetLine": 0, "offsetColumn": 0, "formatLines": 1,
-    #  "formatPattern": ["^[^:]+:(\\d+):(\\d+):\\s+([^:]+):\\s+(.*)$",
-    #                    {"line": 1, "column": 2, "message": 4, "security": 3}],
-    #  "securities": { "error": "error", "warning": "warning", "note": "info" }
-    #}
-
-    "codeLens.enable" = true;
-    "codeLens.position" = "right_align";
-    "diagnostic.enableMessage" = "always";  # always, jump, never
-    "diagnostic.messageDelay" = 50;
-    "diagnostic.level" = "hint";
-    "diagnostic.refreshOnInsertMode" = true;
-    "diagnostic.virtualText" = true;
-    "diagnostic.virtualTextCurrentLineOnly" = false;
-    #"hover.target" = "echo";
-    "signature.target" = "echo";
-    "diagnostic.messageTarget" = "echo";
-    #suggest.acceptSuggestionOnCommitCharacter = true;
-    suggest.autoTrigger = "none";
-    languageserver =
-      (if (! withLang "python") then {} else { python = {
-        command = "nvim-python3"; args = [ "-m" "pyls" ];
-        filetypes = [ "python" ];
-        settings.pyls = {
-          enable = true;
-          plugins = {
-            jedi_completion.enabled = true;
-            jedi_hover.enabled = true;
-            jedi_references.enabled = true;
-            jedi_signature_help.enabled = true;
-            jedi_symbols = { enabled = true; all_scopes = true; };
-            rope_completion.enabled = true;
-            mccabe = { enabled = true; threshold = 15; };
-            preload.enabled = true;
-            pycodestyle.enabled = true;
-            pydocstyle = {
-              enabled = false;
-              match = "(?!test_).*\\.py";
-              matchDir = "[^\\.].*";
-            };
-            pyflakes.enabled = true;
-            yapf.enabled = true;
-          };
-        };
-      };}) //
-      (if (! withLang "c") then {} else { ccls = {
-        command = "ccls";
-        filetypes = ["c"];
-        initializationOptions = {
-          cache.directory = ".ccls-cache";
-          client.snippetSupport = true;
-        };
-      };}) //
-      (if (! withLang "bash") then {} else { bash = {
-        command = "bash-language-server";
-        args = [ "start" ];
-        filetypes = [ "sh" ];
-      };}) //
-      (if (! withLang "nix") then {} else { nix = {
-        command = "rnix-lsp";
-        filetypes = ["nix"];
-      };}) //
-      (if (! withLang "haskell") then {} else { haskell = {
-        command = "haskell-language-server-wrapper";
-        args = [ "--lsp" ];
-        filetypes = [ "haskell" "lhaskell" ];
-      };});
-    diagnostic-languageserver.mergeConfig = true;
-    # https://github.com/iamcco/coc-diagnostic/issues/61
-    diagnostic-languageserver.linters.nix-linter =
-      if (! withLang "nix") then {} else {
-        args = [ "%filepath" ];
-        command = pkgs.writeShellScript "nix-linter-json-fix" ''
-          echo '['
-          ${pkgs.nix-linter}/bin/nix-linter --json-stream "$1" | sed '$!s/$/,/'
-          echo ']'
-        '';
-      };
-    diagnostic-languageserver.filetypes =
-      (if (! withLang "bash") then {} else { sh = "shellcheck"; }) //
-      (if (! withLang "nix") then {} else { nix = "nix-linter"; });
-    diagnostic-languageserver.formatFiletypes =
-      (if (! withLang "nix") then {} else { sh = "nixfmt"; });
-  };
-  tabNineConfig = {
-    disable_auto_update = true;
-    enable_telemetry = false;
-  };
 in
 {
   imports = [ ./config/language-support.nix ];
   nixpkgs.overlays = [ (import ../overlays/vim-plugins.nix) ];
 
-  xdg.configFile."nvim/coc-settings.json".source =
-    pkgs.writeTextFile {
-      name = "coc-settings.json";
-      text = (builtins.toJSON cocConfig);
-    };
   programs.neovim = {
     enable = true;
 
     withRuby = false;
-    withNodeJs = true;  # coc
+    withNodeJs = false;
 
     extraPackages = with pkgs; [
-      glibc  # coc needs getconf
+      yaml-language-server
+      # TODO: try grammarly, languagetool, marksman, prosemd...
+    ] ++ lib.optionals (withLang "bash") [
+      nodePackages.bash-language-server
     ] ++ lib.optionals (withLang "c") [
       gnumake  # for :make
       ccls
-    ] ++ lib.optionals (withLang "bash") [
-      shellcheck
-      nodePackages.bash-language-server
-    ] ++ lib.optionals (withLang "nix") [
-      nix-linter
-      nixfmt
-      rnix-lsp
     ] ++ lib.optionals (withLang "haskell") [
-      ghc
       haskell-language-server
-      haskellPackages.hls-eval-plugin
+    ] ++ lib.optionals (withLang "nix") [
+      rnix-lsp
+      nil
     ] ++ lib.optionals (withLang "python") (with python3Packages; [
-    ]);
-
-    extraPython3Packages = (ps: with ps; [
-    ] ++ (lib.optional (withLang "python") (
-      ps.python-language-server.override {
-        providers = [
-          "rope" "pyflakes" "mccabe" "pycodestype" "pydocstyle" "yapf"
-        ];
-      }
-    )));
+      # TODO: switch to pyright alone, TODO: or at least make flake8 quieter
+      pyright python-lsp-server flake8 pycodestyle autopep8
+    ]) ++ lib.optionals (withLang "rust") [
+      rust-analyzer
+    ];
 
     plugins = with pkgs.vimPlugins; [
-      # coc world
+      # fancy plugins: treesitter
+      # playground  # :TSHighlightCapturesUnderCursor,
+                    # :help treesitter-highlight-groups
       {
-        plugin = coc-nvim;  # kitchen sink
+        plugin = (nvim-treesitter.withPlugins (plugins: with plugins;
+          [ diff dockerfile git_rebase help meson
+            regex sql
+            html markdown markdown_inline
+            json json5 toml yaml
+          ]
+          ++ lib.optionals (withLang "bash") [ bash ]
+          ++ lib.optionals (withLang "c") [ c ]
+          ++ lib.optionals (withLang "haskell") [ haskell ]
+          ++ lib.optionals (withLang "nix") [ nix ]
+          ++ lib.optionals (withLang "python") [ python ]
+          ++ lib.optionals (withLang "rust") [ rust ]
+        ));
+        type = "lua";
         config = ''
-          inoremap <silent><expr> <TAB>
-            \ pumvisible() ? coc#_select_confirm() :
-            \ coc#expandableOrJumpable() ?
-            \ "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump','''])\<CR>" :
-            \ <SID>check_back_space() ? "\<TAB>" :
-            \ coc#refresh()
-          function! s:check_back_space() abort
-            let col = col('.') - 1
-            return !col || getline('.')[col - 1]  =~# '\s'
-          endfunction
-          let g:coc_snippet_next = '<tab>'
-          nmap <silent> { <Plug>(coc-diagnostic-prev)
-          nmap <silent> } <Plug>(coc-diagnostic-next)
-          nnoremap <silent> K :call <SID>show_documentation()<CR>
-          function! s:show_documentation()
-            if (index(['vim','help'], &filetype) >= 0)
-              execute 'h '.expand('<cword>')
-            else
-              call CocAction('doHover')
-            endif
-          endfunction
-          xmap <silent><C-K> <Plug>(coc-codelens-action)
-          nmap <silent><C-K> <Plug>(coc-codelens-action)
-          "nnoremap <silent> <C-M> :call CocActionAsync('doHover')<CR>
-          nnoremap <silent> <C-Space> :CocList commands<CR>
-          au CursorHoldI call CocActionAsync('showSignatureHelp')
-          au User CocJumpPlaceholder call
-            \ CocActionAsync('showSignatureHelp')
-        '' + (if (! withLang "python") then "" else ''
-          autocmd InsertEnter *.py call GiveMeContextI()
-          autocmd CursorMovedI *.py call GiveMeContextI()
-          autocmd CursorHoldI *.py call GiveMeContextI()
-          function! GiveMeContextI()
-            echo ""
-            call CocAction('showSignatureHelp')  " Async?
-          endfunction
-        '');
+          require'nvim-treesitter.configs'.setup {
+            highlight = {
+              enable = true,
+              --additional_vim_regex_highlighting = false,
+            };
+          }
+          vim.api.nvim_set_hl(0, "@foo.bar", { link = "Identifier" })
+        '';
       }
-      coc-diagnostic
-      coc-highlight  # nice coloring for colors
-      coc-snippets
 
-      coc-markdownlint
-      coc-json
-      coc-yaml
+      # fancy plugins: LSP
+      {
+        plugin = nvim-lspconfig;
+        type = "lua";
+        config = ''
 
-      # vim world
+          local lspconfig = require('lspconfig')
+          local lsp_defaults = lspconfig.util.default_config
+
+          lsp_defaults.capabilities = vim.tbl_deep_extend(
+            'force',
+            lsp_defaults.capabilities,
+            require('cmp_nvim_lsp').default_capabilities()
+          )
+
+          local opts = { noremap=true, silent=true }
+          vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
+          vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
+          vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
+          vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
+          local on_attach = function(_client, bufnr)
+            vim.api.nvim_buf_set_option(bufnr, 'omnifunc',
+                                        'v:lua.vim.lsp.omnifunc')
+            local bufopts = { noremap=true, silent=true, buffer=bufnr }
+            vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
+            vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
+            vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
+            vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
+            vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
+            vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
+            vim.keymap.set('n', '<space>r', vim.lsp.buf.rename, bufopts)
+            vim.keymap.set('n', '<space>a', vim.lsp.buf.code_action, bufopts)
+            vim.keymap.set('n', '<space>f', function()
+              vim.lsp.buf.format { async = true }
+            end, bufopts)
+          end
+
+          lspconfig.yamlls.setup{on_attach=on_attach}
+        '' + lib.optionalString (withLang "bash") ''
+          lspconfig.bashls.setup{on_attach=on_attach}
+        '' + lib.optionalString (withLang "c") ''
+          lspconfig.ccls.setup{on_attach=on_attach}
+        '' + lib.optionalString (withLang "haskell") ''
+          lspconfig.hls.setup{on_attach=on_attach}
+        '' + lib.optionalString (withLang "nix") ''
+          lspconfig.rnix.setup{on_attach=on_attach}
+        '' + lib.optionalString (withLang "python") ''
+          lspconfig.pylsp.setup{
+            on_attach = on_attach,
+            settings = {
+              pylsp = {
+                plugins = {
+                  flake8 = {
+                    enabled = true,
+                    -- pyright overlap
+                    ignore = {'F811', 'F401', 'F821', 'F841'},
+                  },
+                  pycodestyle = {
+                    enabled=true,
+                  },
+                },
+              },
+            },
+          }
+          lspconfig.pyright.setup{
+            on_attach = on_attach,
+            settings = {
+              python = {
+                analysis = {
+                  typeCheckingMode = 'basic',
+                  diagnosticSeverityOverrides = {
+                    reportConstantRedefinition = 'warning',
+                    reportDuplicateImport = 'warning',
+                    reportMissingSuperCall = 'warning',
+                    reportUnnecessaryCast = 'warning',
+                    reportUnnecessaryComparison = 'warning',
+                    reportUnnecessaryContains = 'warning',
+                    reportCallInDefaultInitializer = 'info',
+                    reportFunctionMemberAccess = 'info',
+                    reportImportCycles = 'info',
+                    reportMatchNotExhaustive = 'info',
+                    reportShadowedImports = 'info',
+                    reportUninitializedInstanceVariable = 'info',
+                    reportUnnecessaryIsInstance = 'info',
+                    reportUnusedClass = 'info',
+                    reportUnusedFunction = 'info',
+                    reportUnusedImport = 'info',
+                    reportUnusedVariable = 'info',
+                  },
+                },
+              },
+            },
+          }
+        '' + lib.optionalString (withLang "rust") ''
+          lspconfig.rust_analyzer.setup{on_attach=on_attach}
+        '';
+      }
+      {
+        plugin = lsp_signature-nvim;
+        type = "lua";
+        config = ''
+          require'lsp_signature'.setup{
+            hint_prefix = "",
+            floating_window = false,
+          }
+        '';
+      }
+
+      # fancy plugins: autocompletion and snippets
+      cmp-nvim-lsp
+      luasnip
+      cmp_luasnip
+      friendly-snippets
+      {
+        plugin = nvim-cmp;
+        type = "lua";
+        config = ''
+          require('luasnip.loaders.from_vscode').lazy_load()
+
+          vim.opt.completeopt = {'menu', 'menuone', 'noselect'}
+          local cmp = require('cmp')
+          local luasnip = require('luasnip')
+          local check_backspace = function()
+            local col = vim.fn.col(".") - 1
+            return col == 0 or vim.fn.getline("."):sub(col, col):match("%s")
+          end
+
+          cmp.setup{
+            completion = { autocomplete = false },
+            snippet = {
+              expand = function(args)
+                luasnip.lsp_expand(args.body)
+              end
+            },
+            sources = cmp.config.sources({
+              { name = 'path' },
+              { name = 'nvim_lsp' },
+            }, {
+              { name = 'luasnip' },
+              { name = 'buffer' },
+            }),
+            matching = {
+              disallow_fuzzy_matching=true,
+              disallow_partial_matching=true,
+              disallow_prefix_matching=true,
+            },
+            mapping = {
+              ['<C-Space>'] = cmp.mapping.confirm({select = false}),
+              ['<C-Tab>'] = cmp.mapping.complete_common_string(),
+              ['<Tab>'] = cmp.mapping(function(fallback)
+                if cmp.visible() then
+                  if not cmp.complete_common_string() then
+                    cmp.select_next_item(select_opts)
+                  end
+                elseif check_backspace() then
+                  fallback()
+                elseif luasnip.expandable() then
+                  print("exp!")
+                  luasnip.expand()
+                elseif luasnip.expand_or_locally_jumpable() then
+                  print("exp_o_j!")
+                  luasnip.expand_or_jump()
+                else
+                  cmp.complete()
+                end
+              end, {'i', 's'}),
+              ['<S-Tab>'] = cmp.mapping(function(fallback)
+                if cmp.visible() then
+                  cmp.select_prev_item(select_opts)
+                elseif luasnip.locally_jumpable(-1) then
+                  luasnip.jump(-1)
+                else
+                  fallback()
+                end
+              end, {'i', 's'}),
+            }
+          }
+        '';
+
+      }
+
+      # less fancy plugins from classical vim world   # TODO: configure in lua
       vim-eunuch  # helpers for UNIX: :SudoWrite, :Rename, ...
       vim-lastplace  # remember position
       vim-nix  # syntax files and indentation
@@ -235,11 +259,9 @@ in
         '';
       }
       {
-        plugin = vim-easymotion;  # faster motion bound to <s>
+        plugin = vim-sneak;  # faster motion bound to <s>
         config = ''
-          nmap s <Plug>(easymotion-overwin-f)
-          let g:EasyMotion_smartcase = 1
-          let g:EasyMotion_keys="tnaowyfu'x.c,rise"  " combos start with last
+          let g:sneak#target_labels = "tnaowyfu'x.c,rise"  " combos start with last
         '';
       }
       {
@@ -266,6 +288,8 @@ in
         '';
       }
       {
+        # TODO: use own theme,
+        # fix nested highlighting problems with hard overrides
         plugin = vim-monotone;  # non-clownish color theme
         config = ''
           let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
@@ -287,15 +311,20 @@ in
           hi diffLine guifg=#bbbbbb
           hi gitHunk guifg=#dddddd
           hi CocFloating guibg=#222222
-          hi CocErrorVirtualText guifg=#700000
-          hi CocWarningVirtualText guifg=#602000
-          hi CocInfoVirtualText guifg=#002060
+          hi DiagnosticError guifg=#700000
+          hi DiagnosticWarn guifg=#602000
+          hi DiagnosticInfo guifg=#0040b0
+          hi DiagnosticHint guifg=#002060
+          hi Identifier cterm=none gui=none
+          hi Include cterm=none gui=none
+          hi Function cterm=none gui=none
+          hi SpecialChar cterm=italic gui=italic
           set wildoptions=pum
           set pumblend=20
           set winblend=20
           hi Pmenu guifg=#ffffff
         '';
-       }
+      }
       {
         plugin = vimagit;  # my preferred git interface for committing
         config = ''
@@ -308,8 +337,7 @@ in
       set shell=/bin/sh
       set laststatus=1  " display statusline if there are at least two windows
       set suffixes+=.pdf  " don't offer to open pdfs
-      set scrolloff=5
-      nnoremap <C-L> :nohlsearch<CR><C-L>  " clear search highlighting
+      set scrolloff=3
       set diffopt+=algorithm:patience
       set updatetime=500
       set title noruler noshowmode
@@ -323,7 +351,6 @@ in
         return get(mode_map, mode(), '[???]')
       endfunction
       let &titlestring = "vi > %y %t%H%R > %P/%LL %-13.(%l:%c%V %{NiceMode()}%)"
-      autocmd InsertLeave * echo ""
       set titlelen=200
     '';
 

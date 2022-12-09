@@ -32,6 +32,8 @@
 
   programs.password-store = {enable = true; package = pkgs.pass-wayland; };
 
+  language-support = [ "bash" "c" "nix" "python" "rust" ];
+
   home.packages = with pkgs; [
     nixgl.nixGLIntel
     tiny
