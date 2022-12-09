@@ -13,7 +13,8 @@ def _w(args):
     nixpkgs = lambda s: f'nixpkgs#{s}'
     for configdir in (os.path.expanduser('~/.nix-configs'), '/etc/nixos'):
         if os.path.exists(os.path.join(configdir, 'flake.nix')):
-	    nixpkgs = lambda s: f'{configdir}#nixpkgs.{s}'
+             nixpkgs = lambda s: f'{configdir}#nixpkgs.{s}'
+             break
 
     def expand_arg(arg):  # what to turn a dependency word into?
         if arg.endswith('.nix'):  # a file
