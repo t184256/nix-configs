@@ -39,7 +39,7 @@ in
                     # :help treesitter-highlight-groups
       {
         plugin = (nvim-treesitter.withPlugins (plugins: with plugins;
-          [ diff dockerfile git_rebase help meson
+          [ dockerfile git_rebase help meson
             regex sql
             html markdown markdown_inline
             json json5 toml yaml
@@ -59,7 +59,7 @@ in
               --additional_vim_regex_highlighting = false,
             };
           }
-          vim.api.nvim_set_hl(0, "@foo.bar", { link = "Identifier" })
+          --vim.api.nvim_set_hl(0, "@none", { link = "Normal" })
         '';
       }
 
@@ -166,6 +166,7 @@ in
         config = ''
           require'lsp_signature'.setup{
             hint_prefix = "",
+            hint_scheme = "LSPVirtual",
             floating_window = false,
           }
         '';
@@ -220,10 +221,8 @@ in
                 elseif check_backspace() then
                   fallback()
                 elseif luasnip.expandable() then
-                  print("exp!")
                   luasnip.expand()
                 elseif luasnip.expand_or_locally_jumpable() then
-                  print("exp_o_j!")
                   luasnip.expand_or_jump()
                 else
                   cmp.complete()
@@ -290,39 +289,18 @@ in
       {
         # TODO: use own theme,
         # fix nested highlighting problems with hard overrides
-        plugin = vim-monotone;  # non-clownish color theme
+        plugin = vim-boring;  # non-clownish color theme
         config = ''
-          let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
-          let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
           set termguicolors
-          let g:monotone_color = [0, 0, 100]
-          let g:monotone_contrast_factor = 1
-          "let g:monotone_secondary_hue_offset = 200
-          let g:monotone_emphasize_whitespace = 1
-          colorscheme monotone
-          hi MatchParen gui=reverse
-          hi EndOfBuffer guifg=#303030
-          hi Search guifg=#000000 guibg=#bbbbdd
-          hi normal guibg=black
+          colorscheme boring
+
           set colorcolumn=80
           hi ColorColumn guifg=#ddbbbb guibg=#0a0a0a
-          hi diffAdded guifg=#e0ffe0
-          hi diffRemoved guifg=#ffe0e0
-          hi diffLine guifg=#bbbbbb
-          hi gitHunk guifg=#dddddd
-          hi CocFloating guibg=#222222
-          hi DiagnosticError guifg=#700000
-          hi DiagnosticWarn guifg=#602000
-          hi DiagnosticInfo guifg=#0040b0
-          hi DiagnosticHint guifg=#002060
-          hi Identifier cterm=none gui=none
-          hi Include cterm=none gui=none
-          hi Function cterm=none gui=none
-          hi SpecialChar cterm=italic gui=italic
+
           set wildoptions=pum
           set pumblend=20
           set winblend=20
-          hi Pmenu guifg=#ffffff
+          hi Pmenu guifg=#aaaaaa
         '';
       }
       {
