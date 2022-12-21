@@ -282,6 +282,7 @@ sudo tee /mnt/tgt/root/curr/etc/fstab <<EOF
 /dev/disk/by-label/X1C9_ROOT /mnt/persist btrfs subvol=persist/curr
 /dev/disk/by-label/X1C9_ROOT /mnt/saviour btrfs subvol=saviour
 /dev/disk/by-label/X1C9_ROOT /mnt/machines btrfs subvol=machines
+/dev/disk/by-label/X1C9_ROOT /mnt/0 btrfs subvolid=0
 /dev/disk/by-label/X1C9_SWAP none swap defaults,pri=-5
 /mnt/secrets/fprint /var/lib/fprint none bind
 /mnt/secrets/bluetooth /var/lib/bluetooth none bind
