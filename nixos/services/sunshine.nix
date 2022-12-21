@@ -11,12 +11,19 @@ in
 {
   systemd.services.sunshine = {
     description = "Sunshine Gamestream host";
-    wantedBy = [ "multi-user.target" ];
-
+    wantedBy = [ "graphical.target" ];
+    after = [ "graphical.target" ];
+    environment = {
+      HOME = "/var/lib/sunshine";
+      WAYLAND_DISPLAY = "wayland-0";
+      XDG_RUNTIME_DIR = "/run/user/1000";
+    };
     serviceConfig = {
       Type = "simple";
-      Environment = "HOME=/var/lib/sunshine";
-      ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p /var/lib/sunshine/.config";
+      ExecStartPre = "${pkgs.bash}/bin/bash -c '"
+        + "${pkgs.coreutils}/bin/sleep 6;"
+        + "${pkgs.coreutils}/bin/mkdir -p /var/lib/sunshine/.config;"
+        + "'";
       ExecStart = "${pkgs.sunshine}/bin/sunshine ${configFile}";
     };
   };

@@ -9,6 +9,9 @@ elif [[ -e /etc/termux/termux.env ]] && [[ $(uname -r) == *X900XXU* ]]; then
 elif [[ "$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)" \
         == '03000200-0400-0500-0006-000700080009' ]]; then
     AUTO_SCENARIO=jujube
+elif [[ "$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)" \
+        == '4766a080-8682-11ea-90a4-44151e1a0f00' ]]; then
+    AUTO_SCENARIO=cashew
 else
     echo 'host has not been autodetected' >&2
     exit 1

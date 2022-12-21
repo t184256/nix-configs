@@ -22,9 +22,14 @@ in {
     services.xserver = {
       enable = true;
       displayManager.gdm.enable = true;
+      displayManager.gdm.debug = true;
+      displayManager.gdm.wayland = true;
+      displayManager.defaultSession = "gnome";
       desktopManager.gnome.enable = true;
       layout = "us,ru";
+      videoDrivers = [ "modesetting" ];
     };
+    hardware.opengl.enable = true;
 
     environment = {
       gnome.excludePackages = with pkgs.gnome; [
