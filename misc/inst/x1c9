@@ -50,7 +50,7 @@ if [[ "$INSPECT" != 1 ]]; then
                        <(ls /mnt/tgt/persist/) \
                        | grep -vx curr | sort -n | tail -n1)
         set -e
-        if [[ ! -e /mnt/tgt/root/0000 ]]; then
+        if [[ -z "$PRE_PREV" ]]; then
             PREV=0000
         else
             PRE_PREV=${PRE_PREV:-0}
