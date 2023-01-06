@@ -112,7 +112,7 @@
   home-manager.users.monk.home.stateVersion = "22.05";
 
   home-manager.users.monk.language-support = [
-    "nix" "bash"
+    "nix" "bash" "python"
   ];
 
   # currently manual:
