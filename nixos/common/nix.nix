@@ -18,5 +18,4 @@
   '';
   nix.daemonCPUSchedPolicy = "batch";
   nix.daemonIOSchedClass = "idle";
-  nix.daemonIOSchedPriority = -1;
 }
