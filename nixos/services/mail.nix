@@ -38,6 +38,22 @@
     };
   };
 
+  # extra non-standard SMTP ports
+  networking.firewall.allowedTCPPorts = [ 14465 15587 ];
+  services.xinetd.enable = true;
+  services.xinetd.services = [
+    {
+      name = "smtp-alt"; unlisted = true; port = 14465;
+      server = "/usr/bin/env";  # must be something executable
+      extraConfig = "redirect = localhost 465";
+    }
+    {
+      name = "smtps-alt"; unlisted = true; port = 15587;
+      server = "/usr/bin/env";  # must be something executable
+      extraConfig = "redirect = localhost 587";
+    }
+  ];
+
   environment.persistence."/mnt/persist".directories = [
     "/var/dkim"
     "/var/lib/rspamd"
