@@ -1,9 +1,7 @@
 { config, pkgs, lib, ... }:
 
 {
-  imports = [ ./config/live.nix ];
-
-  accounts.email = lib.mkIf (! config.system.live) {
+  accounts.email = lib.mkIf (config.roles.mua) {
     maildirBasePath = ".mail";
     accounts."monk@unboiled.info" = {
       address = "monk@unboiled.info";
@@ -48,7 +46,7 @@
   };
 
 
-  programs = lib.mkIf (! config.system.live) {
+  programs = lib.mkIf (config.roles.mua) {
     msmtp.enable = true;
     offlineimap.enable = true;
 
@@ -99,7 +97,7 @@
   };
 
 
-  home = lib.mkIf (! config.system.live) {
+  home = lib.mkIf (config.roles.mua) {
     packages = [ pkgs.w3m ];
     file.".mailcap".text = "text/html;  w3m -dump -o document_charset=%{charset} '%s'; nametemplate=%s.html; copiousoutput";
     activation.notmuch-symlink = lib.hm.dag.entryAfter ["writeBoundary"] ''
