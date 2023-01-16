@@ -166,7 +166,7 @@ sudo microdnf -y \
             systemd systemd-resolved rootfiles \
             selinux-policy-targeted policycoreutils \
             zram-generator \
-            NetworkManager polkit \
+            NetworkManager polkit polkit-gnome \
             NetworkManager-tui NetworkManager-wifi NetworkManager-openvpn \
             openssh-server openssh-clients hostname firewalld iproute \
 	    iputils netcat \
@@ -344,6 +344,10 @@ sudo mkdir -p /mnt/secrets/fprint
 sudo mkdir -p /mnt/secrets/bluetooth
 [[ ! -d /mnt/tgt/root/curr/var/lib/bluetooth/mesh ]] || \
     sudo rm -d /mnt/tgt/root/curr/var/lib/bluetooth/mesh
+# IDK why this is needed to prevent GDM crashes
+sudo tee /etc/profile.d/xdg_data_dirs.sh <<\EOF
+export XDG_DATA_DIRS=$XDG_DATA_DIRS:/usr/local/share:/usr/share
+EOF
 
 # setup post-inst
 sudo tee /mnt/tgt/root/curr/bin/post-inst <<\EOF
