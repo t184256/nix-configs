@@ -345,7 +345,7 @@ sudo mkdir -p /mnt/secrets/bluetooth
 [[ ! -d /mnt/tgt/root/curr/var/lib/bluetooth/mesh ]] || \
     sudo rm -d /mnt/tgt/root/curr/var/lib/bluetooth/mesh
 # IDK why this is needed to prevent GDM crashes
-sudo tee /etc/profile.d/xdg_data_dirs.sh <<\EOF
+sudo tee /mnt/tgt/root/curr/etc/profile.d/xdg_data_dirs.sh <<\EOF
 export XDG_DATA_DIRS=$XDG_DATA_DIRS:/usr/local/share:/usr/share
 EOF
 
