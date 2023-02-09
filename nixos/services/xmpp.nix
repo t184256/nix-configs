@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   networking.firewall.allowedTCPPorts = [ 5222 5281 5269 7777 ];  # not 5347
@@ -21,12 +21,13 @@
     };
 
     extraModules = [
-      "bookmarks2"
+      #"bookmarks2"
       "checkcerts"         # for reminding about expirind certificates
       "csi_battery_saver"  # aggressive csi implementation
       "idlecompat"         # for deprioritizing 'last activity' for csi
       "mam_archive"        # for MAM and XEP-0136: Message Archiving interplay?
       "offline_email"      # for relaying messages to email if offline
+      "privilege"          # needed for slidge
       "watchuntrusted"     # for reporting s2s encryption-related failures
     ];
     package = pkgs.prosody.override {
@@ -52,6 +53,10 @@
 
       Component "irc.unboiled.info"
           component_secret = "notasecret"
+
+      Component "whatsapp.unboiled.info"
+          component_secret = "notasecret"
+          modules_enabled = { "privilege" }
     '';
 
     s2sSecureAuth = true;
@@ -66,6 +71,8 @@
       ssl.extraOptions.cafile = "/etc/ssl/certs/ca-bundle.crt";
     };
   };
+
+  # biboumi
   services.biboumi = {
     enable = true;
     settings = {
@@ -92,6 +99,36 @@
       postRun = "systemctl restart prosody";
     };
   };
+
+  # slidge
+  users = {
+    users.slidge.isSystemUser = true;
+    users.slidge.group = "slidge";
+    users.slidge.home = "/var/lib/slidge";
+    users.slidge.createHome = true;
+    groups.slidge = {};
+  };
+  systemd.services.slidge-whatsapp = {
+    description = "Slidge WhatsApp gateway";
+    wantedBy = [ "multi-user.target" ];
+    requires = [ "prosody.service" ];
+    after = [ "prosody.service" ];
+    serviceConfig = {
+      ExecStart = lib.escapeShellArgs [
+        "${pkgs.slidge}/bin/slidge"
+        "--jid" "whatsapp.unboiled.info"
+        "--server" "unboiled.info"
+        "--admins" "monk@unboiled.info"
+        "--secret" "notasecret"
+        "--upload-service" "upload.xmpp.unboiled.info"
+        "--legacy-module" "slidge.plugins.whatsapp"
+      ];
+      Restart = "on-failure";
+      User = "slidge";
+      Group = "slidge";
+    };
+  };
+
   environment.persistence."/mnt/persist".directories = [
     {
       directory = "/var/lib/prosody";
@@ -100,6 +137,10 @@
     {
       directory = "/var/lib/private/biboumi";
       user = "biboumi"; group = "biboumi";
+    }
+    {
+      directory = "/var/lib/slidge";
+      user = "slidge"; group = "slidge";
     }
   ];
 }
