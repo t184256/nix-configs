@@ -123,7 +123,7 @@
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
     };
     homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
-      pkgs =  import nixpkgs {
+      pkgs = import nixpkgs {
         system = "x86_64-linux";
         overlays = [ nixgl.overlay ];
       };
