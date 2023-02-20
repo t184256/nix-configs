@@ -12,6 +12,7 @@ self: super:
       mkdir -p $out/share/fonts/truetype/noto/
       cp -va ${super.noto-fonts-extra}/share/fonts/truetype/noto/Noto*ExtraCondensed*.ttf \
              $out/share/fonts/truetype/noto
+      rm $out/share/fonts/truetype/noto/*Mono*
     '';
   };
 }
