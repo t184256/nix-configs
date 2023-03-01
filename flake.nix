@@ -135,6 +135,14 @@
         config = ./hosts/coconut/nix-on-droid.nix;
         system = "aarch64-linux";
       };
+      carambola = nix-on-droid.lib.nixOnDroidConfiguration {
+        config = ./hosts/carambola/nix-on-droid.nix;
+        pkgs = import nixpkgs {
+          system = "aarch64-linux";
+          overlays = autoimport.asList ./overlays;
+        };
+        system = "aarch64-linux";
+      };
     };
     nixpkgs_with_overlays = import nixpkgs {
       system = "x86_64-linux";
