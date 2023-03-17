@@ -3,23 +3,12 @@ self: super:
 let
   xontribs = builtins.mapAttrs (_: f: (f { pkgs = super; }))
                                ((import ../../.autoimport).asAttrs ./xontribs);
-  # avoids https://github.com/xonsh/xonsh/issues/3810
-  patched-ptk = super.python3Packages.prompt-toolkit.overridePythonAttrs ({
-    patches = [
-      (super.fetchpatch {
-        url = "https://github.com/prompt-toolkit/python-prompt-toolkit/commit/e5a86e270e7ee698c849d39196d5a6a0d6e5a331.patch";
-        sha256 = "sha256-KbM1FECVs+6MKyvEOTzyfR5s825ejunr4q2blJXOmJ0=";
-      })
-    ];
-    patchFlags = [ "-p1" ];
-    doCheck = false;
-  });
 
   xonshLib = super.python3Packages.buildPythonPackage rec {
-    propagatedBuildInputs = with super.python3Packages; [ ply pygments ]
-                             ++ [ patched-ptk ];
-    inherit (super.xonsh)
-                          pname
+    propagatedBuildInputs = with super.python3Packages; [
+      ply pygments prompt-toolkit
+    ];
+    inherit (super.xonsh) pname
                           version
                           src
                           LC_ALL
