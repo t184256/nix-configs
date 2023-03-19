@@ -17,6 +17,7 @@ in
 {
   imports = [ ../config/os.nix ];
   nixpkgs.overlays = [
+    (import ../../overlays/direnv.nix)
     (import ../../overlays/xonsh)
     (
       self: super: { xonshLib =
@@ -56,6 +57,7 @@ in
             del aliases['ll']
 
     xontrib load direnv
+    $DIRENV_HIDE_DIFF=1
     xontrib load readable-traceback
   '' + (readConfigBit ./config/general.xsh)
      + (readConfigBit ./config/styling.xsh)
