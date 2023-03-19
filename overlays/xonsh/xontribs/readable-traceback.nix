@@ -25,12 +25,12 @@ in
 
 pkgs.python3Packages.buildPythonPackage rec {
   pname = "xontrib-readable-traceback";
-  version = "0.3.2";
+  version = "0.4.0";
   src = pkgs.fetchFromGitHub {
     owner = "vaaaaanquish";
     repo = "xontrib-readable-traceback";
     rev = version;
-    sha256 = "06hqdnq9ylxk86hmyyavvkwdjfwi8dgvmlbg59mr9g4w565l7k41";
+    sha256 = "sha256-ek+GTWGUpm2b6lBw/7n4W46W2R0Gy6JxqWoLuQilCXQ=";
   };
   meta = {
     homepage = "https://github.com/vaaaaanquish/xontrib-readable-traceback";
