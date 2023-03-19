@@ -4,7 +4,7 @@ self: super:
   vimPlugins = super.vimPlugins // {
     vim-boring = super.pkgs.vimUtils.buildVimPluginFrom2Nix {
       pname = "vim-boring";
-      version = "20170918";
+      version = "20221210";
       src = super.fetchFromGitHub {
         owner = "t184256";
         repo = "vim-boring";
