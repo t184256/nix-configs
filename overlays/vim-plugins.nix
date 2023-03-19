@@ -23,16 +23,5 @@ self: super:
         sha256 = "1sxq5gxyw7y3rb74j94jsl6k06klrvc0kijcxcjwd11kb6gnrs2a";
       };
     };
-
-    coc-nvim = super.pkgs.vimUtils.buildVimPluginFrom2Nix {
-      pname = "coc-nvim";
-      version = "0.0.81";
-      src = super.fetchFromGitHub {
-        owner = "neoclide";
-        repo = "coc.nvim";
-        rev = "v0.0.81";
-        sha256 = "sha256-qCeDt/FznXkvIZCgqq4SEVI6YIAz1CtY6Kkf1MPmhX8=";
-      };
-    };
   };
 }
