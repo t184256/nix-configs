@@ -39,7 +39,7 @@ in
                     # :help treesitter-highlight-groups
       {
         plugin = (nvim-treesitter.withPlugins (plugins: with plugins;
-          [ dockerfile git_rebase help meson
+          [ dockerfile git_rebase meson
             regex sql
             html markdown markdown_inline
             json json5 toml yaml
