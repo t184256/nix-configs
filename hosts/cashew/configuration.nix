@@ -4,6 +4,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../nixos/services/sunshine.nix
+    ../../nixos/services/wireguard-cashnet-cashew.nix
   ];
 
   users.mutableUsers = false;

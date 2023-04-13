@@ -8,6 +8,7 @@
     ../../nixos/services/dns.nix
     ../../nixos/services/podcastify.nix
     ../../nixos/services/syncthing-relay.nix
+    ../../nixos/services/wireguard-cashnet-duckweed.nix
     ../../nixos/services/wireguard-nl.nix
   ];
 
