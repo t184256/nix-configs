@@ -1,18 +1,17 @@
 self: super:
 
 {
-  noto-fonts-extracondensed = super.stdenv.mkDerivation {
+  noto-fonts-extracondensed = super.stdenvNoCC.mkDerivation {
     name = "noto-fonts-extracondensed";
-    version = super.noto-fonts.version;
-    buildInputs = [ super.noto-fonts-extra ];
-
-    phases = [ "installPhase" ];
+    inherit (super.noto-fonts) version src;
 
     installPhase = ''
-      mkdir -p $out/share/fonts/truetype/noto/
-      cp -va ${super.noto-fonts-extra}/share/fonts/truetype/noto/Noto*ExtraCondensed*.ttf \
-             $out/share/fonts/truetype/noto
-      rm $out/share/fonts/truetype/noto/*Mono*
+      mkdir -p $out/share/fonts/noto/
+      find
+      cp -va fonts/NotoSans/unhinted/*/NotoSans-ExtraCondensed* \
+             $out/share/fonts/noto/
+      cp -va fonts/NotoSerif/unhinted/*/NotoSerif-ExtraCondensed* \
+             $out/share/fonts/noto/
     '';
   };
 }
