@@ -2,7 +2,8 @@
 
 {
   imports = [
-    "${inputs.nixos-hardware}/onenetbook/4"
+    # v bcachefs/kernel module conflict I'm too lazy to resolve right now
+    #"${inputs.nixos-hardware}/onenetbook/4"
     ./hardware-configuration.nix
     ../lychee/onemix-keyboard-remap.nix
   ];
