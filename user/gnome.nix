@@ -94,5 +94,8 @@
     "org/gnome/desktop/screensaver" = {
       lock-enabled = false;
     };
+    "org/gnome/settings-daemon/plugins/power" = {
+      sleep-inactive-ac-type = "nothing";
+    };
   };
 }
