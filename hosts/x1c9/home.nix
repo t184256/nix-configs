@@ -35,6 +35,7 @@
   language-support = [ "bash" "c" "nix" "python" "rust" ];
 
   home.packages = with pkgs; [
+    bash-completion
     nixgl.nixGLIntel
     tiny
     wl-clipboard
