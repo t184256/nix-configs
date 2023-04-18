@@ -82,22 +82,6 @@
     "flake-compat_2": {
       "flake": false,
       "locked": {
-        "lastModified": 1673956053,
-        "narHash": "sha256-4gtG9iQuiKITOjNQQeQIpoIB6b16fm+504Ch3sNKLd8=",
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "rev": "35bb57c0c8d8b62bbfd284272c928ceb64ddbde9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "flake-compat_3": {
-      "flake": false,
-      "locked": {
         "lastModified": 1668681692,
         "narHash": "sha256-Ht91NGdewz8IQLtWZ9LCeNXMSXHUss+9COoqu6JLmXU=",
         "owner": "edolstra",
@@ -154,24 +138,24 @@
     },
     "hydra": {
       "inputs": {
-        "nix": [
-          "nix_2_6"
-        ],
+        "nix": "nix",
         "nixpkgs": [
-          "nixpkgs_21_11"
+          "hydra",
+          "nix",
+          "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1651259650,
-        "narHash": "sha256-M6XzApq7DTEs382zEymbrHPbOSuHGKsE8hCycppf210=",
+        "lastModified": 1681859903,
+        "narHash": "sha256-iSMGgg69dAKl6Bw4TDpr11QKno4uNL0XUh7nWE88cwk=",
         "owner": "t184256",
         "repo": "hydra",
-        "rev": "a26b06e6a727ed26e0aca98798ebe3d295530906",
+        "rev": "d9c0957dc1431b73b2983018868b5ddc75535ede",
         "type": "github"
       },
       "original": {
         "owner": "t184256",
-        "ref": "nix-ca",
+        "ref": "nix-ca-reprise",
         "repo": "hydra",
         "type": "github"
       }
@@ -253,41 +237,23 @@
         "type": "github"
       }
     },
-    "lowdown-src_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1633514407,
-        "narHash": "sha256-Dw32tiMjdK9t3ETl5fzGrutQTzh2rufgZV4A/BbxuD4=",
-        "owner": "kristapsdz",
-        "repo": "lowdown",
-        "rev": "d2c2b44ff6c27b936ec27358a2653caaef8f73b8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "kristapsdz",
-        "repo": "lowdown",
-        "type": "github"
-      }
-    },
     "nix": {
       "inputs": {
-        "flake-compat": "flake-compat_2",
         "lowdown-src": "lowdown-src",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
+        "nixpkgs": "nixpkgs",
         "nixpkgs-regression": "nixpkgs-regression"
       },
       "locked": {
-        "lastModified": 1681239551,
-        "narHash": "sha256-oUr22uzk2oKi0kuMy7W081Cn4aO8AgqeG3WsTQIEFxc=",
-        "owner": "NixOS",
+        "lastModified": 1680954255,
+        "narHash": "sha256-Ey8ysFMWWeW/stnYJBlwXhKcgFZRHUo4TW4d3KkYI/A=",
+        "owner": "nixos",
         "repo": "nix",
-        "rev": "ef0b48377d0fc79d70455c402ed4df4b18cb93dd",
+        "rev": "8aa178f75bac9592244f64e12325cec609c69224",
         "type": "github"
       },
       "original": {
-        "owner": "NixOS",
+        "owner": "nixos",
+        "ref": "2.13-maintenance",
         "repo": "nix",
         "type": "github"
       }
@@ -339,29 +305,6 @@
         "owner": "t184256",
         "ref": "testing",
         "repo": "nix-on-droid",
-        "type": "github"
-      }
-    },
-    "nix_2_6": {
-      "inputs": {
-        "lowdown-src": "lowdown-src_2",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "nixpkgs-regression": "nixpkgs-regression_2"
-      },
-      "locked": {
-        "lastModified": 1645099657,
-        "narHash": "sha256-E9iQ7f+9Z6xFcUvvfksTEfn8LsDfzmwrcRBC//5B3V0=",
-        "owner": "NixOS",
-        "repo": "nix",
-        "rev": "e044ccb67ce38d11059de32515306f5f1bd2f04f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "2.6-maintenance",
-        "repo": "nix",
         "type": "github"
       }
     },
@@ -441,15 +384,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1681306610,
-        "narHash": "sha256-pevAbXDbAd//6sTDWks/95AIvbKm9w7y5zUEq7S+IzA=",
+        "lastModified": 1670461440,
+        "narHash": "sha256-jy1LB8HOMKGJEGXgzFRLDU1CBGL0/LlkolgnqIsF0D8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "db81ed584f80b6fb4ecd12138a04a09977e78ae5",
+        "rev": "04a75b2eecc0acf6239acf9dd04485ff8d14f425",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
+        "ref": "nixos-22.11-small",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -501,33 +445,17 @@
         "type": "github"
       }
     },
-    "nixpkgs-regression_2": {
+    "nixpkgs_2": {
       "locked": {
-        "lastModified": 1643052045,
-        "narHash": "sha256-uGJ0VXIhWKGXxkeNnq4TvV3CIOkUJ3PAoLZ3HMzNVMw=",
+        "lastModified": 1681306610,
+        "narHash": "sha256-pevAbXDbAd//6sTDWks/95AIvbKm9w7y5zUEq7S+IzA=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "215d4d0fd80ca5163643b03a33fde804a29cc1e2",
-        "type": "github"
-      },
-      "original": {
-        "id": "nixpkgs",
-        "rev": "215d4d0fd80ca5163643b03a33fde804a29cc1e2",
-        "type": "indirect"
-      }
-    },
-    "nixpkgs_21_11": {
-      "locked": {
-        "lastModified": 1679048363,
-        "narHash": "sha256-afY4G9yA0MD/wxfAd7kks2yaCUOMuDtiwecDYIVxYfY=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "2766f77c32e171a04d59b636a91083bae862274e",
+        "rev": "db81ed584f80b6fb4ecd12138a04a09977e78ae5",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "release-21.11",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -613,14 +541,11 @@
         "impermanence": "impermanence",
         "input-utils": "input-utils",
         "keyboard-remap": "keyboard-remap",
-        "nix": "nix",
         "nix-on-droid": "nix-on-droid",
-        "nix_2_6": "nix_2_6",
         "nixgl": "nixgl",
         "nixos-generators": "nixos-generators",
         "nixos-hardware": "nixos-hardware",
-        "nixpkgs": "nixpkgs",
-        "nixpkgs_21_11": "nixpkgs_21_11",
+        "nixpkgs": "nixpkgs_2",
         "podcastify": "podcastify",
         "simple-nixos-mailserver": "simple-nixos-mailserver",
         "yousable": "yousable"
@@ -629,7 +554,7 @@
     "simple-nixos-mailserver": {
       "inputs": {
         "blobs": "blobs",
-        "flake-compat": "flake-compat_3",
+        "flake-compat": "flake-compat_2",
         "nixpkgs": [
           "nixpkgs"
         ],

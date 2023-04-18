@@ -4,9 +4,6 @@ let
   hydraPkg = inputs.hydra.defaultPackage.${pkgs.system};
 in
 {
-  # https://github.com/NixOS/nix/issues/6981
-  nix.package = pkgs.nixVersions.nix_2_10;
-
   # hydra-create-user monk --full-name 'Alexander Sosedkin' \
   #  --email-address 'monk@unboiled.info' --role admin
   # nix-store --generate-binary-cache-key hydra-unboiled-info \
@@ -14,6 +11,10 @@ in
   #   /mnt/persist/var/secrets/nix-cache/pub-key.pem
   # chown -R hydra:hydra /mnt/persist/var/secrets/nix-cache
   # chmod 440 /mnt/persist/var/secrets/nix-cache/priv-key.pem
+  # psql hydra
+  #   ALTER TABLE BuildOutputs ALTER COLUMN path DROP NOT NULL;
+  #   ALTER TABLE BuildStepOutputs ALTER COLUMN path DROP NOT NULL;
+  #   ALTER TABLE BuildStepOutputs ADD contentAddressed BOOLEAN NOT NULL DEFAULT 'f';
 
   nix.extraOptions = ''
     trusted-users = monk hydra-queue-runner
