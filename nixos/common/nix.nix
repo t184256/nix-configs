@@ -1,12 +1,17 @@
-{ pkgs, ... }:
+{ pkgs, lib, config, ... }:
 
+let
+  notHydra = config.networking.hostName != "loquat";
+in
 {
   nix.settings = {
-    substituters = [ "https://hydra.unboiled.info?priority=200" ];
+    substituters =
+      lib.mkIf notHydra [ "https://hydra.unboiled.info?priority=200" ];
     trusted-public-keys = [
       "hydra.nixos.org-1:CNHJZBh9K4tP3EKF6FkkgeVYsS3ohTl+oS0Qa8bezVs="
+    ] ++ (if notHydra then [
       "hydra.unboiled.info-1:c7i8vKOB30a+DaJ2M04F0EM8CPRfU+WpbqWie4n221M="
-    ];
+    ] else []);
   };
   nix.extraOptions = ''
     trusted-users = monk
