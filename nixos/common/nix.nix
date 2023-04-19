@@ -15,7 +15,8 @@ in
   };
   nix.extraOptions = ''
     trusted-users = monk
-    experimental-features = nix-command flakes ca-derivations
+    experimental-features = nix-command flakes cgroups ca-derivations
+    use-cgroups = true
     builders-use-substitutes = true
     narinfo-cache-negative-ttl = 300
     narinfo-cache-positive-ttl = 7200
