@@ -1,7 +1,7 @@
 { lib, ... }:
 
 {
-  boot.tmpOnTmpfs = lib.mkDefault true;
+  boot.tmp.useTmpfs = lib.mkDefault true;
   systemd.enableEmergencyMode = false;
   systemd.extraConfig = ''
     DefaultTimeoutStopSec=30s

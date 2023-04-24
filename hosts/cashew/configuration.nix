@@ -53,8 +53,8 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
 
   nix.settings.cores = 3;  # we're not in a hurry
-  boot.tmpOnTmpfs = true;
-  boot.tmpOnTmpfsSize = "2G";
+  boot.tmp.useTmpfs = true;
+  boot.tmp.tmpfsSize = "2G";
   systemd.services.nix-daemon.environment.TMPDIR = "/nix/tmp";  # large builds
   system.activationScripts.nixtmpdir.text = "mkdir -p /nix/tmp";
   systemd.services.nix-daemon.serviceConfig = {
