@@ -9,7 +9,6 @@
     nix-on-droid.url = "github:t184256/nix-on-droid/testing";
     nix-on-droid.inputs.nixpkgs.follows = "nixpkgs";
     nix-on-droid.inputs.home-manager.follows = "home-manager";
-    nix-on-droid.inputs.flake-utils.follows = "flake-utils";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
@@ -22,7 +21,6 @@
 
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    home-manager.inputs.utils.follows = "flake-utils";
 
     nixgl.url = "github:guibou/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
