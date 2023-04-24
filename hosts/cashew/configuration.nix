@@ -52,6 +52,15 @@
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
 
+  nix.settings.cores = 3;  # we're not in a hurry
+  boot.tmpOnTmpfs = true;
+  boot.tmpOnTmpfsSize = "2G";
+  systemd.services.nix-daemon.environment.TMPDIR = "/nix/tmp";  # large builds
+  system.activationScripts.nixtmpdir.text = "mkdir -p /nix/tmp";
+  systemd.services.nix-daemon.serviceConfig = {
+    CPUAffinity = "2-5"; MemoryHigh = "14G"; MemoryMax = "15G";
+  };
+
   system.role = {
     desktop.enable = true;
     physical.enable = true;
@@ -80,7 +89,7 @@
       "/var/log"
     ];
     files =
-      (let mode = { mode = "0700"; }; in [
+      (let mode = { mode = "0755"; }; in [
         { file = "/etc/ssh/ssh_host_rsa_key"; parentDirectory = mode; }
         { file = "/etc/ssh/ssh_host_rsa_key.pub"; parentDirectory = mode; }
         { file = "/etc/ssh/ssh_host_ed25519_key"; parentDirectory = mode; }
@@ -101,6 +110,19 @@
     #"rd.systemd.show_status=false" "rd.udev.log_level=3" "udev.log_priority=3"
     "i915.fastboot=1"
   ];
+
+  services.thermald = {
+    enable = true;
+    debug = true;
+    configFile = ./thermald.xml;
+  };
+
+  users.users.builder = { group = "builder"; isSystemUser = true; useDefaultShell = true; };
+  users.groups.builder = {};
+  users.users.builder.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJXOeZe1VelK/Qt9XQCrpMcp4xu4i+K69Sf8+8PpboLd hydra.unboiled.info"
+  ];
+  nix.settings.trusted-users = [ "builder" ];
 
   #services.udev.extraRules = ''
   #  ACTION=="add", SUBSYSTEM=="drm", KERNEL=="card0", TAG+="systemd"

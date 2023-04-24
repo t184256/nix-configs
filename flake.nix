@@ -168,6 +168,14 @@
                self.nixosConfigurations.duckweed;
       };
     };
+    deploy.nodes.cashew = {
+      hostname = "cashew";
+      profiles.system = {
+        sshUser = "root"; user = "root"; hostname = "cashew";
+        path = deploy-rs.lib.x86_64-linux.activate.nixos
+               self.nixosConfigurations.cashew;
+      };
+    };
     checks = builtins.mapAttrs
              (system: deployLib: deployLib.deployChecks self.deploy)
              deploy-rs.lib;

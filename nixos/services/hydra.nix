@@ -33,6 +33,7 @@ in
     extraConfig = ''
       binary_cache_secret_key_file = /var/secrets/nix-cache/priv-key.pem
     '';
+    buildMachinesFiles = [ "/mnt/persist/secrets/hydra/machines" ];
   };
   services.nginx = {
     recommendedProxySettings = true;
