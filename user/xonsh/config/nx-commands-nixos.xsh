@@ -8,21 +8,26 @@ def _nxu():
     del $_override
 
 
-def _nxd(hosts):
-    for host in hosts:
-        $_tgt = f'.#{host}'
-        echo deploy --skip-checks $_tgt
-        (cd /etc/nixos && deploy --skip-checks $_tgt)
-        del $_tgt
+def _nxd(args):
+    host, *args = args
+    tgt = f'/etc/nixos#nixosConfigurations.{host}.config.system.build.toplevel'
+    nom build --no-link @(tgt) && \
+        deploy --skip-checks @(f'/etc/nixos#{host}') @(args)
+
+
+def _nxb(args):
+    host = $HOSTNAME
+    tgt = f'/etc/nixos#nixosConfigurations.{host}.config.system.build.toplevel'
+    nom build --no-link @(tgt)
 
 
 def _in_tmpdir(cmd):
     def _nxt(extra_args):
         $_TMP_DIR = $(mktemp -d).rstrip()
-        $_cmd = cmd
+        $_cmd = cmd + ' '.join(extra_args)
         sudo git config --global --add safe.directory /etc/nixos
         try:
-            sh -c @(f'cd {$_TMP_DIR} && $_cmd ' + ' '.join(extra_args))
+            sh -c f'cd {$_TMP_DIR} && $_cmd'
         finally:
             rm -f @($_TMP_DIR + '/result')
             rm -d $_TMP_DIR
@@ -33,11 +38,11 @@ def _in_tmpdir(cmd):
 
 aliases['nxu'] = _nxu
 aliases['nxd'] = _nxd
-aliases['nxb'] = _in_tmpdir('nixos-rebuild build')
+aliases['nxb'] = _nxb
 aliases['nxt'] = _in_tmpdir('sudo nixos-rebuild test')
 aliases['nxf'] = _in_tmpdir('sudo nixos-rebuild test --fast')
 aliases['nxs'] = _in_tmpdir('sudo nixos-rebuild switch')
-aliases['nxe'] = _in_tmpdir('find /etc/nixos | '
+aliases['nxw'] = _in_tmpdir('find /etc/nixos | '
                             'entr -rc env time -f "%Ew %Uu %Ss %PCPU" '
                             '         nixos-rebuild --no-build-nix build')
 
