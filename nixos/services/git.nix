@@ -6,13 +6,15 @@
     appName = "monk's private gitea";
     user = "git";  # I like my repo urls short
     database.user = "git";  # must match
-    domain = "git.unboiled.info";
-    rootUrl = "https://git.unboiled.info";
-    httpAddress = "127.0.0.1";
-    httpPort = 3000;
-    settings.session.DISABLE_REGISTRATION = true;  # 1st user becomes an admin.
-    settings.session.COOKIE_SECURE = true;
-    settings.service.REQUIRE_SIGNIN_VIEW = true;
+    settings = {
+      server.HTTP_ADDRESS = "127.0.0.1";
+      server.HTTP_PORT = 3000;
+      server.DOMAIN = "git.unboiled.info";
+      server.ROOT_URL = "https://git.unboiled.info";
+      session.DISABLE_REGISTRATION = true;  # 1st user becomes an admin.
+      session.COOKIE_SECURE = true;
+      service.REQUIRE_SIGNIN_VIEW = true;
+    };
     dump.enable = true;
   };
   users.extraUsers.git = {
