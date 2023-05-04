@@ -73,7 +73,7 @@
 
   home-manager.users.monk.home.packages = with pkgs; [
     inputs.deploy-rs.defaultPackage.${pkgs.system}
-    alacritty freerdp
+    alacritty freerdp openvpn
   ];
 
   services.openssh.enable = true;
