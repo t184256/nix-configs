@@ -148,7 +148,7 @@ if [[ "$INSPECT" == 1 ]]; then $CHROOT bash; exit 0; fi
 # invoke microdnf to install the most basic system
 sudo microdnf -y \
     --noplugins \
-    --releasever=37 \
+    --releasever=38 \
     --installroot=/mnt/tgt/root/curr \
     --config /tmp/.inst-files/dnf/dnf.conf \
     --setopt=reposdir=/tmp/.inst-files/dnf/yum.repos.d \
@@ -163,7 +163,7 @@ sudo microdnf -y \
             glibc-minimal-langpack glibc-langpack-en \
             kernel dracut zstd plymouth plymouth-system-theme \
             linux-firmware iwlax2xx-firmware \
-            systemd systemd-resolved rootfiles \
+            systemd systemd-resolved systemd-boot rootfiles \
             selinux-policy-targeted policycoreutils \
             zram-generator \
             NetworkManager polkit polkit-gnome \
