@@ -4,13 +4,11 @@
   home.packages = [
     pkgs.entr
 
-    (pkgs.writeShellScriptBin "en" ''
-      exec find "''${@:2}" | ${pkgs.entr}/bin/entr -rcs "$1"
-    '')
-
     (pkgs.writeShellScriptBin "wat" ''
-      exec ${pkgs.findutils}/bin/find ''${*%''${!#}} | \
-        ${pkgs.entr}/bin/entr -rcs "''${@:$#}"
+      exec ${pkgs.findutils}/bin/find ''${*%''${!#}} \
+      | grep -v '/__pycache__' \
+      | grep -v '\.pyc$' \
+      | ${pkgs.entr}/bin/entr -rcs "''${@:$#}"
     '')
   ];
 }
