@@ -243,9 +243,10 @@ in
 
       }
 
+      # gv and its dependencies
+      gv-vim vim-fugitive vim-rhubarb fugitive-gitlab-vim
+
       # less fancy plugins from classical vim world   # TODO: configure in lua
-      vim-fugitive
-      gv-vim
       vim-eunuch  # helpers for UNIX: :SudoWrite, :Rename, ...
       vim-lastplace  # remember position
       vim-nix  # syntax files and indentation
