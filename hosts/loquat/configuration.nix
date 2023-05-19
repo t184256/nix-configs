@@ -14,7 +14,7 @@
     ../../nixos/services/yousable.nix
   ];
 
-  boot.loader.grub = { enable = true; version = 2; device = "/dev/sda"; };
+  boot.loader.grub = { enable = true; device = "/dev/sda"; };
 
   time.timeZone = "Europe/Prague";
 
