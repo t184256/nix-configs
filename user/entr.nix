@@ -10,5 +10,10 @@
       | grep -v '\.pyc$' \
       | ${pkgs.entr}/bin/entr -rcs "''${@:$#}"
     '')
+
+    (pkgs.writeShellScriptBin "watpy" ''
+      exec wat * "python -m pytest $* -k 'not pylama' && \
+                  python -m pytest $* -k pylama"
+    '')
   ];
 }
