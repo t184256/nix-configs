@@ -241,6 +241,7 @@ echo \
     resume=UUID=$SWAP_UUID \
     rootflags=subvol=root/curr \
     quiet splash rhbg \
+    preempt=full \
     | sudo tee /mnt/tgt/root/curr/etc/kernel/cmdline
 $CHROOT bootctl install
 sudo mkdir -p /mnt/tgt/root/curr/boot/$(cat /mnt/tgt/root/curr/etc/machine-id)
