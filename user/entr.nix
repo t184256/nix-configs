@@ -12,14 +12,15 @@
     '')
 
     (pkgs.writeShellScriptBin "watpy" ''
-      exec wat * "python -m pytest --ff --no-cov-on-fail \
+      exec wat * "ruff check .; \
+                  python -m pytest --ff --no-cov-on-fail \
                                    --cov-report term-missing:skip-covered \
                                    --durations=3 --durations-min=.05 \
                                    --tb=short \
-                                   $* -k 'not pylama' && \
-                  python -m pytest --ff --no-cov \
-                                   --no-header \
-                                   $* -k pylama --verbosity=-1"
+                                   $* && \
+                  ruff check . && \
+                  env PYTHONWARNINGS=ignore yapf -rd . && \
+                  echo ok"
     '')
   ];
 }
