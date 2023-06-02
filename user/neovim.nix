@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
   withLang = lang: builtins.elem lang config.language-support;
@@ -24,8 +24,7 @@ in
     ] ++ lib.optionals (withLang "haskell") [
       haskell-language-server
     ] ++ lib.optionals (withLang "nix") [
-      rnix-lsp
-      nil
+      inputs.nixd.packages.${pkgs.system}.default
     ] ++ lib.optionals (withLang "python") (with python3Packages; [
       # TODO: switch to pyright alone, TODO: or at least make flake8 quieter
       pyright python-lsp-server flake8 pycodestyle autopep8
@@ -71,6 +70,22 @@ in
 
           local lspconfig = require('lspconfig')
           local lsp_defaults = lspconfig.util.default_config
+          -- https://github.com/neovim/nvim-lspconfig/issues/2640
+          local lspconfigs = require('lspconfig.configs')
+          if not lspconfigs.nixd then
+            lspconfigs.nixd = {
+              default_config = {
+                cmd = { 'nixd' },
+                filetypes = { 'nix' },
+                root_dir = function(fname)
+                  return (lspconfig.util.find_git_ancestor(fname)
+                          or vim.loop.os_homedir())
+                end,
+                settings = {},
+                init_options = {},
+              }
+            }
+          end
 
           lsp_defaults.capabilities = vim.tbl_deep_extend(
             'force',
@@ -108,7 +123,7 @@ in
         '' + lib.optionalString (withLang "haskell") ''
           lspconfig.hls.setup{on_attach=on_attach}
         '' + lib.optionalString (withLang "nix") ''
-          lspconfig.rnix.setup{on_attach=on_attach}
+          lspconfig.nixd.setup{on_attach=on_attach}
         '' + lib.optionalString (withLang "python") ''
           lspconfig.pylsp.setup{
             on_attach = on_attach,
