@@ -77,12 +77,8 @@ in
               default_config = {
                 cmd = { 'nixd' },
                 filetypes = { 'nix' },
-                root_dir = function(fname)
-                  return (lspconfig.util.find_git_ancestor(fname)
-                          or vim.loop.os_homedir())
-                end,
-                settings = {},
-                init_options = {},
+                single_file_support = true,
+                root_dir = util.root_pattern('flake.nix', '.git'),
               }
             }
           end
