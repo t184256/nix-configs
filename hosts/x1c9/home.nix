@@ -23,7 +23,7 @@
     ../../user/git.nix
     ../../user/htop.nix
     ../../user/mosh.nix
-    ../../user/neovim.nix
+    ../../user/neovim
     ../../user/terminal.nix
     ../../user/tmux.nix
     ../../user/xdg.nix
