@@ -34,6 +34,7 @@
         "just-perfection-desktop@just-perfection"
         "noannoyance@daase.net"
         "syncthing@gnome.2nv2u.com"
+        "tiling-assistant@leleat-on-github"
         "unite@hardpixel.eu"
       ];
     };

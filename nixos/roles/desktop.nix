@@ -51,6 +51,7 @@ in {
         quake-mode
         sound-output-device-chooser
         syncthing-indicator
+        tiling-assistant
         unite
       ]);
     };
