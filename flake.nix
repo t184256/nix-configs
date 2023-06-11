@@ -22,6 +22,10 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+    nixvim.url = "github:pta2002/nixvim";
+    nixvim.inputs.nixpkgs.follows = "nixpkgs";
+    nixvim.inputs.flake-utils.follows = "flake-utils";
+
     nixgl.url = "github:guibou/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
     nixgl.inputs.flake-utils.follows = "flake-utils";
@@ -75,6 +79,7 @@
     impermanence,
     simple-nixos-mailserver,
     home-manager,
+    nixvim,
     nixgl,
     hydra,
     deploy-rs,
@@ -99,6 +104,9 @@
                          home-manager.useGlobalPkgs = false;
                          home-manager.useUserPackages = true;
                          home-manager.extraSpecialArgs = specialArgs;
+                         home-manager.users.monk.imports = [
+                           nixvim.homeManagerModules.nixvim
+                         ];
                      }] ++
                      [ (_: {
                        home-manager.users.monk =

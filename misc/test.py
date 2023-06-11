@@ -18,7 +18,7 @@ sys.nonex  # ! not a known member
 # TODO <- colored (broken)
 
 import re  # E402 import not at top
-re.sub('s', r'a([b-c])', '\1')
+re.sub('s', r'a([b-c])', '\1')  # no italics
 
 print('a\n\x00')  # no italics for print, special characters stand out
 
@@ -27,8 +27,9 @@ x = 5678901234567890123456789012345678901234567890123456789012345678901234567890
 
 ###
 
-# test autocomplete here. no auto,
+# test autocomplete here. no auto, must suggest long_prefix_a/long_prefix_b
 # first Tab opens menu, second completes common prefix, third+ selects entries
+# snippets and buffer completions don't show up
 A().l
 
 # test snippets with __main__
