@@ -2,12 +2,18 @@
 
 let
   withLang = lang: builtins.elem lang config.language-support;
-  pyIgnores = [
+  pyDocIgnores = [
     # Defaults, so that I don't get annoyed when writing short scripts.
-    "D100" "D101" "D102" "D103"  # docstrings, overkill for short scripts
-    "W504"  # line break after binary operator
+    # docstrings, overkill for short scripts
+    "D100" "D101" "D102" "D103" "D105" "D106" "D107"
+    "D203"  # 1 blank line required before class docstring
+    "D213"  # multi-line docstring summary should start at the second line
     # Projects that care otherwise are supposed to have a CI.
   ];
+  pyStyleIgnores = [
+    "W504"  # line break after binary operator
+  ];
+  pyRuffIgnores = pyDocIgnores;
 in
 {
   imports = [ ../config/language-support.nix ];
@@ -45,15 +51,15 @@ in
         pylsp.settings.plugins = {
           pycodestyle.enabled = true;
           pycodestyle.maxLineLength = 79;
-          pycodestyle.ignore = pyIgnores;
+          pycodestyle.ignore = pyStyleIgnores;
           pydocstyle.enabled = true;
-          pydocstyle.ignore = pyIgnores;
+          pydocstyle.ignore = pyDocIgnores;
           pylsp_mypy.enabled = true;
           #pylsp_mypy.strict = true;
           rope.enabled = true;
           ruff.enabled = true;
           ruff.lineLength = 79;
-          ruff.extendIgnore = pyIgnores;
+          ruff.extendIgnore = pyRuffIgnores;
           yapf.enabled = true;
           # TODO: try pylyzer
         };
