@@ -7,7 +7,7 @@
     fqdn = "unboiled.info";
     domains = [ "unboiled.info" ];
     messageSizeLimit = 209715200;  # 200 MB
-    certificateScheme = 3;  # automatically via Let's Encrypt
+    certificateScheme = "acme-nginx";
     enableManageSieve = true;
     localDnsResolver = false;  # I have a DNS server on the same host
     loginAccounts = {
