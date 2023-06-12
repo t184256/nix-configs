@@ -23,5 +23,16 @@ self: super:
         sha256 = "1sxq5gxyw7y3rb74j94jsl6k06klrvc0kijcxcjwd11kb6gnrs2a";
       };
     };
+
+    actions-preview = super.pkgs.vimUtils.buildVimPluginFrom2Nix {
+      pname = "actions-preview";
+      version = "2023-05-12";
+      src = super.fetchFromGitHub {
+        owner = "aznhe21";
+        repo = "actions-preview.nvim";
+        rev = "3028c9a35853bb5fb77670fb58537ce28085329c";
+        sha256 = "sha256-mkLn2/klAdirbqxJ3xLz2vyjEx4Sb0NLEK/LS2w8rag=";
+      };
+    };
   };
 }

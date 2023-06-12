@@ -24,11 +24,11 @@ in
       lua = true;
     };
     maps.normal."<space>a" = {
-      action = "function() vim.lsp.buf.code_action { apply = true } end";
+      action = "require('actions-preview').code_actions";
       lua = true;
     };
     maps.visual."<space>a" = {
-      action = "function() vim.lsp.buf.code_action { apply = true } end";
+      action = "require('actions-preview').code_actions";
       lua = true;
     };
     maps.normal."<space>r" = { action = "vim.lsp.buf.rename"; lua = true; };
@@ -44,11 +44,16 @@ in
       inputs.nixd.packages.${pkgs.system}.default
     ];
 
+    extraPlugins = with pkgs.vimPlugins; [
+      actions-preview
+    ];
+
     plugins = {
       lsp.enable = true;
 
       cmp-nvim-lsp.enable = true;
       cmp-nvim-lsp-signature-help.enable = true;
+      telescope.enable = true;
 
       lsp.servers = {
         #cssls.enable = true;  # requires non-free code now?
@@ -101,5 +106,13 @@ in
         };
       };
     };
+    extraConfigLua = ''
+      require("actions-preview").setup {
+        diff = {
+          algorithm = "patience",
+        },
+        backend = { "telescope" },
+      }
+    '';
   };
 }
