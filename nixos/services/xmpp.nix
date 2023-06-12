@@ -22,7 +22,7 @@
 
     extraModules = [
       "bookmarks2"
-      "checkcerts"         # for reminding about expirind certificates
+      #"checkcerts"         # for reminding about expirind certificates
       "csi_battery_saver"  # aggressive csi implementation
       "idlecompat"         # for deprioritizing 'last activity' for csi
       "mam_archive"        # for MAM and XEP-0136: Message Archiving interplay?
