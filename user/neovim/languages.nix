@@ -23,6 +23,14 @@ in
       action = "function() vim.lsp.buf.format { async = true } end";
       lua = true;
     };
+    maps.normal."<space>a" = {
+      action = "function() vim.lsp.buf.code_action { apply = true } end";
+      lua = true;
+    };
+    maps.visual."<space>a" = {
+      action = "function() vim.lsp.buf.code_action { apply = true } end";
+      lua = true;
+    };
 
     extraPackages = with pkgs; [
       # TODO: try grammarly, languagetool, marksman, prosemd...
