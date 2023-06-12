@@ -10,13 +10,11 @@
       ledger.enable = true;  # ledger file format support
     };
     extraPlugins = with pkgs.vimPlugins; [
-      vim-sleuth  # guess indentation
-
       # less fancy plugins from classical vim world
       vim-eunuch  # helpers for UNIX: :SudoWrite, :Rename, ...
       vim-nix  # syntax files and indentation
       vim-repeat  # better repetition
-      vim-sleuth  # guess indentation
+      guess-indent-nvim  # guess indentation, in Lua
       vim-undofile-warn   # undofile enabled + warning on overundoing
 
       # gv and its dependencies
@@ -30,5 +28,8 @@
       show_spaces_that_precede_tabs = 1;
       "sneak#target_labels" = "tnaowyfu'x.c,rise";  # combos start with last
     };
+    extraConfigLua = ''
+      require('guess-indent').setup {}
+    '';
   };
 }
