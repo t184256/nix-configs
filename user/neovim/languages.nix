@@ -31,6 +31,7 @@ in
       action = "function() vim.lsp.buf.code_action { apply = true } end";
       lua = true;
     };
+    maps.normal."<space>r" = { action = "vim.lsp.buf.rename"; lua = true; };
 
     extraPackages = with pkgs; [
       # TODO: try grammarly, languagetool, marksman, prosemd...
