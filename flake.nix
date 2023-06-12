@@ -132,7 +132,10 @@
         system = "x86_64-linux";
         overlays = [ nixgl.overlay ];
       };
-      modules = [ ./hosts/x1c9/home.nix ];
+      modules = [
+        nixvim.homeManagerModules.nixvim
+        ./hosts/x1c9/home.nix
+      ];
       extraSpecialArgs = { inherit inputs; };
     };
     nixOnDroidConfigurations = {
