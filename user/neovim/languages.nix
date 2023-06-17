@@ -42,9 +42,9 @@ in
       cmp-nvim-lsp-signature-help.enable = true;
 
       lsp.servers = {
-        cssls.enable = true;
-        html.enable = true;
-        jsonls.enable = true;
+        #cssls.enable = true;  # requires non-free code now?
+        #html.enable = true;  # requires non-free code now?
+        #jsonls.enable = true;  # requires non-free code now?
         yamlls.enable = true;
 
         pylsp.enable = withLang "python";
