@@ -14,8 +14,11 @@
       vim-boring  # my non-clownish color theme
     ];
     highlight = {
+      # TODO: incorporate into the colorscheme?
       ColorColumn = { fg = "#ddbbbb"; bg = "#0a0a0a"; };
-      Pmenu = { fg = "#aaaaaa"; };
+      Pmenu.fg = "#aaaaaa";
+      Substitute.bg = "#663333";
+      IncSearch.bg = "#333366";
     };
     # old comment: fix nested highlighting problems with hard overrides
   };
