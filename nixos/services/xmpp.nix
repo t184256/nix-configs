@@ -21,7 +21,7 @@
     };
 
     extraModules = [
-      "bookmarks2"
+      #"bookmarks2"
       #"checkcerts"         # for reminding about expirind certificates
       "csi_battery_saver"  # aggressive csi implementation
       "idlecompat"         # for deprioritizing 'last activity' for csi
