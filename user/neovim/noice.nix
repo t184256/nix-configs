@@ -22,6 +22,12 @@
       lsp.signature.view = "virtualtext";
       lsp.hover.view = "virtualtext";
       lsp.documentation.view = "virtualtext";
+      views.mini.position.row = "100%";
+      # replace confirmation shouldn't obscure the text it's asking about
+      routes = [{
+        view = "cmdline";
+        filter.any = [ { event = "msg_show"; kind = "confirm_sub"; } ];
+      }];
     };
   };
 }
