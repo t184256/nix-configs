@@ -60,6 +60,7 @@
   systemd.services.nix-daemon.serviceConfig = {
     CPUAffinity = "2-5"; MemoryHigh = "14G"; MemoryMax = "15G";
   };
+  nix.gc.automatic = true;
 
   system.role = {
     desktop.enable = true;
