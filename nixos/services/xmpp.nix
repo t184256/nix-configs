@@ -35,6 +35,7 @@
 
     extraConfig = ''
       authentication = "internal_hashed"
+      certificates = "/var/lib/acme/unboiled.info-prosody"
       storage = "sql"
 
       proxy65_ports = { 7777 }
