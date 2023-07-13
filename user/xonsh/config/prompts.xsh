@@ -6,7 +6,7 @@ if 'TMUX' in ${...}:
             self.value = self.value or 'xonsh'
     $PROMPT_FIELDS["current_job"] = MyCurrentJobField()
     $TITLE = '{current_job}'
-    $PROMPT = "{#555}{prompt_end} "
+    $PROMPT = "{#555}$ "
     if $PROMPT_FIELDS['user'] not in ('monk', 'nix-on-droid', 'asosedki'):
         $PROMPT = '{user}@{hostname}' + $PROMPT
     $PROMPT = '{RESET}' + $PROMPT + '{RESET}'

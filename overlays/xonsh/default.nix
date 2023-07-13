@@ -4,14 +4,14 @@ let
   xontribs = builtins.mapAttrs (_: f: (f { pkgs = super; }))
                                ((import ../../.autoimport).asAttrs ./xontribs);
 
+  # TODO: use upstream-wrapped xonsh instead of my contraption
   xonshLib = super.python3Packages.buildPythonPackage rec {
     propagatedBuildInputs = with super.python3Packages; [
       ply pygments prompt-toolkit
     ];
-    inherit (super.xonsh) pname
+    inherit (super.xonsh-unwrapped) pname
                           version
                           src
-                          LC_ALL
                           postPatch
                           disabledTests
                           #disabledTestPaths
