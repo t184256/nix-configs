@@ -8,6 +8,7 @@
     ../../nixos/services/dns.nix
     ../../nixos/services/git.nix
     ../../nixos/services/hydra.nix
+    ../../nixos/services/lemmy.nix
     ../../nixos/services/mail.nix
     ../../nixos/services/nix-on-droid.nix
     ../../nixos/services/xmpp.nix

@@ -4,6 +4,7 @@ let
   hydraPkg = inputs.hydra.defaultPackage.${pkgs.system};
 in
 {
+  imports = [ ./postgresql.nix ];
   # hydra-create-user monk --full-name 'Alexander Sosedkin' \
   #  --email-address 'monk@unboiled.info' --role admin
   # nix-store --generate-binary-cache-key hydra-unboiled-info \
@@ -108,10 +109,6 @@ in
     {
       directory = "/var/lib/hydra";
       user = "hydra"; group = "hydra";
-    }
-    {
-      directory = "/var/lib/postgresql";
-      user = "postgres"; group = "postgres";
     }
     {
       directory = "/var/lib/flake-autoupdate";
