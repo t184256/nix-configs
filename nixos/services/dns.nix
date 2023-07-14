@@ -43,6 +43,7 @@ let
     nix-on-droid    IN CNAME loquat
     yousable        IN CNAME loquat
     lemmy           IN CNAME loquat
+    social          IN CNAME loquat
     syncthing-relay IN CNAME duckweed
     podcastify      IN CNAME duckweed
 

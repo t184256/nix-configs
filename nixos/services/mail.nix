@@ -15,6 +15,7 @@
             hashedPasswordFile = "/mnt/persist/secrets/mail/monk";
             aliases = [
                 "abuse@unboiled.info"
+                "admin@unboiled.info"
                 "info@unboiled.info"
                 "root@unboiled.info"
                 "hostmaster@unboiled.info"
