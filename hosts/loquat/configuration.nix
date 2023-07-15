@@ -61,7 +61,10 @@
     MemoryHigh = "14G"; MemoryMax = "15G";
   };
   systemd.services.yousable-back.serviceConfig.CPUAffinity = "0-3";
+  systemd.services.syncthing.serviceConfig.CPUAffinity = "0-3";
+  systemd.services.gitea.serviceConfig.CPUAffinity = "0-3";
   systemd.services.akkoma.serviceConfig.CPUAffinity = "0-2";
+  systemd.services.lemmy.serviceConfig.CPUAffinity = "0-2";
 
   home-manager.users.monk.language-support = [ "nix" "bash" ];
 
