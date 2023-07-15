@@ -697,29 +697,6 @@
         "type": "gitlab"
       }
     },
-    "podcastify": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1674470793,
-        "narHash": "sha256-WwoDJeM8vsfvZ0DzIcXqTUj2bsW8wauuc0xi4t/8pWU=",
-        "owner": "t184256",
-        "repo": "podcastify",
-        "rev": "3a37d43dfd28b917f9b8a313983b34ba2179f320",
-        "type": "github"
-      },
-      "original": {
-        "owner": "t184256",
-        "repo": "podcastify",
-        "type": "github"
-      }
-    },
     "poetry2nix": {
       "inputs": {
         "flake-utils": [
@@ -789,7 +766,6 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
         "nixvim": "nixvim",
-        "podcastify": "podcastify",
         "simple-nixos-mailserver": "simple-nixos-mailserver",
         "yousable": "yousable"
       }

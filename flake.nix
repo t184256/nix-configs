@@ -58,11 +58,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
-    podcastify = {
-      url = "github:t184256/podcastify";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
     yousable = {
       url = "github:t184256/yousable";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -88,7 +83,6 @@
     alacritty-autoresizing,
     keyboard-remap,
     input-utils,
-    podcastify,
     yousable,
     ...
   }@inputs:
@@ -97,7 +91,6 @@
     specialArgs = { inherit inputs; };
     common_modules = [ impermanence.nixosModule
                        simple-nixos-mailserver.nixosModule
-                       podcastify.nixosModule
                        yousable.nixosModule
                        home-manager.nixosModules.home-manager {
                          # false as overlays are pulled in where needed
