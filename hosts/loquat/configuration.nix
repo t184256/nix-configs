@@ -7,6 +7,7 @@
     ./hardware-configuration.nix
     ../../nixos/services/akkoma.nix
     ../../nixos/services/dns.nix
+    ../../nixos/services/fedifetcher.nix
     ../../nixos/services/git.nix
     ../../nixos/services/hydra.nix
     ../../nixos/services/lemmy.nix
