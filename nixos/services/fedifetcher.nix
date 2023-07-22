@@ -1,11 +1,12 @@
 { pkgs, ... }:
 
 let
-  configPath = "/mnt/persist/secrets/fedifetcher.json";
+  configPath = "/mnt/persist/secrets/fedifetcher/mastodon.json";
+  stateRoot = "/var/lib/fedifetcher";
 in
 {
   users = {
-    users.fedifetcher.home = "/var/lib/fedifetcher";
+    users.fedifetcher.home = stateRoot;
     users.fedifetcher.createHome = true;
     users.fedifetcher.isSystemUser = true;
     users.fedifetcher.group = "fedifetcher";
@@ -14,25 +15,22 @@ in
   systemd = {
     timers.fedifetcher = {
       wantedBy = [ "timers.target" ];
+      timerConfig.OnCalendar = "*:03/6";
       partOf = [ "fedifetcher.service" ];
-      timerConfig.OnCalendar = "*:2/5";
     };
-    services.fedifetcher.serviceConfig = {
-      WorkingDirectory = "/var/lib/fedifetcher";
-      ConditionFileExists = configPath;
-      Type = "oneshot";
-      ExecStart =
+    services.fedifetcher = {
+      unitConfig.ConditionPathExists = configPath;
+      serviceConfig.WorkingDirectory = stateRoot;
+      serviceConfig.Type = "oneshot";
+      serviceConfig.ExecStart =
         "${pkgs.fedifetcher}/bin/fedifetcher"
         + " --config ${configPath}"
-        + " --state-dir /var/lib/fedifetcher";
-      User = "fedifetcher";
-      Group = "fedifetcher";
+        + " --state-dir ${stateRoot}";
+      serviceConfig.User = "fedifetcher";
+      serviceConfig.Group = "fedifetcher";
     };
   };
   environment.persistence."/mnt/persist".directories = [
-    {
-      directory = "/var/lib/fedifetcher";
-      user = "fedifetcher"; group = "fedifetcher";
-    }
+    { directory = stateRoot; user = "fedifetcher"; group = "fedifetcher"; }
   ];
 }
