@@ -82,6 +82,7 @@
       "/etc/nixos"
       "/etc/NetworkManager"
       "/var/lib/NetworkManager"
+      "/var/lib/nixos"
     #  "/var/lib/alsa"
     #  "/var/lib/bluetooth"
     #  "/var/lib/boltd"

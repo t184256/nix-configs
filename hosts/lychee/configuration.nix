@@ -136,6 +136,7 @@
       "/var/lib/alsa"
       "/var/lib/bluetooth"
       "/var/lib/boltd"
+      "/var/lib/nixos"
       "/var/lib/systemd"
       "/var/lib/upower"
       "/var/lib/waydroid"

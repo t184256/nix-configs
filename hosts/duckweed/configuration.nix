@@ -38,6 +38,7 @@
     hideMounts = true;
     directories = [
       "/var/lib/acme"
+      "/var/lib/nixos"
       "/var/log"
     ];
     files =

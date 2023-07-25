@@ -79,6 +79,7 @@
     directories = [
       "/srv/nix-on-droid"
       "/var/lib/acme"
+      "/var/lib/nixos"
       "/var/log"
     ];
     files =
