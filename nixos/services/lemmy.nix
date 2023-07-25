@@ -34,4 +34,10 @@
       '';
     };
   };
+  environment.persistence."/mnt/persist".directories = [
+    {
+      directory = "/var/lib/private/pict-rs";
+      user = "pict-rs"; group = "pict-rs";
+    }
+  ];
 }
