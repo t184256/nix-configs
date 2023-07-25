@@ -75,6 +75,8 @@
       persistent_by_default = true;
     };
   };
+  systemd.services.prosody.after = [ "network-online.target" ];
+  systemd.services.prosody.wants = [ "network-online.target" ];
   systemd.services.prosody.postStart = ''
     #!${pkgs.bash}/bin/bash
     while sleep .5; do (: </dev/tcp/localhost/5347) 2>/dev/null && break; done
