@@ -1,10 +1,12 @@
-{ pkgs, ... }:
+{ pkgs, lib, config, ... }:
 
 {
-  imports = [ ./wraplings.nix ];
-  home.packages = with pkgs; [ hledger hledger-ui ];
-  home.wraplings = {
-    hl = "${pkgs.hledger}/bin/hledger";
-    vihl = "vi ~/.hledger.journal";
+  imports = [ ./wraplings.nix ./config/live.nix ];
+  home = lib.mkIf (! config.system.live) {
+    packages = with pkgs; [ hledger hledger-ui ];
+    wraplings = {
+      hl = "${pkgs.hledger}/bin/hledger";
+      vihl = "vi ~/.hledger.journal";
+    };
   };
 }
