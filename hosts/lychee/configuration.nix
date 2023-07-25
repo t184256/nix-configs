@@ -143,7 +143,7 @@
       "/var/log"
     ];
     files =
-      (let mode = { mode = "0700"; }; in [
+      (let mode = { mode = "0755"; }; in [
         { file = "/etc/ssh/ssh_host_rsa_key"; parentDirectory = mode; }
         { file = "/etc/ssh/ssh_host_rsa_key.pub"; parentDirectory = mode; }
         { file = "/etc/ssh/ssh_host_ed25519_key"; parentDirectory = mode; }

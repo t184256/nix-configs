@@ -84,7 +84,7 @@
     ];
     files =
       let
-        mode = { mode = "0700"; };
+        mode = { mode = "0755"; };
       in
       [
         "/etc/machine-id"
