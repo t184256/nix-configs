@@ -2,6 +2,7 @@
 
 let
   hydraPkg = inputs.hydra.defaultPackage.${pkgs.system};
+  privKey = "/var/secrets/nix-cache/priv-key.pem";
 in
 {
   imports = [ ./postgresql.nix ];
@@ -32,19 +33,50 @@ in
     package = hydraPkg;
     minimumDiskFree = 20;  # GB
     extraConfig = ''
-      binary_cache_secret_key_file = /var/secrets/nix-cache/priv-key.pem
+      binary_cache_secret_key_file = ${privKey}
     '';
     buildMachinesFiles = [ "/mnt/persist/secrets/hydra/machines" ];
   };
+  services.harmonia = {
+    enable = true;
+    signKeyPath = privKey;
+  };
+  nix.settings.allowed-users = [ "harmonia" ];
   services.nginx = {
     recommendedProxySettings = true;
     virtualHosts."hydra.unboiled.info" = {
       enableACME = true;
       forceSSL = true;
       locations."/".proxyPass = "http://127.0.0.1:4000";
-      extraConfig = ''
-        proxy_cache off;
-      '';
+      extraConfig =
+        let
+          to-harmonia-base = ''
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            brotli on;
+            brotli_types application/x-nix-archive;
+          '';
+          to-harmonia = ''
+            proxy_pass http://127.0.0.1:5000;
+            ${to-harmonia-base}
+          '';
+        in
+        # see https://fzakaria.github.io/nix-http-binary-cache-api-spec
+        # and https://github.com/nix-community/harmonia/issues/120
+        ''
+          proxy_cache off;
+          location ~ "^/nar/([a-z0-9]{32})-.*\.narinfo$" {
+            proxy_pass http://127.0.0.1:5000/$1.narinfo$is_args$args;
+            ${to-harmonia-base}
+          }
+          location ~ "^/([a-z0-9]{32}).narinfo$" { ${to-harmonia} }
+          location ~ ^/nix-cache-info { ${to-harmonia} }
+          location ~ ^/.+\.ls$ { ${to-harmonia} }
+          location ~ ^/nar/.*\.nar$ { ${to-harmonia} }
+          location ~ ^/nar/.*\.nar\. { ${to-harmonia} }
+          location ~ ^/log/.+$ { ${to-harmonia} }
+        '';
     };
   };
 
