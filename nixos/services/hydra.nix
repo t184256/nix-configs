@@ -58,13 +58,8 @@ in
           '';
         in
         # see https://fzakaria.github.io/nix-http-binary-cache-api-spec
-        # and https://github.com/nix-community/harmonia/issues/120
         ''
           proxy_cache off;
-          location ~ "^/nar/([a-z0-9]{32})-.*\.narinfo$" {
-            proxy_pass http://127.0.0.1:5000/$1.narinfo$is_args$args;
-            ${to-harmonia-base}
-          }
           location ~ "^/([a-z0-9]{32}).narinfo$" { ${to-harmonia} }
           location ~ ^/nix-cache-info { ${to-harmonia} }
           location ~ ^/.+\.ls$ { ${to-harmonia} }
