@@ -30,9 +30,6 @@ in
     port = 4000;
     package = hydraPkg;
     minimumDiskFree = 20;  # GB
-    extraConfig = ''
-      binary_cache_secret_key_file = ${privKey}
-    '';
     buildMachinesFiles = [ "/mnt/persist/secrets/hydra/machines" ];
   };
   services.harmonia = {
