@@ -18,11 +18,9 @@ in
   #   ALTER TABLE BuildStepOutputs ALTER COLUMN path DROP NOT NULL;
   #   ALTER TABLE BuildStepOutputs ADD contentAddressed BOOLEAN NOT NULL DEFAULT 'f';
 
-  nix.extraOptions = ''
-    trusted-users = monk hydra-queue-runner
-    keep-derivations = true
-    keep-outputs = true
-  '';
+  nix.settings.trusted-users = [ "hydra" "hydra-queue-runner" ];
+  nix.settings.keep-derivations = true;
+  nix.settings.keep-outputs = true;
   services.hydra = {
     enable = true;
     hydraURL = "https://hydra.unboiled.info";
