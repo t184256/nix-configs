@@ -35,15 +35,6 @@
       localhost x86_64-linux - 1 1 kvm,nixos-test,big-parallel,benchmark  -
     ''
   )];
-  programs.ssh.extraConfig = ''
-    Host cashew
-      Hostname duckweed.unboiled.info
-      Port 221
-  '';
-  programs.ssh.knownHosts.cashew = {
-    publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILUp0oeg2rVY1trfHcMPglSkujft1r6C6D/K/+7RV5yj";
-    hostNames = [ "[duckweed.unboiled.info]:221" ];
-  };
   nix.buildMachines = [ {
     hostName = "localhost";
     system = "x86_64-linux";
