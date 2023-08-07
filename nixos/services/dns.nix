@@ -45,6 +45,7 @@ let
     lemmy           IN CNAME loquat
     social          IN CNAME loquat
     syncthing-relay IN CNAME duckweed
+    meshcentral     IN CNAME duckweed
 
     _xmpp-client._tcp 86400 IN SRV 5 0 5222 unboiled.info.
     _xmpp-server._tcp 86400 IN SRV 5 0 5269 unboiled.info.
