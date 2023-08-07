@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+
+set -uexo pipefail
+
+# TODO: get rid of persistent /home
+# TODO: variant with btrfs + LUKS? variant with xfs + no encryption?
+# TODO: swap encryption
+
+### Parameters ###
+
+: "${BOOT_SIZE:=768MB}"
+: "${SWAP_SIZE:=20GB}"
+: "${HOST:=COCOA}"
+: "${COPY_ETC_NIXOS:=1}"
+
+### Safeguards ###
+
+[[ "$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)" \
+	== 'b6a5667e-dcbc-edc8-392f-88aedd6259a6' ]]
+[[ -e /dev/nvme0n1 ]]
+
+### Cleanup ###
+
+cleanup() {
+	sudo umount /mnt/boot 2>/dev/null || true
+	sudo cryptsetup close ${HOST}_SWAP 2>/dev/null || true
+	sudo umount /mnt/0 2>/dev/null || true
+	sudo umount /mnt/tgt/home 2>/dev/null || true
+	sudo umount /mnt/tgt/nix 2>/dev/null || true
+	sudo umount /mnt/tgt/persist 2>/dev/null || true
+	sudo umount /mnt/persist 2>/dev/null || true
+	sudo umount /mnt/tgt/dev/pts 2>/dev/null || true
+	sudo umount /mnt/tgt/dev 2>/dev/null || true
+	sudo umount /mnt/tgt/proc 2>/dev/null || true
+	sudo umount /mnt/tgt/sys/firmware/efi/efivars 2>/dev/null || true
+	sudo umount /mnt/tgt/sys 2>/dev/null || true
+	sudo umount /mnt/tgt/boot 2>/dev/null || true
+	sudo umount -R /mnt/tgt 2>/dev/null || true
+}
+trap 'set +x; cleanup' EXIT
+
+### Obtaining passphrase ###
+
+if [[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]]; then
+	sudo mkdir -p /mnt/boot
+	sudo mount /dev/disk/by-partlabel/${HOST}_BOOT /mnt/boot
+	read -rsp 'Disk encryption passphrase: ' ENCRYPTION_PASSPHRASE
+	sudo umount /mnt/boot
+	sudo rm -d /mnt/boot
+else
+	read -rsp 'Disk encryption passphrase: ' ENCRYPTION_PASSPHRASE
+fi
+
+### Partitioning ###
+
+PARTITIONS=$(sudo fdisk -l /dev/nvme0n1)
+grep -F 'SAMSUNG MZVLW256HEHP-000L7' <<<"$PARTITIONS"  # extra safeguard
+
+if grep -F Size <<<"$PARTITIONS"; then
+	echo 'Existing partition table found on /dev/nvme0n1'
+	[[ -e /dev/nvme0n1p1 ]]
+else
+	[[ ! -e /dev/nvme0n1p1 ]]
+	part_prompt='Partition table does not exist,'
+	part_prompt+=' auto-partition and lose all data? [y/N] '
+	read -rp "$part_prompt" CONFIRMATION
+	[[ "$CONFIRMATION" == y ]]; CONFIRMATION=
+	sudo parted -s /dev/nvme0n1 -- mklabel gpt
+	sudo parted /dev/nvme0n1 -- mkpart primary fat32 1MB $BOOT_SIZE
+	sudo parted /dev/nvme0n1 -- set 1 esp on
+	sudo parted /dev/nvme0n1 -- name 1 ${HOST}_BOOT
+	sudo parted /dev/nvme0n1 -- mkpart primary $BOOT_SIZE -$SWAP_SIZE
+	sudo parted /dev/nvme0n1 -- name 2 ${HOST}
+	sudo parted /dev/nvme0n1 -- mkpart primary linux-swap -$SWAP_SIZE 100%
+	sudo parted /dev/nvme0n1 -- name 3 ${HOST}_SWAP
+	sudo mkfs.fat -F 32 -n ${HOST:0:6}_BOOT \
+		/dev/disk/by-partlabel/${HOST}_BOOT
+	sudo bcachefs format -f -L ${HOST} \
+		--discard /dev/disk/by-partlabel/${HOST} \
+		--encrypted <<<"$ENCRYPTION_PASSPHRASE"
+fi
+
+[[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]]
+[[ -e /dev/disk/by-partlabel/${HOST} ]]
+[[ -e /dev/disk/by-partlabel/${HOST}_SWAP ]]
+
+if [[ ! -e /dev/mapper/${HOST}_SWAP ]]; then
+	echo -n "$ENCRYPTION_PASSPHRASE" | \
+		sudo cryptsetup -q luksFormat \
+			/dev/disk/by-partlabel/${HOST}_SWAP -d-
+	echo -n "$ENCRYPTION_PASSPHRASE" | \
+		sudo cryptsetup -q open \
+			/dev/disk/by-partlabel/${HOST}_SWAP ${HOST}_SWAP -d-
+	sudo mkswap -L ${HOST}_SWAP /dev/mapper/${HOST}_SWAP
+fi
+
+### Mounting and subvolume creation ###
+
+sudo mkdir -p /mnt/0
+sudo bcachefs unlock /dev/disk/by-partlabel/${HOST} -k user_session \
+	<<<"$ENCRYPTION_PASSPHRASE"
+sudo mount -t bcachefs /dev/disk/by-partlabel/${HOST} /mnt/0
+
+[[ -e /mnt/0/nix ]] || sudo bcachefs subvolume create /mnt/0/nix
+[[ -e /mnt/0/home ]] || sudo bcachefs subvolume create /mnt/0/home
+[[ -e /mnt/0/secrets ]] || sudo bcachefs subvolume create /mnt/0/secrets
+
+sudo mkdir -p /mnt/tgt
+sudo mount -t tmpfs tmpfs /mnt/tgt
+sudo mkdir -p /mnt/tgt/{boot,nix,home,mnt/persist}
+sudo mkdir -p /mnt/persist  # hack to soothe impermanence
+sudo mount --bind /mnt/0/nix /mnt/tgt/nix
+sudo mount --bind /mnt/0/home /mnt/tgt/home
+sudo mount --bind /mnt/0 /mnt/tgt/mnt/persist
+sudo mount --bind /mnt/0 /mnt/persist  # HACK
+sudo mount /dev/disk/by-partlabel/${HOST}_BOOT /mnt/tgt/boot
+sudo mkdir -p /mnt/tgt/{dev,proc,sys}
+sudo mount --bind /dev /mnt/tgt/dev
+sudo mount --bind /dev/pts /mnt/tgt/dev/pts
+sudo mount --bind /proc /mnt/tgt/proc
+sudo mount --bind /sys /mnt/tgt/sys
+sudo mount --bind /sys/firmware/efi/efivars \
+	/mnt/tgt/sys/firmware/efi/efivars
+
+### Impermanence data injection ###
+
+sudo mkdir -p /mnt/tgt/mnt/persist/etc
+# /mnt/persist/secrets/login:
+sudo mkdir -p /mnt/tgt/mnt/persist/secrets/login
+if [ ! -e /mnt/tgt/mnt/persist/secrets/login/monk ]; then
+	echo 'configuring `monk` user'
+	mkpasswd -s <<<"$ENCRYPTION_PASSPHRASE" \
+		| sudo tee /mnt/tgt/mnt/persist/secrets/login/monk
+	sudo chmod 600 /mnt/tgt/mnt/persist/secrets/login/monk
+fi
+if [ ! -e /mnt/tgt/mnt/persist/secrets/login/root ]; then
+	echo 'configuring `root` user'
+	mkpasswd -s <<<"$ENCRYPTION_PASSPHRASE" \
+		| sudo tee /mnt/tgt/mnt/persist/secrets/login/root
+	sudo chmod 600 /mnt/tgt/mnt/persist/secrets/login/root
+fi
+# /etc/machine-id:
+[[ -e /mnt/tgt/mnt/persist/etc/machine-id ]] || \
+	sudo systemd-machine-id-setup --root /mnt/tgt/mnt/persist
+# /etc/nixos:
+if [[ "$COPY_ETC_NIXOS" == 1 ]]; then
+	if git rev-parse --show-toplevel 2>/dev/null; then
+		FLAKE=$(git rev-parse --show-toplevel)
+		sudo rm -d /mnt/tgt/mnt/persist/etc/nixos 2>/dev/null || true
+		[[ -e /mnt/tgt/mnt/persist/etc/nixos ]] || \
+			sudo cp -r "$FLAKE" /mnt/tgt/mnt/persist/etc/nixos
+	else
+		FLAKE='/mnt/tgt/mnt/persist/etc/nixos'
+		[[ -e /mnt/tgt/mnt/persist/etc/nixos ]] || \
+			sudo git clone https://github.com/t184256/nix-configs \
+				-b staging \
+				/mnt/tgt/mnt/persist/etc/nixos
+	fi
+	sudo chown -R 1000:100 /mnt/tgt/mnt/persist/etc/nixos
+else
+	FLAKE='github:t184256/nix-configs'
+fi
+# /etc/NetworkManager:
+[[ -e /mnt/tgt/mnt/persist/etc/NetworkManager ]] || \
+	sudo cp -rv /etc/NetworkManager -t /mnt/tgt/mnt/persist/etc
+sudo ls -lt /mnt/tgt/mnt/persist/etc/NetworkManager
+# /etc/ssh:
+if [[ ! -e /mnt/tgt/mnt/persist/etc/ssh_host_rsa_key ]]; then
+	sudo ssh-keygen -t rsa -b 4096 -N '' \
+		-f /mnt/tgt/mnt/persist/etc/ssh_host_rsa_key
+	sudo chmod 700 /mnt/tgt/mnt/persist/etc/ssh_host_rsa_key
+fi
+if [[ ! -e /mnt/tgt/mnt/persist/etc/ssh_host_ed25519_key ]]; then
+	sudo ssh-keygen -t ed25519 -N '' \
+		-f /mnt/tgt/mnt/persist/etc/ssh_host_ed25519_key
+	sudo chmod 700 /mnt/tgt/mnt/persist/etc/ssh_host_ed25519_key
+fi
+
+### Installation from a flake ###
+
+sudo nixos-install --root /mnt/tgt --no-root-password --flake "$FLAKE#${HOST,,}"

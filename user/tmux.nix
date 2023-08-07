@@ -83,7 +83,8 @@
       m*)     TO=mango;       METHOD=mosh ;;
       d*)     TO=duckweed;    METHOD=mosh ;;
       l*)     TO=loquat;      METHOD=mosh ;;
-      c*)     TO=cashew;      METHOD=ssh ;;
+      ca*)    TO=cashew;      METHOD=ssh ;;
+      co*)    TO=cocoa;       METHOD=ssh ;;
     esac
     tmux rename-window $TO 2> /dev/null
     ${pkgs.ncurses}/bin/clear; echo "$METHOD to $TO..."

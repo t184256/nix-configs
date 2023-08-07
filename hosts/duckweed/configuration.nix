@@ -9,6 +9,7 @@
     ../../nixos/services/meshcentral.nix
     ../../nixos/services/syncthing-relay.nix
     ../../nixos/services/wireguard-cashnet-duckweed.nix
+    ../../nixos/services/wireguard-cocoanet-duckweed.nix
     ../../nixos/services/wireguard-nl.nix
   ];
 
