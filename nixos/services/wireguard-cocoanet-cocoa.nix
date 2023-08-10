@@ -13,4 +13,5 @@
     ];
     privateKeyFile = "/mnt/persist/secrets/wireguard/cocoanet-cocoa";
   };
+  networking.firewall.allowedUDPPortRanges = [ { from = 22300; to = 22399; } ];
 }

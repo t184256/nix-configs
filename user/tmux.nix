@@ -76,6 +76,7 @@
     export MOSH_TITLE_NOPREFIX=1
     LOCAL=''$(${pkgs.hostname}/bin/hostname)
     TO=''${1:-$LOCAL}
+    MOSH_OPTS=""
     case $TO in
       -)      TO=$LOCAL-;     METHOD=shell ;;
       $LOCAL) TO=$LOCAL;      METHOD=attach ;;
@@ -83,15 +84,15 @@
       m*)     TO=mango;       METHOD=mosh ;;
       d*)     TO=duckweed;    METHOD=mosh ;;
       l*)     TO=loquat;      METHOD=mosh ;;
-      c*)     TO=cocoa;       METHOD=ssh ;;
+      c*)     TO=cocoa;       METHOD=mosh     MOSH_OPTS='-p 22300:22399' ;;
     esac
     tmux rename-window $TO 2> /dev/null
     ${pkgs.ncurses}/bin/clear; echo "$METHOD to $TO..."
     case $METHOD in
       shell)  exec bash ;;
       attach) exec ~/.tmux.sh ;;
-      mosh)   exec mosh $TO -o -- ~/.tmux.sh ;;
-      mosh-)  exec mosh $TO -o -- sh -c 'exec tmux new-session -A -t main -s $(date +%s)';;
+      mosh)   exec mosh $MOSH_OPTS $TO -o -- ~/.tmux.sh ;;
+      mosh-)  exec mosh $MOSH_OPTS $TO -o -- sh -c 'exec tmux new-session -A -t main -s $(date +%s)';;
       ssh)    exec ssh $TO -t ~/.tmux.sh ;;
       ssh-)   exec ssh $TO -t sh -c 'exec tmux new-session -A -t main -s $(date +%s)' ;;
     esac
