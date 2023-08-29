@@ -55,7 +55,7 @@ def _w(args):
     args = flatten([expand_arg(a) for a in args])
     with ${...}.swap(WITH_FEATURES=with_features):
         with ${...}.swap(WITH_FEATURES_IMMEDIATE=' '.join(features)):
-             nix shell @(args) -c @(cmd if cmd else 'xonsh')
+             nix shell @(args) -c @(cmd if cmd else $XONSH)
 
 aliases['w'] = _w
 del _w

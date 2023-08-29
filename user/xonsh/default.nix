@@ -48,6 +48,7 @@ in
             del aliases['ll']
         del _os
 
+    $XONSH='${my-xonsh}/bin/xonsh'
     xontrib load direnv
     $DIRENV_HIDE_DIFF=1
     xontrib load readable-traceback
