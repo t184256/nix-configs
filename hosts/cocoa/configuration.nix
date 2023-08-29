@@ -22,6 +22,7 @@
 
   networking.hostName = "cocoa";
   networking.networkmanager.enable = true;
+  systemd.network.wait-online.anyInterface = true;
 
   # Set your time zone.
   time.timeZone = "Europe/Prague";
