@@ -3,31 +3,19 @@
 let
   readConfigBit = p: "\n\n#${builtins.baseNameOf p}\n${builtins.readFile p}";
 
-  my-xontribs = xs: with xs; [
-    direnv
-    readable-traceback
-  ];
-  my-extra-pypkgs = pps: with pps; [
-    # nixpkgs  # disabled since it's not updated for flakes
-  ];
-  my-xonsh = (pkgs.xonsh.withXontribs my-xontribs)
-                        .withPythonPackages my-extra-pypkgs;
+  my-xonsh = pkgs.xonsh.override {
+    extraPackages = ps: [
+      ps.xontrib-xonsh-direnv
+      ps.xontrib-readable-traceback
+    ];
+  };
 in
 
 {
   imports = [ ../config/os.nix ];
   nixpkgs.overlays = [
     (import ../../overlays/direnv.nix)
-    (import ../../overlays/xonsh)
-    (
-      self: super: { xonshLib =
-        if (config.system.os != "Nix-on-Droid") then super.xonshLib else
-        (super.xonshLib.overridePythonAttrs (o: {
-          doCheck = false;
-          doInstallCheck = false;
-        }));
-      }
-    )
+    (import ../../overlays/xontribs)
     ( self: super: { inherit my-xonsh; } )  # I refer to it in user/tmux
   ];
 
