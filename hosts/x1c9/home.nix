@@ -18,7 +18,7 @@
     ../../user/assorted-tools.nix
     ../../user/common.nix
     ../../user/entr.nix
-    ../../user/exa.nix
+    ../../user/eza.nix
     ../../user/fonts.nix
     ../../user/git.nix
     ../../user/htop.nix

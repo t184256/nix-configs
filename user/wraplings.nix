@@ -21,7 +21,7 @@ in {
   config = {
     # example:
     #  home.packages = with pkgs; [
-    #    (pkgs.writeShellScriptBin "ll" "exec ${exa}/bin/exa -l")
+    #    (pkgs.writeShellScriptBin "ll" "exec ${eza}/bin/eza -l")
     #  ];
 
     home.packages = (

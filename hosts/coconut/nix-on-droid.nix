@@ -22,7 +22,7 @@ in
         ../../user/config/identity.nix
         ../../user/assorted-tools.nix
         ../../user/common.nix
-        ../../user/exa.nix
+        ../../user/eza.nix
         ../../user/git.nix
         ../../user/htop.nix
         ../../user/mosh.nix

@@ -3,12 +3,12 @@
 {
   imports = [ ./wraplings.nix ./config/os.nix ];
 
-  # calling exa directly
-  programs.exa.enable = true;
+  # calling eza directly
+  programs.eza.enable = true;
 
-  # calling exa via wraplings
+  # calling eza via wraplings
   home.wraplings = rec {
-    l = "${pkgs.exa}/bin/exa --group-directories-first --sort Name -F -b";
+    l = "${pkgs.eza}/bin/eza --group-directories-first --sort Name -F -b";
     ll = l + " --time-style=iso -lm --git" + (
       if config.system.os == "Android" then "" else " -g"
     );
