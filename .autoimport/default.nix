@@ -18,6 +18,7 @@ let
   desuffix = regex: s: builtins.head (builtins.match ("(.*)" + regex) s);
   tryDesuffix = regex: s: if (endsWith regex s) then (desuffix regex s) else s;
   listDir = dir: builtins.attrNames (builtins.readDir dir);
+  keySet = l: builtins.listToAttrs (map (e: {name = e; value = null;}) l);
 
   # the meat
 
@@ -33,61 +34,109 @@ let
   );
   asList = dir: builtins.attrValues (asAttrs dir);
   merge = dir: { imports = asPaths dir; };
+
 in
-
 {
-  tests =  # nix build -f . tests
-    let
-      keySet = l: builtins.listToAttrs (map (e: {name = e; value = null;}) l);
-      sameElements = l1: l2: (keySet l1) == (keySet l2);
-    in
-    assert sameElements [ "a" "b" ] [ "a" "b" ];
-    assert sameElements [ "a" "b" ]  [ "b" "a" ];
-    assert ! sameElements [ "a" "b" ] [ "a" "b" "c" ];
-    assert ! sameElements [ "a" "b" ] [ "a" ];
-
-    assert endsWith "\\.nix" "test.nix";
-    assert ! endsWith "something_else" "test.nix";
-    assert desuffix "\\.nix" "test.nix" == "test";
-    assert tryDesuffix "\\.nix" "test.nix" == "test";
-    assert tryDesuffix "\\.nix" "something_else" == "something_else";
-    
-    assert builtins.elem "subdir" (listDir ./test);
-    assert builtins.elem "toplevel.nix" (listDir ./test);
-    assert builtins.elem "other.file" (listDir ./test);
-
-    assert ! shouldAutoimport ./test "other.file";
-    assert shouldAutoimport   ./test "toplevel.nix";
-    assert shouldAutoimport   ./test "subdir";
-    assert ! shouldAutoimport ./test/subdir "default.nix";
-    assert shouldAutoimport   ./test/subdir "file.nix";
-    assert shouldAutoimport   ./test/subdir "flatten";
-    assert shouldAutoimport   ./test/subdir "def";
-    assert ! shouldAutoimport ./test/subdir/def "default.nix";
-    assert shouldAutoimport   ./test/subdir/def "other.nix";
-    assert ! shouldAutoimport ./test/subdir "nodef";
-    assert shouldAutoimport   ./test/subdir/nodef "something.nix";
-
-    assert sameElements (asNames ./test) [ "toplevel.nix" "subdir" ];
-    assert sameElements (asNames ./test/subdir) [ "file.nix" "def" "flatten" ];
-    assert asNames ./test/subdir/flatten == [ "flatty.nix" ];
-    assert asNames ./test/subdir/nodef == [ "something.nix" ];
-    assert asNames ./test/subdir/def == [ "other.nix" ];
-    assert asPaths ./test/subdir/def == [ ./test/subdir/def/other.nix ];
-
-    assert asAttrs ./test == {
-      toplevel = import ./test/toplevel.nix;
-      subdir = import ./test/subdir;
+  _tests = {
+    testEndsWithPositive = {
+      expr = endsWith "\\.nix" "test.nix";
+      expected = true;
     };
-    assert asAttrs ./test/subdir == import ./test/subdir;
-    assert asAttrs ./test/subdir == (asAttrs ./test).subdir;
-    assert asAttrs ./test/subdir == {
-      file = import test/subdir/file.nix;
-      flatten = import test/subdir/flatten;
-      def = import test/subdir/def;
+
+    testEndsWithNegative = {
+      expr = endsWith "something_else" "test.nix";
+      expected = false;
     };
-    assert asList ./test/subdir/def == [ (import ./test/subdir/def/other.nix) ];
-    { success = true; };
+
+    testDesuffix = {
+      expr = desuffix "\\.nix" "test.nix";
+      expected = "test";
+    };
+
+    testTryDesuffixDoesSomething = {
+      expr = tryDesuffix "\\.nix" "test.nix";
+      expected = "test";
+    };
+
+    testTryDesuffixDoesNothing = {
+      expr = tryDesuffix "\\.nix" "something_else";
+      expected = "something_else";
+    };
+
+    testListDir = {
+      expr = builtins.map (n: builtins.elem n (listDir ./test)) [
+        "subdir" "toplevel.nix" "other.file" "nonex"
+      ];
+      expected = [ true true true false ];
+    };
+
+    testShouldAutoimport = {
+      expr = builtins.map (shouldAutoimport ./test) [
+        "other.file" "toplevel.nix" "subdir"
+      ];
+      expected = [ false true true ];
+    };
+
+    testShouldAutoimportSubdir = {
+      expr = builtins.map (shouldAutoimport ./test/subdir) [
+        "default.nix" "file.nix" "flatten" "def" "nodef"
+      ];
+      expected = [ false true true true false ];
+    };
+
+    testShouldAutoimportDef = {
+      expr = builtins.map (shouldAutoimport ./test/subdir/def) [
+        "default.nix" "other.nix"
+      ];
+      expected = [ false true ];
+    };
+
+    testShouldAutoimportNoDef = {
+      expr = shouldAutoimport ./test/subdir/nodef "something.nix";
+      expected = true;
+    };
+
+    testAsNames2 = {
+      expr = keySet (asNames ./test);
+      expected = keySet [ "toplevel.nix" "subdir" ];
+    };
+
+    testAsNames3 = {
+      expr = builtins.map asNames [
+        ./test/subdir/flatten ./test/subdir/nodef ./test/subdir/def
+      ];
+      expected = [ [ "flatty.nix" ] [ "something.nix" ]  [ "other.nix" ] ];
+    };
+
+    testAsPaths = {
+      expr = asPaths ./test/subdir/def;
+      expected = [ ./test/subdir/def/other.nix ];
+    };
+
+    testAsAttrsEq1 = {
+      expr = asAttrs ./test/subdir;
+      expected = import ./test/subdir;
+    };
+
+    testAsAttrsEq2 = {
+      expr = asAttrs ./test/subdir;
+      expected = (asAttrs ./test).subdir;
+    };
+
+    testAsAttrsSubdir = {
+      expr = asAttrs ./test/subdir;
+      expected = {
+        file = import ./test/subdir/file.nix;
+        flatten = import ./test/subdir/flatten;
+        def = import ./test/subdir/def;
+      };
+    };
+
+    testAsList = {
+      expr = asList ./test/subdir/def;
+      expected = [ (import ./test/subdir/def/other.nix) ];
+    };
+  };
 
   inherit asNames asPaths asAttrs asList merge;
 }
