@@ -17,6 +17,7 @@ let
 in
 {
   imports = [ ../config/language-support.nix ];
+  nixpkgs.overlays = [ (import ../../overlays/python-lsp-server.nix) ];
 
   programs.nixvim = {
     maps.normal."<space>f" = {

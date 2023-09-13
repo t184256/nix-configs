@@ -9,8 +9,8 @@
   ];
 
   users.mutableUsers = false;
-  users.users.monk.passwordFile = "/mnt/persist/secrets/login/monk";
-  users.users.root.passwordFile = "/mnt/persist/secrets/login/root";
+  users.users.monk.hashedPasswordFile = "/mnt/persist/secrets/login/monk";
+  users.users.root.hashedPasswordFile = "/mnt/persist/secrets/login/root";
 
   boot.loader.systemd-boot.configurationLimit = 10;  # small-ish /boot
   boot.loader.systemd-boot.enable = true;
