@@ -21,6 +21,8 @@
 
   time.timeZone = "Europe/Prague";
 
+  networking.dhcpcd.extraConfig = "noipv4ll";
+
   users.mutableUsers = false;
   users.users.monk.hashedPasswordFile = "/mnt/persist/secrets/login/monk";
   users.users.root.hashedPasswordFile = "/mnt/persist/secrets/login/root";
