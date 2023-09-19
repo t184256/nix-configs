@@ -48,7 +48,7 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
 
   system.role = {
-    desktop.enable = true;
+    #desktop.enable = true;
     physical.enable = true;
     physical.portable = true;
     yubikey.enable = true;
