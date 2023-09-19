@@ -47,6 +47,8 @@
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
 
+  system.noGraphics = true;
+  home-manager.users.monk.system.noGraphics = true;
   system.role = {
     #desktop.enable = true;
     physical.enable = true;
