@@ -27,7 +27,7 @@ in
       alias.ci = "commit";
       alias.sw = "switch";
       alias.ff = "pull --ff-only";
-      alias.tree = "log --graph --oneline --all";
+      alias.tree = "log --graph --oneline '--exclude=refs/notes/*' --all";
       diff.algorithm = "patience";
       init.defaultBranch = "main";
       merge.conflictStyle = "diff3";
