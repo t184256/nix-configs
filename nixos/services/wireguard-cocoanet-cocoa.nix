@@ -14,4 +14,5 @@
     privateKeyFile = "/mnt/persist/secrets/wireguard/cocoanet-cocoa";
   };
   networking.firewall.allowedUDPPortRanges = [ { from = 22300; to = 22399; } ];
+  services.sshguard.whitelist = [ "192.168.23.1" ];
 }

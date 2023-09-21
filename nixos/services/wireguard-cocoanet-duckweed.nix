@@ -33,4 +33,17 @@
       }
     ];
   };
+
+  # rate-limit that port per IP because I can't meaningfully sshguard it
+  # accept ACCEPTs without DNATing, effectively blackholing
+  networking.firewall = {
+    extraCommands = ''
+      iptables -t nat -I PREROUTING -p tcp --dport 223 -m conntrack --ctstate NEW -m recent --set --name SSH223 -j LOG --log-prefix SSH223-CONNECT-
+      iptables -t nat -I PREROUTING -p tcp --dport 223 -m conntrack --ctstate NEW -m recent --rcheck --name SSH223 --seconds 180 --hitcount 7 -j ACCEPT
+    '';
+    extraStopCommands = ''
+      iptables -t nat -D PREROUTING -p tcp --dport 223 -m conntrack --ctstate NEW -m recent --rcheck --name SSH223 --seconds 180 --hitcount 7 -j ACCEPT || true
+      iptables -t nat -D PREROUTING -p tcp --dport 223 -m conntrack --ctstate NEW -m recent --set --name SSH223 -j LOG --log-prefix SSH223-CONNECT- || true
+    '';
+  };
 }
