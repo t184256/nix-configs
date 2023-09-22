@@ -194,8 +194,8 @@
         pkgs = nixpkgs_with_overlays;
         modules = [
           "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
-          #./hosts/cookie/configuration.nix
-        ];# ++ common_modules;
+          ./hosts/cookie/configuration.nix
+        ] ++ common_modules;
         inherit specialArgs;
       }).config.system.build.isoImage;
       nixpkgs = nixpkgs_with_overlays;
