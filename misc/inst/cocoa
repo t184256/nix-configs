@@ -97,7 +97,7 @@ fi
 ### Mounting and subvolume creation ###
 
 sudo mkdir -p /mnt/0
-sudo bcachefs unlock /dev/disk/by-partlabel/${HOST} -k user_session \
+sudo bcachefs unlock /dev/disk/by-partlabel/${HOST} -k session \
 	<<<"$ENCRYPTION_PASSPHRASE"
 sudo mount -t bcachefs /dev/disk/by-partlabel/${HOST} /mnt/0
 
@@ -178,4 +178,8 @@ fi
 
 ### Installation from a flake ###
 
-sudo nixos-install --root /mnt/tgt --no-root-password --flake "$FLAKE#${HOST,,}"
+sudo nixos-install \
+	--option extra-experimental-features 'cgroups nix-command flakes' \
+	--root /mnt/tgt \
+	--no-root-password \
+	--flake "$FLAKE#${HOST,,}"
