@@ -307,6 +307,10 @@ if sudo [ -e /etc/pki/tls/certs/2015-RH-IT-Root-CA.pem ]; then
     sudo cp -va /etc/pki/tls/certs/2015-RH-IT-Root-CA.pem \
                 /mnt/tgt/root/curr/etc/pki/tls/certs/2015-RH-IT-Root-CA.pem
 fi
+if sudo [ -e /etc/pki/tls/certs/2022-RH-IT-Root-CA.pem ]; then
+    sudo cp -va /etc/pki/tls/certs/2022-RH-IT-Root-CA.pem \
+                /mnt/tgt/root/curr/etc/pki/tls/certs/2022-RH-IT-Root-CA.pem
+fi
 
 # accounts
 if [[ ! -e /mnt/tgt/home/curr/asosedki/.local/share/keyrings/login.keyring ]]\
