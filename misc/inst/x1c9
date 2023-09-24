@@ -303,11 +303,6 @@ EOF
 sudo sh -c 'cp -va /etc/NetworkManager/system-connections/* \
                    /mnt/tgt/root/curr/etc/NetworkManager/system-connections/'
 sudo chmod 700 /mnt/tgt/root/curr/etc/NetworkManager/system-connections
-vpn=$(sudo find /mnt/tgt/root/curr/etc/NetworkManager/system-connections \
-                -name '*.ovpn' | head -n1)
-vpn=$(sudo grep uuid= $vpn | sed 's|^uuid=||')
-sudo sh -c "sed -i 's|^\[connection\]$|[connection]\\nsecondaries=$vpn;|' \
-                /mnt/tgt/root/curr/etc/NetworkManager/system-co*/*.nmconnection"
 if sudo [ -e /etc/pki/tls/certs/2015-RH-IT-Root-CA.pem ]; then
     sudo cp -va /etc/pki/tls/certs/2015-RH-IT-Root-CA.pem \
                 /mnt/tgt/root/curr/etc/pki/tls/certs/2015-RH-IT-Root-CA.pem
