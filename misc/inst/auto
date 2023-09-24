@@ -10,6 +10,9 @@ elif [[ "$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)" \
         == '03000200-0400-0500-0006-000700080009' ]]; then
     AUTO_SCENARIO=jujube
 elif [[ "$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)" \
+        == '4766a080-8682-11ea-90a4-44151e1a0f00' ]]; then
+    AUTO_SCENARIO=cashew
+elif [[ "$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)" \
         == 'b6a5667e-dcbc-edc8-392f-88aedd6259a6' ]]; then
     AUTO_SCENARIO=cocoa
 else
