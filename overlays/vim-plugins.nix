@@ -2,7 +2,7 @@ self: super:
 
 {
   vimPlugins = super.vimPlugins // {
-    vim-boring = super.pkgs.vimUtils.buildVimPluginFrom2Nix {
+    vim-boring = super.pkgs.vimUtils.buildVimPlugin {
       pname = "vim-boring";
       version = "20230915";
       src = super.fetchFromGitHub {
@@ -13,7 +13,7 @@ self: super:
       };
     };
 
-    vim-undofile-warn = super.pkgs.vimUtils.buildVimPluginFrom2Nix {
+    vim-undofile-warn = super.pkgs.vimUtils.buildVimPlugin {
       pname = "undofile-warn";
       version = "1.3";
       src = super.fetchFromGitHub {
@@ -24,7 +24,7 @@ self: super:
       };
     };
 
-    actions-preview = super.pkgs.vimUtils.buildVimPluginFrom2Nix {
+    actions-preview = super.pkgs.vimUtils.buildVimPlugin {
       pname = "actions-preview";
       version = "2023-05-12";
       src = super.fetchFromGitHub {
