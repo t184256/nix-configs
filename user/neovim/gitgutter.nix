@@ -1,5 +1,5 @@
 # see also indent-guides.nix
-{ pkgs, ... }:
+_:
 
 {
   programs.nixvim = {
@@ -10,10 +10,12 @@
     };
     globals.gitgutter_highlight_lines = 0;
     options.signcolumn = "no";
-    maps.normal.gl = {
-      silent = true;
+    keymaps = [{
+      key = "gl";
+      mode = "n";
       action = ":GitGutterLineHighlightsToggle<CR>:IndentGuidesToggle<CR>";
-    };
+      options.silent = true;
+    }];
     autoCmd = [
       { event = [ "BufWritePost" ]; command = "GitGutter"; }
       # TODO: could that be done without autocmd?

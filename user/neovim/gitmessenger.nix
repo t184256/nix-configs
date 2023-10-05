@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+_:
 
 {
   programs.nixvim = {
@@ -6,9 +6,11 @@
       enable = true;  # git blame from within vim
     };
     # in addition to default "gm", let's see what gets used
-    maps.normal."gb" = {
-      silent = true;
+    keymaps = [{
+      key = "gb";
+      mode = "n";
       action = "<Plug>(git-messenger)";
-    };
+      options.silent = true;
+    }];
   };
 }

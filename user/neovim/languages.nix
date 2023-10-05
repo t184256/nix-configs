@@ -20,19 +20,26 @@ in
   nixpkgs.overlays = [ (import ../../overlays/python-lsp-server.nix) ];
 
   programs.nixvim = {
-    maps.normal."<space>f" = {
-      action = "function() vim.lsp.buf.format { async = true } end";
-      lua = true;
-    };
-    maps.normal."<space>a" = {
-      action = "require('actions-preview').code_actions";
-      lua = true;
-    };
-    maps.visual."<space>a" = {
-      action = "require('actions-preview').code_actions";
-      lua = true;
-    };
-    maps.normal."<space>r" = { action = "vim.lsp.buf.rename"; lua = true; };
+    keymaps = [
+      {
+        key = "<space>f";
+        mode = "n";
+        action = "function() vim.lsp.buf.format { async = true } end";
+        lua = true;
+      }
+      {
+        key = "<space>a";
+        mode = [ "n" "v" ];
+        action = "require('actions-preview').code_actions";
+        lua = true;
+      }
+      {
+        key = "<space>r";
+        mode = "n";
+        action = "vim.lsp.buf.rename";
+        lua = true;
+      }
+    ];
 
     extraPackages = with pkgs; [
       # TODO: try grammarly, languagetool, marksman, prosemd...
