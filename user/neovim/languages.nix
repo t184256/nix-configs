@@ -14,6 +14,16 @@ let
     "W504"  # line break after binary operator
   ];
   pyRuffIgnores = pyDocIgnores;
+  pythonPlusDot = pkgs.runCommandCC "python-plus-dot" {
+      pname = "python-plus-dot";
+      executable = true;
+      preferLocalBuild = true;
+      nativeBuildInputs = [ pkgs.makeBinaryWrapper ];
+  } ''
+    makeBinaryWrapper ${pkgs.coreutils}/bin/env $out \
+      --add-flags python \
+      --prefix PYTHONPATH : .
+  '';
 in
 {
   imports = [ ../config/language-support.nix ];
@@ -39,6 +49,20 @@ in
         action = "vim.lsp.buf.rename";
         lua = true;
       }
+      {
+        key = "<space>d";  # debug
+        mode = "n";
+        action = ''
+          function() require('neotest').run.run({strategy = 'dap'}) end
+        '';
+        lua = true;
+      }
+      {
+        key = "<space>i";  # inspect
+        mode = [ "n" "v" ];
+        action = "require('dap.ui.widgets').hover";
+        lua = true;
+      }
     ];
 
     extraPackages = with pkgs; [
@@ -54,7 +78,9 @@ in
 
     extraPlugins = with pkgs.vimPlugins; [
       actions-preview
-    ];
+    ] ++ (if ! (withLang "python") then [] else [
+      neotest neotest-python
+    ]);
 
     plugins = {
       lsp.enable = true;
@@ -113,6 +139,15 @@ in
           formatting.shfmt.enable = withLang "bash";
         };
       };
+      dap = {  # for neotest
+        enable = withLang "python";
+        extensions.dap-python.enable = withLang "python";
+        extensions.dap-python.adapterPythonPath =
+          "${pkgs.python3.withPackages (ps: [ ps.debugpy ] )}/bin/python";
+        extensions.dap-python.testRunner = "pytest";
+        extensions.dap-virtual-text.enable = withLang "python";
+        extensions.dap-ui.enable = withLang "python";
+      };
     };
     extraConfigLua = ''
       require("actions-preview").setup {
@@ -121,6 +156,44 @@ in
         },
         backend = { "telescope" },
       }
-    '';
+    '' + (if ! withLang "python" then "" else ''
+      require("neotest").setup({
+        output = {
+          enabled = false,
+        },
+        status = {
+          virtual_text = true,
+        },
+        icons = {
+          failed = "○",
+          final_child_indent = " ",
+          final_child_prefix = "╰",
+          non_collapsible = "─",
+          passed = "◉",
+          running = "◐",
+          running_animated = { "◐", "◓", "◑", "◒" },
+          skipped = "○",
+          unknown = "○",
+          watching = "○"
+        },
+        adapters = {
+          require("neotest-python") {
+            python = "${pythonPlusDot}",
+            runner = "pytest",
+          }
+        }
+      })
+    '');
+    autoCmd = [
+      {
+        event = [ "LspAttach" ];
+        pattern = [ "test_*.py" ];
+        callback.__raw = ''
+          function()
+            require('neotest').watch.watch(vim.fn.expand('%'))
+          end
+        '';
+      }
+    ];
   };
 }
