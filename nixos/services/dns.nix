@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 
 let
   IP4 = {
@@ -65,8 +65,14 @@ in
   {
     services.nsd = {
       enable = true;
-      interfaces = [ "0.0.0.0" ];
+      interfaces =
+        if config.networking.hostName == "loquat"
+          then [ IP4.loquat IP6.loquat ] else
+        if config.networking.hostName == "duckweed" then [ IP4.duckweed ] else
+        [ "127.0.0.1" ];
       inherit zones;
+      ipFreebind = true;
+      ipTransparent = true;
     };
     networking.firewall.allowedTCPPorts = [ 53 ];
     networking.firewall.allowedUDPPorts = [ 53 ];
