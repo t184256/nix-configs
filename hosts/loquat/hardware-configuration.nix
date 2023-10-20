@@ -38,11 +38,5 @@
     { device = "/dev/disk/by-uuid/3efc594c-e4c6-4706-a7f9-315b283d44d2"; }
   ];
 
-  # The global useDHCP flag is deprecated, therefore explicitly set to false here.
-  # Per-interface useDHCP will be mandatory in the future, so this generated config
-  # replicates the default behaviour.
-  networking.useDHCP = lib.mkDefault false;
-  networking.interfaces.eth0.useDHCP = lib.mkDefault true;
-
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

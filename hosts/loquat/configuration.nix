@@ -21,7 +21,21 @@
 
   time.timeZone = "Europe/Prague";
 
-  networking.dhcpcd.extraConfig = "noipv4ll";
+  networking.useDHCP = false;
+  networking.resolvconf.enable = false;
+  services.resolved.enable = true;
+  systemd.network.enable = true;
+  systemd.network.networks.eth0 = {
+    matchConfig.Name = "eth0";
+    enable = true;
+    address = [ "38.242.239.104/19" "2a02:c206:2101:9233::1/64" ];
+    gateway = [ "38.242.224.1" "fe80::1" ];
+    networkConfig.LinkLocalAddressing = "ipv6";
+    #DHCP = "ipv6";
+    #networkConfig.DHCP = "ipv6";
+    #networkConfig.IPv6AcceptRA = "yes";
+    #ipv6AcceptRAConfig.DHCPv6Client = "always";
+  };
 
   users.mutableUsers = false;
   users.users.monk.hashedPasswordFile = "/mnt/persist/secrets/login/monk";
