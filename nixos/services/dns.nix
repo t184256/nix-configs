@@ -1,16 +1,19 @@
 { ... }:
 
 let
-  IP = {
+  IP4 = {
     duckweed = "51.15.87.8";
     fig = "212.164.221.47";
     loquat = "38.242.239.104";
+  };
+  IP6 = {
+    loquat = "2a02:c206:2101:9233::1";
   };
   zones."unboiled.info".data = ''
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2022092202; serial number
+                                 2023102001; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
@@ -19,13 +22,14 @@ let
                     MX 10    loquat.unboiled.info.
                     NS       a.ns.unboiled.info.
                     NS       b.ns.unboiled.info.
-    a.ns            IN A     ${IP.duckweed}
-    b.ns            IN A     ${IP.loquat}
+    a.ns            IN A     ${IP4.duckweed}
+    b.ns            IN A     ${IP4.loquat}
 
-    @               IN A     ${IP.loquat}
-    duckweed        IN A     ${IP.duckweed}
-    fig             IN A     ${IP.fig}
-    loquat          IN A     ${IP.loquat}
+    @               IN A     ${IP4.loquat}
+    duckweed        IN A     ${IP4.duckweed}
+    fig             IN A     ${IP4.fig}
+    loquat          IN A     ${IP4.loquat}
+    loquat          IN AAAA  ${IP6.loquat}
 
     conference.xmpp IN CNAME loquat
     upload.xmpp     IN CNAME loquat
