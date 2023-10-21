@@ -49,6 +49,7 @@ in
         action = "vim.lsp.buf.rename";
         lua = true;
       }
+    ] ++ (if ! withLang "python" then [] else [
       {
         key = "<space>d";  # debug
         mode = "n";
@@ -63,7 +64,7 @@ in
         action = "require('dap.ui.widgets').hover";
         lua = true;
       }
-    ];
+    ]);
 
     extraPackages = with pkgs; [
       # TODO: try grammarly, languagetool, marksman, prosemd...
@@ -93,7 +94,7 @@ in
         #cssls.enable = true;  # requires non-free code now?
         #html.enable = true;  # requires non-free code now?
         #jsonls.enable = true;  # requires non-free code now?
-        yamlls.enable = true;
+        yamlls.enable = withLang "yaml";
 
         pylsp.enable = withLang "python";
         pylsp.settings.plugins = {

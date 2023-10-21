@@ -11,6 +11,7 @@
       "python"
       "rust"
       "tex"
+      "yaml"
     ]);
     description = ''
       Which languages to install additional tools for.

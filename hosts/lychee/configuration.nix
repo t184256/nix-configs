@@ -113,7 +113,7 @@
 
   home-manager.users.monk.roles.mua = true;
   home-manager.users.monk.language-support = [
-    "nix" "bash" "python"
+    "nix" "bash" "python" "yaml"
   ];
 
   # currently manual:
