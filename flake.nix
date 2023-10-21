@@ -120,6 +120,7 @@
       cocoa = mkSystem "x86_64-linux" ./hosts/cocoa/configuration.nix;
       loquat = mkSystem "x86_64-linux" ./hosts/loquat/configuration.nix;
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
+      bayroot = mkSystem "x86_64-linux" ./hosts/bayroot/configuration.nix;
     };
     homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
@@ -188,6 +189,14 @@
         sshUser = "root"; user = "root"; hostname = "cashew";
         path = deploy-rs.lib.x86_64-linux.activate.nixos
                self.nixosConfigurations.cashew;
+      };
+    };
+    deploy.nodes.bayroot = {
+      hostname = "bayroot";
+      profiles.system = {
+        sshUser = "root"; user = "root"; hostname = "bayroot";
+        path = deploy-rs.lib.x86_64-linux.activate.nixos
+               self.nixosConfigurations.bayroot;
       };
     };
     checks = builtins.mapAttrs
