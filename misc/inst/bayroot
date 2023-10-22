@@ -9,6 +9,8 @@ set -uexo pipefail
 : "${HOST:=BAYROOT}"
 : "${COPY_ETC_NIXOS:=0}"
 : "${DISK:=/dev/vda}"
+: "${AUTOPART:=0}"
+: "${PASSPHRASE:=''}"
 
 ### Safeguards ###
 
@@ -35,9 +37,26 @@ cleanup() {
 }
 trap 'set +x; cleanup' EXIT
 
-### Obtaining passphrase ###
+### Obtaining passphrase or secrets ###
 
-read -rsp 'Passphrase: ' PASSPHRASE
+if [[ ! -e /tmp/old-secrets ]]; then
+	if [[ -e "/dev/disk/by-partlabel/${HOST}" ]]; then
+		if mount "/dev/disk/by-partlabel/${HOST}" /mnt; then
+			if [[ -e /mnt/secrets ]]; then
+				cp -rva /mnt/secrets /tmp/old-secrets
+			fi
+			umount /mnt
+		fi
+	fi
+fi
+
+if [[ -n "$PASSPHRASE" ]]; then
+	if [[ ! -e /tmp/old-secrets/login/monk ]] || \
+		[[ ! -e /tmp/old-secrets/login/root ]]; then
+		read -rsp 'Passphrase: ' PASSPHRASE
+	fi
+fi
+[[ -n "$PASSPHRASE" ]]
 
 ### Partitioning ###
 
@@ -48,10 +67,12 @@ if grep -F Size <<<"$PARTITIONS"; then
 	[[ -e ${DISK}1 ]]
 else
 	[[ ! -e ${DISK}1 ]]
-	part_prompt='Partition table does not exist,'
-	part_prompt+=' auto-partition and lose all data? [y/N] '
-	read -rp "$part_prompt" CONFIRMATION
-	[[ "$CONFIRMATION" == y ]]; CONFIRMATION=
+	if [[ "$AUTOPART" != 1 ]]; then
+		part_prompt='Partition table does not exist,'
+		part_prompt+=' auto-partition and lose all data? [y/N] '
+		read -rp "$part_prompt" CONFIRMATION
+		[[ "$CONFIRMATION" == y ]]; unset CONFIRMATION
+	fi
 	sudo parted -s $DISK -- mklabel gpt
 	sudo parted $DISK -- mkpart primary fat32 1MB $BOOT_SIZE
 	sudo parted $DISK -- set 1 esp on
@@ -61,8 +82,11 @@ else
 	sudo parted $DISK -- mkpart primary linux-swap -$SWAP_SIZE 100%
 	sudo parted $DISK -- name 3 ${HOST}_SWAP
 	sudo partprobe -s
-	ls -l /dev/disk/by-partlabel/${HOST}_BOOT || sleep 2
-	ls -l /dev/disk/by-partlabel/${HOST} || sleep 2
+	[[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]] || sleep 1
+	[[ -e /dev/disk/by-partlabel/${HOST} ]] || sleep 1
+	[[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]] || sleep 1
+	[[ -e /dev/disk/by-partlabel/${HOST} ]] || sleep 1
+	sleep 1
 	sudo mkfs.fat -F 32 -n ${HOST:0:6}_BOOT \
 		/dev/disk/by-partlabel/${HOST}_BOOT
 	sudo mkfs.btrfs -f -m single \
@@ -101,6 +125,7 @@ sudo mount --bind /sys/firmware/efi/efivars /mnt/tgt/sys/firmware/efi/efivars
 ### Impermanence data injection ###
 
 sudo mkdir -p /mnt/tgt/mnt/persist/etc
+[[ ! -e /tmp/old-secrets ]] || cp -ra /tmp/old-secrets /mnt/persist/
 # /mnt/persist/secrets/login:
 sudo mkdir -p /mnt/tgt/mnt/persist/secrets/login
 if [ ! -e /mnt/tgt/mnt/persist/secrets/login/monk ]; then
