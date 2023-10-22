@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+
+set -uexo pipefail
+
+### Parameters ###
+
+: "${BOOT_SIZE:=256MB}"
+: "${SWAP_SIZE:=640MB}"
+: "${HOST:=ARACEAE}"
+: "${COPY_ETC_NIXOS:=0}"
+: "${DISK:=/dev/vda}"
+: "${AUTOPART:=0}"
+: "${PASSPHRASE:=''}"
+
+### Safeguards ###
+
+[[ "$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)" \
+	== '699f2134-bf6f-40f5-b639-ef4d2e04282b' ]]
+[[ -e $DISK ]]
+
+### Cleanup ###
+
+cleanup() {
+	sudo swapoff /mnt/0/swap/swapfile || true
+	sudo umount /mnt/boot 2>/dev/null || true
+	sudo umount /mnt/0 2>/dev/null || true
+	sudo umount /mnt/tgt/nix 2>/dev/null || true
+	sudo umount /mnt/tgt/persist 2>/dev/null || true
+	sudo umount /mnt/persist 2>/dev/null || true
+	sudo umount /mnt/tgt/dev/pts 2>/dev/null || true
+	sudo umount /mnt/tgt/dev 2>/dev/null || true
+	sudo umount /mnt/tgt/proc 2>/dev/null || true
+	sudo umount /mnt/tgt/sys/firmware/efi/efivars 2>/dev/null || true
+	sudo umount /mnt/tgt/sys 2>/dev/null || true
+	sudo umount /mnt/tgt/boot 2>/dev/null || true
+	sudo umount -R /mnt/tgt 2>/dev/null || true
+}
+trap 'set +x; cleanup' EXIT
+
+### Obtaining passphrase or secrets ###
+
+if [[ ! -e /tmp/old-secrets ]]; then
+	if [[ -e "/dev/disk/by-partlabel/${HOST}" ]]; then
+		if mount "/dev/disk/by-partlabel/${HOST}" /mnt; then
+			if [[ -e /mnt/secrets ]]; then
+				cp -rva /mnt/secrets /tmp/old-secrets
+			fi
+			umount /mnt
+		fi
+	fi
+fi
+
+if [[ -n "$PASSPHRASE" ]]; then
+	if [[ ! -e /tmp/old-secrets/login/monk ]] || \
+		[[ ! -e /tmp/old-secrets/login/root ]]; then
+		read -rsp 'Passphrase: ' PASSPHRASE
+	fi
+fi
+[[ -n "$PASSPHRASE" ]]
+
+### Partitioning ###
+
+PARTITIONS=$(sudo fdisk -l $DISK)
+grep -F '19531250 sectors' <<<"$PARTITIONS"  # extra safeguard
+if grep -F Size <<<"$PARTITIONS"; then
+	echo 'Existing partition table found on $DISK'
+	[[ -e ${DISK}1 ]]
+else
+	[[ ! -e ${DISK}1 ]]
+	if [[ "$AUTOPART" != 1 ]]; then
+		part_prompt='Partition table does not exist,'
+		part_prompt+=' auto-partition and lose all data? [y/N] '
+		read -rp "$part_prompt" CONFIRMATION
+		[[ "$CONFIRMATION" == y ]]; unset CONFIRMATION
+	fi
+	sudo parted -s $DISK -- mklabel gpt
+	sudo parted $DISK -- mkpart primary fat32 1MB $BOOT_SIZE
+	sudo parted $DISK -- set 1 esp on
+	sudo parted $DISK -- name 1 ${HOST}_BOOT
+	sudo parted $DISK -- mkpart primary $BOOT_SIZE -$SWAP_SIZE
+	sudo parted $DISK -- name 2 ${HOST}
+	sudo parted $DISK -- mkpart primary linux-swap -$SWAP_SIZE 100%
+	sudo parted $DISK -- name 3 ${HOST}_SWAP
+	sudo partprobe -s
+	[[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]] || sleep 1
+	[[ -e /dev/disk/by-partlabel/${HOST} ]] || sleep 1
+	[[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]] || sleep 1
+	[[ -e /dev/disk/by-partlabel/${HOST} ]] || sleep 1
+	sleep 1
+	sudo mkfs.fat -F 32 -n ${HOST:0:6}_BOOT \
+		/dev/disk/by-partlabel/${HOST}_BOOT
+	sudo mkfs.btrfs -f -m single \
+		-L ${HOST} /dev/disk/by-partlabel/${HOST}
+fi
+
+[[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]]
+[[ -e /dev/disk/by-partlabel/${HOST} ]]
+[[ -e /dev/disk/by-partlabel/${HOST}_SWAP ]]
+
+sudo mkswap -L ${HOST}_SWAP /dev/disk/by-partlabel/${HOST}_SWAP
+
+### Mounting and subvolume creation ###
+
+sudo mkdir -p /mnt/0
+sudo mount -t btrfs -o compress=zstd:15 /dev/disk/by-partlabel/${HOST} /mnt/0
+
+[[ -e /mnt/0/nix ]] || sudo btrfs subvolume create /mnt/0/nix
+[[ -e /mnt/0/secrets ]] || sudo btrfs subvolume create /mnt/0/secrets
+
+sudo mkdir -p /mnt/tgt
+sudo mount -t tmpfs tmpfs /mnt/tgt
+sudo mkdir -p /mnt/tgt/{boot,nix,mnt/persist}
+sudo mkdir -p /mnt/persist  # hack to soothe impermanence
+sudo mount --bind /mnt/0/nix /mnt/tgt/nix
+sudo mount --bind /mnt/0 /mnt/tgt/mnt/persist
+sudo mount --bind /mnt/0 /mnt/persist  # HACK
+sudo mount /dev/disk/by-partlabel/${HOST}_BOOT /mnt/tgt/boot
+sudo mkdir -p /mnt/tgt/{dev,proc,sys}
+sudo mount --bind /dev /mnt/tgt/dev
+sudo mount --bind /dev/pts /mnt/tgt/dev/pts
+sudo mount --bind /proc /mnt/tgt/proc
+sudo mount --bind /sys /mnt/tgt/sys
+sudo mount --bind /sys/firmware/efi/efivars /mnt/tgt/sys/firmware/efi/efivars
+
+### Impermanence data injection ###
+
+sudo mkdir -p /mnt/tgt/mnt/persist/etc
+[[ ! -e /tmp/old-secrets ]] || cp -ra /tmp/old-secrets /mnt/persist/
+# /mnt/persist/secrets/login:
+sudo mkdir -p /mnt/tgt/mnt/persist/secrets/login
+if [ ! -e /mnt/tgt/mnt/persist/secrets/login/monk ]; then
+	echo 'configuring `monk` user'
+	mkpasswd -s <<<"$PASSPHRASE" \
+		| sudo tee /mnt/tgt/mnt/persist/secrets/login/monk
+	sudo chmod 600 /mnt/tgt/mnt/persist/secrets/login/monk
+fi
+if [ ! -e /mnt/tgt/mnt/persist/secrets/login/root ]; then
+	echo 'configuring `root` user'
+	mkpasswd -s <<<"$PASSPHRASE" \
+		| sudo tee /mnt/tgt/mnt/persist/secrets/login/root
+	sudo chmod 600 /mnt/tgt/mnt/persist/secrets/login/root
+fi
+# /etc/machine-id:
+[[ -e /mnt/tgt/mnt/persist/etc/machine-id ]] || \
+	sudo systemd-machine-id-setup --root /mnt/tgt/mnt/persist
+# /etc/nixos:
+if [[ "$COPY_ETC_NIXOS" == 1 ]]; then
+	if git rev-parse --show-toplevel 2>/dev/null; then
+		FLAKE=$(git rev-parse --show-toplevel)
+		sudo rm -d /mnt/tgt/mnt/persist/etc/nixos 2>/dev/null || true
+		[[ -e /mnt/tgt/mnt/persist/etc/nixos ]] || \
+			sudo cp -r "$FLAKE" /mnt/tgt/mnt/persist/etc/nixos
+	else
+		FLAKE='/mnt/tgt/mnt/persist/etc/nixos'
+		[[ -e /mnt/tgt/mnt/persist/etc/nixos ]] || \
+			sudo git clone git@github.com:t184256/nix-configs \
+				/mnt/tgt/mnt/persist/etc/nixos -b staging
+	fi
+	sudo chown -R 1000:100 /mnt/tgt/mnt/persist/etc/nixos
+else
+	FLAKE='github:t184256/nix-configs?ref=staging'
+fi
+# /etc/ssh:
+if [[ ! -e /mnt/tgt/mnt/persist/etc/ssh_host_rsa_key ]]; then
+	sudo ssh-keygen -t rsa -b 4096 -N '' \
+		-f /mnt/tgt/mnt/persist/etc/ssh_host_rsa_key
+	sudo chmod 700 /mnt/tgt/mnt/persist/etc/ssh_host_rsa_key
+fi
+if [[ ! -e /mnt/tgt/mnt/persist/etc/ssh_host_ed25519_key ]]; then
+	sudo ssh-keygen -t ed25519 -N '' \
+		-f /mnt/tgt/mnt/persist/etc/ssh_host_ed25519_key
+	sudo chmod 700 /mnt/tgt/mnt/persist/etc/ssh_host_ed25519_key
+fi
+
+### Installation from a flake ###
+
+[[ -e /mnt/0/swap ]] || sudo btrfs subvolume create /mnt/0/swap
+sudo truncate -s 0 /mnt/0/swap/swapfile
+sudo chattr +C /mnt/0/swap/swapfile
+sudo fallocate -l 2G /mnt/0/swap/swapfile
+sudo chmod 0600 /mnt/0/swap/swapfile
+sudo mkswap /mnt/0/swap/swapfile
+sudo swapon /mnt/0/swap/swapfile
+if [[ -e /media/root-rw ]]; then
+	sudo mount -o remount,size=2G /media/root-rw
+fi
+
+NIXOS_URL=https://cache.nixos.org
+HYDRA_URL=https://hydra.unboiled.info
+NIXOS_KEY=cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+HYDRA_KEY=hydra.unboiled.info-1:c7i8vKOB30a+DaJ2M04F0EM8CPRfU+WpbqWie4n221M=
+sudo nixos-install --root /mnt/tgt --no-root-password \
+	--option substituters "$NIXOS_URL $HYDRA_URL" \
+	--option trusted-public-keys "$NIXOS_KEY $HYDRA_KEY" \
+	--flake "$FLAKE#${HOST,,}"
+
+if [[ -e /media/root-rw ]]; then
+	sudo mount -o remount,size=512M /media/root-rw
+fi
+sudo swapoff /mnt/0/swap/swapfile
+sudo btrfs subvolume del /mnt/0/swap
