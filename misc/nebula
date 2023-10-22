@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -ueo pipefail
+
+HOSTNAME=$1
+REACH_VIA=$2
+INT_IP=$3
+INT_NET=192.168.99.0
+
+trap 'rm -rf /tmp/.nebula' EXIT
+mkdir -p /tmp/.nebula
+
+pass show services/unboiled.info/nebula > /tmp/.nebula/ca.key
+
+NEBULA=$(nix build --print-out-paths --no-link 'nixpkgs#nebula')
+rm -f "/etc/nixos/nixos/services/nebula/certs/$HOSTNAME"
+"$NEBULA/bin/nebula-cert" sign \
+	-name "$HOSTNAME" \
+	-ip "$INT_IP/24" \
+	-subnets "$INT_NET/24" \
+	-ca-key "/tmp/.nebula/ca.key" \
+	-ca-crt /etc/nixos/nixos/services/nebula/certs/ca \
+	-out-key "/tmp/.nebula/$HOSTNAME.key" \
+	-out-crt "/tmp/.nebula/$HOSTNAME.crt"
+
+TGT=$(mktemp)
+scp "/tmp/.nebula/$HOSTNAME.key" "$REACH_VIA:$TGT"
+
+REACH_VIA=${REACH_VIA#[}
+REACH_VIA=${REACH_VIA%]}
+ssh "$REACH_VIA" bash -ueo pipefail -s <<EOF
+trap 'rm -f "$TGT"' EXIT
+id nebula-unboiled >/dev/null && USR=nebula-unboiled || USR=root
+sudo install -o\$USR -groot -m700 -d /mnt/persist/secrets/nebula
+sudo install -o\$USR -groot -m600 \
+	"$TGT" "/mnt/persist/secrets/nebula/$HOSTNAME"
+EOF
+
+mv \
+	"/tmp/.nebula/$HOSTNAME.crt" \
+	"/etc/nixos/nixos/services/nebula/certs/$HOSTNAME"
+
+echo -n "add something like \`$HOSTNAME = "
+echo "{ int = \"$INT_IP\"; ext = [\"$REACH_VIA\"]; };\`"
+echo 'to /etc/nixos/nixos/services/nebula/default.nix'
+echo 'and import ../../nixos/services/nebula from host configuration: '

@@ -7,6 +7,7 @@
     ./hardware-configuration.nix
     ../../nixos/services/dns.nix
     ../../nixos/services/meshcentral.nix
+    ../../nixos/services/nebula
     ../../nixos/services/syncthing-relay.nix
     ../../nixos/services/wireguard-cashnet-duckweed.nix
     ../../nixos/services/wireguard-cocoanet-duckweed.nix

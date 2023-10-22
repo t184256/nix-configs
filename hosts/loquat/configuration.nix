@@ -12,6 +12,7 @@
     ../../nixos/services/hydra.nix
     ../../nixos/services/lemmy.nix
     ../../nixos/services/mail.nix
+    ../../nixos/services/nebula
     ../../nixos/services/nix-on-droid.nix
     ../../nixos/services/xmpp.nix
     ../../nixos/services/yousable.nix

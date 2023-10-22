@@ -5,6 +5,7 @@
 
   imports = [
     ./hardware-configuration.nix
+    ../../nixos/services/nebula
   ];
 
   boot.loader.systemd-boot.configurationLimit = 5;  # small-ish /boot

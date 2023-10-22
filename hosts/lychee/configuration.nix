@@ -5,6 +5,7 @@
     "${inputs.nixos-hardware}/onenetbook/4"
     ./hardware-configuration.nix
     ./onemix-keyboard-remap.nix
+    ../../nixos/services/nebula
   ];
 
   users.mutableUsers = false;

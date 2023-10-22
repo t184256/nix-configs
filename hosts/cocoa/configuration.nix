@@ -3,6 +3,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../../nixos/services/nebula
     ../../nixos/services/wireguard-cocoanet-cocoa.nix
   ];
 
