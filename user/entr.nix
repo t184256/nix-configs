@@ -19,7 +19,7 @@
                                    --tb=short \
                                    $* && \
                   ruff check . && \
-                  env PYTHONWARNINGS=ignore yapf -rd . && \
+                  ruff format --check . && \
                   echo ok"
     '')
   ];

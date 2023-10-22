@@ -34,7 +34,16 @@ in
       {
         key = "<space>f";
         mode = "n";
-        action = "function() vim.lsp.buf.format { async = true } end";
+        # ruff format isn't wired to python-lsp-ruff yet
+        action = ''
+          function()
+            if vim.bo.filetype == "python" then
+              vim.cmd("%!ruff format - <% 2>/dev/null")
+            else
+              vim.lsp.buf.format { async = true }
+            end
+          end
+        '';
         lua = true;
       }
       {
@@ -109,7 +118,7 @@ in
           ruff.enabled = true;
           ruff.lineLength = 79;
           ruff.extendIgnore = pyRuffIgnores;
-          yapf.enabled = true;
+          ruff.format = [ "ALL" ];
           # TODO: try pylyzer
         };
         # TODO: pyright, maybe? with a limited set of checks
