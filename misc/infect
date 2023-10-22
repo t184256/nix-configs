@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -uexo pipefail
+
+# Careful, it wipes the whole disk
+
+[[ $1 == scaleway ]]
+IP=$2
+
+SSH='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+RESCUE_MARKER='This Scaleway instance is currently booted in "rescue" mode'
+INSTALL=$(nix build --print-out-paths --no-link 'nixpkgs#nixos-install-tools')
+BASEURL=https://raw.githubusercontent.com/t184256/nix-configs/staging
+
+$SSH "root@$IP" bash -uexo pipefail -s <<EOF
+grep '$RESCUE_MARKER' /etc/motd
+fdisk -l /dev/vda | grep -F '10000000000 bytes, 19531250 sectors'
+EOF
+
+PASSPHRASE=''
+{ $SSH "root@$IP" bash -uexo pipefail -s && ASK_PW=false || ASK_PW=true; } <<EOF
+BOOT=\$(ls /dev/disk/by-partlabel/* | grep BOOT)
+ROOT=\${BOOT%%_BOOT}
+mount \$ROOT /mnt
+trap "umount /mnt" EXIT
+[[ -e /mnt/secrets/login/monk ]]
+[[ -e /mnt/secrets/login/root ]]
+EOF
+if $ASK_PW; then
+	read -rsp 'Passphrase: ' PASSPHRASE
+fi
+
+$SSH "root@$IP" bash -uexo pipefail -s <<EOF
+mount -o remount,size=600M /media/root-rw
+if ! command -v mkpasswd; then
+	apt install whois
+	apt clean
+	command -v mkpasswd
+fi
+if [[ ! -e /etc/resolv.conf.bak ]]; then
+	mv /etc/resolv.conf /etc/resolv.conf.bak
+	echo 'nameserver 2001:67c:2960::64' > /etc/resolv.conf
+	echo 'nameserver 2a00:1098:2c::1' >> /etc/resolv.conf
+fi
+if [[ ! -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+	sh <(curl -L https://nixos.org/nix/install) --daemon --yes --no-channel-add
+fi
+. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+echo $PATH
+nix --extra-experimental-features 'nix-command flakes' build $INSTALL
+[[ -h /usr/bin/nixos-install ]] || ln -s $INSTALL/bin/nixos-install /usr/bin
+[[ -h /usr/bin/nix ]] || ln -s \$(realpath \$(which nix)) /usr/bin/nix
+[[ -h /usr/bin/nix-env ]] || \
+	ln -s \$(realpath \$(which nix-env)) /usr/bin/nix-env
+[[ -h /usr/bin/nix-collect-garbage ]] || \
+	ln -s \$(realpath \$(which nix-collect-garbage)) \
+		/usr/bin/nix-collect-garbage
+parted -s /dev/vda -- mklabel gpt  # WIPES IT CLEAN!
+AUTOPART=1 PASSPHRASE="$PASSPHRASE" bash <(curl -s $BASEURL/misc/inst/auto)
+echo done
+EOF
+
+$SSH "root@$IP" poweroff
+echo 'Infected! Disable rescue mode and boot normally.'
