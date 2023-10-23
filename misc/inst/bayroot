@@ -185,7 +185,7 @@ if [[ -e /media/root-rw ]]; then
 	sudo mount -o remount,size=2G /media/root-rw
 fi
 
-NIXOS_URL=https://cache.nixos.org
+NIXOS_URL=https://cache.nixos.org?priority=200
 HYDRA_URL=https://hydra.unboiled.info
 NIXOS_KEY=cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
 HYDRA_KEY=hydra.unboiled.info-1:c7i8vKOB30a+DaJ2M04F0EM8CPRfU+WpbqWie4n221M=
