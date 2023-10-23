@@ -4,7 +4,6 @@
   imports = [
     ./hardware-configuration.nix
     ../../nixos/services/nebula
-    ../../nixos/services/wireguard-cocoanet-cocoa.nix
   ];
 
   users.mutableUsers = false;
@@ -47,6 +46,10 @@
 
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
+
+  # accept forwarded SSH/MOSH
+  networking.firewall.allowedUDPPortRanges = [ { from = 22300; to = 22399; } ];
+  services.sshguard.whitelist = [ "192.168.23.1" ];
 
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
