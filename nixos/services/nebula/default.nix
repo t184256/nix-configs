@@ -9,6 +9,12 @@ let
     cocoa = { int = "192.168.99.7"; routines = 10; };
     lychee = { int = "192.168.99.8"; routines = 2; };
   };
+  exts = lib.lists.flatten (
+    builtins.map (ha: ha.int) (
+      lib.attrsets.attrValues
+        (lib.attrsets.filterAttrs (_: ha: ha ? ext) nodes)
+    )
+  );
   hostCfg = nodes.${config.networking.hostName};
 in
 {
@@ -16,6 +22,7 @@ in
     settings = {
       listen = { host = "[::]"; port = 4242; };
       static_map.network = if hostCfg ? v6 && hostCfg.v6 then "ip6" else "ip";
+      punchy = { punch = true; respond = true; };
       logging = {
         level = "debug";
         format = "text";
@@ -24,12 +31,8 @@ in
     };
     tun.device = "unboiled";
 
-    lighthouses = lib.lists.flatten (
-      builtins.map (ha: ha.int) (
-        lib.attrsets.attrValues
-          (lib.attrsets.filterAttrs (_: ha: ha ? ext) nodes)
-      )
-    );
+    lighthouses = exts;
+    relays = exts;
     isLighthouse = hostCfg ? ext;
     isRelay = hostCfg ? ext;
 
