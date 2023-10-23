@@ -24,6 +24,13 @@
       cloud_final_modules = lib.mkForce [];
     };
   };
+  environment.etc."systemd/network/10-cloud-init-ens2.network.d/local.conf".text = ''
+    [Network]
+    DNS = 2001:67c:2960::64
+    [DHCPv4]
+    UseDNS=false
+  '';
+  services.resolved.fallbackDns = [ "2a00:1098:2c::1" ];
 
   zramSwap = { enable = true; memoryPercent = 50; };
 
