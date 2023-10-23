@@ -48,8 +48,8 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
 
   # accept forwarded SSH/MOSH
-  networking.firewall.allowedUDPPortRanges = [ { from = 22300; to = 22399; } ];
-  services.sshguard.whitelist = [ "192.168.23.1" ];
+  networking.firewall.allowedUDPPortRanges = [ { from = 22700; to = 22799; } ];
+  services.sshguard.whitelist = [ "192.168.99.2" ];
 
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
