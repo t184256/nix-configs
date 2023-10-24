@@ -11,8 +11,13 @@ def _nxu():
 def _nxd(args):
     REMOTE_BUILD = {'cocoa', 'loquat'}
     if '--' in args:
-        opts, hosts = args[:args.index('--')], args[args.index('--')+1:]
-    else:
+        if args.count('--') == 1:  # nxd --deploy-opts -- hosts
+            opts, hosts = args[:args.index('--')], args[args.index('--')+1:]
+            nix_opts = []
+        else: #  nxd --deploy-opts -- hosts --nix-opts
+            opts, r = args[:args.index('--')], args[args.index('--')+1:]
+            hosts, nix_opts = r[:r.index('--')], r[r.index('--')+1:]
+    else:  # nxd hosts
         opts, hosts = [], args
     assert not any (h.startswith('-') for h in hosts)
     for host in hosts:
@@ -24,7 +29,8 @@ def _nxd(args):
                (['--skip-checks'] if skip_checks else []) +
                (['--remote-build'] if remote_build else []) +
                opts +
-               [f'/etc/nixos#{host}'])
+               [f'/etc/nixos#{host}'] +
+               (['--'] + nix_opts if nix_opts else []))
         echo @(cmd)
         @(cmd)
         del cmd
