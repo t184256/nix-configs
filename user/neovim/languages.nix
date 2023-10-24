@@ -134,7 +134,7 @@ in
         rust-analyzer.enable = withLang "rust";
       };
 
-      null-ls = {
+      none-ls = {
         enable = true;
         sources = {
           code_actions.shellcheck.enable = withLang "bash";
