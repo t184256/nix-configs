@@ -8,12 +8,27 @@ def _nxu():
     del $_override
 
 
-def _nxd(hosts):
+def _nxd(args):
+    REMOTE_BUILD = {'cocoa', 'loquat'}
+    if '--' in args:
+        opts, hosts = args[:args.index('--')], args[args.index('--')+1:]
+    else:
+        opts, hosts = [], args
+    assert not any (h.startswith('-') for h in hosts)
     for host in hosts:
-        $_tgt = f'.#{host}'
-        echo deploy --skip-checks $_tgt
-        (cd /etc/nixos && deploy --skip-checks $_tgt)
-        del $_tgt
+        skip_checks = '--no-skip-checks' not in opts
+        remote_build = host in REMOTE_BUILD and '--no-remote-build' not in opts
+        opts = [o for o in opts
+                if o not in ('--no-skip-checks', '--no-remote-build')]
+        cmd = (['deploy'] +
+               (['--skip-checks'] if skip_checks else []) +
+               (['--remote-build'] if remote_build else []) +
+               opts +
+               [f'/etc/nixos#{host}'])
+        echo @(cmd)
+        @(cmd)
+        del cmd
+    del hosts
 
 
 def _in_tmpdir(cmd):
