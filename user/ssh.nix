@@ -15,6 +15,17 @@
                  port = 221; };
       cocoa = { user = "monk"; hostname = "duckweed.unboiled.info";
                 port = 227; };
+
+      bayroot64 = {
+        user = "monk";
+        hostname = "2001:bc8:1d80:2232::1";
+        proxyJump = "loquat";
+      };
+      araceae64 = {
+        user = "monk";
+        hostname = "2001:bc8:634:213e::1";
+        proxyJump = "loquat";
+      };
     };
   };
 }
