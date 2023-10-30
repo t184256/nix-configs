@@ -18,7 +18,7 @@ def _nxd(args):
             opts, r = args[:args.index('--')], args[args.index('--')+1:]
             hosts, nix_opts = r[:r.index('--')], r[r.index('--')+1:]
     else:  # nxd hosts
-        opts, hosts = [], args
+        opts, hosts, nix_opts = [], args, []
     assert not any (h.startswith('-') for h in hosts)
     for host in hosts:
         skip_checks = '--no-skip-checks' not in opts
