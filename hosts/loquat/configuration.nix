@@ -26,8 +26,8 @@
   networking.resolvconf.enable = false;
   services.resolved.enable = true;
   systemd.network.enable = true;
-  systemd.network.networks.eth0 = {
-    matchConfig.Name = "eth0";
+  systemd.network.networks.enp0s18 = {
+    matchConfig.Name = "enp0s18";
     enable = true;
     address = [ "38.242.239.104/19" "2a02:c206:2101:9233::1/64" ];
     gateway = [ "38.242.224.1" "fe80::1" ];
