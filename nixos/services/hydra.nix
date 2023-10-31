@@ -1,8 +1,8 @@
-{ pkgs, inputs, ... }:
+{ pkgs, inputs, lib, ... }:
 
 let
   hydraPkg = inputs.hydra.defaultPackage.${pkgs.system};
-  privKey = "/var/secrets/nix-cache/priv-key.pem";
+  privKey = "/mnt/persist/secrets/nix-cache/priv-key.pem";
 in
 {
   imports = [ ./postgresql.nix ];
@@ -34,7 +34,9 @@ in
   };
   services.harmonia = {
     enable = true;
-    signKeyPath = privKey;
+    # https://github.com/NixOS/nixpkgs/issues/258371
+    #signKeyPath = privKey;
+    settings.sign_key_path = privKey;
   };
   nix.settings.allowed-users = [ "harmonia" ];
   services.nginx = {
@@ -121,7 +123,13 @@ in
         mv $NEW $OLD; ln -sfn $OLD $LNK; rm -rf $FRZ $NEW
       '';
     };
+    # https://github.com/NixOS/nixpkgs/issues/258371
+    services.harmonia.serviceConfig.DynamicUser = lib.mkForce false;
+    services.harmonia.serviceConfig.PrivateMounts = lib.mkForce false;
   };
+  # https://github.com/NixOS/nixpkgs/issues/258371
+  users.users.harmonia = { isSystemUser = true; group = "hydra"; };
+  users.groups.harmonia = {};
 
   environment.persistence."/mnt/persist".directories = [
     {

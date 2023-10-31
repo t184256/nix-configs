@@ -22,7 +22,7 @@
     neededForBoot = true;
   };
   fileSystems."/mnt/persist" = {
-    device = "/dev/disk/by-uuid/cfac8c7b-ef88-4874-afe8-af7b8faa4365";
+    device = "/dev/disk/by-partlabel/LOQUAT";
     fsType = "xfs";
     neededForBoot = true;
   };
@@ -30,12 +30,12 @@
   fileSystems."/nix" = { device = "/mnt/persist/nix"; options = [ "bind" ]; };
 
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/31d876c9-cb02-4d82-8b89-583e84cd353d";
+    device = "/dev/disk/by-partlabel/LOQUAT_BOOT";
     fsType = "ext4";
   };
 
   swapDevices = [
-    { device = "/dev/disk/by-uuid/3efc594c-e4c6-4706-a7f9-315b283d44d2"; }
+    { device = "/dev/disk/by-partlabel/LOQUAT_SWAP"; }
   ];
 
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
