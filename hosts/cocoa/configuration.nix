@@ -3,6 +3,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../../nixos/services/ipfs/node.nix
     ../../nixos/services/nebula
   ];
 
