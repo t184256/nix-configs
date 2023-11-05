@@ -113,14 +113,10 @@ in
           pydocstyle.enabled = true;
           pydocstyle.ignore = pyDocIgnores;
           pylsp_mypy.enabled = true;
-          #pylsp_mypy.strict = true;
           rope.enabled = true;
-          ruff.enabled = true;
-          ruff.lineLength = 79;
-          ruff.extendIgnore = pyRuffIgnores;
-          ruff.format = [ "ALL" ];
           # TODO: try pylyzer
         };
+        ruff-lsp.enable = withLang "python";
         # TODO: pyright, maybe? with a limited set of checks
 
         bashls.enable = withLang "bash";
