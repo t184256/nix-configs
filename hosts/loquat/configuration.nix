@@ -49,6 +49,8 @@
 
   zramSwap = { enable = true; memoryPercent = 50; };
 
+  services.kubo.settings.Datastore.StorageMax = "20G";
+
   services.hydra.buildMachinesFiles = [(
     pkgs.writeText "machines" ''
       localhost x86_64-linux - 1 1 kvm,nixos-test,big-parallel,benchmark  -

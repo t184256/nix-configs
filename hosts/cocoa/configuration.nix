@@ -29,6 +29,8 @@
   # Set your time zone.
   time.timeZone = "Europe/Prague";
 
+  services.kubo.settings.Datastore.StorageMax = "20G";
+
   # Enable sound with pipewire.
   #sound.enable = true;
   #hardware.pulseaudio.enable = false;
