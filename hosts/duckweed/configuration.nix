@@ -9,6 +9,7 @@
     ../../nixos/services/forward-cocoa.nix
     ../../nixos/services/ipfs/gateway.nix
     ../../nixos/services/ipfs/node.nix
+    ../../nixos/services/ipfs/micro.nix
     ../../nixos/services/meshcentral.nix
     ../../nixos/services/nebula
     ../../nixos/services/syncthing-relay.nix
@@ -24,6 +25,8 @@
     options = [ "nofail" ];
   };
   boot.kernelParams = [ "console=ttyS0" ];
+
+  zramSwap = { enable = true; memoryPercent = 50; };
 
   time.timeZone = "Europe/Prague";
 
