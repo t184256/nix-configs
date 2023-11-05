@@ -7,6 +7,8 @@
     ./hardware-configuration.nix
     ../../nixos/services/dns.nix
     ../../nixos/services/forward-cocoa.nix
+    ../../nixos/services/ipfs/gateway.nix
+    ../../nixos/services/ipfs/node.nix
     ../../nixos/services/meshcentral.nix
     ../../nixos/services/nebula
     ../../nixos/services/syncthing-relay.nix
