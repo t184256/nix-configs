@@ -58,6 +58,12 @@ in
         action = "vim.lsp.buf.rename";
         lua = true;
       }
+      {
+        key = "<space>w";
+        mode = "n";
+        action = "function() lsp_lines_toggle() end";
+        lua = true;
+      }
     ] ++ (if ! withLang "python" then [] else [
       {
         key = "<space>d";  # debug
@@ -94,6 +100,7 @@ in
 
     plugins = {
       lsp.enable = true;
+      lsp-lines.enable = true;
 
       cmp-nvim-lsp.enable = true;
       cmp-nvim-lsp-signature-help.enable = true;
@@ -156,6 +163,23 @@ in
       };
     };
     extraConfigLua = ''
+      vim.diagnostic.config({
+        virtual_text = true,
+        virtual_lines = false
+      })
+      lsp_lines_toggle = function()
+        if not vim.diagnostic.config().virtual_lines then
+          vim.diagnostic.config({
+            virtual_text = false,
+            virtual_lines = { highlight_whole_line = false }
+          })
+        else
+          vim.diagnostic.config({
+            virtual_text = true,
+            virtual_lines = false
+          })
+        end
+      end
       require("actions-preview").setup {
         diff = {
           algorithm = "patience",
