@@ -6,6 +6,7 @@
 
     (pkgs.writeShellScriptBin "wat" ''
       exec ${pkgs.findutils}/bin/find ''${*%''${!#}} \
+      | grep -vF '/cassettes/' \
       | grep -vE '(__pycache__/|\.pyc)$' \
       | grep -vE '^(./|)htmlcov/' \
       | ${pkgs.entr}/bin/entr -rcs "''${@:$#}"
