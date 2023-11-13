@@ -24,6 +24,10 @@ let
       --add-flags python \
       --prefix PYTHONPATH : .
   '';
+  pyfmt = pkgs.writeShellScript "pyfmt" ''
+    set -uexo pipefail
+    exec ruff format - | ruff --fix --select COM812 - | ruff format -
+  '';
 in
 {
   imports = [ ../config/language-support.nix ];
@@ -38,7 +42,7 @@ in
         action = ''
           function()
             if vim.bo.filetype == "python" then
-              vim.cmd("%!ruff format - <% 2>/dev/null")
+              vim.cmd("%!${pyfmt} <% 2>/dev/null")
             else
               vim.lsp.buf.format { async = true }
             end
