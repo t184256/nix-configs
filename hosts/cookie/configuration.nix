@@ -8,7 +8,7 @@
   system.live = true;
   home-manager.users.monk.system.live = true;
   hardware.enableRedistributableFirmware = true;
-  boot.supportedFilesystems = [ "bcachefs" ];
+  boot.supportedFilesystems = [ "bcachefs" "xfs" ];
 
   networking.hostName = "cookie";
   networking.wireless.enable = false;
