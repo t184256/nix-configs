@@ -10,7 +10,7 @@ set -uexo pipefail
 : "${COPY_ETC_NIXOS:=0}"
 : "${DISK:=/dev/sda}"
 : "${AUTOPART:=0}"
-: "${PASSPHRASE:=''}"
+: "${PASSPHRASE:=}"
 
 ### Safeguards ###
 
