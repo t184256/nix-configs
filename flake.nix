@@ -12,6 +12,8 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
+    nixpkgs-systemd-255.url = "github:nikstur/nixpkgs/systemd-255";
+
     impermanence.url = "github:nix-community/impermanence";
 
     simple-nixos-mailserver.url =
@@ -122,6 +124,7 @@
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
       bayroot = mkSystem "x86_64-linux" ./hosts/bayroot/configuration.nix;
       araceae = mkSystem "x86_64-linux" ./hosts/araceae/configuration.nix;
+      quince = mkSystem "x86_64-linux" ./hosts/quince/configuration.nix;
     };
     homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {

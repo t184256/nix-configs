@@ -625,6 +625,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-systemd-255": {
+      "locked": {
+        "lastModified": 1700411881,
+        "narHash": "sha256-xnBM9U87/gK2z+elyJStpq3JIMYSYL7uvndEiq89yss=",
+        "owner": "nikstur",
+        "repo": "nixpkgs",
+        "rev": "e9453f997ac7552c63dc341eea0f063d3fd15f6b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nikstur",
+        "ref": "systemd-255",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1700599502,
@@ -781,6 +797,7 @@
         "nixos-generators": "nixos-generators",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
+        "nixpkgs-systemd-255": "nixpkgs-systemd-255",
         "nixvim": "nixvim",
         "simple-nixos-mailserver": "simple-nixos-mailserver",
         "yousable": "yousable"

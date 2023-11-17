@@ -13,6 +13,7 @@ else
     elif [[ "$DMI" == 4766a080-8682-11ea-90a4-44151e1a0f00 ]]; then AUTO=cashew
     elif [[ "$DMI" == b6a5667e-dcbc-edc8-392f-88aedd6259a6 ]]; then AUTO=cocoa
     elif [[ "$DMI" == 03000200-0400-0500-0006-000700080009 ]]; then AUTO=jujube
+    elif [[ "$DMI" == 86a6297f-1e97-124f-9435-a77e07c3508d ]]; then AUTO=quince
     else
         echo 'host has not been autodetected' >&2
         exit 1
