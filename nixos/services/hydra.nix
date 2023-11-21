@@ -124,6 +124,7 @@ in
       '';
     };
     # https://github.com/NixOS/nixpkgs/issues/258371
+    services.harmonia.serviceConfig.Group = lib.mkForce "hydra";
     services.harmonia.serviceConfig.DynamicUser = lib.mkForce false;
     services.harmonia.serviceConfig.PrivateMounts = lib.mkForce false;
   };
