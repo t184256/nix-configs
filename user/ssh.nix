@@ -11,6 +11,7 @@
       jungle = { user = "root"; hostname = "jungle.lan"; };
       bayroot = { user = "monk"; hostname = "192.168.99.3"; };
       araceae = { user = "monk"; hostname = "192.168.99.4"; };
+      quince = { user = "monk"; hostname = "192.168.99.6"; };
       cashew = { user = "monk"; hostname = "duckweed.unboiled.info";
                  port = 221; };
       cocoa = { user = "monk"; hostname = "duckweed.unboiled.info";

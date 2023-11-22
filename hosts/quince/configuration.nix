@@ -6,7 +6,7 @@
     ./secureboot.nix
     #../../nixos/services/ipfs/cluster-leader.nix
     #../../nixos/services/ipfs/node.nix
-    #../../nixos/services/nebula
+    ../../nixos/services/nebula
   ];
 
   users.mutableUsers = false;
