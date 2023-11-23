@@ -35,8 +35,8 @@
   #services.kubo.settings.Datastore.StorageMax = "20G";
 
   # accept forwarded SSH/MOSH
-  #networking.firewall.allowedUDPPortRanges = [ { from = 22800; to = 22899; } ];
-  #services.sshguard.whitelist = [ "192.168.99.2" ];
+  networking.firewall.allowedUDPPortRanges = [ { from = 22600; to = 22699; } ];
+  services.sshguard.whitelist = [ "192.168.99.2" ];
 
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;

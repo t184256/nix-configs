@@ -7,6 +7,7 @@
     ./hardware-configuration.nix
     ../../nixos/services/dns.nix
     ../../nixos/services/forward-cocoa.nix
+    ../../nixos/services/forward-quince.nix
     ../../nixos/services/ipfs/gateway.nix
     ../../nixos/services/ipfs/node.nix
     ../../nixos/services/ipfs/micro.nix
