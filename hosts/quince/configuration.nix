@@ -22,6 +22,7 @@
   hardware.cpu.intel.updateMicrocode = true;
   hardware.opengl.extraPackages = [ pkgs.intel-media-driver ];
   hardware.wirelessRegulatoryDatabase = true;
+  networking.networkmanager.wifi.powersave = false;
 
   zramSwap = { enable = true; memoryPercent = 50; };
 
