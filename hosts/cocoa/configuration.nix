@@ -104,4 +104,7 @@
   environment.systemPackages = with pkgs; [ keyutils ];
 
   services.xserver.displayManager.autoLogin = { enable = true; user = "monk"; };
+
+  # currently bcachefs unlocking is broken otherwise
+  boot.initrd.systemd.enable = true;
 }
