@@ -38,5 +38,10 @@
     { device = "/dev/disk/by-partlabel/LOQUAT_SWAP"; }
   ];
 
+  fileSystems."/mnt/storage" = {
+    device = "/mnt/persist";
+    options = [ "bind" ];
+  };
+
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
