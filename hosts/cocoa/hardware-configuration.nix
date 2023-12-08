@@ -38,6 +38,17 @@
     #  options = [ "subvol=sync" ];
     #};
     "/home" = { device = "/mnt/persist/home"; options = [ "bind" ]; };
+    "/mnt/storage" = {
+      device = "/dev/mapper/COCOA_STORAGE";
+      options = [ "nofail" ];
+      encrypted = {
+        enable = true;
+        label = "COCOA_STORAGE";
+        keyFile = "/sysroot/mnt/persist/secrets/storage.key";
+        # requires boot.initrd.systemd.enable = true;
+        blkDev = "/dev/disk/by-partlabel/COCOA_STORAGE";
+      };
+    };
   };
 
   swapDevices = [ { device = "/dev/mapper/COCOA_SWAP"; } ];
