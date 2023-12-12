@@ -1,10 +1,17 @@
 { config, lib, ... }:
 
+let
+  swarmKeyPath = if config.networking.hostName != "quince"
+    then "/mnt/persist/secrets/ipfs/swarm.key"
+    else "/mnt/storage/secrets/ipfs/swarm.key";
+  lateStorage = config.networking.hostName == "quince";
+  ifStorage = a: if lateStorage then a else [];
+in
 {
   services.kubo = {
     enable = true;
     enableGC = true;
-    dataDir = "/mnt/persist/ipfs";
+    dataDir = "/mnt/storage/ipfs";
     localDiscovery = false;  # explicit
     emptyRepo = true;
     settings = {
@@ -28,6 +35,10 @@
   };
   systemd.services = {
     ipfs-preconfigure = {
+      wantedBy = ifStorage [ "storage.target" ];
+      requires = ifStorage [ "mnt-storage.mount" ];
+      after = ifStorage [ "mnt-storage.mount" "storage.target" ];
+      partOf = ifStorage [ "storage.target" ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
@@ -39,10 +50,9 @@
           -o "${config.services.kubo.user}" -g "${config.services.kubo.group}" \
           -m 770 -d "$IPFS_PATH"
         if [[ ! -e "$IPFS_PATH/swarm.key" ]]; then
-          chown "${config.services.kubo.user}" \
-            /mnt/persist/secrets/ipfs/swarm.key
-          chmod 400 /mnt/persist/secrets/ipfs/swarm.key
-          ln -sf /mnt/persist/secrets/ipfs/swarm.key "$IPFS_PATH/"
+          chown "${config.services.kubo.user}" ${swarmKeyPath}
+          chmod 400 ${swarmKeyPath}
+          ln -sf ${swarmKeyPath} "$IPFS_PATH/"
         fi
         if [[ ! -e "$IPFS_PATH/config" ]]; then
           ${config.services.kubo.package}/bin/ipfs init \
@@ -57,8 +67,14 @@
       '';
     };
     ipfs = {
-      requires = [ "ipfs-preconfigure.service" ];
-      after = [ "ipfs-preconfigure.service" ];
+      requires =
+        [ "ipfs-preconfigure.service" ] ++
+        ifStorage [ "mnt-storage.mount" ];
+      wantedBy = ifStorage [ "storage.target" ];
+      after =
+        [ "ipfs-preconfigure.service" ] ++
+        ifStorage [ "mnt-storage.mount" "storage.target" ];
+      partOf = ifStorage [ "storage.target" ];
       environment.LIBP2P_FORCE_PNET = "1";
     };
   };

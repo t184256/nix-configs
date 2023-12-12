@@ -4,8 +4,8 @@
   imports = [
     ./hardware-configuration.nix
     ./secureboot.nix
-    #../../nixos/services/ipfs/cluster-leader.nix
-    #../../nixos/services/ipfs/node.nix
+    ../../nixos/services/ipfs/cluster-leader.nix
+    ../../nixos/services/ipfs/node.nix
     ../../nixos/services/nebula
   ];
 
@@ -23,6 +23,8 @@
   hardware.opengl.extraPackages = [ pkgs.intel-media-driver ];
   hardware.wirelessRegulatoryDatabase = true;
   networking.networkmanager.wifi.powersave = false;
+
+  systemd.targets.storage.after = [ "mnt-storage.mount" ];
 
   zramSwap = { enable = true; memoryPercent = 50; };
 

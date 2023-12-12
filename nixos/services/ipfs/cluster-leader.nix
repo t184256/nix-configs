@@ -1,6 +1,11 @@
 { pkgs, config, lib, ... }:
 
 let
+  secretsPath = if config.networking.hostName != "quince"
+    then "/mnt/persist/secrets/ipfs/"
+    else "/mnt/storage/secrets/ipfs/";
+  lateStorage = config.networking.hostName == "quince";
+  ifStorage = a: if lateStorage then a else [];
   clusterConfig = {
     cluster = {
       replication_factor_min = 2;
@@ -39,14 +44,17 @@ let
 in
 {
   systemd.services.ipfs-cluster = {
-    wantedBy = [ "default.target" ];
-    requires = [ "ipfs.service" ];
-    after = [ "ipfs.service" ];
+    wantedBy = ifStorage [ "storage.target" ];
+    requires = [ "ipfs.service" ] ++ ifStorage [ "mnt-storage.mount" ];
+    after =
+      [ "ipfs.service" ] ++
+      ifStorage [ "mnt-storage.mount" "storage.target" ];
+    partOf = ifStorage [ "storage.target" ];
     environment.IPFS_PATH = config.services.kubo.dataDir;
     serviceConfig = {
       User = config.services.kubo.user;
       Group = config.services.kubo.group;
-      EnvironmentFile = "/mnt/persist/secrets/ipfs/cluster.key";
+      EnvironmentFile = "${secretsPath}/cluster.key";
       ExecStart = [
         ""
         "${pkgs.ipfs-cluster}/bin/ipfs-cluster-service -c ${clusterDir} daemon"
@@ -63,7 +71,7 @@ in
       ${pkgs.jq}/bin/jq ".cluster.secret = \"$CLUSTER_SECRET\"" \
         ${clusterConfigJson} > "${clusterDir}/service.json"
       chmod 400 "${clusterDir}/service.json"
-      ln -sf /mnt/persist/secrets/ipfs/cluster.id "${clusterDir}/identity.json"
+      ln -sf ${secretsPath}/cluster.id "${clusterDir}/identity.json"
     '';
   };
   networking.firewall.allowedTCPPorts = [ 4011 ];
