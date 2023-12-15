@@ -128,9 +128,7 @@ in
     services.harmonia.serviceConfig.DynamicUser = lib.mkForce false;
     services.harmonia.serviceConfig.PrivateMounts = lib.mkForce false;
   };
-  # https://github.com/NixOS/nixpkgs/issues/258371
-  users.users.harmonia = { isSystemUser = true; group = "hydra"; };
-  users.groups.harmonia = {};
+  users.users.harmonia.extraGroups = [ "hydra" ];
 
   environment.persistence."/mnt/persist".directories = [
     {
