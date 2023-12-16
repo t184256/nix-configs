@@ -33,6 +33,8 @@
 #
 #  home-manager.users.monk.language-support = [ "nix" "bash" ];
 
-  system.stateVersion = "22.05";
-  home-manager.users.monk.home.stateVersion = "22.05";
+  boot.kernelPackages = pkgs.linuxPackages_testing;  # needed for bcachefs now
+
+  system.stateVersion = "24.05";
+  home-manager.users.monk.home.stateVersion = "24.05";
 }
