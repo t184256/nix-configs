@@ -84,7 +84,6 @@
       m*)     TO=mango;       METHOD=mosh ;;
       d*)     TO=duckweed;    METHOD=mosh ;;
       l*)     TO=loquat;      METHOD=mosh ;;
-      ca*)    TO=cashew;      METHOD=ssh ;;
       c*)     TO=cocoa;       METHOD=mosh     MOSH_OPTS='-p 22700:22799' ;;
       q*)     TO=quince;      METHOD=mosh     MOSH_OPTS='-p 22600:22699' ;;
       b*)     TO=bayroot;     METHOD=ssh ;;

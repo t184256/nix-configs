@@ -117,8 +117,6 @@
       };
     nixosConfigurations = {
       lychee = mkSystem "x86_64-linux" ./hosts/lychee/configuration.nix;
-      jujube = mkSystem "x86_64-linux" ./hosts/jujube/configuration.nix;
-      cashew = mkSystem "x86_64-linux" ./hosts/cashew/configuration.nix;
       cocoa = mkSystem "x86_64-linux" ./hosts/cocoa/configuration.nix;
       loquat = mkSystem "x86_64-linux" ./hosts/loquat/configuration.nix;
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
@@ -185,14 +183,6 @@
         sshUser = "root"; user = "root"; hostname = "cocoa";
         path = deploy-rs.lib.x86_64-linux.activate.nixos
                self.nixosConfigurations.cocoa;
-      };
-    };
-    deploy.nodes.cashew = {
-      hostname = "cashew";
-      profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "cashew";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.cashew;
       };
     };
     deploy.nodes.bayroot = {
