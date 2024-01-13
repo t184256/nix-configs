@@ -26,7 +26,6 @@
 
     nixvim.url = "github:pta2002/nixvim";
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
-    nixvim.inputs.flake-utils.follows = "flake-utils";
 
     nixgl.url = "github:guibou/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
