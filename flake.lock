@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1686521738,
-        "narHash": "sha256-uHTZ/Wjul/EmtMoZRcHUkmXqDE+4BsrvM46b+4zfxnQ=",
+        "lastModified": 1705188765,
+        "narHash": "sha256-/KE6QUeJTySwdmxygInOr5bSTDmJz8lzyamgcKdDMtA=",
         "owner": "t184256",
         "repo": "alacritty-autoresizing",
-        "rev": "e7ed0a76063fbe6a8a42a2e517302c17684b2edc",
+        "rev": "6b7cb2cddb0cef52d4d19f3c24fc8ba1be5f28e2",
         "type": "github"
       },
       "original": {
