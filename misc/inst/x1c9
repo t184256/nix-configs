@@ -148,7 +148,7 @@ if [[ "$INSPECT" == 1 ]]; then $CHROOT bash; exit 0; fi
 # invoke microdnf to install the most basic system
 sudo microdnf -y \
     --noplugins \
-    --releasever=38 \
+    --releasever=39 \
     --installroot=/mnt/tgt/root/curr \
     --config /tmp/.inst-files/dnf/dnf.conf \
     --setopt=reposdir=/tmp/.inst-files/dnf/yum.repos.d \
