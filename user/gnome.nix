@@ -30,11 +30,10 @@
         "allowlockedremotedesktop@kamens.us"
         "autohide-battery@sitnik.ru"
         "autohide-volume@unboiled.info"
-        "focus-changer@heartmire"
         "just-perfection-desktop@just-perfection"
         "noannoyance@daase.net"
+        "paperwm@paperwm.github.co"
         "syncthing@gnome.2nv2u.com"
-        "tiling-assistant@leleat-on-github"
         "unite@hardpixel.eu"
       ];
     };

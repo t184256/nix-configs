@@ -45,13 +45,12 @@ in {
         allow-locked-remote-desktop
         autohide-battery
         autohide-volume
-        focus-changer
         just-perfection
         noannoyance-2
+        paperwm
         quake-mode
         sound-output-device-chooser
         syncthing-indicator
-        tiling-assistant
         unite
       ]);
     };
