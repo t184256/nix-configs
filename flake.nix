@@ -12,8 +12,6 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
-    nixpkgs-systemd-255.url = "github:nikstur/nixpkgs/systemd-255";
-
     impermanence.url = "github:nix-community/impermanence";
 
     simple-nixos-mailserver.url =

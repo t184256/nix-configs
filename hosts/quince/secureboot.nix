@@ -22,7 +22,7 @@
       wantedBy = [ "initrd.target" ];
       after = [ "systemd-modules-load.service" ];
     };
-    storePaths = [ "${config.systemd.package}/lib/systemd/systemd-pcrphase" ];
+    storePaths = [ "${config.systemd.package}/lib/systemd/systemd-pcrextend" ];
   };
 
   # fallback bootloader: systemd-boot
@@ -47,17 +47,11 @@
         '';
       };
 
-      s255 = inputs.nixpkgs-systemd-255.legacyPackages.x86_64-linux.systemd;
-      systemdUkify = s255.override {
+      systemdUkify = pkgs.systemd.override {
         withEfi = true;
         withBootloader = true;
         withCryptsetup = true;
         withUkify = true;
-        # 255-only, remove once it's mainlined
-        withIptables = false;
-        withPasswordQuality = false;
-        withVmspawn = false;
-        withQrencode = false;
       };
       bootspecNamespace = ''"org.nixos.bootspec.v1"'';
 
