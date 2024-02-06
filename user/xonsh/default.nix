@@ -3,16 +3,11 @@
 let
   readConfigBit = p: "\n\n#${builtins.baseNameOf p}\n${builtins.readFile p}";
 
-  extraPackages = ps: [
+  # TODO: https://github.com/NixOS/nixpkgs/issues/276326
+  my-xonsh = pkgs.xonsh.override { extraPackages = ps: [
     ps.xontrib-xonsh-direnv
     ps.xontrib-readable-traceback
-  ];
-  pythonEnv = pkgs.python3.withPackages (ps: [
-    (ps.toPythonModule pkgs.xonsh-unwrapped)
-  ] ++ extraPackages ps);
-  my-xonsh = pkgs.writeShellScriptBin "xonsh" ''
-    exec ${pythonEnv}/bin/python3 -u -m xonsh "$@"
-  '';
+  ]; };
 in
 
 {
