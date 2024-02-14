@@ -26,7 +26,7 @@ in {
       displayManager.gdm.wayland = true;
       displayManager.defaultSession = "gnome";
       desktopManager.gnome.enable = true;
-      layout = "us,ru";
+      xkb.layout = "us,ru";
       videoDrivers = [ "modesetting" ];
     };
     hardware.opengl.enable = true;
