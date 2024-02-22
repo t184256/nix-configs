@@ -32,7 +32,16 @@
 
   programs.password-store = {enable = true; package = pkgs.pass-wayland; };
 
-  language-support = [ "bash" "c" "nix" "python" "rust" "yaml" ];
+  language-support = [
+    "bash"
+    "c"
+    "markdown"
+    "nix"
+    "prose"
+    "python"
+    "rust"
+    "yaml"
+  ];
 
   home.packages = with pkgs; [
     bash-completion

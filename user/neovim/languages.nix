@@ -136,21 +136,43 @@ in
 
         hls.enable = withLang "haskell";
 
+        marksman.enable = withLang "markdown";
+
+        ltex.enable = withLang "prose";
+        ltex.settings = {
+          additionalRules = {
+            enablePickyRules = true;
+            motherTongue = "ru-RU";
+          };
+          completionEnabled = true;
+          #diagnosticSeverity = "warning";
+        };
+
         rnix-lsp.enable = withLang "nix";  # TODO: use nixd
 
         rust-analyzer.enable = withLang "rust";
+        rust-analyzer.installCargo = true;
+        rust-analyzer.installRustc = true;
       };
 
       none-ls = {
         enable = true;
         sources = {
+          code_actions.gitsigns.enable = true;
+          code_actions.ltrs.enable = withLang "prose";
           code_actions.shellcheck.enable = withLang "bash";
           code_actions.statix.enable = withLang "nix";
+          #diagnostics.alex.enable = withLang "prose";  # that's too much
+          diagnostics.bandit.enable = withLang "python";
           diagnostics.cppcheck.enable = withLang "c";
           diagnostics.deadnix.enable = withLang "nix";
           diagnostics.gitlint.enable = true;
+          diagnostics.markdownlint.enable = withLang "markdown";
           diagnostics.shellcheck.enable = withLang "bash";
           diagnostics.statix.enable = withLang "nix";
+          diagnostics.write_good.enable = withLang "prose";
+          formatting.beautysh.enable = withLang "bash";
+          formatting.markdownlint.enable = withLang "markdown";
           formatting.nixfmt.enable = withLang "nix";
           formatting.nixpkgs_fmt.enable = withLang "nix";
           formatting.shfmt.enable = withLang "bash";
