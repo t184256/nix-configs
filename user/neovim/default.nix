@@ -10,8 +10,8 @@ in
     ./classic-plugins.nix
     ./completion.nix
     ./colorscheme.nix
-    ./gitgutter.nix
     ./gitmessenger.nix
+    ./gitsigns.nix
     ./indent-guides.nix
     ./languages.nix
     ./noice.nix

@@ -158,7 +158,7 @@ in
       none-ls = {
         enable = true;
         sources = {
-          code_actions.gitsigns.enable = true;
+          #code_actions.gitsigns.enable = true;
           code_actions.ltrs.enable = withLang "prose";
           code_actions.shellcheck.enable = withLang "bash";
           code_actions.statix.enable = withLang "nix";
