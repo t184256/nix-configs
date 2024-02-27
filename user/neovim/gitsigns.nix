@@ -3,6 +3,7 @@
 
 {
   programs.nixvim = {
+    options.signcolumn = "no";
     plugins.gitsigns = {
       enable = true;  # color changed lines
       attachToUntracked = false;
