@@ -50,7 +50,6 @@ in {
         paperwm
         quake-mode
         sound-output-device-chooser
-        syncthing-indicator
         unite
       ]);
     };

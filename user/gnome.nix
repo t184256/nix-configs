@@ -33,7 +33,6 @@
         "just-perfection-desktop@just-perfection"
         "noannoyance@daase.net"
         "paperwm@paperwm.github.co"
-        "syncthing@gnome.2nv2u.com"
         "unite@hardpixel.eu"
       ];
     };
