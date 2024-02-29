@@ -9,6 +9,7 @@ in
   imports = [
     ./classic-plugins.nix
     ./completion.nix
+    ./colorcolumn.nix
     ./colorscheme.nix
     ./gitmessenger.nix
     ./gitsigns.nix

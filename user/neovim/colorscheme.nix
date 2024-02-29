@@ -7,7 +7,6 @@
       wildoptions = "pum";
       pumblend = 20;
       winblend = 20;
-      colorcolumn = "80";
     };
     colorscheme = "boring";
     extraPlugins = with pkgs.vimPlugins; [

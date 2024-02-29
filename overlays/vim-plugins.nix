@@ -35,6 +35,17 @@ self: super:
       };
     };
 
+    deadcolumn = super.pkgs.vimUtils.buildVimPlugin rec {
+      pname = "deadcolumn";
+      version = "1.0.0";
+      src = super.fetchFromGitHub {
+        owner = "Bekaboo";
+        repo = "deadcolumn.nvim";
+        rev = "v${version}";
+        sha256 = "sha256-SWjXeu6d22T+naYvYPdnU8V2L0K7QviHo1B5GIG6r1k=";
+      };
+    };
+
     shipwright = super.pkgs.vimUtils.buildVimPlugin rec {
       pname = "shipwright";
       version = "2022-01-07";
