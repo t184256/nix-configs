@@ -12,14 +12,8 @@
     colorscheme = "boring";
     extraPlugins = with pkgs.vimPlugins; [
       vim-boring  # my non-clownish color theme
+      lush-nvim
+      #shipwright
     ];
-    highlight = {
-      # TODO: incorporate into the colorscheme?
-      ColorColumn = { fg = "#ddbbbb"; bg = "#0a0a0a"; };
-      Pmenu.fg = "#aaaaaa";
-      Substitute.bg = "#663333";
-      IncSearch.bg = "#333366";
-    };
-    # old comment: fix nested highlighting problems with hard overrides
   };
 }

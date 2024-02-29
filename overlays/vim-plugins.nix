@@ -4,12 +4,12 @@ self: super:
   vimPlugins = super.vimPlugins // {
     vim-boring = super.pkgs.vimUtils.buildVimPlugin {
       pname = "vim-boring";
-      version = "20230915";
+      version = "2024-02-29";
       src = super.fetchFromGitHub {
         owner = "t184256";
         repo = "vim-boring";
-        rev = "d84ffb495a9ed357a8722b0574333ed3b07845a2";
-        sha256 = "sha256-PFxoqqiJLuzSbSDA1rMAaGaY5WPIHPjsXv+oOOAUjaU=";
+        rev = "d44c36f2a7bed4ac1222f2bf711147ff469fcfce";
+        sha256 = "sha256-zH/tf4n1FRx14u2GJo3dxZMI5ZLM6N90uqGejCcTbdQ=";
       };
     };
 
@@ -32,6 +32,17 @@ self: super:
         repo = "actions-preview.nvim";
         rev = "5c240e6356156b72cfbf7c05feefadae61d7a06f";
         sha256 = "sha256-XJxwKusvtKvLdtvOjLwmwCP09djhjm9DqL4C1Eca4oY=";
+      };
+    };
+
+    shipwright = super.pkgs.vimUtils.buildVimPlugin rec {
+      pname = "shipwright";
+      version = "2022-01-07";
+      src = super.fetchFromGitHub {
+        owner = "rktjmp";
+        repo = "shipwright.nvim";
+        rev = "ab70e80bb67b7ed3350bec89dd73473539893932";
+        sha256 = "sha256-Gy0tIqH1dmZgcUvrUcNrqpMXi3gOgHq9X1SbjIZqSns=";
       };
     };
   };
