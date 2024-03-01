@@ -183,6 +183,11 @@ in
           diagnostics.shellcheck.enable = withLang "bash";
           diagnostics.statix.enable = withLang "nix";
           diagnostics.write_good.enable = withLang "prose";
+          diagnostics.write_good.withArgs = ''
+            { extra_args = {
+              '--no-adverb', '--no-tooWordy', '--no-weasel', '--no-passive'
+            } }
+          '';
           formatting.beautysh.enable = withLang "bash";
           formatting.markdownlint.enable = withLang "markdown";
           formatting.nixfmt.enable = withLang "nix";
