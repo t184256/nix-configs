@@ -111,7 +111,9 @@ in
 
     extraPlugins = with pkgs.vimPlugins; [
       actions-preview
-    ] ++ (if ! (withLang "python") then [] else [
+    ] ++ (if ! (withLang "prose") then [] else [
+      ltex_extra-nvim
+    ]) ++ (if ! (withLang "python") then [] else [
       neotest neotest-python
     ]);
 
@@ -160,6 +162,15 @@ in
           completionEnabled = true;
           #diagnosticSeverity = "warning";
         };
+        ltex.onAttach.override = true;
+        ltex.onAttach.function = ''
+          -- rest of your on_attach process.
+          require("ltex_extra").setup {
+            load_langs = { "en-US" }, -- en-US as default
+            init_check = true, -- whether to load dictionaries on startup
+            path = ".ltex", -- rel or abs path to store dictionaries in
+          }
+        '';
 
         rnix-lsp.enable = withLang "nix";  # TODO: use nixd
 

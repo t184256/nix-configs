@@ -56,5 +56,16 @@ self: super:
         sha256 = "sha256-Gy0tIqH1dmZgcUvrUcNrqpMXi3gOgHq9X1SbjIZqSns=";
       };
     };
+
+    ltex_extra-nvim = super.pkgs.vimUtils.buildVimPlugin rec {
+      pname = "ltex_extra-nvim";
+      version = "0.2.0";
+      src = super.fetchFromGitHub {
+        owner = "barreiroleo";
+        repo = "ltex_extra.nvim";
+        rev = "v${version}";
+        sha256 = "sha256-BN8/4evgpzFbf6YE7c3VZfl++v+rmZaCMgXL8RLWYBw=";
+      };
+    };
   };
 }
