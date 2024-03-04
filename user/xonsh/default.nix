@@ -17,7 +17,6 @@ in
 {
   imports = [ ../config/os.nix ];
   nixpkgs.overlays = [
-    (import ../../overlays/direnv.nix)
     (import ../../overlays/xontribs)
     ( self: super: { inherit my-xonsh; } )  # I refer to it in user/tmux
   ];
@@ -26,6 +25,7 @@ in
 
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
+  programs.direnv.config.global.hide_env_diff = true;
 
   home.file.".xonshrc".text = ''
     if not ''${...}.get('__NIXOS_SET_ENVIRONMENT_DONE'):

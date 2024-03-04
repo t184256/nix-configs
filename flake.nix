@@ -22,7 +22,7 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    nixvim.url = "github:pta2002/nixvim";
+    nixvim.url = "github:nix-community/nixvim";
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts?rev=ac5d0b2d4d51a53a1cd4a4a10d22f4a12c3fe652";  # last not broken, nixvim!1023
     nixvim.inputs.flake-parts.follows = "flake-parts";
