@@ -138,9 +138,9 @@ in
           pydocstyle.ignore = pyDocIgnores;
           pylsp_mypy.enabled = true;
           rope.enabled = true;
-          # TODO: try pylyzer
         };
         ruff-lsp.enable = withLang "python";
+        #pylyzer.enable = withLang "python";  # pylyzer!22
         # TODO: pyright, maybe? with a limited set of checks
 
         bashls.enable = withLang "bash";
