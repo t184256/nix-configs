@@ -38,16 +38,7 @@ in
       {
         key = "<space>f";
         mode = "n";
-        # ruff format isn't wired to python-lsp-ruff yet
-        action = ''
-          function()
-            if vim.bo.filetype == "python" then
-              vim.cmd("%!${pyfmt} <% 2>/dev/null")
-            else
-              vim.lsp.buf.format { async = true }
-            end
-          end
-        '';
+        action = "function () vim.lsp.buf.format { async = true } end";
         lua = true;
       }
       {
