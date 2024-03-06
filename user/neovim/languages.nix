@@ -54,6 +54,28 @@ in
         lua = true;
       }
       {
+        key = "<space>e";
+        mode = "n";
+        action = ''
+          function()
+            vim.diagnostic.open_float(0, { scope = "line", border = "single" })
+          end
+        '';
+        lua = true;
+      }
+      {
+        key = "<space>n";
+        mode = "n";
+        action = "function() vim.diagnostic.goto_next() end";
+        lua = true;
+      }
+      {
+        key = "<space>N";
+        mode = "n";
+        action = "function() vim.diagnostic.goto_prev() end";
+        lua = true;
+      }
+      {
         key = "<space>w";
         mode = "n";
         action = "function() lsp_lines_toggle() end";
