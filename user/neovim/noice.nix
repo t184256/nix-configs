@@ -29,5 +29,13 @@
         filter.any = [ { event = "msg_show"; kind = "confirm_sub"; } ];
       }];
     };
+
+    # TODO: weird that it has to be done fixed up this way
+    autoCmd = [
+      {
+        event = [ "VimEnter" "Colorscheme" ];
+        command = ":hi NoiceCursor gui=inverse";
+      }
+    ];
   };
 }
