@@ -50,6 +50,7 @@ in
         if 'll' in aliases:
             del aliases['ll']
         del _os
+        ${if config.system.os == "OtherLinux" then "$EDITOR='nvim'" else ""}
 
     $XONSH='${my-xonsh}/bin/xonsh'
     xontrib load direnv
