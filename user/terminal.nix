@@ -11,7 +11,7 @@ let
     inputs.alacritty-autoresizing.defaultPackage.${pkgs.system};
 
   baseSettings = {
-    env = { TERM = "xterm-256color"; };
+    env = { TERM = "alacritty"; };
     window.padding = { x = 0; y = 0; };
     window.dynamic_padding = true;
     font = {
