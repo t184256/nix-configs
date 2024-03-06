@@ -154,7 +154,6 @@ in
           code_actions.shellcheck.enable = withLang "bash";
           code_actions.statix.enable = withLang "nix";
           #diagnostics.alex.enable = withLang "prose";  # that's too much
-          diagnostics.bandit.enable = withLang "python";
           diagnostics.cppcheck.enable = withLang "c";
           diagnostics.deadnix.enable = withLang "nix";
           diagnostics.gitlint.enable = true;
