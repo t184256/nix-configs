@@ -4,12 +4,12 @@ self: super:
   vimPlugins = super.vimPlugins // {
     vim-boring = super.pkgs.vimUtils.buildVimPlugin {
       pname = "vim-boring";
-      version = "2024-02-29";
+      version = "2024-03-06";
       src = super.fetchFromGitHub {
         owner = "t184256";
         repo = "vim-boring";
-        rev = "01b73de80d366fd63c977f8b8ae5f0e359b34ae0";
-        sha256 = "sha256-298/NfFNpl0sNpw64yrBLDarf+7H20IvY9MpHMZ+WE8=";
+        rev = "7f45c7e7b1e9712005a8d99b9895bc5a557647c2";
+        sha256 = "063ms3jppxqrwrmpn7gqz764y6fhvj63l2mxpb2c6pm8z470id91";
       };
     };
 
