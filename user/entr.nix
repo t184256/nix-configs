@@ -18,6 +18,7 @@
                                    --cov-report term-missing:skip-covered \
                                    --durations=3 --durations-min=.05 \
                                    --tb=short \
+                                   --no-header \
                                    $* && \
                   ruff check . && \
                   ruff format --check . && \
