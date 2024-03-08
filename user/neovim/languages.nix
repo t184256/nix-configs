@@ -105,15 +105,11 @@ in
       cppcheck
     ] ++ lib.optionals (withLang "bash") [
       shellcheck
-    ] ++ lib.optionals (withLang "nix") [
-      inputs.nixd.packages.${pkgs.system}.default
     ];
 
     extraPlugins = with pkgs.vimPlugins; [
       actions-preview
-    ] ++ (if ! (withLang "prose") then [] else [
-      ltex_extra-nvim
-    ]) ++ (if ! (withLang "python") then [] else [
+    ] ++ (if ! (withLang "python") then [] else [
       neotest neotest-python
     ]);
 
@@ -153,6 +149,12 @@ in
 
         marksman.enable = withLang "markdown";
 
+        #nixd.enable = withLang "nix";
+
+        rust-analyzer.enable = withLang "rust";
+        rust-analyzer.installCargo = true;
+        rust-analyzer.installRustc = true;
+
         ltex.enable = withLang "prose";
         ltex.settings = {
           additionalRules = {
@@ -162,36 +164,27 @@ in
           completionEnabled = true;
           #diagnosticSeverity = "warning";
         };
-        ltex.onAttach.override = true;
-        ltex.onAttach.function = ''
-          -- rest of your on_attach process.
-          require("ltex_extra").setup {
-            load_langs = { "en-US" }, -- en-US as default
-            init_check = true, -- whether to load dictionaries on startup
-            path = ".ltex", -- rel or abs path to store dictionaries in
-          }
-        '';
+      };
 
-        rnix-lsp.enable = withLang "nix";  # TODO: use nixd
-
-        rust-analyzer.enable = withLang "rust";
-        rust-analyzer.installCargo = true;
-        rust-analyzer.installRustc = true;
+      ltex-extra = {
+        enable = withLang "prose";
+        settings = {
+          load_langs = [ "en-US" "ru-RU" ];
+          path = ".ltex";
+        };
       };
 
       none-ls = {
         enable = true;
         sources = {
           #code_actions.gitsigns.enable = true;
-          code_actions.ltrs.enable = withLang "prose";
-          code_actions.shellcheck.enable = withLang "bash";
           code_actions.statix.enable = withLang "nix";
           #diagnostics.alex.enable = withLang "prose";  # that's too much
           diagnostics.cppcheck.enable = withLang "c";
           diagnostics.deadnix.enable = withLang "nix";
           diagnostics.gitlint.enable = true;
+          diagnostics.ltrs.enable = withLang "prose";
           diagnostics.markdownlint.enable = withLang "markdown";
-          diagnostics.shellcheck.enable = withLang "bash";
           diagnostics.statix.enable = withLang "nix";
           diagnostics.write_good.enable = withLang "prose";
           diagnostics.write_good.withArgs = ''
@@ -199,7 +192,6 @@ in
               '--no-adverb', '--no-tooWordy', '--no-weasel', '--no-passive'
             } }
           '';
-          formatting.beautysh.enable = withLang "bash";
           formatting.markdownlint.enable = withLang "markdown";
           formatting.nixfmt.enable = withLang "nix";
           formatting.nixpkgs_fmt.enable = withLang "nix";

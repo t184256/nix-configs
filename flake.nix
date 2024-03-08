@@ -41,8 +41,6 @@
     deploy-rs.inputs.utils.follows = "flake-utils";
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
-    nixd.url = "github:nix-community/nixd";
-    nixd.inputs.nixpkgs.follows = "nixpkgs";
 
     alacritty-autoresizing = {
       url = "github:t184256/alacritty-autoresizing";
@@ -80,7 +78,6 @@
     hydra,
     deploy-rs,
     nixos-generators,
-    nixd,
     alacritty-autoresizing,
     keyboard-remap,
     input-utils,

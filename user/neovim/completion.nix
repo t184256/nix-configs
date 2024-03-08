@@ -9,15 +9,22 @@
       cmp-treesitter.enable = true;
       luasnip.enable = true;
       cmp_luasnip.enable = true;
-      nvim-cmp = {
+      cmp = {
         enable = true;
-        completion.autocomplete = false;
-        mapping = {
-          "<C-Space>" = "cmp.mapping.confirm({select = false})";
-          "<C-Tab>" = "cmp.mapping.complete_common_string()";
-          "<Tab>" = {
-            modes = [ "i" "s" ];
-            action = ''
+        settings = {
+          autocomplete = false;
+          sources = [
+            { groupIndex = 1; name = "path"; }
+            { groupIndex = 1; name = "nvim_lsp"; }
+            { groupIndex = 2; name = "luasnip"; }
+            { groupIndex = 2; name = "buffer"; }
+          ];
+          snippet.expand =
+            "function(args) require('luasnip').lsp_expand(args.body) end";
+          mapping = {
+            "<C-Space>" = "cmp.mapping.confirm({select = false})";
+            "<C-Tab>" = "cmp.mapping.complete_common_string()";
+            "<Tab>" = ''
               function(fallback)
                 local cmp = require('cmp')
                 local luasnip = require('luasnip')
@@ -36,10 +43,7 @@
                 end
               end
             '';
-          };
-          "<S-Tab>" = {
-            modes = [ "i" "s" ];
-            action = ''
+            "<S-Tab>" = ''
               function(fallback)
                 local cmp = require('cmp')
                 local luasnip = require('luasnip')
@@ -53,17 +57,10 @@
               end
             '';
           };
-        };
-        snippet.expand = "luasnip";
-        sources = [
-          { groupIndex = 1; name = "path"; }
-          { groupIndex = 1; name = "nvim_lsp"; }
-          { groupIndex = 2; name = "luasnip"; }
-          { groupIndex = 2; name = "buffer"; }
-        ];
-        matching = {
-          disallowFuzzyMatching = true;
-          disallowPartialMatching = true;
+          matching = {
+            disallowFuzzyMatching = true;
+            disallowPartialMatching = true;
+          };
         };
       };
     };
