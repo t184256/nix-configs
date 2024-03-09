@@ -1,6 +1,7 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
+  imports = [ ../config/language-support.nix ];
   programs.nixvim = {
     options = {
       termguicolors = true;
@@ -15,7 +16,7 @@
       #shipwright
     ];
     plugins.rainbow-delimiters = {
-      enable = true;
+      enable = config.language-support != [];
       highlight = [
         "RainbowDelimiterCyan"  # is, actually, grey
         "RainbowDelimiterBlue"

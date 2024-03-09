@@ -1,6 +1,7 @@
 { config, ... }:
 
 {
+  imports = [ ../config/language-support.nix ];
   programs.nixvim.plugins.treesitter = {
     # fancy plugins: treesitter
     # playground  # :TSHighlightCapturesUnderCursor,
