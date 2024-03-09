@@ -87,6 +87,7 @@
     #  "/var/lib/systemd"
     #  "/var/lib/upower"
     #  "/var/lib/waydroid"
+      "/var/lib/docker"
       "/var/log"
     ];
     files =
@@ -108,4 +109,10 @@
   boot.kernelPackages = pkgs.linuxPackages_testing;  # needed for bcachefs now
   # currently bcachefs unlocking is broken otherwise
   boot.initrd.systemd.enable = true;
+
+  # docker
+
+  virtualisation.docker.enable = true;
+  users.users.monk.extraGroups = [ "docker" ];
+  networking.firewall.allowedTCPPorts = [ 5000 ];
 }
