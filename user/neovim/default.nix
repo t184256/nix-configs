@@ -16,6 +16,7 @@ in
     ./indent-guides.nix
     ./languages.nix
     ./noice.nix
+    ./tabby.nix
     ./title.nix
     ./treesitter.nix
     ./vimagit.nix

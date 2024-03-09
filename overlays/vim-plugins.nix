@@ -56,5 +56,16 @@ self: super:
         sha256 = "sha256-Gy0tIqH1dmZgcUvrUcNrqpMXi3gOgHq9X1SbjIZqSns=";
       };
     };
+
+    vim-tabby = super.pkgs.vimUtils.buildVimPlugin rec {
+      pname = "vim-tabby";
+      version = "1.4.0";
+      src = super.fetchFromGitHub {
+        owner = "TabbyML";
+        repo = "vim-tabby";
+        rev = version;
+        sha256 = "sha256-z6SlQpLJSgeKvgYyplsS5c0KL89oEYm4BgDMkmpg5XI=";
+      };
+    };
   };
 }
