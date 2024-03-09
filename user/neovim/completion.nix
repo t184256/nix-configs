@@ -3,7 +3,6 @@
 {
   programs.nixvim = {
     plugins = {
-      cmp-git.enable = true;
       cmp-path.enable = true;
       cmp-tmux.enable = true;
       cmp-treesitter.enable = true;
@@ -12,18 +11,18 @@
       cmp = {
         enable = true;
         settings = {
-          autocomplete = false;
+          completion.autocomplete = false;
           sources = [
             { groupIndex = 1; name = "path"; }
             { groupIndex = 1; name = "nvim_lsp"; }
             { groupIndex = 2; name = "luasnip"; }
             { groupIndex = 2; name = "buffer"; }
+            { groupIndex = 3; name = "tmux"; }
           ];
           snippet.expand =
             "function(args) require('luasnip').lsp_expand(args.body) end";
           mapping = {
-            "<C-Space>" = "cmp.mapping.confirm({select = false})";
-            "<C-Tab>" = "cmp.mapping.complete_common_string()";
+            "<C-c>" = "cmp.mapping.abort()";
             "<Tab>" = ''
               function(fallback)
                 local cmp = require('cmp')
@@ -56,10 +55,6 @@
                 end
               end
             '';
-          };
-          matching = {
-            disallowFuzzyMatching = true;
-            disallowPartialMatching = true;
           };
         };
       };
