@@ -2,7 +2,7 @@
 
 let
   testpy = pkgs.writeShellScriptBin "testpy" ''
-    set -ue
+    set -ueo pipefail
     ruff check . || true
     COV_OPTS=""
     if grep -q pytest-cov flake.nix 2>/dev/null || \
@@ -17,11 +17,11 @@ let
                      --no-header \
                      "$@"
     if [ -e .pre-commit-config.yaml ]; then
-      pre-commit run -a
+      pre-commit run -a | (grep -vE '(Passed|Skipped)' || true)
     else
       ruff check . && ruff format --check .
     fi
-    echo ok
+    echo OK
   '';
 in
 {
@@ -30,11 +30,14 @@ in
 
     (pkgs.writeShellScriptBin "wat" ''
       exec ${pkgs.findutils}/bin/find ''${*%''${!#}} \
-      | grep -vF './.git' \
-      | grep -vE '(__pycache__|\.pyc)$' \
-      | grep -vE '^(./|)\.(mypy|ruff|pytest)_cache/' \
-      | grep -vE '^(./|)htmlcov/' \
-      | grep -vF '/cassettes/' \
+      | grep -vFx '.' \
+      | grep -vF '/.git' \
+      | grep -vF '/.direnv' \
+      | grep -vE '(__pycache__|\.pyc$)' \
+      | grep -vE '/\.(mypy|ruff|pytest)_cache' \
+      | grep -vE '/(htmlcov|\.coverage)' \
+      | grep -vF '/.ropeproject' \
+      | grep -vF '/cassettes' \
       | ${pkgs.entr}/bin/entr -rcs "''${@:$#}"
     '')
 
