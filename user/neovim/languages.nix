@@ -179,6 +179,7 @@ in
         sources = {
           #code_actions.gitsigns.enable = true;
           code_actions.statix.enable = withLang "nix";
+          diagnostics.actionlint.enable = true;
           #diagnostics.alex.enable = withLang "prose";  # that's too much
           diagnostics.cppcheck.enable = withLang "c";
           diagnostics.deadnix.enable = withLang "nix";
