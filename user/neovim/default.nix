@@ -4,7 +4,10 @@ let
   withLang = lang: builtins.elem lang config.language-support;
 in
 {
-  nixpkgs.overlays = [ (import ../../overlays/vim-plugins.nix) ];
+  nixpkgs.overlays = [
+    (import ../../overlays/neovim.nix)
+    (import ../../overlays/vim-plugins.nix)
+  ];
 
   imports = [
     ./classic-plugins.nix
