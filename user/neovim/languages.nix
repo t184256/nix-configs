@@ -202,8 +202,6 @@ in
       dap = {  # for neotest
         enable = withLang "python";
         extensions.dap-python.enable = withLang "python";
-        extensions.dap-python.adapterPythonPath =
-          "${pkgs.python3.withPackages (ps: [ ps.debugpy ] )}/bin/python";
         extensions.dap-python.testRunner = "pytest";
         extensions.dap-virtual-text.enable = withLang "python";
         extensions.dap-ui.enable = withLang "python";
@@ -263,11 +261,29 @@ in
     '');
     autoCmd = [
       {
-        event = [ "LspAttach" ];
+        event = [ "BufReadPost" ];
         pattern = [ "test_*.py" ];
         callback.__raw = ''
           function()
-            require('neotest').watch.watch(vim.fn.expand('%'))
+              curr = vim.fn.expand('%')
+              local on_exit = function(obj)
+                if string.find(obj.stdout, 'Found RC allowed 0\n') then
+                  require('neotest').watch.watch(curr)
+                end
+              end
+              local delayed_neotest = function()
+                vim.system(
+                  {'${pkgs.direnv}/bin/direnv', 'status'},
+                  { text = true },
+                  on_exit
+                )
+              end
+              -- 700ms, no repeating
+              if vim.b.neotest_deferred == nil then
+                local timer = vim.loop.new_timer()
+                timer:start(700, 0, vim.schedule_wrap(delayed_neotest))
+                vim.b.neotest_deferred = true
+              end
           end
         '';
       }
