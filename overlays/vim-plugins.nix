@@ -8,8 +8,8 @@ self: super:
       src = super.fetchFromGitHub {
         owner = "t184256";
         repo = "vim-boring";
-        rev = "aae44498ec9cc3ce05778735fd4b79067c6346f9";
-        sha256 = "sha256-2OvrdnZBjpPyF78Ta6HhD8ok2YCQGys+T+6pSQPaoK4=";
+        rev = "58659f51fa76d793803ce0d8ce7048aa16338ac7";
+        sha256 = "sha256-nhG/MzysNlsChkS1j1BYngx52gsGyUvmnAaPDf05CEU=";
       };
     };
 
