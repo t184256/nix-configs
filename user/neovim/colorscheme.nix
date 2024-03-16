@@ -27,5 +27,20 @@
         "RainbowDelimiterRed"
       ];
     };
+    # https://github.com/rktjmp/lush.nvim/issues/142
+    extraConfigLua = ''
+      vim.cmd('highlight Comment gui=altfont');
+      vim.cmd('highlight Keyword gui=altfont');
+      vim.cmd('highlight diffFile gui=altfont');
+      vim.cmd('highlight diffIndexLine gui=altfont');
+      vim.cmd('highlight diffLine gui=altfont');
+      vim.cmd('highlight diffNewFile gui=altfont');
+      vim.cmd('highlight diffOldFile gui=altfont');
+      vim.cmd('highlight DiagnosticError gui=altfont');
+      vim.cmd('highlight DiagnosticWarn gui=altfont');
+      vim.cmd('highlight DiagnosticInfo gui=altfont');
+      vim.cmd('highlight DiagnosticHint gui=altfont');
+      vim.cmd('highlight DiagnosticOK gui=altfont');
+    '';
   };
 }
