@@ -14,7 +14,10 @@ let
     env = { TERM = "alacritty"; };
     window.padding = { x = 0; y = 0; };
     window.dynamic_padding = true;
+    window.startup_mode = "Maximized";
     font = {
+      alt.family = "Iosevka Term Light";
+      alt_italic = { family = "Iosevka Term Light"; style = "Italic"; };
       normal.family = "Iosevka Term";
       bold = { family = "Iosevka Term Medium"; style = "Normal"; };
       size = 24;
@@ -29,13 +32,14 @@ let
 
     # Gotta love GNOME 40. What do they smoke, huh?
     # lack of server-side decorations, mouse never reappearing...
-    mouse.hide_when_typing = false;  # broken
-    window.decorations = "none";  # CSD is unusable with touch or stylus anyway
+    window.decorations = "None";  # CSD is unusable with touch or stylus anyway
   };
 
 in
 
 {
+  nixpkgs.overlays = [ (import ../overlays/alacritty) ];
+
   imports = [ ./config/no-graphics.nix ];
 
   programs.alacritty = if config.system.noGraphics then {} else {
