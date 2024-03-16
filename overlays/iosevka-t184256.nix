@@ -5,7 +5,7 @@ self: super:
     privateBuildPlan = {
       family = "Iosevka Term";
       spacing = "term";
-      no-ligation = "true";
+      noLigation = "true";
 
       variants = {
         # TODO: try something closer to Ubuntu Mono style?
@@ -80,7 +80,7 @@ self: super:
       widths.normal = { css = "normal"; menu = 5; shape = 434; };
 
       # move lines closer to each other, default is 1250
-      metric-override.leading = 1000;
+      metricOverride.leading = 1000;
     };
   };
 }
