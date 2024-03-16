@@ -2,6 +2,7 @@
 
 {
   imports = [ ./config/os.nix ];
+  nixpkgs.overlays = [ (import ../overlays/tmux) ];
 
   programs.tmux = {
     enable = true;
@@ -16,8 +17,10 @@
     extraConfig = ''
       set -ga terminal-overrides ",*256col*:Tc"
       set-option -sa terminal-features ',alacritty:RGB'
-      set-option -ga terminal-features ',alacritty:usstyle'
-      set-option -ga terminal-overrides ',alacritty:Tc'
+      set-option -ga terminal-features ',alacritty:usstyle,font0,font1'
+      set-option -ga terminal-overrides ',alacritty:Tc,'
+      set-option -sa terminal-overrides ',*:font0=\E[10m'
+      set-option -sa terminal-overrides ',*:font1=\E[11m'
       set -g set-titles on
       set -g set-titles-string "#I > #T"
       set -g status-style bg=white,fg=black
@@ -46,8 +49,10 @@
   home.file.".tmux-hopper.conf".text = ''
     set -ga terminal-overrides ",*256col*:Tc"
     set-option -sa terminal-features ',alacritty:RGB'
-    set-option -ga terminal-features ',alacritty:usstyle'
+    set-option -ga terminal-features ',alacritty:usstyle,font0,font1'
     set-option -ga terminal-overrides ',alacritty:Tc'
+    set-option -sa terminal-overrides ',*:font0=\E[10m'
+    set-option -sa terminal-overrides ',*:font1=\E[11m'
     set -g base-index 0
     set -g escape-time 0
     set -g default-terminal tmux-256color

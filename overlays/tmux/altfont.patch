@@ -1,0 +1,152 @@
+diff --git a/attributes.c b/attributes.c
+index b839f06d..81bb84d6 100644
+--- a/attributes.c
++++ b/attributes.c
+@@ -45,7 +45,8 @@ attributes_tostring(int attr)
+ 	    (attr & GRID_ATTR_UNDERSCORE_3) ? "curly-underscore," : "",
+ 	    (attr & GRID_ATTR_UNDERSCORE_4) ? "dotted-underscore," : "",
+ 	    (attr & GRID_ATTR_UNDERSCORE_5) ? "dashed-underscore," : "",
+-	    (attr & GRID_ATTR_OVERLINE) ? "overline," : "");
++	    (attr & GRID_ATTR_OVERLINE) ? "overline," : "",
++	    (attr & GRID_ATTR_ALTFONT) ? "altfont," : "");
+ 	if (len > 0)
+ 		buf[len - 1] = '\0';
+ 
+@@ -77,7 +78,8 @@ attributes_fromstring(const char *str)
+ 		{ "curly-underscore", GRID_ATTR_UNDERSCORE_3 },
+ 		{ "dotted-underscore", GRID_ATTR_UNDERSCORE_4 },
+ 		{ "dashed-underscore", GRID_ATTR_UNDERSCORE_5 },
+-		{ "overline", GRID_ATTR_OVERLINE }
++		{ "overline", GRID_ATTR_OVERLINE },
++		{ "altfont", GRID_ATTR_ALTFONT }
+ 	};
+ 
+ 	if (*str == '\0' || strcspn(str, delimiters) == 0)
+diff --git a/grid.c b/grid.c
+index edada819..4894416f 100644
+--- a/grid.c
++++ b/grid.c
+@@ -944,6 +944,7 @@ grid_string_cells_code(const struct grid_cell *lastgc,
+ 		{ GRID_ATTR_REVERSE, 7 },
+ 		{ GRID_ATTR_HIDDEN, 8 },
+ 		{ GRID_ATTR_STRIKETHROUGH, 9 },
++		{ GRID_ATTR_ALTFONT, 11 },
+ 		{ GRID_ATTR_UNDERSCORE_2, 42 },
+ 		{ GRID_ATTR_UNDERSCORE_3, 43 },
+ 		{ GRID_ATTR_UNDERSCORE_4, 44 },
+diff --git a/input.c b/input.c
+index eb421b28..1bf6010d 100644
+--- a/input.c
++++ b/input.c
+@@ -2181,6 +2181,12 @@ input_csi_dispatch_sgr(struct input_ctx *ictx)
+ 		case 9:
+ 			gc->attr |= GRID_ATTR_STRIKETHROUGH;
+ 			break;
++		case 10:
++			gc->attr &= ~GRID_ATTR_ALTFONT;
++			break;
++		case 11:
++			gc->attr |= GRID_ATTR_ALTFONT;
++			break;
+ 		case 21:
+ 			gc->attr &= ~GRID_ATTR_ALL_UNDERSCORE;
+ 			gc->attr |= GRID_ATTR_UNDERSCORE_2;
+diff --git a/tmux.1 b/tmux.1
+index 1916f16e..d17cf65f 100644
+--- a/tmux.1
++++ b/tmux.1
+@@ -3900,6 +3900,8 @@ mouse sequences.
+ Supports the OSC 7 working directory extension.
+ .It overline
+ Supports the overline SGR attribute.
++.It altfont
++Supports the altfont SGR attribute.
+ .It rectfill
+ Supports the DECFRA rectangle fill escape sequence.
+ .It RGB
+@@ -5646,6 +5648,7 @@ Set no attributes (turn off any active attributes).
+ .Ic hidden ,
+ .Ic italics ,
+ .Ic overline ,
++.Ic altfont ,
+ .Ic strikethrough ,
+ .Ic double-underscore ,
+ .Ic curly-underscore ,
+@@ -6807,6 +6810,8 @@ Tell
+ that the terminal supports rectangle operations.
+ .It Em \&Smol
+ Enable the overline attribute.
++.It Em \&font1
++Enable the altfont attribute.
+ .It Em \&Smulx
+ Set a styled underscore.
+ The single parameter is one of: 0 for no underscore, 1 for normal
+diff --git a/tmux.h b/tmux.h
+index a50adbfa..d803751b 100644
+--- a/tmux.h
++++ b/tmux.h
+@@ -380,6 +380,8 @@ enum tty_code_code {
+ 	TTYC_ENEKS,
+ 	TTYC_ENFCS,
+ 	TTYC_ENMG,
++	TTYC_FONT0,
++	TTYC_FONT1,
+ 	TTYC_FSL,
+ 	TTYC_HLS,
+ 	TTYC_HOME,
+@@ -660,6 +662,7 @@ struct colour_palette {
+ #define GRID_ATTR_UNDERSCORE_4 0x800
+ #define GRID_ATTR_UNDERSCORE_5 0x1000
+ #define GRID_ATTR_OVERLINE 0x2000
++#define GRID_ATTR_ALTFONT 0x4000
+ 
+ /* All underscore attributes. */
+ #define GRID_ATTR_ALL_UNDERSCORE \
+diff --git a/tty-features.c b/tty-features.c
+index 9bd0d843..054514d5 100644
+--- a/tty-features.c
++++ b/tty-features.c
+@@ -151,6 +151,17 @@ static const struct tty_feature tty_feature_overline = {
+ 	0
+ };
+ 
++/* Terminal supports altfont. */
++static const char *const tty_feature_altfont_capabilities[] = {
++	"font1=\\E[11m",
++	NULL
++};
++static const struct tty_feature tty_feature_altfont = {
++	"altfont",
++	tty_feature_altfont_capabilities,
++	0
++};
++
+ /* Terminal supports underscore styles. */
+ static const char *const tty_feature_usstyle_capabilities[] = {
+ 	"Smulx=\\E[4::%p1%dm",
+diff --git a/tty-term.c b/tty-term.c
+index 67face26..9117d22d 100644
+--- a/tty-term.c
++++ b/tty-term.c
+@@ -102,6 +102,8 @@ static const struct tty_term_code_entry tty_term_codes[] = {
+ 	[TTYC_ENEKS] = { TTYCODE_STRING, "Eneks" },
+ 	[TTYC_ENFCS] = { TTYCODE_STRING, "Enfcs" },
+ 	[TTYC_ENMG] = { TTYCODE_STRING, "Enmg" },
++	[TTYC_FONT0] = { TTYCODE_STRING, "font0" },
++	[TTYC_FONT1] = { TTYCODE_STRING, "font1" },
+ 	[TTYC_FSL] = { TTYCODE_STRING, "fsl" },
+ 	[TTYC_HLS] = { TTYCODE_STRING, "Hls" },
+ 	[TTYC_HOME] = { TTYCODE_STRING, "home" },
+diff --git a/tty.c b/tty.c
+index 359dc137..597fb278 100644
+--- a/tty.c
++++ b/tty.c
+@@ -2764,6 +2764,8 @@ tty_attributes(struct tty *tty, const struct grid_cell *gc,
+ 		tty_putcode(tty, TTYC_SMXX);
+ 	if (changed & GRID_ATTR_OVERLINE)
+ 		tty_putcode(tty, TTYC_SMOL);
++	if (changed & GRID_ATTR_ALTFONT)
++		tty_putcode(tty, TTYC_FONT1);
+ 	if ((changed & GRID_ATTR_CHARSET) && tty_acs_needed(tty))
+ 		tty_putcode(tty, TTYC_SMACS);
+ 
