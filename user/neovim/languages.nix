@@ -184,16 +184,9 @@ in
           diagnostics.cppcheck.enable = withLang "c";
           diagnostics.deadnix.enable = withLang "nix";
           diagnostics.gitlint.enable = true;
-          diagnostics.ltrs.enable = withLang "prose";
           diagnostics.markdownlint.enable = withLang "markdown";
           diagnostics.mypy = { enable = true; package = null; };
           diagnostics.statix.enable = withLang "nix";
-          diagnostics.write_good.enable = withLang "prose";
-          diagnostics.write_good.withArgs = ''
-            { extra_args = {
-              '--no-adverb', '--no-tooWordy', '--no-weasel', '--no-passive'
-            } }
-          '';
           formatting.markdownlint.enable = withLang "markdown";
           formatting.nixfmt.enable = withLang "nix";
           formatting.nixpkgs_fmt.enable = withLang "nix";
