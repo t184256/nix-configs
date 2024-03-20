@@ -81,7 +81,20 @@ in
         action = "function() lsp_lines_toggle() end";
         lua = true;
       }
-    ] ++ (if ! withLang "python" then [] else [
+    ] ++ (if ! withLang "nix" then [] else [
+      {
+        key = "<space>A";  # update-nix-fetchgit
+        mode = "n";
+        # TODO: could be better
+        action = ''
+          function()
+            local line = vim.api.nvim_win_get_cursor(0)[1]
+            vim.cmd("r!update-nix-fetchgit % -l " .. line .. ":0")
+          end
+        '';
+        lua = true;
+      }
+    ]) ++ (if ! withLang "python" then [] else [
       {
         key = "<space>d";  # debug
         mode = "n";
@@ -105,6 +118,8 @@ in
       cppcheck
     ] ++ lib.optionals (withLang "bash") [
       shellcheck
+    ] ++ lib.optionals (withLang "nix") [
+      update-nix-fetchgit
     ];
 
     extraPlugins = with pkgs.vimPlugins; [
