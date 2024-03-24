@@ -43,6 +43,7 @@ let
     monk            IN CNAME fig
     www.monk        IN CNAME fig
     transmission    IN CNAME fig
+    tabby           IN CNAME fig
     hydra           IN CNAME loquat
     nix-on-droid    IN CNAME loquat
     yousable        IN CNAME loquat
