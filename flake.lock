@@ -891,11 +891,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1707898474,
-        "narHash": "sha256-Hwt3I0Hkw1iPJnNkofHcqLlv8A6Rq6kBTkBq7xfyGwY=",
+        "lastModified": 1711280463,
+        "narHash": "sha256-1iLGP97iLmox7svlZsIrzLyHMBtFkMDlgVj5KxFO84s=",
         "owner": "t184256",
         "repo": "yousable",
-        "rev": "b7981f19d9f0fcc30803a9abcfdd69247cce9227",
+        "rev": "ef872acdd8248d66badd099f03187f66f3b7ddc7",
         "type": "github"
       },
       "original": {
