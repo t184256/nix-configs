@@ -30,10 +30,13 @@ let
   '';
 in
 {
-  imports = [ ../config/language-support.nix ];
+  imports = [
+    ../config/language-support.nix
+    ../config/neovim.nix
+  ];
   nixpkgs.overlays = [ (import ../../overlays/python-lsp-server.nix) ];
 
-  programs.nixvim = {
+  programs.nixvim = if (! config.neovim.fat) then {} else {
     keymaps = [
       {
         key = "<space>f";

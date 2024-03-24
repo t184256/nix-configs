@@ -70,9 +70,10 @@
   system.stateVersion = "23.05";
   home-manager.users.monk.home.stateVersion = "23.05";
 
-  #home-manager.users.monk.language-support = [
-  #  "nix" "bash"
-  #];
+  home-manager.users.monk.neovim.fat = true;
+  home-manager.users.monk.language-support = [
+    "nix" "bash"
+  ];
 
   environment.persistence."/mnt/persist" = {
     hideMounts = true;

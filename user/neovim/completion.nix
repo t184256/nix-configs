@@ -1,7 +1,8 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 {
-  programs.nixvim = {
+  imports = [ ../config/neovim.nix ];
+  programs.nixvim = if (! config.neovim.fat) then {} else {
     plugins = {
       cmp-path.enable = true;
       cmp-tmux.enable = true;

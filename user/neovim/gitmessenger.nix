@@ -1,7 +1,8 @@
-_:
+{ config, ... }:
 
 {
-  programs.nixvim = {
+  imports = [ ../config/neovim.nix ];
+  programs.nixvim = if (! config.neovim.fat) then {} else {
     plugins.gitmessenger = {
       enable = true;  # git blame from within vim
     };

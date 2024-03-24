@@ -1,19 +1,18 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, ... }:
 
 let
   withLang = lang: builtins.elem lang config.language-support;
 in
 {
-  nixpkgs.overlays = [
-    (import ../../overlays/neovim.nix)
-    (import ../../overlays/vim-plugins.nix)
-  ];
+  nixpkgs.overlays = [ (import ../../overlays/vim-plugins.nix) ];
 
   imports = [
+    ../config/language-support.nix
+    ../config/neovim.nix
     ./classic-plugins.nix
-    ./completion.nix
     ./colorcolumn.nix
     ./colorscheme.nix
+    ./completion.nix
     ./gitmessenger.nix
     ./gitsigns.nix
     ./indent-guides.nix

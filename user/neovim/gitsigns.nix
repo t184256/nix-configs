@@ -1,8 +1,9 @@
 # see also indent-guides.nix
-{lib, ...}:
+{ lib, config, ... }:
 
 {
-  programs.nixvim = {
+  imports = [ ../config/neovim.nix ];
+  programs.nixvim = if (! config.neovim.fat) then {} else {
     options.signcolumn = "no";
     plugins.gitsigns = {
       enable = true;  # color changed lines

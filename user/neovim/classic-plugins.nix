@@ -7,7 +7,6 @@
       lastplace.enable = true;  # remember position
       fugitive.enable = true;  # mostly as a gv dependency
       comment-nvim.enable = true;  # <gc> comment action
-      ledger.enable = true;  # ledger file format support
     };
     extraPlugins = with pkgs.vimPlugins; [
       # less fancy plugins from classical vim world

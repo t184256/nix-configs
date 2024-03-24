@@ -1,8 +1,11 @@
 { config, ... }:
 
 {
-  imports = [ ../config/language-support.nix ];
-  programs.nixvim.plugins.treesitter = {
+  imports = [
+    ../config/language-support.nix
+    ../config/neovim.nix
+  ];
+  programs.nixvim.plugins.treesitter = if (! config.neovim.fat) then {} else {
     # fancy plugins: treesitter
     # playground  # :TSHighlightCapturesUnderCursor,
                   # :help treesitter-highlight-groups
