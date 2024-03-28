@@ -23,6 +23,7 @@ in
     ./title.nix
     ./treesitter.nix
     ./vimagit.nix
+    ./zen.nix
   ];
 
   programs.nixvim = {
