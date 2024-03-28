@@ -33,6 +33,7 @@
 
   programs.password-store = {enable = true; package = pkgs.pass-wayland; };
 
+  neovim.fat = true;
   language-support = [
     "bash"
     "c"
