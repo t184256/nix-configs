@@ -5,10 +5,8 @@
     # display statusline if there are at least two windows
     options.laststatus = 1;
 
-    # TODO: make mini popups pop up one line lower
     plugins.noice = {
       enable = true;
-      lsp.signature.enabled = true;
       cmdline.view = "cmdline";
       cmdline.format = {
         cmdline = { icon = false; conceal = false; };
@@ -18,11 +16,14 @@
         lua = { icon = false; conceal = false; };
         help = { icon = false; conceal = false; };
       };
-      lsp.progress.enabled = false;
-      lsp.signature.view = "virtualtext";
-      lsp.hover.view = "virtualtext";
-      lsp.documentation.view = "virtualtext";
-      views.mini.position.row = "100%";
+      lsp = {
+        signature.enabled = true;
+        progress.enabled = false;
+        signature.view = "virtualtext";
+        hover.view = "virtualtext";
+        documentation.view = "virtualtext";
+      };
+      views.mini = { position.row = "100%"; zindex = 50; };
       # replace confirmation shouldn't obscure the text it's asking about
       routes = [{
         view = "cmdline";
@@ -35,6 +36,15 @@
       {
         event = [ "VimEnter" "Colorscheme" ];
         command = ":hi NoiceCursor gui=inverse";
+      }
+    ];
+
+    # z-index helps cmdline overlay the last line; hide the rest anyway
+    keymaps = [
+      {
+        key = ":";
+        mode = "n";
+        action = "<cmd>Noice dismiss<CR>:";
       }
     ];
   };
