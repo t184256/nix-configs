@@ -5,12 +5,12 @@ _: super:
     if super.lib.versionAtLeast super.neovim-unwrapped.version "0.10"
       then super.neovim-unwrapped
       else super.neovim-unwrapped.overrideAttrs (_: {
-        version = "v0.10.0-dev-2597+gd326e0486";
+        version = "unstable-2024-03-28";
         src = super.fetchFromGitHub {
           owner = "neovim";
           repo = "neovim";
-          rev = "d326e04860427b0a6a0b66da86fae8e5d23c8a7c";
-          sha256 = "sha256-fh81AiAZs5rQHs3udiVJLAq9KWac/PcggHWKjrnXI9o=";
+          rev = "dde2cc65fd2ac89ad88b19df08dc03cf1da50316";
+          sha256 = "1isc32i50gxprjddsk6n5wglf3cay7myrfbgdfyawhx0ql6c80bh";
         };
       });
 }
