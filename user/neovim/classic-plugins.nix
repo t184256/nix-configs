@@ -21,11 +21,9 @@
 
       # those that need some configuration
       vim-better-whitespace  # trailing whitespace highlighting
-      vim-sneak  # faster motion bound to <s>
     ];
     globals = {
       show_spaces_that_precede_tabs = 1;
-      "sneak#target_labels" = "tnaowyfu'x.c,rise";  # combos start with last
     };
     extraConfigLua = ''
       require('guess-indent').setup {}

@@ -41,6 +41,7 @@
       vim.cmd('highlight DiagnosticInfo gui=altfont');
       vim.cmd('highlight DiagnosticHint gui=altfont');
       vim.cmd('highlight DiagnosticOK gui=altfont');
+      vim.cmd('highlight JumpLabel gui=altfont');
     '';
   };
 }

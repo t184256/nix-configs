@@ -13,6 +13,7 @@ in
     ./colorcolumn.nix
     ./colorscheme.nix
     ./completion.nix
+    ./flash.nix
     ./gitmessenger.nix
     ./gitsigns.nix
     ./indent-guides.nix
