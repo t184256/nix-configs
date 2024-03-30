@@ -3,7 +3,7 @@
 
 {
   programs.nixvim = {
-    options.colorcolumn = "80";
+    opts.colorcolumn = "80";
     highlight.ColorColumn.bg = "#202020";
     extraPlugins = with pkgs.vimPlugins; [ deadcolumn ];
     extraConfigLua = ''

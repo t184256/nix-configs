@@ -4,15 +4,17 @@
 {
   imports = [ ../config/neovim.nix ];
   programs.nixvim = if (! config.neovim.fat) then {} else {
-    options.signcolumn = "no";
+    opts.signcolumn = "no";
     plugins.gitsigns = {
       enable = true;  # color changed lines
-      attachToUntracked = false;
-      # don't show signs column and don't highlight until I press <gl>
-      signcolumn = false;
-      linehl = false;  # toggleable
-      showDeleted = false;  # toggleable
-      wordDiff = false;  # toggleable
+      settings = {
+        attach_to_untracked = false;
+        # don't show signs column and don't highlight until I press <gl>
+        signcolumn = false;
+        linehl = false;  # toggleable
+        show_deleted = false;  # toggleable
+        word_diff = false;  # toggleable
+      };
     };
     keymaps = [
       {

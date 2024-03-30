@@ -30,7 +30,7 @@ in
     enable = true;
     viAlias = true;
 
-    options = {
+    opts = {
       shell = "/bin/sh";
 
       ruler = false;

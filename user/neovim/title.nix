@@ -2,7 +2,7 @@
 
 {
   programs.nixvim = {
-    options = {
+    opts = {
       title = true;
       titlestring = ("vi > %y %t%H%R > %P/%LL " +
                      "%-13.(%l:%c%V %{v:lua.NiceMode()}%)");

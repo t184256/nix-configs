@@ -3,7 +3,7 @@
 {
   imports = [ ../config/language-support.nix ];
   programs.nixvim = {
-    options = {
+    opts = {
       termguicolors = true;
       wildoptions = "pum";
       pumblend = 20;

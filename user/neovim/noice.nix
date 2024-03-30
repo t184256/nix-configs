@@ -3,7 +3,7 @@
 {
   programs.nixvim = {
     # display statusline if there are at least two windows
-    options.laststatus = 1;
+    opts.laststatus = 1;
 
     plugins.noice = {
       enable = true;

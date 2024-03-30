@@ -61,12 +61,8 @@
       };
     };
 
-    extraPlugins = with pkgs.vimPlugins; [
-      friendly-snippets
-    ];
-    options = {
-      completeopt = [ "menu" "menuone" "noselect" ];
-    };
+    extraPlugins = with pkgs.vimPlugins; [ friendly-snippets ];
+    opts.completeopt = [ "menu" "menuone" "noselect" ];
     extraConfigLua = ''
       require('luasnip.loaders.from_vscode').lazy_load()
 
