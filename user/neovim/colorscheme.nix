@@ -43,6 +43,8 @@
       vim.cmd('highlight DiagnosticOK gui=altfont');
       vim.cmd('highlight JumpLabel gui=altfont');
       vim.cmd('highlight NoiceMini gui=altfont');
+      vim.cmd('highlight TreesitterContext gui=altfont');
+      vim.cmd('highlight TreesitterContextSeparator gui=altfont');
     '';
   };
 }
