@@ -7,7 +7,7 @@
     highlight.ColorColumn.bg = "#202020";
     extraPlugins = with pkgs.vimPlugins; [ deadcolumn ];
     extraConfigLua = ''
-      vim.cmd('highlight ColorColumn guibg=#202020');
+      vim.cmd('highlight ColorColumn guibg=#202020');  -- see also zen-mode
       require('deadcolumn').setup ({
         scope = 'buffer',
         modes = function(mode) return true end,
