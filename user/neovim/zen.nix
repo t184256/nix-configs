@@ -29,6 +29,13 @@ _:
       enable = true;
       settings.dimming.alpha = 0.30;
       settings.dimming.inactive = true;
+      settings.expand = [
+        "function"
+        "method"
+        "table"
+        "if_statement"
+        "paragraph"  # helps with markdown blinking
+      ];
     };
     keymaps = [
       {
