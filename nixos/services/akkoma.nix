@@ -24,10 +24,12 @@
          registrations_open = false;
          account_approval_required = true;
          allow_relay = true;
+         upload_limit = 41943040;  # 40 MB
      };
     };
   };
   services.nginx = {
+    clientMaxBodySize = "40M";
     virtualHosts."social.unboiled.info" = {
       enableACME = true;
       forceSSL = true;
