@@ -67,42 +67,42 @@
       ssl.extraOptions.cafile = "/etc/ssl/certs/ca-bundle.crt";
     };
   };
-  services.biboumi = {
-    enable = true;
-    settings = {
-      hostname = "irc.unboiled.info";
-      password = "notasecret";
-      persistent_by_default = true;
-    };
-  };
+  #services.biboumi = {
+  #  enable = true;
+  #  settings = {
+  #    hostname = "irc.unboiled.info";
+  #    password = "notasecret";
+  #    persistent_by_default = true;
+  #  };
+  #};
   systemd.services.prosody.after = [ "network-online.target" ];
   systemd.services.prosody.wants = [ "network-online.target" ];
   systemd.services.prosody.postStart = ''
     #!${pkgs.bash}/bin/bash
     while sleep .5; do (: </dev/tcp/localhost/5347) 2>/dev/null && break; done
   '';
-  systemd.services.biboumi.requires = [ "prosody.service" ];
-  systemd.services.biboumi.after = [ "prosody.service" ];
-  security.acme.certs = {
-    "unboiled.info-prosody" = {
-      domain = "unboiled.info";
-      group = "prosody";
-      webroot = "/var/lib/acme/acme-challenge";
-      extraDomainNames = [
-        "conference.xmpp.unboiled.info"
-        "upload.xmpp.unboiled.info"
-      ];
-      postRun = "systemctl restart prosody";
-    };
-  };
+  #systemd.services.biboumi.requires = [ "prosody.service" ];
+  #systemd.services.biboumi.after = [ "prosody.service" ];
+  #security.acme.certs = {
+  #  "unboiled.info-prosody" = {
+  #    domain = "unboiled.info";
+  #    group = "prosody";
+  #    webroot = "/var/lib/acme/acme-challenge";
+  #    extraDomainNames = [
+  #      "conference.xmpp.unboiled.info"
+  #      "upload.xmpp.unboiled.info"
+  #    ];
+  #    postRun = "systemctl restart prosody";
+  #  };
+  #};
   environment.persistence."/mnt/persist".directories = [
     {
       directory = "/var/lib/prosody";
       user = "prosody"; group = "prosody";
     }
-    {
-      directory = "/var/lib/private/biboumi";
-      user = "biboumi"; group = "biboumi";
-    }
+    #{
+    #  directory = "/var/lib/private/biboumi";
+    #  user = "biboumi"; group = "biboumi";
+    #}
   ];
 }
