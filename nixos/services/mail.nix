@@ -37,6 +37,12 @@
                 "nix-on-droid@unboiled.info"
             ];
         };
+        "shared@unboiled.info" = {
+            hashedPasswordFile = "/mnt/persist/secrets/mail/shared";
+            aliases = [
+                "blackhole@unboiled.info"
+            ];
+        };
     };
   };
 
