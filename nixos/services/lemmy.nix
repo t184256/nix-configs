@@ -35,6 +35,7 @@
     };
   };
   environment.persistence."/mnt/persist".directories = [
+    { directory = "/var/lib/private"; mode = "0700"; }
     {
       directory = "/var/lib/private/pict-rs";
       user = "pict-rs"; group = "pict-rs";

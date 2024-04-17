@@ -46,7 +46,7 @@ in {
         autohide-battery
         autohide-volume
         just-perfection
-        noannoyance-2
+        noannoyance-fork
         paperwm
         quake-mode
         sound-output-device-chooser
