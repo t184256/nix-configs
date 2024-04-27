@@ -20,11 +20,13 @@
     };
     plugins.treesitter-context = {
       enable = true;
-      mode = "topline";
-      separator = "─";
-      minWindowHeight = 36;  # TODO: increase to ~36 or smth
-      maxLines = 3;
-      trimScope = "inner";
+      settings = {
+        separator = "─";
+        mode = "topline";
+        min_window_height = 36;
+        max_lines = 3;
+        trim_scope = "inner";
+      };
     };
   };
 }

@@ -19,15 +19,25 @@ in {
   config = mkIf cfg.enable {
     programs.dconf.enable = true;  # for h-m's dconf.settings
 
-    services.xserver = {
-      enable = true;
-      displayManager.gdm.enable = true;
-      displayManager.gdm.debug = true;
-      displayManager.gdm.wayland = true;
+    services = {
+      xserver = {
+        enable = true;
+        displayManager = {
+          gdm = {
+            enable = true;
+            debug = true;
+            wayland = true;
+          };
+        };
+        xkb.layout = "us,ru";
+        videoDrivers = [ "modesetting" ];
+        desktopManager.gnome.enable = true;
+      };
       displayManager.defaultSession = "gnome";
-      desktopManager.gnome.enable = true;
-      xkb.layout = "us,ru";
-      videoDrivers = [ "modesetting" ];
+      gnome = {
+        gnome-initial-setup.enable = false;
+        gnome-remote-desktop.enable = true;
+      };
     };
     hardware.opengl.enable = true;
 
@@ -53,8 +63,5 @@ in {
         unite
       ]);
     };
-
-    services.gnome.gnome-initial-setup.enable = false;
-    services.gnome.gnome-remote-desktop.enable = true;
   };
 }
