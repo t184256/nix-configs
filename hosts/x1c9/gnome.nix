@@ -1,23 +1,40 @@
 { ... }:
 
+let
+  # disable system fonts
+  firefox_desktop = ''
+    [Desktop Entry]
+    Exec=no-system-fonts firefox %u
+    Version=1.0
+    Name=Firefox
+    GenericName=Web Browser
+    Comment=Browse the Web
+    Icon=firefox
+    Terminal=false
+    Type=Application
+    MimeType=text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;text/mml;x-scheme-handler/http;x-scheme-handler/https;
+    StartupNotify=true
+    Categories=Network;WebBrowser;
+    Keywords=web;browser;internet;
+    Actions=new-window;new-private-window;profile-manager-window;
+
+    [Desktop Action new-window]
+    Name=Open a New Window
+    Exec=no-system-fonts firefox --new-window %u
+
+    [Desktop Action new-private-window]
+    Name=Open a New Private Window
+    Exec=no-system-fonts firefox --private-window %u
+
+    [Desktop Action profile-manager-window]
+    Name=Open the Profile Manager
+    Exec=no-system-fonts firefox --ProfileManager
+  '';
+in
 {
   xdg.dataFile = {
-    # disable system fonts
-    "applications/firefox.desktop".text = ''
-      [Desktop Entry]
-      Exec=no-system-fonts firefox %u
-      Version=1.0
-      Name=Firefox
-      GenericName=Web Browser
-      Comment=Browse the Web
-      Icon=firefox
-      Terminal=false
-      Type=Application
-      MimeType=text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;text/mml;x-scheme-handler/http;x-scheme-handler/https;
-      StartupNotify=true
-      Categories=Network;WebBrowser;
-      Keywords=web;browser;internet;
-    '';
+    "applications/firefox.desktop".text = firefox_desktop;
+    "applications/org.mozilla.firefox.desktop".text = firefox_desktop;
   };
   dconf.settings = {
     "org/gnome/shell" = {
