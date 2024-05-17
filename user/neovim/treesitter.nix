@@ -21,12 +21,13 @@
     plugins.treesitter-context = {
       enable = true;
       settings = {
-        separator = "─";
         mode = "topline";
         min_window_height = 36;
-        max_lines = 3;
-        trim_scope = "inner";
+        max_lines = 2;
       };
     };
+    extraConfigLua = ''
+      vim.cmd('highlight TreesitterContext gui=reverse');
+    '';
   };
 }
