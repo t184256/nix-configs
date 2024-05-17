@@ -1,23 +1,40 @@
 { config, pkgs, lib, inputs, ... }:
 
 {
+  imports = [
+    ../config/language-support.nix
+    ../config/neovim.nix
+  ];
   programs.nixvim = {
+    plugins.navic = lib.mkIf config.neovim.fat {
+      enable = true;
+      safeOutput = true;
+      lsp.autoAttach = true;
+      icons = builtins.listToAttrs (map (v: { name = v; value = ""; }) [
+        "Array" "Boolean" "Class" "Constant" "Constructor" "Enum" "EnumMember"
+        "Event" "Field" "File" "Function" "Interface" "Key" "Method" "Module"
+        "Namespace" "Null" "Number" "Object" "Operator" "Package" "Property"
+        "String" "Struct" "TypeParameter" "Variable"
+      ]);
+    };
     opts = {
       title = true;
-      titlestring = ("vi > %y %t%H%R > %P/%LL " +
-                     "%-13.(%l:%c%V %{v:lua.NiceMode()}%)");
       titlelen = 200;
+      titlestring =
+        "vi > %t%H%R %P/%LL %l:%c%V" + (
+          if config.neovim.fat
+          then "%{v:lua.NiceContext()}"
+          else ""
+        );
     };
-    extraConfigLua = ''
+    extraConfigLua = lib.mkIf config.neovim.fat ''
       do
-        local NiceModeTable = {
-          n = ''', i = '[INS]', R = '[RPL]', c = '[CMD]', t = '[TRM]',
-          v = '[VIS]', V = '[VIL]', ['<C-v>'] = '[VIB]',
-          s = '[SEL]', S = '[S-L]', ['<C-s>'] = '[S-B]',
-        }
-        function _G.NiceMode()
-          local mode = vim.api.nvim_get_mode().mode
-          return NiceModeTable[mode] or mode
+        function _G.NiceContext()
+          loc = require'nvim-navic'.get_location()
+          if loc ~= "" then
+            return " > " .. loc
+          end
+          return ""
         end
       end
     '';
