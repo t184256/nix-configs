@@ -1,7 +1,10 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
-  imports = [ ../config/language-support.nix ];
+  imports = [
+    ../config/language-support.nix
+    ../config/neovim.nix
+  ];
   programs.nixvim = {
     opts = {
       termguicolors = true;
@@ -15,8 +18,8 @@
       lush-nvim
       #shipwright
     ];
-    plugins.rainbow-delimiters = {
-      enable = config.language-support != [];
+    plugins.rainbow-delimiters = lib.mkIf config.neovim.fat {
+      enable = true;
       highlight = [
         "RainbowDelimiterCyan"  # is, actually, grey
         "RainbowDelimiterBlue"
