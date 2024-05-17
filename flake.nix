@@ -30,7 +30,7 @@
     nixgl.inputs.flake-utils.follows = "flake-utils";
 
     hydra.url = "github:thufschmitt/hydra/nix-ca";
-    hydra-nix.url = "github:NixOS/nix/2.19-maintenance";
+    hydra-nix.url = "github:NixOS/nix/2.22-maintenance";
     hydra-nix.inputs.nixpkgs.follows = "nixpkgs";
     hydra.inputs.nix.follows = "hydra-nix";
 
