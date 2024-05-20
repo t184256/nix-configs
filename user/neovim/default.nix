@@ -18,7 +18,10 @@ in
     ./gitsigns.nix
     ./indent-guides.nix
     ./languages.nix
+    ./mark-radar.nix
     ./noice.nix
+    ./nvim-ufo.nix
+    ./oil.nix
     ./tabby.nix
     ./title.nix
     ./treesitter.nix

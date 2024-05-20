@@ -48,6 +48,7 @@
       vim.cmd('highlight NoiceMini gui=altfont');
       vim.cmd('highlight TreesitterContext gui=altfont');
       vim.cmd('highlight TreesitterContextSeparator gui=altfont');
+      vim.cmd('highlight UfoFoldedEllipsis gui=altfont');
     '';
   };
 }
