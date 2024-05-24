@@ -213,7 +213,8 @@
 
     packages.x86_64-linux = {
       cookie = (nixpkgs.lib.nixosSystem {
-        pkgs = nixpkgs_with_overlays;
+        #pkgs = import nixpkgs {};
+        pkgs = import nixpkgs { system = "x86_64-linux"; };
         modules = [
           "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
           ./hosts/cookie/configuration.nix
