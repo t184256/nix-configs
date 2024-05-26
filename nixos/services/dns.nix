@@ -40,8 +40,8 @@ let
     www.nica        IN CNAME fig
     pasha           IN CNAME fig
     www.pasha       IN CNAME fig
-    monk            IN CNAME fig
-    www.monk        IN CNAME fig
+    monk            IN CNAME loquat
+    www.monk        IN CNAME loquat
     transmission    IN CNAME fig
     tabby           IN CNAME fig
     hydra           IN CNAME loquat

@@ -16,6 +16,7 @@
     ../../nixos/services/mail.nix
     ../../nixos/services/nebula
     ../../nixos/services/nix-on-droid.nix
+    ../../nixos/services/www-monk.nix
     ../../nixos/services/xmpp.nix
     ../../nixos/services/yousable.nix
   ];
@@ -89,6 +90,7 @@
     hideMounts = true;
     directories = [
       "/srv/nix-on-droid"
+      "/srv/monk"
       "/var/lib/acme"
       "/var/lib/nixos"
       "/var/log"
