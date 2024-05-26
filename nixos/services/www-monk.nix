@@ -16,7 +16,10 @@
             }
           '';
         };
-        "@fallback".root = "/srv/monk/www";
+        "@fallback" = {
+          root = "/srv/monk/www";
+          tryFiles = "$uri $uri/index.html $uri.html =404";
+        };
       };
     };
   };
