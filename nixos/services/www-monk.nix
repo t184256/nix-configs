@@ -21,6 +21,11 @@
           tryFiles = "$uri $uri/index.html $uri.html =404";
         };
       };
+      extraConfig = ''
+        location ~ ^(\S+)/$ {
+          return 301 $1;
+        }
+      '';
     };
   };
   security.acme.certs."monk.unboiled.info".email = "monk@unboiled.info";
