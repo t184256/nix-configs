@@ -125,7 +125,6 @@
   # * thunderbird
 
   programs.adb.enable = true;
-  virtualisation.waydroid.enable = true;
   users.extraGroups.plugdev.members = [ "monk" ];
   networking.firewall.allowedTCPPorts = [ 3389 ];  # RDP
 
@@ -141,7 +140,6 @@
       "/var/lib/nixos"
       "/var/lib/systemd"
       "/var/lib/upower"
-      "/var/lib/waydroid"
       "/var/log"
     ];
     files =
