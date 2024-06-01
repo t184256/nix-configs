@@ -224,7 +224,7 @@ $CHROOT systemd-firstboot \
     --root-shell=/bin/bash
 $CHROOT groupadd -g 1000 asosedki
 $CHROOT useradd -g 1000 -u 1000 -M -d /home/asosedki -s /bin/bash asosedki
-$CHROOT usermod -a -G wheel,users,audio asosedki
+$CHROOT usermod -a -G wheel,users,audio,input asosedki
 sudo sed -i \
     -e "s|^root:\*:|root:$(sudo cat /mnt/tgt/secrets/login/root):|" \
     -e "s|^asosedki:!!:|asosedki:$(sudo cat /mnt/tgt/secrets/login/asosedki):|"\
@@ -358,7 +358,16 @@ EOF
 # setup post-inst
 sudo tee /mnt/tgt/root/curr/bin/post-inst <<\EOF
 #!/bin/bash
-exec bash <(curl -sL https://monk.unboiled.info/.post-inst) "$@"
+set -ue
+[[ "$EUID" != 0 ]]
+
+if sudo [ -r /mnt/secrets/post-inst-url ]; then
+        URL=$(sudo cat /mnt/secrets/post-inst-url)
+else
+        URL=https://$1/asosedki/workstation-setup/-/raw/main
+        shift
+fi
+curl -sk $URL | bash -ue -s - "$@"
 EOF
 sudo chmod +x /mnt/tgt/root/curr/bin/post-inst
 
