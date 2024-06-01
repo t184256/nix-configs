@@ -1,5 +1,8 @@
-_:
+{ config, ... }:
 
+let
+  lua = config.nixvim.helpers.mkRaw;
+in
 {
   programs.nixvim = {
     # Disabled, nixvim update is needed
@@ -41,8 +44,7 @@ _:
       {
         key = "<space>z";
         mode = "n";
-        action = "function() require('zen-mode').toggle({}) end";
-        lua = true;
+        action = lua "function() require('zen-mode').toggle({}) end";
       }
     ];
   };

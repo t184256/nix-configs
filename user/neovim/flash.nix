@@ -1,6 +1,7 @@
-_:
+{ config, ... }:
 
 let
+  lua = config.nixvim.helpers.mkRaw;
   colemak = "esiroantdhwyfuqglxcvzkbse";
 in
 {
@@ -24,14 +25,12 @@ in
       {
         key = "s";
         mode = "n";
-        action = "function() require('flash').jump() end";
-        lua = true;
+        action = lua "function() require('flash').jump() end";
       }
       {
         key = "S";
         mode = "n";
-        action = "function() require('flash').treesitter() end";
-        lua = true;
+        action = lua "function() require('flash').treesitter() end";
       }
     ];
   };

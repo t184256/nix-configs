@@ -1,6 +1,7 @@
 { config, pkgs, lib, inputs, ... }:
 
 let
+  lua = config.nixvim.helpers.mkRaw;
   withLang = lang: builtins.elem lang config.language-support;
   pyDocIgnores = [
     # Defaults, so that I don't get annoyed when writing short scripts.
@@ -41,76 +42,66 @@ in
       {
         key = "<space>f";
         mode = "n";
-        action = "function () vim.lsp.buf.format { async = true } end";
-        lua = true;
+        action = lua "function () vim.lsp.buf.format { async = true } end";
       }
       {
         key = "<space>a";
         mode = [ "n" "v" ];
-        action = "require('actions-preview').code_actions";
-        lua = true;
+        action = lua "require('actions-preview').code_actions";
       }
       {
         key = "<space>r";
         mode = "n";
-        action = "vim.lsp.buf.rename";
-        lua = true;
+        action = lua "vim.lsp.buf.rename";
       }
       {
         key = "<space>e";
         mode = "n";
-        action = ''
+        action = lua ''
           function()
             vim.diagnostic.open_float(0, { scope = "line", border = "single" })
           end
         '';
-        lua = true;
       }
       {
         key = "<space>n";
         mode = "n";
-        action = "function() vim.diagnostic.goto_next() end";
-        lua = true;
+        action = lua "function() vim.diagnostic.goto_next() end";
       }
       {
         key = "<space>N";
         mode = "n";
-        action = "function() vim.diagnostic.goto_prev() end";
-        lua = true;
+        action = lua "function() vim.diagnostic.goto_prev() end";
       }
       {
         key = "<space>w";
         mode = "n";
-        action = "function() lsp_lines_toggle() end";
-        lua = true;
+        action = lua "function() lsp_lines_toggle() end";
       }
     ] ++ (if ! withLang "nix" then [] else [
       {
         key = "<space>A";  # update-nix-fetchgit
         mode = "n";
         # TODO: could be better
-        action = ''
+        action = lua ''
           function()
             local line = vim.api.nvim_win_get_cursor(0)[1]
             vim.cmd("r!update-nix-fetchgit % -l " .. line .. ":0")
           end
         '';
-        lua = true;
       }
     ]) ++ (if ! withLang "python" then [] else [
       {
         key = "<space>d";  # debug
         mode = "n";
-        action = ''
+        action = lua ''
           function() require('neotest').run.run({strategy = 'dap'}) end
         '';
-        lua = true;
       }
       {
         key = "<space>i";  # inspect
         mode = [ "n" "v" ];
-        action = "require('dap.ui.widgets').hover";
-        lua = true;
+        action = lua "require('dap.ui.widgets').hover";
       }
     ]);
 

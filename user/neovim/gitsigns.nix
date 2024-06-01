@@ -1,6 +1,9 @@
 # see also indent-guides.nix
 { lib, config, ... }:
 
+let
+  lua = config.nixvim.helpers.mkRaw;
+in
 {
   imports = [ ../config/neovim.nix ];
   programs.nixvim = if (! config.neovim.fat) then {} else {
@@ -20,24 +23,21 @@
       {
         key = "gs";
         mode = "n";
-        action = "package.loaded.gitsigns.stage_hunk";
-        lua = true;
+        action = lua "package.loaded.gitsigns.stage_hunk";
       }
       {
         key = "gs";
         mode = "v";
-        action = ''
+        action = lua ''
           function()
             package.loaded.gitsigns.stage_hunk {vim.fn.line('.'), vim.fn.line('v')}
           end
         '';
-        lua = true;
       }
       {
         key = "gS";
         mode = "n";
-        action = "package.loaded.gitsigns.undo_stage_hunk";
-        lua = true;
+        action = lua "package.loaded.gitsigns.undo_stage_hunk";
       }
       {
         key = "gS";
@@ -47,18 +47,16 @@
             package.loaded.gitsigns.undo_stage_hunk {vim.fn.line('.'), vim.fn.line('v')}
           end
         '';
-        lua = true;
       }
       {
         key = "gr";
         mode = "n";
-        action = "package.loaded.gitsigns.reset_hunk";
-        lua = true;
+        action = lua "package.loaded.gitsigns.reset_hunk";
       }
       {
         key = "gl";
         mode = "n";
-        action = ''
+        action = lua ''
           function()
             vim.cmd("IndentGuidesToggle")
             package.loaded.gitsigns.toggle_linehl()
@@ -66,7 +64,6 @@
             package.loaded.gitsigns.toggle_word_diff()
           end
         '';
-        lua = true;
       }
     ];
     # TODO: could that be done without autocmd?
