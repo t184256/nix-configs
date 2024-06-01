@@ -16,6 +16,7 @@
     ../../nixos/services/mail.nix
     ../../nixos/services/nebula
     ../../nixos/services/nix-on-droid.nix
+    ../../nixos/services/www-bare.nix
     ../../nixos/services/www-monk.nix
     ../../nixos/services/xmpp.nix
     ../../nixos/services/yousable.nix
