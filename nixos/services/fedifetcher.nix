@@ -15,7 +15,7 @@ in
   systemd = {
     timers.fedifetcher = {
       wantedBy = [ "timers.target" ];
-      timerConfig.OnCalendar = "*:03/18";
+      timerConfig.OnCalendar = "*:03/48";
       partOf = [ "fedifetcher.service" ];
     };
     services.fedifetcher = {
