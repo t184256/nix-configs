@@ -28,6 +28,10 @@
         allow_relay = true;
         upload_limit = 41943040;  # 40 MB
       };
+      ":pleroma" = {
+        Oban.queues = { federator_incoming = 10; federator_outgoing = 10; };
+        retries = { federator_incoming = 1; federator_outgoing = 1; };
+      };
       "Pleroma.Repo" = {
         # copied over
         adapter = "Ecto.Adapters.Postgres";
