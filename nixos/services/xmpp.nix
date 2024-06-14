@@ -83,18 +83,18 @@
   '';
   #systemd.services.biboumi.requires = [ "prosody.service" ];
   #systemd.services.biboumi.after = [ "prosody.service" ];
-  #security.acme.certs = {
-  #  "unboiled.info-prosody" = {
-  #    domain = "unboiled.info";
-  #    group = "prosody";
-  #    webroot = "/var/lib/acme/acme-challenge";
-  #    extraDomainNames = [
-  #      "conference.xmpp.unboiled.info"
-  #      "upload.xmpp.unboiled.info"
-  #    ];
-  #    postRun = "systemctl restart prosody";
-  #  };
-  #};
+  security.acme.certs = {
+    "unboiled.info-prosody" = {
+      domain = "unboiled.info";
+      group = "prosody";
+      webroot = "/var/lib/acme/acme-challenge";
+      extraDomainNames = [
+        "conference.xmpp.unboiled.info"
+        "upload.xmpp.unboiled.info"
+      ];
+      postRun = "systemctl restart prosody";
+    };
+  };
   environment.persistence."/mnt/persist".directories = [
     {
       directory = "/var/lib/prosody";
