@@ -56,7 +56,7 @@
       inputs.flake-utils.follows = "flake-utils";
     };
     yousable = {
-      url = "github:t184256/yousable";
+      url = "github:t184256/yousable/throttling-rewrite";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
