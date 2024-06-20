@@ -52,5 +52,6 @@
     wl-clipboard
     git-absorb
     sccache
+    btdu
   ];
 }
