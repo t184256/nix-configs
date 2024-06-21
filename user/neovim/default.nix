@@ -19,6 +19,7 @@ in
     ./indent-guides.nix
     ./languages.nix
     ./mark-radar.nix
+    ./neogit.nix
     ./noice.nix
     ./nvim-ufo.nix
     ./oil.nix
