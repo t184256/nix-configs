@@ -28,6 +28,7 @@ in
       alias.sw = "switch";
       alias.ff = "pull --ff-only";
       alias.tree = "log --graph --oneline '--exclude=refs/notes/*' --all";
+      alias.mr = "!sh -c 'git fetch $2 merge-requests/$3/head:mr-$2-$3 && git checkout mr-$2-$3'";
       diff.algorithm = "patience";
       init.defaultBranch = "main";
       merge.conflictStyle = "diff3";
