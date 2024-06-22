@@ -39,7 +39,7 @@ in {
         gnome-remote-desktop.enable = true;
       };
     };
-    hardware.opengl.enable = true;
+    hardware.graphics.enable = true;
 
     environment = {
       gnome.excludePackages = with pkgs.gnome; [

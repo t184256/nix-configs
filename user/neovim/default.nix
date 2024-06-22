@@ -34,6 +34,8 @@ in
     enable = true;
     viAlias = true;
 
+    withRuby = false;  # one radical way to skip loading notmuch plugin
+
     opts = {
       shell = "/bin/sh";
 

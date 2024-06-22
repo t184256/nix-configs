@@ -4,11 +4,35 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
 
+    # for unification purposes only
     flake-utils.url = "github:numtide/flake-utils";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    flake-compat.url = "github:edolstra/flake-compat";
+    gitignore.url = "github:hercules-ci/gitignore.nix";
+    gitignore.inputs.nixpkgs.follows = "nixpkgs";
+    git-hooks.url = "github:cachix/git-hooks.nix";
+    git-hooks.inputs.nixpkgs.follows = "nixpkgs";
+    git-hooks.inputs.nixpkgs-stable.follows = "nixpkgs";
+    git-hooks.inputs.flake-compat.follows = "flake-compat";
+    git-hooks.inputs.gitignore.follows = "gitignore";
+    pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
+    pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
+    pre-commit-hooks.inputs.flake-compat.follows = "flake-compat";
+    pre-commit-hooks.inputs.gitignore.follows = "gitignore";
+    devshell.url = "github:numtide/devshell";
+    devshell.inputs.nixpkgs.follows = "nixpkgs";
+    devshell.inputs.flake-utils.follows = "flake-utils";
+    nmd.url = "sourcehut:~rycee/nmd";
+    nmd.inputs.nixpkgs.follows = "nixpkgs";
+    nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
+    nix-formatter-pack.inputs.nixpkgs.follows = "nixpkgs";
+    nix-formatter-pack.inputs.nmd.follows = "nmd";
 
     nix-on-droid.url = "github:t184256/nix-on-droid/testing";
     nix-on-droid.inputs.nixpkgs.follows = "nixpkgs";
     nix-on-droid.inputs.home-manager.follows = "home-manager";
+    nix-on-droid.inputs.nmd.follows = "nmd";
+    nix-on-droid.inputs.nix-formatter-pack.follows = "nix-formatter-pack";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
@@ -16,27 +40,40 @@
 
     simple-nixos-mailserver.url =
       "gitlab:simple-nixos-mailserver/nixos-mailserver";
+    simple-nixos-mailserver.inputs.flake-compat.follows = "flake-compat";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
-    simple-nixos-mailserver.inputs.utils.follows = "flake-utils";
+    simple-nixos-mailserver.inputs.nixpkgs-24_05.follows = "nixpkgs";
 
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     nixvim.url = "github:nix-community/nixvim";
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
+    nixvim.inputs.home-manager.follows = "home-manager";
+    nixvim.inputs.flake-parts.follows = "flake-parts";
+    nixvim.inputs.flake-compat.follows = "flake-compat";
+    nixvim.inputs.git-hooks.follows = "git-hooks";
+    nixvim.inputs.devshell.follows = "devshell";
 
     nixgl.url = "github:guibou/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
     nixgl.inputs.flake-utils.follows = "flake-utils";
 
     hydra.url = "github:thufschmitt/hydra/nix-ca";
-    hydra-nix.url = "github:NixOS/nix/2.22-maintenance";
-    hydra-nix.inputs.nixpkgs.follows = "nixpkgs";
+    hydra-nix = {
+      url = "github:NixOS/nix/2.22-maintenance";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.flake-compat.follows = "flake-compat";
+      inputs.pre-commit-hooks.follows = "pre-commit-hooks";
+    };
+    #hydra.inputs.nixpkgs.follows = "nixpkgs";  # breaks
     hydra.inputs.nix.follows = "hydra-nix";
 
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.inputs.utils.follows = "flake-utils";
+    deploy-rs.inputs.flake-compat.follows = "flake-compat";
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
 

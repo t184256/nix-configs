@@ -1,12 +1,14 @@
-self: super:
-
-{
-  python3 = super.python3.override {
-    packageOverrides = pyself: pysuper: (
-      super.lib.attrsets.mapAttrs'
-        (n: super.lib.attrsets.nameValuePair ("xontrib-" + n))
-        (builtins.mapAttrs (_: f: (f { pkgs = super; }))
-                           ((import ../../.autoimport).asAttrs ./.))
-    );
-  };
+_: prev: {
+  pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+    (
+      _: python-prev:
+        prev.lib.attrsets.mapAttrs'
+          (n: prev.lib.attrsets.nameValuePair ("xontrib-" + n))
+          (builtins.mapAttrs (_: f: (f {
+                                        pkgs = prev;
+                                        python3Packages = python-prev;
+                                      }))
+                             ((import ../../.autoimport).asAttrs ./.))
+    )
+  ];
 }

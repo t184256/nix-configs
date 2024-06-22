@@ -18,7 +18,7 @@
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
   hardware.cpu.intel.updateMicrocode = true;
-  hardware.opengl.extraPackages = [ pkgs.intel-media-driver ];
+  hardware.graphics.extraPackages = [ pkgs.intel-media-driver ];
   hardware.wirelessRegulatoryDatabase = true;
 
   services.logind.lidSwitch = "suspend-then-hibernate";

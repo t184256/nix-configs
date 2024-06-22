@@ -20,7 +20,7 @@
   boot.loader.efi.efiSysMountPoint = "/boot";
 
   hardware.cpu.intel.updateMicrocode = true;
-  hardware.opengl.extraPackages = [ pkgs.intel-media-driver ];
+  hardware.graphics.extraPackages = [ pkgs.intel-media-driver ];
   hardware.wirelessRegulatoryDatabase = true;
   networking.networkmanager.wifi.powersave = false;
 

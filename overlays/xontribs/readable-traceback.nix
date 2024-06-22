@@ -1,7 +1,7 @@
-{ pkgs }:
+{ pkgs, python3Packages }:
 
 let
-  backtrace = pkgs.python3Packages.buildPythonPackage rec {
+  backtrace = python3Packages.buildPythonPackage {
     pname = "backtrace";
     version = "0.2.1+";
     src = pkgs.fetchFromGitHub {
@@ -18,12 +18,12 @@ let
     prePatch = ''
       touch LICENSE
     '';
-    propagatedBuildInputs = [ pkgs.python3Packages.colorama ];
-    buildInputs = [ pkgs.python3Packages.pytest ];
+    propagatedBuildInputs = [ python3Packages.colorama ];
+    buildInputs = [ python3Packages.pytest ];
   };
 in
 
-pkgs.python3Packages.buildPythonPackage rec {
+python3Packages.buildPythonPackage rec {
   pname = "xontrib-readable-traceback";
   version = "0.4.0";
   src = pkgs.fetchFromGitHub {

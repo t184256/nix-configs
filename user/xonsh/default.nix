@@ -4,10 +4,12 @@ let
   readConfigBit = p: "\n\n#${builtins.baseNameOf p}\n${builtins.readFile p}";
 
   # TODO: https://github.com/NixOS/nixpkgs/issues/276326
-  over-xonsh = pkgs.xonsh.override { extraPackages = ps: [
-     ps.xontrib-xonsh-direnv
-     ps.xontrib-readable-traceback
-  ]; };
+  over-xonsh = pkgs.python3.withPackages (ps: [
+    (ps.toPythonModule ps.xonsh)
+    ps.xontrib-xonsh-direnv
+    ps.xontrib-readable-traceback
+  ]);
+  # My wrapper avoids leaking xonsh python into PATH
   my-xonsh = pkgs.writeShellScriptBin "xonsh" ''
     XONSH=$(dirname $(dirname $(realpath ${over-xonsh}/bin/xonsh)))
     exec $XONSH/bin/python3 -u -m xonsh "$@"

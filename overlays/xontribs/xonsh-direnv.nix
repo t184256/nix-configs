@@ -1,6 +1,6 @@
-{ pkgs }:
+{ pkgs, python3Packages }:
 
-pkgs.python3Packages.buildPythonPackage {
+python3Packages.buildPythonPackage {
   pname = "xontrib-xonsh-direnv";
   version = "1.6.1";
   src = pkgs.fetchFromGitHub {
