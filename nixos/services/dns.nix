@@ -62,6 +62,16 @@ let
     mail._domainkey IN TXT   "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0Yc6v7MqWEVYJf/SWl+v5+NaggiKUnCD8Zf7gHowlDVrfi0j3miKunSQuct8WJYGSJTMZmWYCvIDv7Axye58Pdj83HqoLxEDzAky0VKyvpgtTpSh4HKJm0uElB1AnHgxOEZEwA1MPiceLohfY+FBI6cYi4j+99JymxWW1eEnqIQIDAQAB"
 
     _keybase        IN TXT   "keybase-site-verification=7K3IA34hHmhVHl_q-xAreUHNLFHFS1-o6lIjTIu1qPE"
+
+    dyn             IN NS    ns1.dynv6.com.
+    dyn             IN NS    ns2.dynv6.com.
+    dyn             IN NS    ns3.dynv6.com.
+    dyn4            IN NS    ns1.dynv6.com.
+    dyn4            IN NS    ns2.dynv6.com.
+    dyn4            IN NS    ns3.dynv6.com.
+    dyn6            IN NS    ns1.dynv6.com.
+    dyn6            IN NS    ns2.dynv6.com.
+    dyn6            IN NS    ns3.dynv6.com.
   '';
 in
   {
