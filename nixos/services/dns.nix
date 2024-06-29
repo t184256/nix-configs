@@ -70,7 +70,7 @@ in
       interfaces =
         if config.networking.hostName == "loquat"
           then [ IP4.loquat IP6.loquat ] else
-        if config.networking.hostName == "duckweed" then [ IP4.duckweed ] else
+        if config.networking.hostName == "duckweed" then [ "0.0.0.0" ] else
         [ "127.0.0.1" ];
       inherit zones;
       ipFreebind = true;
