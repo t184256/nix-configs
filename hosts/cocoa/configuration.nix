@@ -3,6 +3,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../../nixos/services/dyndns.nix
     ../../nixos/services/ipfs/cluster-leader.nix
     ../../nixos/services/ipfs/node.nix
     ../../nixos/services/nebula
