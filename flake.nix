@@ -167,6 +167,17 @@
       ];
       extraSpecialArgs = { inherit inputs; };
     };
+    homeConfigurations.alter = home-manager.lib.homeManagerConfiguration {
+      pkgs = import nixpkgs {
+        system = "x86_64-linux";
+        overlays = [ nixgl.overlay ];
+      };
+      modules = [
+        nixvim.homeManagerModules.nixvim
+        ./hosts/alter/home.nix
+      ];
+      extraSpecialArgs = { inherit inputs; };
+    };
     nixOnDroidConfigurations = {
       coconut = nix-on-droid.lib.nixOnDroidConfiguration {
         config = ./hosts/coconut/nix-on-droid.nix;
