@@ -70,9 +70,9 @@
     physical.portable = true;
     yubikey.enable = true;
   };
-  home-manager.users.monk = {
-    services.syncthing.enable = true;
-  };
+  #home-manager.users.monk = {
+  #  services.syncthing.enable = true;
+  #};
 
   # unplug Yubikey = lock screen
   services.udev.extraRules =
