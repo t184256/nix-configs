@@ -79,6 +79,7 @@ in
           location ~ ^/nar/.*\.nar$ { ${to-harmonia} }
           location ~ ^/nar/.*\.nar\. { ${to-harmonia} }
           location ~ ^/log/.+$ { ${to-harmonia} }
+          location ~ ^/realisations/.+\.doi$ { ${to-harmonia} }
         '';
     };
   };
