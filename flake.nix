@@ -148,6 +148,7 @@
       };
     nixosConfigurations = {
       lychee = mkSystem "x86_64-linux" ./hosts/lychee/configuration.nix;
+      jujube = mkSystem "x86_64-linux" ./hosts/jujube/configuration.nix;
       cocoa = mkSystem "x86_64-linux" ./hosts/cocoa/configuration.nix;
       loquat = mkSystem "x86_64-linux" ./hosts/loquat/configuration.nix;
       duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
