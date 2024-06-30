@@ -5,7 +5,7 @@
     "${inputs.nixos-hardware}/onenetbook/4"
     ./hardware-configuration.nix
     ../lychee/onemix-keyboard-remap.nix
-    #../../nixos/services/nebula
+    ../../nixos/services/nebula
   ];
 
   users.mutableUsers = false;

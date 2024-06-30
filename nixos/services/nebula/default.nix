@@ -9,6 +9,7 @@ let
     quince = { int = "192.168.99.6"; routines = 2; };
     cocoa = { int = "192.168.99.7"; routines = 10; };
     lychee = { int = "192.168.99.8"; routines = 2; };
+    jujube = { int = "192.168.99.9"; routines = 2; };
   };
   exts = lib.lists.flatten (
     builtins.map (ha: ha.int) (
