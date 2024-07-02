@@ -56,9 +56,9 @@ in
       syntax-theme = "none";
       zero-style = "#ecf0eb";
       minus-style = "#ffe0e0";
-      minus-emph-style = "#ffe0e0";
+      minus-emph-style = "#ffe0e0 reverse";
       plus-style = "#e0ffe0";
-      plus-emph-style = "#e0ffe0";
+      plus-emph-style = "#e0ffe0 reverse";
       color-only = true;
     };
   };
