@@ -201,7 +201,7 @@ in
           formatting.nixpkgs_fmt.enable = withLang "nix";
           formatting.shfmt.enable = withLang "bash";
         };
-        tempDir = "/tmp";
+        settings.temp_dir = "/tmp";
       };
       dap = {  # for neotest
         enable = withLang "python";

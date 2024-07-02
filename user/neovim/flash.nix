@@ -8,17 +8,19 @@ in
   programs.nixvim = {
     plugins.flash = {
       enable = true;  # search with hops
-      labels = colemak;
-      jump.autojump = true;
-      highlight.groups.label = "JumpLabel";
-      prompt.prefix = [ ["s" "Comment"] ];
-      modes = {
-        treesitter = {
-          labels = colemak;
-          label.rainbow.enabled = true;
-          label.rainbow.shade = 9;
+      settings = {
+        labels = colemak;
+        jump.autojump = true;
+        highlight.groups.label = "JumpLabel";
+        prompt.prefix = [ ["s" "Comment"] ];
+        modes = {
+          treesitter = {
+            labels = colemak;
+            label.rainbow.enabled = true;
+            label.rainbow.shade = 9;
+          };
+          search.label.style = "eol";
         };
-        search.label.style = "eol";
       };
     };
     keymaps = [

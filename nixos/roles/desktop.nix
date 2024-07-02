@@ -42,7 +42,7 @@ in {
     hardware.graphics.enable = true;
 
     environment = {
-      gnome.excludePackages = with pkgs.gnome; [
+      gnome.excludePackages = with pkgs; [
         cheese
         pkgs.gnome-tour
         epiphany
