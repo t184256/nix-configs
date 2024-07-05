@@ -23,7 +23,7 @@
     evtest
   ];
 
-  services.xserver.displayManager.autoLogin = { enable = true; user = "monk"; };
+  services.displayManager.autoLogin = { enable = true; user = "monk"; };
   system.role = {
     desktop.enable = true;
     physical.enable = true;

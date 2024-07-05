@@ -105,7 +105,7 @@
 
   environment.systemPackages = with pkgs; [ keyutils ];
 
-  services.xserver.displayManager.autoLogin = { enable = true; user = "monk"; };
+  services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
   boot.kernelPackages = pkgs.linuxPackages_testing;  # needed for bcachefs now
   # currently bcachefs unlocking is broken otherwise

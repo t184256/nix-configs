@@ -54,10 +54,7 @@
   console.earlySetup = false;
   boot.loader.timeout = 0;
 
-  services.displayManager.autoLogin = {
-    enable = true;
-    user = "monk";
-  };
+  services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
   home-manager.users.monk.home.packages = with pkgs; [
     inputs.deploy-rs.defaultPackage.${pkgs.system}
