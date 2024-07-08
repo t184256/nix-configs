@@ -4,7 +4,8 @@ let
   readConfigBit = p: "\n\n#${builtins.baseNameOf p}\n${builtins.readFile p}";
 
   # TODO: https://github.com/NixOS/nixpkgs/issues/276326
-  over-xonsh = pkgs.python3.withPackages (ps: [
+  # Locking on Python 3.11 because of https://github.com/xonsh/xonsh/issues/5166
+  over-xonsh = pkgs.python311.withPackages (ps: [
     (ps.toPythonModule ps.xonsh)
     ps.xontrib-xonsh-direnv
     ps.xontrib-readable-traceback
