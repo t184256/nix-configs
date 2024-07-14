@@ -32,8 +32,6 @@
   # Set your time zone.
   time.timeZone = "Europe/Prague";
 
-  # Enable sound with pipewire.
-  sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
