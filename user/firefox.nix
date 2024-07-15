@@ -75,6 +75,7 @@
           "device.sensors.proximity.enabled" = false;
           "dom.battery.enabled" = false;
           "dom.event.clipboardevents.enabled" = false;
+          "dom.private-attribution.submission.enabled" = false;
           "experiments.activeExperiment" = false;
           "experiments.enabled" = false;
           "experiments.manifest.uri" = "";
