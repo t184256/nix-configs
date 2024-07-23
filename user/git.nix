@@ -60,6 +60,7 @@ in
       plus-style = "#e0ffe0";
       plus-emph-style = "#e0ffe0 reverse";
       color-only = true;
+      max-line-length = 0;  # disable truncation
     };
   };
   #programs.gh = { enable = true; gitProtocol = "ssh"; };  # h-m#1654
