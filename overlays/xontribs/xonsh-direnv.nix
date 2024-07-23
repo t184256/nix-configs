@@ -1,13 +1,13 @@
 { pkgs, python3Packages }:
 
-python3Packages.buildPythonPackage {
+python3Packages.buildPythonPackage rec {
   pname = "xontrib-xonsh-direnv";
-  version = "1.6.1";
+  version = "1.6.3";
   src = pkgs.fetchFromGitHub {
     owner = "74th";
     repo = "xonsh-direnv";
-    rev = "3bea5847b9459c5799c64966ec85e624d0be69b9";
-    sha256 = "sha256-h56Gx/MMCW4L6nGwLAhBkiR7bX+qfFk80LEsJMiDtjQ=";
+    rev = version;
+    sha256 = "sha256-97c2cuqG0EitDdCM40r2IFOlRMHlKC4cLemJrPcxsZo=";
   };
   propagatedBuildInputs = [ pkgs.direnv ];
   meta = {
