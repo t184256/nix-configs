@@ -8,7 +8,8 @@ def _nxu():
 def _nxs():
     import os
     flake = os.path.expanduser('~/.nix-configs')
-    nix build @(f'{flake}#homeConfigurations.{$HOSTNAME}.activationPackage') \
+    hostname = $HOSTNAME
+    nix build @(f'{flake}#homeConfigurations.{hostname}.activationPackage') \
         --out-link /tmp/h-m && /tmp/h-m/activate
 
 

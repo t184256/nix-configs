@@ -39,15 +39,14 @@ def _nxd(args):
 
 def _in_tmpdir(cmd):
     def _nxt(extra_args):
-        $_TMP_DIR = $(mktemp -d).rstrip()
+        tmp_dir = $(mktemp -d).rstrip()
         $_cmd = cmd
         sudo git config --global --add safe.directory /etc/nixos
         try:
-            sh -c @(f'cd {$_TMP_DIR} && $_cmd ' + ' '.join(extra_args))
+            sh -c @(f'cd {tmp_dir} && $_cmd ' + ' '.join(extra_args))
         finally:
-            rm -f @($_TMP_DIR + '/result')
-            rm -d $_TMP_DIR
-            del $_TMP_DIR
+            rm -f @(tmp_dir + '/result')
+            rm -d @(tmp_dir)
             del $_cmd
     return _nxt
 
