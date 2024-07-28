@@ -88,7 +88,7 @@ in
     timers.flake-autoupdate = {
       wantedBy = [ "timers.target" ];
       partOf = [ "flake-autoupdate.service" ];
-      timerConfig.OnCalendar = "0/2:08";  # once in 2 hours, offset by 8 min
+      timerConfig.OnCalendar = "0/4:08";  # once in 4 hours, offset by 8 min
     };
     services.flake-autoupdate = {
       serviceConfig.User = "hydra";
