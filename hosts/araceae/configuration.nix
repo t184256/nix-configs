@@ -37,6 +37,8 @@
   zramSwap = { enable = true; memoryPercent = 50; };
 
   nix.gc.automatic = true;
+  nixpkgs.flake.setNixPath = false;  # save disk space
+  nixpkgs.flake.setFlakeRegistry = false;  # save disk space
 
   users.mutableUsers = false;
   users.users.monk.hashedPasswordFile = "/mnt/persist/secrets/login/monk";
