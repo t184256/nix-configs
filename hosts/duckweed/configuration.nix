@@ -32,6 +32,7 @@
 
   nix.settings.auto-optimise-store = true;  # it's tight on disk space
   nix.gc.automatic = true;
+  nix.gc.options = "--delete-older-than 21d";
   nixpkgs.flake.setNixPath = false;  # save disk space
   nixpkgs.flake.setFlakeRegistry = false;  # save disk space
 
