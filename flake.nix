@@ -21,7 +21,6 @@
     pre-commit-hooks.inputs.gitignore.follows = "gitignore";
     devshell.url = "github:numtide/devshell";
     devshell.inputs.nixpkgs.follows = "nixpkgs";
-    devshell.inputs.flake-utils.follows = "flake-utils";
     nmd.url = "sourcehut:~rycee/nmd";
     nmd.inputs.nixpkgs.follows = "nixpkgs";
     nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
