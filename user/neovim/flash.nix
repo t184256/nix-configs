@@ -1,7 +1,7 @@
 { config, ... }:
 
 let
-  lua = config.nixvim.helpers.mkRaw;
+  lua = config.lib.nixvim.mkRaw;
   colemak = "esiroantdhwyfuqglxcvzkbse";
 in
 {

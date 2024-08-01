@@ -1,7 +1,7 @@
 { config, pkgs, lib, inputs, ... }:
 
 let
-  lua = config.nixvim.helpers.mkRaw;
+  lua = config.lib.nixvim.mkRaw;
   withLang = lang: builtins.elem lang config.language-support;
   pyDocIgnores = [
     # Defaults, so that I don't get annoyed when writing short scripts.

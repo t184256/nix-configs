@@ -2,7 +2,7 @@
 { lib, config, ... }:
 
 let
-  lua = config.nixvim.helpers.mkRaw;
+  lua = config.lib.nixvim.mkRaw;
 in
 {
   imports = [ ../config/neovim.nix ];
