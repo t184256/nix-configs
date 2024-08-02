@@ -31,14 +31,6 @@
       }];
     };
 
-    # TODO: weird that it has to be done fixed up this way
-    autoCmd = [
-      {
-        event = [ "VimEnter" "Colorscheme" ];
-        command = ":hi NoiceCursor gui=inverse";
-      }
-    ];
-
     # z-index helps cmdline overlay the last line; hide the rest anyway
     keymaps = [
       {
