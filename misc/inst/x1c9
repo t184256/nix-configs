@@ -3,7 +3,7 @@ set -uexo pipefail
 
 INSPECT=${INSPECT-0}
 
-for cmd in blkid btrfs cryptsetup microdnf mkswap sed sudo; do
+for cmd in blkid btrfs cryptsetup dnf5 mkswap sed sudo; do
     command -v $cmd
 done
 
@@ -83,7 +83,7 @@ fi
 [[ -e /mnt/tgt/saviour ]] || sudo btrfs subvol create /mnt/tgt/saviour
 [[ -e /mnt/tgt/cache ]] || sudo btrfs subvol create /mnt/tgt/cache
 
-# prepare for invoking microdnf
+# prepare for invoking dnf
 sudo rm -rf /tmp/.inst-files/dnf
 mkdir -p /tmp/.inst-files/dnf/yum.repos.d
 touch /tmp/.inst-files/dnf/dnf.conf
@@ -145,8 +145,8 @@ CHROOT='sudo chroot /mnt/tgt/root/curr /bin/env PATH=/bin:/sbin'
 # inspect if requested
 if [[ "$INSPECT" == 1 ]]; then $CHROOT bash; exit 0; fi
 
-# invoke microdnf to install the most basic system
-sudo microdnf -y \
+# invoke dnf5 to install the most basic system
+sudo dnf5 -y \
     --noplugins \
     --releasever=40 \
     --installroot=/mnt/tgt/root/curr \
@@ -157,7 +157,7 @@ sudo microdnf -y \
     --refresh \
     --setopt=install_weak_deps=0 \
     --setopt=keepcache=1 \
-    install dnf dnf-plugins-core fedora-gpg-keys \
+    install dnf5 dnf-plugins-core fedora-gpg-keys \
             bash coreutils \
             psmisc passwd \
             glibc-minimal-langpack glibc-langpack-en \
@@ -169,7 +169,7 @@ sudo microdnf -y \
             NetworkManager polkit polkit-gnome \
             NetworkManager-tui NetworkManager-wifi NetworkManager-openvpn \
             openssh-server openssh-clients hostname firewalld iproute \
-	    iputils netcat \
+            iputils netcat \
             cryptsetup parted btrfs-progs e2fsprogs \
             sudo vim-minimal man-db time diffutils \
             pcsc-lite opensc \
@@ -179,7 +179,7 @@ sudo microdnf -y \
             mesa-dri-drivers \
             gdm gnome-session gnome-online-accounts gnome-console \
             gnome-extensions-app seahorse gedit gnome-calendar \
-	    nautilus evince file-roller cheese meld \
+            nautilus evince file-roller cheese meld \
             krb5-workstation krb5-auth-dialog \
             fprintd fprintd-pam \
             NetworkManager-openvpn-gnome \

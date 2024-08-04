@@ -19,7 +19,7 @@
   environment.systemPackages = with pkgs; [
     firefox-wayland alacritty
     gparted parted cryptsetup btrfs-progs bcachefs-tools
-    microdnf
+    dnf5
     evtest
   ];
 
