@@ -37,6 +37,9 @@
 
     impermanence.url = "github:nix-community/impermanence";
 
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
+
     simple-nixos-mailserver.url =
       "gitlab:simple-nixos-mailserver/nixos-mailserver";
     simple-nixos-mailserver.inputs.flake-compat.follows = "flake-compat";
@@ -105,6 +108,7 @@
     nix-on-droid,
     nixos-hardware,
     impermanence,
+    disko,
     simple-nixos-mailserver,
     home-manager,
     nixvim,
@@ -122,6 +126,7 @@
     autoimport = (import ./.autoimport);
     specialArgs = { inherit inputs; };
     common_modules = [ impermanence.nixosModule
+                       disko.nixosModules.disko
                        simple-nixos-mailserver.nixosModule
                        yousable.nixosModule
                        home-manager.nixosModules.home-manager {
@@ -154,6 +159,7 @@
       bayroot = mkSystem "x86_64-linux" ./hosts/bayroot/configuration.nix;
       araceae = mkSystem "x86_64-linux" ./hosts/araceae/configuration.nix;
       quince = mkSystem "x86_64-linux" ./hosts/quince/configuration.nix;
+      etrog = mkSystem "x86_64-linux" ./hosts/etrog/configuration.nix;
     };
     homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
@@ -249,6 +255,14 @@
         sshUser = "root"; user = "root"; hostname = "quince";
         path = deploy-rs.lib.x86_64-linux.activate.nixos
                self.nixosConfigurations.quince;
+      };
+    };
+    deploy.nodes.etrog = {
+      hostname = "etrog";
+      profiles.system = {
+        sshUser = "root"; user = "root"; hostname = "etrog";
+        path = deploy-rs.lib.x86_64-linux.activate.nixos
+               self.nixosConfigurations.etrog;
       };
     };
     checks = builtins.mapAttrs

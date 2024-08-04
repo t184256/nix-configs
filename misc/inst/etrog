@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -ueo pipefail
+
+[[ $1 =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
+#USER=opc
+USER=root
+
+#ssh "$USER@$1" grep ^NAME /etc/os-release | grep -Fx 'NAME="AlmaLinux"'
+#ssh "$USER@$1" sudo systemctl stop \
+#  auditd chronyd crond dbus-broker gssproxy irqbalance \
+#  nix-daemon multipathd rpcbind rsyslog systemd-journald \
+#  || true
+
+injdir=$(mktemp -d)
+cleanup() {
+  rm -rf "$injdir"
+}
+trap cleanup EXIT
+
+mkdir "$injdir/etc"
+scp "$USER@$1:/etc/machine-id" "$injdir/etc/machine-id"
+
+read -rsp 'Account password: ' PASSWORD
+echo
+read -rsp 'Account password (again): ' PASSWORD2
+echo
+[[ "$PASSWORD" == "$PASSWORD2" ]]
+mkdir -p "$injdir/mnt/persist/secrets/login"
+mkpasswd -s <<<"$PASSWORD" \
+  | tee "$injdir/mnt/persist/secrets/login/monk"
+chmod 600 "$injdir/mnt/persist/secrets/login/monk"
+mkpasswd -s <<<"$PASSWORD" \
+  | tee "$injdir/mnt/persist/secrets/login/root"
+chmod 600 "$injdir/mnt/persist/secrets/login/root"
+
+exec nix run 'nixpkgs#nixos-anywhere' -- \
+  --debug \
+  --extra-files "$injdir" \
+  --flake '/etc/nixos#etrog' \
+  "$USER@$1"
