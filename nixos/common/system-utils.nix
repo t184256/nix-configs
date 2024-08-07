@@ -4,6 +4,7 @@
   # a basic set I'd like to have as root for recovery
   environment.systemPackages = with pkgs; [
     git
+    rsync
     htop iotop ncdu
     strace ltrace
     wget curl
