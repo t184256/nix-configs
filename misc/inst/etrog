@@ -2,39 +2,39 @@
 set -ueo pipefail
 
 [[ $1 =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
-#USER=opc
-USER=root
+USER=opc
+#USER=root
 
-#ssh "$USER@$1" grep ^NAME /etc/os-release | grep -Fx 'NAME="AlmaLinux"'
-#ssh "$USER@$1" sudo systemctl stop \
-#  auditd chronyd crond dbus-broker gssproxy irqbalance \
-#  nix-daemon multipathd rpcbind rsyslog systemd-journald \
-#  || true
+ssh "$USER@$1" grep ^NAME /etc/os-release | grep -Fx 'NAME="AlmaLinux"'
+ssh "$USER@$1" sudo systemctl stop \
+  auditd chronyd crond dbus-broker gssproxy irqbalance \
+  nix-daemon multipathd rpcbind rsyslog systemd-journald \
+  || true
+
+# TODO: far future: also reinstall if there's no service data checked out
+echo 1>&2 "THIS WILL ERASE ALL DATA ON $1!"
 
 injdir=$(mktemp -d)
-cleanup() {
-  rm -rf "$injdir"
-}
-trap cleanup EXIT
+trap 'rm -rf "$injdir"' EXIT
+
+mkdir -p "$injdir/mnt/persist/secrets"
+misc/secrets inject-to-dir etrog "$injdir/mnt/persist/secrets"
+[[ -e "$injdir/mnt/persist/secrets/login/root" ]]
+[[ -e "$injdir/mnt/persist/secrets/login/monk" ]]
+find "$injdir/mnt/persist/secrets" -type d -exec chmod 500 {} \;
+# will be fixed up to 400 on later secrets injections
 
 mkdir "$injdir/etc"
 scp "$USER@$1:/etc/machine-id" "$injdir/etc/machine-id"
 
-read -rsp 'Account password: ' PASSWORD
-echo
-read -rsp 'Account password (again): ' PASSWORD2
-echo
-[[ "$PASSWORD" == "$PASSWORD2" ]]
-mkdir -p "$injdir/mnt/persist/secrets/login"
-mkpasswd -s <<<"$PASSWORD" \
-  | tee "$injdir/mnt/persist/secrets/login/monk"
-chmod 600 "$injdir/mnt/persist/secrets/login/monk"
-mkpasswd -s <<<"$PASSWORD" \
-  | tee "$injdir/mnt/persist/secrets/login/root"
-chmod 600 "$injdir/mnt/persist/secrets/login/root"
+# NixOS impermanence-specific hack
+#ssh "$1" 'sudo mkdir -p /mnt/persist/root-kexec && \
+#          sudo mount -o bind /mnt/persist/root-kexec /root'
+# !!!
 
 exec nix run 'nixpkgs#nixos-anywhere' -- \
   --debug \
   --extra-files "$injdir" \
   --flake '/etc/nixos#etrog' \
   "$USER@$1"
+# TODO: remote build + my hydra, maybe?
