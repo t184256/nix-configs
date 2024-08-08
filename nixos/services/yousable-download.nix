@@ -1,8 +1,13 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
+  nixpkgs.overlays = [
+    (import ../../overlays/yt-dlp.nix)
+    inputs.yousable.overlays.yousable
+  ];
   services.yousable = {
     enable = true;
+    package = pkgs.python3Packages.yousable;  # with overlays applied
     crawler.enable = true;
     downloader.enable = true;
     server.enable = false;

@@ -1,16 +1,28 @@
-_: super:
+_: prev:
 
+let
+  newerVer = "2024.8.6";
+  overrides = _: {
+    name = "yt-dlp-${newerVer}";
+    version = newerVer;
+    src = prev.fetchFromGitHub {
+      owner = "yt-dlp";
+      repo = "yt-dlp";
+      rev = "2024.08.06";
+      hash = "sha256-NjsP8XbaLs4RTXDuviN1MEYQ2Xv//P5MPXIym1S4hEw=";
+    };
+  };
+in
 {
+  pythonPackagesExtensions =
+    prev.pythonPackagesExtensions ++ [(_: pyPrev: { yt-dlp =
+      if prev.lib.versionAtLeast pyPrev.yt-dlp.version newerVer
+      then pyPrev.yt-dlp
+      else pyPrev.yt-dlp.overridePythonAttrs overrides;
+    })];
+
   yt-dlp =
-    if super.lib.versionAtLeast super.akkoma.version "2024.08.01"
-      then super.yt-dlp
-      else super.yt-dlp.overrideAttrs (_: rec {
-        version = "2024.08.01";
-        src = super.fetchFromGitHub {
-          owner = "yt-dlp";
-          repo = "yt-dlp";
-          rev = "${version}";
-          hash = "sha256-u069kH4DsOLwSC7DrXkS0pOSmaYDHd9EwsH/6FirBZI=";
-        };
-      });
+    if prev.lib.versionAtLeast prev.yt-dlp.version newerVer
+    then prev.yt-dlp
+    else prev.yt-dlp.overrideAttrs overrides;  # not the best way, loses share/
 }
