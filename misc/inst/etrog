@@ -9,32 +9,40 @@ ssh "$USER@$1" grep ^NAME /etc/os-release | grep -Fx 'NAME="AlmaLinux"'
 ssh "$USER@$1" sudo systemctl stop \
   auditd chronyd crond dbus-broker gssproxy irqbalance \
   nix-daemon multipathd rpcbind rsyslog systemd-journald \
+  home-manager-monk sshguard systemd-timesyncd nscd \
+  systemd-zram-setup@zram0 \
   || true
 
 # TODO: far future: also reinstall if there's no service data checked out
 echo 1>&2 "THIS WILL ERASE ALL DATA ON $1!"
 
 injdir=$(mktemp -d)
-trap 'rm -rf "$injdir"' EXIT
+trap 'sudo rm -rf "$injdir"' EXIT
 
 mkdir -p "$injdir/mnt/persist/secrets"
 misc/secrets inject-to-dir etrog "$injdir/mnt/persist/secrets"
 [[ -e "$injdir/mnt/persist/secrets/login/root" ]]
 [[ -e "$injdir/mnt/persist/secrets/login/monk" ]]
+[[ -e "$injdir/mnt/persist/secrets/sshd/ed25519" ]]
+grep -qF 'OPENSSH PRIVATE KEY' "$injdir/mnt/persist/secrets/sshd/ed25519"
 find "$injdir/mnt/persist/secrets" -type d -exec chmod 500 {} \;
-# will be fixed up to 400 on later secrets injections
+# will be fixed up to 400 later or on latter secrets injections
 
-mkdir "$injdir/etc"
-scp "$USER@$1:/etc/machine-id" "$injdir/etc/machine-id"
+#mkdir "$injdir/etc"
+#scp -q "$USER@$1:/etc/machine-id" "$injdir/etc/machine-id"
 
 # NixOS impermanence-specific hack
 #ssh "$1" 'sudo mkdir -p /mnt/persist/root-kexec && \
 #          sudo mount -o bind /mnt/persist/root-kexec /root'
 # !!!
 
-exec nix run 'nixpkgs#nixos-anywhere' -- \
+nix run 'nixpkgs#nixos-anywhere' -- \
   --debug \
   --extra-files "$injdir" \
   --flake '/etc/nixos#etrog' \
   "$USER@$1"
 # TODO: remote build + my hydra, maybe?
+
+# the promised fix-up
+sleep 2
+ssh "$USER@$1" 'sudo find /mnt/persist/secrets -type d -exec chmod 400 {} \;'

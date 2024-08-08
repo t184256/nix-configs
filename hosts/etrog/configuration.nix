@@ -35,6 +35,14 @@
   home-manager.users.monk.home.stateVersion = "24.05";
   system.stateVersion = "24.05";
 
+  boot.loader.systemd-boot.netbootxyz.enable = true;
+  zramSwap = { enable = true; memoryPercent = 50; };
+
+  services.openssh.hostKeys =
+    [ { path = "/run/credentials/sshd.service/ed25519"; type = "ed25519"; } ];
+  systemd.services.sshd.serviceConfig.LoadCredential =
+    "ed25519:/mnt/persist/secrets/sshd/ed25519";
+
   environment.persistence."/mnt/persist" = {
     hideMounts = true;
     directories = [
@@ -42,15 +50,8 @@
       "/var/log"
     ];
     files =
-      let
-        mode = { mode = "0755"; };
-      in
       [
         "/etc/machine-id"
-        { file = "/etc/ssh/ssh_host_rsa_key"; parentDirectory = mode; }
-        { file = "/etc/ssh/ssh_host_rsa_key.pub"; parentDirectory = mode; }
-        { file = "/etc/ssh/ssh_host_ed25519_key"; parentDirectory = mode; }
-        { file = "/etc/ssh/ssh_host_ed25519_key.pub"; parentDirectory = mode; }
       ];
     users.monk = {
       directories = [
