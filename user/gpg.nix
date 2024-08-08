@@ -9,7 +9,7 @@
     else pkgs.pass-wayland;
 
   programs.gpg.enable = true;
-  programs.gpg.publicKeys = [ { source = ../misc/pubkey.pgp; trust = 5; } ];
+  programs.gpg.publicKeys = [ { source = ../misc/pubkeys/pgp; trust = 5; } ];
 
   services.gpg-agent = {
     enable = true;

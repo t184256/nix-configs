@@ -5,6 +5,6 @@ BASEURL=https://raw.githubusercontent.com/t184256/nix-configs/staging
 
 [[ -d ~/.ssh ]] || install -m 700 -d ~/.ssh
 if [[ ! -e ~/.ssh/authorized_keys ]]; then
-  curl $BASEURL/misc/pubkey.ssh > ~/.ssh/authorized_keys
+  curl $BASEURL/misc/pubkeys/client.ssh > ~/.ssh/authorized_keys
   chmod 600 ~/.ssh/authorized_keys
 fi
