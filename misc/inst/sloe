@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -uexo pipefail
+set -ueo pipefail
 
 IP=$1
 [[ $IP =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
