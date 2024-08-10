@@ -44,7 +44,6 @@ mkdir "$injdir/etc"
 scp -q "$REMOTE_USER@$IP:/etc/machine-id" "$injdir/etc/machine-id"
 
 nix run 'nixpkgs#nixos-anywhere' -- \
-  --debug \
   --extra-files "$injdir" \
   --flake "/etc/nixos#$hostname" \
   "$REMOTE_USER@$IP"
