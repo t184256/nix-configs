@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -uexo pipefail
+
+IP=$1
+[[ $IP =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
+: "${REMOTE_USER:=root}"
+hostname=sloe
+
+if ! command -v dasel >/dev/null; then
+  dasel=$(nix build --print-out-paths --no-link 'nixpkgs#dasel')
+  PATH=$PATH:$dasel/bin
+fi
+
+# TODO: rewrite to assume rescue mode?
+ssh "$REMOTE_USER@$IP" 'set -uexo pipefail
+  grep -Fx "NAME=\"Debian GNU/Linux\"" /etc/os-release
+  grep -F Rescue-System /etc/motd
+  [[ "$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)" \
+    == "8f9c2751-e354-4cb9-af20-be9749d776c6" ]]
+  [[ -e "/dev/sda" ]]
+  if [[ ! -e .ssh ]]; then
+    mkdir -p .ssh
+    cat >> .ssh/authorized_keys
+    chmod 600 .ssh/authorized_keys
+  fi
+' < misc/pubkeys/ssh
+
+# TODO: far future: also reinstall if there's no service data checked out
+echo 1>&2 "THIS WILL ERASE ALL DATA ON $1!"
+
+injdir=$(mktemp -d)
+trap 'sudo rm -rf "$injdir"' EXIT
+
+mkdir -p "$injdir/mnt/secrets"
+misc/secrets inject-to-dir "$hostname" "$injdir/mnt/secrets"
+[[ -e "$injdir/mnt/secrets/login/root" ]]
+[[ -e "$injdir/mnt/secrets/login/monk" ]]
+[[ -e "$injdir/mnt/secrets/sshd/ed25519" ]]
+grep -qF 'OPENSSH PRIVATE KEY' "$injdir/mnt/secrets/sshd/ed25519"
+find "$injdir/mnt/secrets" -type d -exec chmod 500 {} \;
+# will be fixed up to 400 later or on latter secrets injections
+
+mkdir "$injdir/etc"
+scp -q "$REMOTE_USER@$IP:/etc/machine-id" "$injdir/etc/machine-id"
+
+nix run 'nixpkgs#nixos-anywhere' -- \
+  --debug \
+  --extra-files "$injdir" \
+  --flake "/etc/nixos#$hostname" \
+  "$REMOTE_USER@$IP"
+# TODO: remote build + my hydra, maybe?
+
+sed -i "/^$IP /d" ~/.ssh/known_hosts
+pubkey="$(dasel -f misc/pubkeys/sshd.toml "$hostname" -w -)"
+echo "$IP $pubkey" >> ~/.ssh/known_hosts
+
+# the promised fix-up
+for i in {15..1}; do echo 1>&2 -n "$i... "; sleep 1; done
+ssh "$REMOTE_USER@$IP" 'sudo find /mnt/secrets -type d -exec chmod 400 {} \;'

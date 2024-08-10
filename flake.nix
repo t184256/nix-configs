@@ -160,6 +160,7 @@
       araceae = mkSystem "x86_64-linux" ./hosts/araceae/configuration.nix;
       quince = mkSystem "x86_64-linux" ./hosts/quince/configuration.nix;
       etrog = mkSystem "x86_64-linux" ./hosts/etrog/configuration.nix;
+      sloe = mkSystem "x86_64-linux" ./hosts/sloe/configuration.nix;
     };
     homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
@@ -263,6 +264,14 @@
         sshUser = "root"; user = "root"; hostname = "etrog";
         path = deploy-rs.lib.x86_64-linux.activate.nixos
                self.nixosConfigurations.etrog;
+      };
+    };
+    deploy.nodes.sloe = {
+      hostname = "sloe";
+      profiles.system = {
+        sshUser = "root"; user = "root"; hostname = "sloe";
+        path = deploy-rs.lib.x86_64-linux.activate.nixos
+               self.nixosConfigurations.sloe;
       };
     };
     checks = builtins.mapAttrs
