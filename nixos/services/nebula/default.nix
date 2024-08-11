@@ -45,12 +45,16 @@ in
     ) (lib.attrsets.filterAttrs (_: ha: ha ? ext) nodes);
 
     ca = ./certs/ca;
-    cert = ./certs/${config.networking.hostName};
-    key = "/mnt/persist/secrets/nebula/${config.networking.hostName}";
+    # TODO 2024: pull from toml
+    cert = lib.mkDefault ./certs/${config.networking.hostName};
+    # TODO 2024: make it just /mnt/secrets/nebula
+    key =
+      lib.mkDefault "/mnt/persist/secrets/nebula/${config.networking.hostName}";
 
     firewall.inbound = [ { host = "any"; port = "any"; proto = "any"; } ];
     firewall.outbound = [ { host = "any"; port = "any"; proto = "any"; } ];
   };
+  # TODO 2024: not needed anymore
   systemd.services.perms-nebula = {
     description = "Change permissions for nebula";
     before = [ "nebula@unboiled.service" ];
