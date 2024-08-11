@@ -1,2 +1,3 @@
 etrog = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO1ii+4fTGmHhdOcLe44B7YAup+wSCFer3bkJmOj+tud etrog'
+quince = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHJJJaBj6vAKjZJ9dlIS6q4qMPV63J7dyInV7iqwMkwp quince'
 sloe = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDu+6P0zkyAaOi7xliGtpITG+dUPdHZe2j7IDZtSolRc sloe'

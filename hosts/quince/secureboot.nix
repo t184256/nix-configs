@@ -1,14 +1,6 @@
 { pkgs, lib, config, inputs, ... }:
 
 {
-  # debugging
-  boot.initrd.systemd.extraConfig = ''
-    LogLevel=debug
-    StatusUnitFormat=combined
-    DefaultTimeoutStartSec=10
-    DefaultTimeoutStopSec=10
-  '';
-
   boot.initrd.kernelModules = [ "efi_pstore" "efivarfs" "tpm_crb" "tpm_tis" ];
   environment.systemPackages = with pkgs; [ sbctl ];
 
@@ -36,14 +28,45 @@
   # actual "bootloader": directly booting a UKI image
   boot.loader.systemd-boot.extraInstallCommands =
     let
+      fingerprinter = pkgs.writeShellApplication {
+        name = "fingerprinter";
+        runtimeInputs = with pkgs; [
+          coreutils findutils gnutar efibootmgr jq
+        ];
+
+        text = ''
+          set -Eeuo pipefail; shopt -s inherit_errexit
+          boot_json=$(find /nix/var/nix/profiles/system-*-link/boot.json \
+                      | sort -V | tail -n1)
+          kernel=$(jq -r '.${bootspecNamespace}.kernel' "$boot_json")
+          initrd=$(jq -r '.${bootspecNamespace}.initrd' "$boot_json")
+          init=$(jq -r '.${bootspecNamespace}.init' "$boot_json")
+          echo ${pkgs.systemd}
+          efibootmgr
+          ${systemdUkify}/lib/systemd/systemd-pcrlock --json=pretty \
+            2>/dev/null| sha256sum
+          cat "$boot_json"
+          cat "${config.system.build.etc}/etc/os-release"
+          echo "${builtins.toString config.boot.kernelParams}"
+          sha256sum "$kernel"
+          sha256sum "$initrd"
+          sha256sum "$init"
+          sha256sum "${pkgs.systemd}/lib/systemd/boot/efi/linuxx64.efi.stub"
+          tar c /mnt/secrets/secureboot 2>/dev/null | sha256sum
+        '';
+      };
+
       systemd-boot-signer = pkgs.writeShellApplication {
         name = "systemd-boot-signer";
         runtimeInputs = with pkgs; [ sbctl ];
         text = ''
-          set -x
+          set -Eeuo pipefail; shopt -s inherit_errexit
+          rm -rf /etc/secureboot
+          sbctl import-keys --directory /mnt/secrets/secureboot
           sbctl sign -s /boot/EFI/BOOT/BOOTX64.EFI
           sbctl sign -s /boot/EFI/systemd/systemd-bootx64.efi
           sbctl sign -s /boot/EFI/nixos/*linux-*-bzImage.efi
+          rm -rf /etc/secureboot
         '';
       };
 
@@ -62,6 +85,7 @@
         ];
 
         text = ''
+          set -Eeuo pipefail; shopt -s inherit_errexit
           # extract required data
           boot_json=$(find /nix/var/nix/profiles/system-*-link/boot.json \
                       | sort -V | tail -n1)
@@ -70,51 +94,77 @@
           init=$(jq -r '.${bootspecNamespace}.init' "$boot_json")
 
           # prepare UKI image
-          ${systemdUkify}/lib/systemd/ukify build \
+          h11="$(${systemdUkify}/lib/systemd/ukify build \
             --tools=${pkgs.systemd}/lib/systemd \
             --linux="$kernel" \
             --initrd="$initrd" \
             --os-release="@${config.system.build.etc}/etc/os-release" \
             --cmdline="init=$init ${builtins.toString config.boot.kernelParams}" \
             --stub=${pkgs.systemd}/lib/systemd/boot/efi/linuxx64.efi.stub \
-            --secureboot-private-key /etc/secureboot/keys/db/db.key \
-            --secureboot-certificate /etc/secureboot/keys/db/db.pem \
+            --secureboot-private-key /mnt/secrets/secureboot/db/db.key \
+            --secureboot-certificate /mnt/secrets/secureboot/db/db.pem \
             --sign-kernel \
             --pcr-banks=sha256 \
             --measure \
-            --output=${config.boot.loader.efi.efiSysMountPoint}/EFI/Linux/nixos-uki-latest.efi \
-            | tee /tmp/pcrs
-          cp /tmp/pcrs /mnt/persist/pcrs
-          h11="$(grep ^11:sha256= /tmp/pcrs | head -n1)"
+            --output=${config.boot.loader.efi.efiSysMountPoint}/EFI/Linux/nixos-uki-latest.efi.tmp \
+            )"
+            grep -q ^11:sha256= <<<"$h11"
+            h11="$(<<<"$h11" grep ^11:sha256= | head -n1)"
 
-          # enroll PCR policy into TPM
+          # enroll PCR policy into TPM (hint: start with just PCR 11)
           ${systemdUkify}/bin/systemd-cryptenroll --tpm2-device=/dev/tpmrm0 \
             --wipe-slot=tpm2 \
             --tpm2-pcrs=0+1+2+3+5+6+7+"$h11"+12 \
-            --unlock-key-file=/mnt/persist/secrets/root.key \
-            /dev/disk/by-partlabel/QUINCE
+            --unlock-key-file=/mnt/secrets/root.luks \
+            /dev/disk/by-partlabel/disk-quince-main-luks
+
+          mv \
+            "${config.boot.loader.efi.efiSysMountPoint}/EFI/Linux/nixos-uki-latest.efi.tmp" \
+            "${config.boot.loader.efi.efiSysMountPoint}/EFI/Linux/nixos-uki-latest.efi"
 
           # create a direct boot entry
-          [ -e disk=/dev/mmcblk0 ] && DISK=/dev/mmcblk0 || DISK=/dev/mmcblk1
-          if ! grep -q 'UKI NixOS' <(efibootmgr); then
+          DISK=/dev/disk/by-id/mmc-A3A444_0x1e7ca520
+          if ! grep -Fq 'UKI NixOS' <(efibootmgr); then
             efibootmgr --create --index=0 --disk="$DISK" --part=1 \
               --label='UKI NixOS' --loader='EFI\Linux\nixos-uki-latest.efi'
+            efibootmgr
           fi
-
-          rm /tmp/pcrs
         '';
       };
     in
       ''
-      set -e
-      ${systemd-boot-signer}/bin/systemd-boot-signer
-      ${uki-installer}/bin/uki-installer
+      set -Eeuo pipefail; shopt -s inherit_errexit
+      fprint="$(${fingerprinter}/bin/fingerprinter)"
+      fprintfile='/mnt/persist/var/lib/secureboot'
+      mkdir -p $(dirname "$fprintfile")
+
+      if [[ ! -e "$fprintfile" || "$(cat "$fprintfile")" != "$fprint" ]]; then
+        ${pkgs.diffutils}/bin/diff -U1 - <<<"$fprint" "$fprintfile" || true
+        echo 'Updating and re-signing UKI...'
+        ${systemd-boot-signer}/bin/systemd-boot-signer
+        ${uki-installer}/bin/uki-installer
+        echo "$fprint" > "$fprintfile"
+        chmod 600 "$fprintfile"
+      else
+        echo 'No need to update and re-sign UKI, I hope'
+      fi
     '';
 
   # locking down
-  boot.kernelParams = [ "rd.systemd.gpt_auto=0" ];
   systemd.enableEmergencyMode = false;
   boot.initrd.systemd.emergencyAccess = false;
+  boot.initrd.verbose = false;
+  boot.kernelParams = [
+    "rd.systemd.gpt_auto=0"
+    "quiet" "loglevel=4"
+  ];
 
-  environment.persistence."/mnt/persist".directories = [ "/etc/secureboot" ];
+  # debugging
+  #boot.initrd.systemd.extraConfig = ''
+  #  LogLevel=debug
+  #  StatusUnitFormat=combined
+  #  DefaultTimeoutStartSec=10
+  #  DefaultTimeoutStopSec=10
+  #'';
+
 }

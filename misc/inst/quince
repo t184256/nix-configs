@@ -1,215 +1,76 @@
 #!/usr/bin/env bash
+set -Eeuo pipefail; shopt -s inherit_errexit
 
-set -uexo pipefail
+# disable secure boot, boot into something live
 
-# emmc: /boot, encrypted / (unlocked automatically)
-# nvme: encrypted data, encrypted swap (unlocked manually, setup separately)
+IP=$1
+[[ $IP =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
+: "${REMOTE_USER:=root}"
+hostname=quince
 
-### Parameters ###
-
-: "${BOOT_SIZE:=768MB}"
-: "${HOST:=QUINCE}"
-: "${COPY_ETC_NIXOS:=1}"
-: "${DISK:=/dev/mmcblk0}"
-: "${AUTOPART:=0}"
-: "${ENCRYPTION_PASSPHRASE:=}"
-
-### Safeguards ###
-
-[[ "$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)" \
-	== '86a6297f-1e97-124f-9435-a77e07c3508d' ]]
-[[ -e ${DISK} ]]
-
-### Cleanup ###
-
-cleanup() {
-	sudo rm -f /tmp/root.key || true
-	sudo umount /mnt/boot 2>/dev/null || true
-	sudo cryptsetup close ${HOST} 2>/dev/null || true
-	sudo umount /mnt/0 2>/dev/null || true
-	sudo umount /mnt/tgt/home 2>/dev/null || true
-	sudo umount /mnt/tgt/nix 2>/dev/null || true
-	sudo umount /mnt/tgt/persist 2>/dev/null || true
-	sudo umount /mnt/persist 2>/dev/null || true
-	sudo umount /mnt/tgt/dev/pts 2>/dev/null || true
-	sudo umount /mnt/tgt/dev 2>/dev/null || true
-	sudo umount /mnt/tgt/proc 2>/dev/null || true
-	sudo umount /mnt/tgt/sys/firmware/efi/efivars 2>/dev/null || true
-	sudo umount /mnt/tgt/sys 2>/dev/null || true
-	sudo umount /mnt/tgt/boot 2>/dev/null || true
-	sudo umount -R /mnt/tgt 2>/dev/null || true
-}
-trap 'set +x; cleanup' EXIT
-
-### Injecting old secrets ###
-
-if [[ ! -e /tmp/old-secrets ]]; then
-	if [[ -e "/dev/disk/by-partlabel/${HOST}" ]]; then
-		if sudo mount "/dev/disk/by-partlabel/${HOST}" /mnt; then
-			if [[ -e /mnt/secrets ]]; then
-				cp -rva /mnt/secrets /tmp/old-secrets
-			fi
-			umount /mnt
-		fi
-	fi
+if ! command -v dasel >/dev/null; then
+  dasel=$(nix build --print-out-paths --no-link 'nixpkgs#dasel') || exit $?
+  PATH=$PATH:$dasel/bin
 fi
 
-### Obtaining passphrase ###
+# TODO: what's the environment we're usually reinstalling from?
+ssh "$REMOTE_USER@$IP" "
+  set -Eeuo pipefail; shopt -s inherit_errexit
+  [[ \"\$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)\" \
+    == '86a6297f-1e97-124f-9435-a77e07c3508d' ]]
+  [[ -e '/dev/disk/by-id/mmc-A3A444_0x1e7ca520' ]]
+  [[ -e '/dev/nvme0n1' ]]
+  ip a show dev enp1s0 | grep -Fq 'state UP'
+  ip a show dev enp1s0 | grep -Fq 'inet $IP'
+  [[ ! -e '/mnt/secrets' ]]
+  if [[ ! -e .ssh ]]; then
+    mkdir -p .ssh
+    cat >> .ssh/authorized_keys
+    chmod 600 .ssh/authorized_keys
+  fi
+  sudo efibootmgr --delete-bootnum -L 'UKI NixOS'
+" < misc/pubkeys/ssh
 
-if [[ -z "$ENCRYPTION_PASSPHRASE" ]]; then
-	read -rsp 'Passphrase: ' ENCRYPTION_PASSPHRASE
-fi
-[[ -n "$ENCRYPTION_PASSPHRASE" ]]
+# TODO: far future: also reinstall if there's no service data checked out
+echo 1>&2 "THIS WILL ERASE ALL DATA ON $1!"
 
-### Partitioning ###
+injdir=$(mktemp -d) || exit $?
+trap 'sudo rm -rf "$injdir"' EXIT
 
-PARTITIONS=$(sudo fdisk -l "${DISK}")
-grep -F '247463936000 bytes, 483328000 sectors' \
-	<<<"$PARTITIONS"  # extra safeguard
+mkdir -p "$injdir/mnt/secrets"
+misc/secrets inject-to-dir "$hostname" "$injdir/mnt/secrets"
+[[ -e "$injdir/mnt/secrets/login/root" ]]
+[[ -e "$injdir/mnt/secrets/login/monk" ]]
+[[ -e "$injdir/mnt/secrets/sshd/ed25519" ]]
+[[ -e "$injdir/mnt/secrets/root.luks" ]]
+[[ -e "$injdir/mnt/secrets/secureboot/KEK/KEK.key" ]]
+[[ -e "$injdir/mnt/secrets/secureboot/KEK/KEK.pem" ]]
+[[ -e "$injdir/mnt/secrets/secureboot/PK/PK.key" ]]
+[[ -e "$injdir/mnt/secrets/secureboot/PK/PK.pem" ]]
+[[ -e "$injdir/mnt/secrets/secureboot/db/db.key" ]]
+[[ -e "$injdir/mnt/secrets/secureboot/db/db.pem" ]]
+grep -qF 'OPENSSH PRIVATE KEY' "$injdir/mnt/secrets/sshd/ed25519"
+find "$injdir/mnt/secrets" -type d -exec chmod 500 {} \;
+# will be fixed up to 400 later or on latter secrets injections
 
-if grep -F Size <<<"$PARTITIONS"; then
-	echo "Existing partition table found on '$DISK'"
-	[[ -e "${DISK}p1" ]]
-else
-	[[ ! -e "${DISK}p1" ]]
-	if [[ "$AUTOPART" != 1 ]]; then
-		part_prompt='Partition table does not exist,'
-		part_prompt+=' auto-partition and lose all data? [y/N] '
-		read -rp "$part_prompt" CONFIRMATION
-		[[ "$CONFIRMATION" == y ]]; unset CONFIRMATION
-	fi
-	sudo parted -s ${DISK} -- mklabel gpt
-	sudo parted ${DISK} -- mkpart primary fat32 1MB $BOOT_SIZE
-	sudo parted ${DISK} -- set 1 esp on
-	sudo parted ${DISK} -- name 1 ${HOST}_BOOT
-	sudo parted ${DISK} -- mkpart primary xfs $BOOT_SIZE 100%
-	sudo parted ${DISK} -- name 2 ${HOST}
-	sudo partprobe -s
-	[[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]] || sleep 1
-	[[ -e /dev/disk/by-partlabel/${HOST} ]] || sleep 1
-	[[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]] || sleep 1
-	[[ -e /dev/disk/by-partlabel/${HOST} ]] || sleep 1
-	sleep 1
-	sudo mkfs.fat -F 32 -n ${HOST:0:6}_BOOT \
-		/dev/disk/by-partlabel/${HOST}_BOOT
-	echo -n "$ENCRYPTION_PASSPHRASE" | \
-		sudo cryptsetup -q luksFormat \
-			/dev/disk/by-partlabel/${HOST} -d-
-	dd if=/dev/random bs=64 count=1 of=/tmp/root.key
-	chmod 400 /tmp/root.key
-	sudo chown root:root /tmp/root.key
-	echo -n "$ENCRYPTION_PASSPHRASE" | \
-		sudo cryptsetup -q open \
-			/dev/disk/by-partlabel/${HOST} ${HOST} -d-
-	echo -n "$ENCRYPTION_PASSPHRASE" | \
-		sudo cryptsetup -q luksAddKey \
-			/dev/disk/by-partlabel/${HOST} /tmp/root.key
-	sudo mkfs.xfs -f -L ${HOST} /dev/mapper/${HOST}
-fi
+mkdir "$injdir/etc"
+scp -q "$REMOTE_USER@$IP:/etc/machine-id" "$injdir/etc/machine-id"
 
-[[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]]
-[[ -e /dev/disk/by-partlabel/${HOST} ]]
+nix run 'nixpkgs#nixos-anywhere' -- \
+  --extra-files "$injdir" \
+  --flake "/etc/nixos#$hostname" \
+  --disk-encryption-keys "/tmp/root.luks" "$injdir/mnt/secrets/root.luks" \
+  "$REMOTE_USER@$IP"
+# TODO: remote build + my hydra, maybe?
 
-if [[ ! -e /dev/mapper/${HOST} ]]; then
-	echo -n "$ENCRYPTION_PASSPHRASE" | \
-		sudo cryptsetup -q open \
-			/dev/disk/by-partlabel/${HOST} ${HOST} -d-
-fi
+sed -i "/^$IP /d" ~/.ssh/known_hosts
+pubkey="$(dasel -f misc/pubkeys/sshd.toml "$hostname" -w -)"
+echo "$IP $pubkey" >> ~/.ssh/known_hosts
 
-# no swap
+# the promised fix-up
+for i in {60..1}; do echo 1>&2 -n "$i... "; sleep 1; done
+ssh "monk@$IP" 'sudo find /mnt/secrets -type d -exec chmod 400 {} \;'
 
-### Mounting and subvolume creation ###
-
-sudo mkdir -p /mnt/0
-sudo mount /dev/mapper/${HOST} /mnt/0
-
-sudo mkdir -p /mnt/0/nix
-sudo mkdir -p /mnt/0/home
-sudo mkdir -p /mnt/0/secrets
-
-sudo mkdir -p /mnt/tgt
-sudo mount -t tmpfs tmpfs /mnt/tgt
-sudo mkdir -p /mnt/tgt/{boot,nix,home,mnt/persist}
-sudo mkdir -p /mnt/persist  # hack to soothe impermanence
-sudo mount --bind /mnt/0/nix /mnt/tgt/nix
-sudo mount --bind /mnt/0/home /mnt/tgt/home
-sudo mount --bind /mnt/0 /mnt/tgt/mnt/persist
-sudo mount --bind /mnt/0 /mnt/persist  # HACK
-sudo mount /dev/disk/by-partlabel/${HOST}_BOOT /mnt/tgt/boot
-sudo mkdir -p /mnt/tgt/{dev,proc,sys}
-sudo mount --bind /dev /mnt/tgt/dev
-sudo mount --bind /dev/pts /mnt/tgt/dev/pts
-sudo mount --bind /proc /mnt/tgt/proc
-sudo mount --bind /sys /mnt/tgt/sys
-sudo mount --bind /sys/firmware/efi/efivars \
-	/mnt/tgt/sys/firmware/efi/efivars
-
-### Impermanence data injection ###
-
-sudo mkdir -p /mnt/tgt/mnt/persist/etc
-# /mnt/persist/secrets/login:
-sudo mkdir -p /mnt/tgt/mnt/persist/secrets/login
-if [ ! -e /mnt/tgt/mnt/persist/secrets/login/monk ]; then
-	echo 'configuring `monk` user'
-	mkpasswd -s <<<"$ENCRYPTION_PASSPHRASE" \
-		| sudo tee /mnt/tgt/mnt/persist/secrets/login/monk
-	sudo chmod 600 /mnt/tgt/mnt/persist/secrets/login/monk
-fi
-if [ ! -e /mnt/tgt/mnt/persist/secrets/login/root ]; then
-	echo 'configuring `root` user'
-	mkpasswd -s <<<"$ENCRYPTION_PASSPHRASE" \
-		| sudo tee /mnt/tgt/mnt/persist/secrets/login/root
-	sudo chmod 600 /mnt/tgt/mnt/persist/secrets/login/root
-fi
-if [ ! -e /mnt/tgt/mnt/persist/secrets/root.key ]; then
-	sudo mv /tmp/root.key /mnt/tgt/mnt/persist/secrets/root.key
-fi
-
-# /etc/machine-id:
-[[ -e /mnt/tgt/mnt/persist/etc/machine-id ]] || \
-	sudo systemd-machine-id-setup --root /mnt/tgt/mnt/persist
-# /etc/nixos:
-if [[ "$COPY_ETC_NIXOS" == 1 ]]; then
-	if git rev-parse --show-toplevel 2>/dev/null; then
-		FLAKE=$(git rev-parse --show-toplevel)
-		sudo rm -d /mnt/tgt/mnt/persist/etc/nixos 2>/dev/null || true
-		[[ -e /mnt/tgt/mnt/persist/etc/nixos ]] || \
-			sudo cp -r "$FLAKE" /mnt/tgt/mnt/persist/etc/nixos
-	else
-		FLAKE='/mnt/tgt/mnt/persist/etc/nixos'
-		[[ -e /mnt/tgt/mnt/persist/etc/nixos ]] || \
-			sudo git clone https://github.com/t184256/nix-configs \
-				-b staging \
-				/mnt/tgt/mnt/persist/etc/nixos
-	fi
-	sudo chown -R 1000:100 /mnt/tgt/mnt/persist/etc/nixos
-else
-	FLAKE='github:t184256/nix-configs?ref=staging'
-fi
-# /etc/NetworkManager:
-[[ -e /mnt/tgt/mnt/persist/etc/NetworkManager ]] || \
-	sudo cp -rv /etc/NetworkManager -t /mnt/tgt/mnt/persist/etc
-sudo ls -lt /mnt/tgt/mnt/persist/etc/NetworkManager
-# /etc/ssh:
-if [[ ! -e /mnt/tgt/mnt/persist/etc/ssh_host_rsa_key ]]; then
-	sudo ssh-keygen -t rsa -b 4096 -N '' \
-		-f /mnt/tgt/mnt/persist/etc/ssh_host_rsa_key
-	sudo chmod 700 /mnt/tgt/mnt/persist/etc/ssh_host_rsa_key
-fi
-if [[ ! -e /mnt/tgt/mnt/persist/etc/ssh_host_ed25519_key ]]; then
-	sudo ssh-keygen -t ed25519 -N '' \
-		-f /mnt/tgt/mnt/persist/etc/ssh_host_ed25519_key
-	sudo chmod 700 /mnt/tgt/mnt/persist/etc/ssh_host_ed25519_key
-fi
-
-### Installation from a flake ###
-
-NIXOS_URL=https://cache.nixos.org?priority=200
-HYDRA_URL=https://hydra.unboiled.info
-NIXOS_KEY=cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-HYDRA_KEY=hydra.unboiled.info-1:c7i8vKOB30a+DaJ2M04F0EM8CPRfU+WpbqWie4n221M=
-sudo nixos-install --root /mnt/tgt --no-root-password \
-	--option substituters "$NIXOS_URL $HYDRA_URL" \
-	--option trusted-public-keys "$NIXOS_KEY $HYDRA_KEY" \
-	--option extra-experimental-features 'cgroups nix-command flakes' \
-	--flake "$FLAKE#${HOST,,}"
+# enable secure boot, redeploy
+# disable all boot options but 'UKI NixOS'
+# now re-lock. if it doesn't work, try just PCR 11 first, then the full set
