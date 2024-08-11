@@ -6,6 +6,7 @@
   imports = [
     ./disko.nix
     ./hardware.nix
+    ./network.nix
     ./secureboot.nix
     #../../nixos/services/ipfs/cluster-leader.nix
     #../../nixos/services/ipfs/node.nix
@@ -23,9 +24,6 @@
 
   hardware.cpu.intel.updateMicrocode = true;
   hardware.graphics.extraPackages = [ pkgs.intel-media-driver ];
-  hardware.wirelessRegulatoryDatabase = true;
-  systemd.network.wait-online.anyInterface = true;
-  networking.networkmanager.wifi.powersave = false;
 
   systemd.targets.storage.after = [ "mnt-storage.mount" ];
 

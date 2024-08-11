@@ -39,9 +39,9 @@ trap 'sudo rm -rf "$injdir"' EXIT
 
 mkdir -p "$injdir/mnt/secrets"
 misc/secrets inject-to-dir "$hostname" "$injdir/mnt/secrets"
-[[ -e "$injdir/mnt/secrets/login/root" ]]
 [[ -e "$injdir/mnt/secrets/login/monk" ]]
-[[ -e "$injdir/mnt/secrets/sshd/ed25519" ]]
+[[ -e "$injdir/mnt/secrets/login/root" ]]
+[[ -e "$injdir/mnt/secrets/network-manager" ]]
 [[ -e "$injdir/mnt/secrets/root.luks" ]]
 [[ -e "$injdir/mnt/secrets/secureboot/KEK/KEK.key" ]]
 [[ -e "$injdir/mnt/secrets/secureboot/KEK/KEK.pem" ]]
@@ -49,6 +49,7 @@ misc/secrets inject-to-dir "$hostname" "$injdir/mnt/secrets"
 [[ -e "$injdir/mnt/secrets/secureboot/PK/PK.pem" ]]
 [[ -e "$injdir/mnt/secrets/secureboot/db/db.key" ]]
 [[ -e "$injdir/mnt/secrets/secureboot/db/db.pem" ]]
+[[ -e "$injdir/mnt/secrets/sshd/ed25519" ]]
 grep -qF 'OPENSSH PRIVATE KEY' "$injdir/mnt/secrets/sshd/ed25519"
 find "$injdir/mnt/secrets" -type d -exec chmod 500 {} \;
 # will be fixed up to 400 later or on latter secrets injections
