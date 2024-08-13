@@ -161,6 +161,7 @@
       quince = mkSystem "x86_64-linux" ./hosts/quince/configuration.nix;
       etrog = mkSystem "x86_64-linux" ./hosts/etrog/configuration.nix;
       sloe = mkSystem "x86_64-linux" ./hosts/sloe/configuration.nix;
+      watermelon = mkSystem "x86_64-linux" ./hosts/watermelon/configuration.nix;
     };
     homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
@@ -272,6 +273,14 @@
         sshUser = "root"; user = "root"; hostname = "sloe";
         path = deploy-rs.lib.x86_64-linux.activate.nixos
                self.nixosConfigurations.sloe;
+      };
+    };
+    deploy.nodes.watermelon = {
+      hostname = "watermelon";
+      profiles.system = {
+        sshUser = "root"; user = "root"; hostname = "watermelon";
+        path = deploy-rs.lib.x86_64-linux.activate.nixos
+               self.nixosConfigurations.watermelon;
       };
     };
     checks = builtins.mapAttrs
