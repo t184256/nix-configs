@@ -11,6 +11,7 @@
     #../../nixos/services/ipfs/cluster-leader.nix
     #../../nixos/services/ipfs/node.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
+    ../../nixos/services/syncthing.nix
   ];
 
   #boot.kernelPackages = pkgs.linuxPackages_latest;
