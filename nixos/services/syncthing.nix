@@ -14,9 +14,11 @@ let
   key = "${keyDir}/key.pem";
   cert = "${keyDir}/cert.pem";
 
+  allDirDevices = [ "fig" "quince" "watermelon" ];
   mkFolder = name: extraAttrs: {
     path = lib.mkDefault "${dataDir}/${name}";
     type = lib.mkDefault "receiveonly";
+    devices = allDirDevices;
     versioning = lib.mkDefault {
       type = "staggered";
       # fsPath = ".stversions";  # default
@@ -42,20 +44,28 @@ in
         urAccepted = -1;  # no usage reports
         relaysEnabled = false;
         localAnnounceEnabled = lib.mkDefault false;
-        listenAddresses = [ "tcp://0.0.0.0:22000" "quic://0.0.0.0:22000" ];
+        listenAddresses = [ "quic://0.0.0.0:22000" "tcp://0.0.0.0:22000" ];
       };
       devices = {
         carambola.id = deviceIDs.carambola;
+        coconut.id = deviceIDs.coconut;
         fig.id = deviceIDs.fig;
         quince.id = deviceIDs.quince;
+        watermelon.id = deviceIDs.watermelon;
       };
       folders = {
         # TODO: versioning
         "books" = mkFolder "books" {
-          devices = [ "carambola" "fig" "quince" ];
+          devices = allDirDevices ++ [ "carambola" "coconut" ];
         };
         "Librera" = mkFolder "Librera" {
-          devices = [ "carambola" "fig" "quince" ];
+          devices = allDirDevices ++ [ "carambola" "coconut" ];
+        };
+        "notes" = mkFolder "notes" {
+          devices = allDirDevices ++ [ "carambola" ];
+        };
+        "video" = mkFolder "video" {
+          devices = allDirDevices ++ [ "carambola" "coconut" ];
         };
       };
     };
@@ -113,5 +123,6 @@ in
   systemd.services.syncthing = {
     wantedBy = [ "storage.target" ];
     partOf = [ "storage.target" ];
+    environment.STNODEFAULTFOLDER = "true";
   };
 }

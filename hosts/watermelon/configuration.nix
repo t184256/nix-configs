@@ -7,6 +7,7 @@
     ./disko.nix
     ./hardware.nix
     ./network.nix
+    ../../nixos/services/syncthing.nix
   ];
 
   boot.loader.grub.enable = true;  # sigh
