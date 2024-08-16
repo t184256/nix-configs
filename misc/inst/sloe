@@ -11,10 +11,9 @@ if ! command -v dasel >/dev/null; then
   PATH=$PATH:$dasel/bin
 fi
 
-# TODO: rewrite to assume rescue mode?
-ssh "$REMOTE_USER@$IP" 'set -uexo pipefail
-  grep -Fx "NAME=\"Debian GNU/Linux\"" /etc/os-release
-  grep -F Rescue-System /etc/motd
+ssh "$REMOTE_USER@$IP" 'set -ueo pipefail
+  grep -Fqx "NAME=\"Debian GNU/Linux\"" /etc/os-release
+  grep -Fq Rescue-System /etc/motd
   [[ "$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)" \
     == "8f9c2751-e354-4cb9-af20-be9749d776c6" ]]
   [[ -e "/dev/sda" ]]
@@ -54,5 +53,5 @@ pubkey="$(dasel -f misc/pubkeys/sshd.toml "$hostname" -w -)"
 echo "$IP $pubkey" >> ~/.ssh/known_hosts
 
 # the promised fix-up
-for i in {15..1}; do echo 1>&2 -n "$i... "; sleep 1; done
-ssh "$REMOTE_USER@$IP" 'sudo find /mnt/secrets -type d -exec chmod 400 {} \;'
+for i in {30..1}; do echo 1>&2 -n "$i... "; sleep 1; done
+ssh "$IP" 'sudo find /mnt/secrets -type d -exec chmod 400 {} \;'

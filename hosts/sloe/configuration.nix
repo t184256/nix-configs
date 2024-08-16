@@ -19,6 +19,8 @@
     git
   ];
 
+  systemd.targets.storage.after = [ "mnt-storage.mount" ];
+
   nixpkgs.flake.setNixPath = false;  # save disk space
   nixpkgs.flake.setFlakeRegistry = false;  # save disk space
 

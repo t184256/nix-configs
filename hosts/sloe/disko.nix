@@ -8,11 +8,7 @@ _:
       content = {
         type = "gpt";
         partitions = {
-          grub = {
-            name = "GRUB";
-            size = "4M";
-            type = "EF02";
-          };
+          grub = { name = "GRUB"; size = "4M"; type = "EF02"; };
           boot = {
             name = "BOOT";
             size = "1G";
@@ -24,7 +20,7 @@ _:
           };
           root = {
             name = "ROOT";
-            end = "-32G";
+            end = "256G";
             content = {
               type = "btrfs";
               extraArgs = [ "-f" ];  # overwrite existing
@@ -35,22 +31,13 @@ _:
               };
             };
           };
-          swap = {
-            name = "SWAP";
-            size = "32G";
-            content = {
-              type = "swap";
-              resumeDevice = false;
-            };
-          };
+          storage = { name = "STORAGE"; end = "-32G"; };
         };
       };
     };
-    nodev = {
-      "/" = {
-        fsType = "tmpfs";
-        mountOptions = [ "size=512M" "mode=755" ];
-      };
+    nodev."/" = {
+      fsType = "tmpfs";
+      mountOptions = [ "size=512M" "mode=755" ];
     };
   };
 }
