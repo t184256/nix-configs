@@ -42,9 +42,13 @@ in
     settings = {
       options = {
         urAccepted = -1;  # no usage reports
-        relaysEnabled = false;
+        relaysEnabled = true;
         localAnnounceEnabled = lib.mkDefault false;
-        listenAddresses = [ "quic://0.0.0.0:22000" "tcp://0.0.0.0:22000" ];
+        listenAddresses = [
+          "quic://:22000"
+          "tcp://:22000"
+          "dynamic+http://127.0.0.1:22927/relays"
+        ];
       };
       devices = {
         carambola.id = deviceIDs.carambola;
@@ -124,5 +128,22 @@ in
     wantedBy = [ "storage.target" ];
     partOf = [ "storage.target" ];
     environment.STNODEFAULTFOLDER = "true";
+  };
+
+  systemd.services.syncthing-relaylist = {
+    requires = [ "mnt-storage.mount" ];
+    after = [ "mnt-storage.mount" ];
+    wantedBy = [ "syncthing.service" ];
+    before = [ "syncthing.service" ];
+    partOf = [ "syncthing.service" ];
+    bindsTo = [ "syncthing.service" ];
+    script = ''
+      set -Eeuxo pipefail; shopt -s inherit_errexit
+      cd /run/credentials/syncthing-relaylist.service
+      exec ${pkgs.busybox}/bin/busybox httpd -vf -p 127.0.0.1:22927
+    '';
+    serviceConfig.Type = "exec";  # nixpkgs#258371
+    serviceConfig.LoadCredential =
+      "relays:/mnt/storage/secrets/syncthing-relays";
   };
 }
