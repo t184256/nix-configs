@@ -2,7 +2,9 @@
 
 let
   nodes = {
-    loquat = { int = "192.168.99.1"; ext = [ "loquat.unboiled.info" ]; routines = 3; };
+    loquat = {
+      int = "192.168.99.1"; ext = [ "loquat.unboiled.info" ]; routines = 3;
+    };
     duckweed = { int = "192.168.99.2"; ext = [ "duckweed.unboiled.info" ]; };
     bayroot = { int = "192.168.99.3"; v6 = true; };
     araceae = { int = "192.168.99.4"; v6 = true; };
@@ -10,6 +12,9 @@ let
     cocoa = { int = "192.168.99.7"; routines = 10; };
     lychee = { int = "192.168.99.8"; routines = 2; };
     jujube = { int = "192.168.99.9"; routines = 2; };
+    watermelon = {
+      int = "192.168.99.22"; ext = [ "watermelon.unboiled.info" ]; routines = 3;
+    };
   };
   exts = lib.lists.flatten (
     builtins.map (ha: ha.int) (
