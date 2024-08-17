@@ -6,6 +6,7 @@
   imports = [
     ./disko.nix
     ./hardware.nix
+    ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/syncthing.nix
   ];
 
