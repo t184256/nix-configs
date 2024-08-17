@@ -14,7 +14,7 @@ let
   key = "${keyDir}/key.pem";
   cert = "${keyDir}/cert.pem";
 
-  allDirDevices = [ "fig" "quince" "watermelon" ];
+  allDirDevices = [ "fig" "quince" "sloe" "watermelon" ];
   mkFolder = name: extraAttrs: {
     path = lib.mkDefault "${dataDir}/${name}";
     type = lib.mkDefault "receiveonly";
@@ -55,6 +55,7 @@ in
         coconut.id = deviceIDs.coconut;
         fig.id = deviceIDs.fig;
         quince.id = deviceIDs.quince;
+        sloe.id = deviceIDs.sloe;
         watermelon.id = deviceIDs.watermelon;
       };
       folders = {
@@ -67,6 +68,13 @@ in
         };
         "notes" = mkFolder "notes" {
           devices = allDirDevices ++ [ "carambola" ];
+        };
+        "music" = mkFolder "music" {
+          id = "music-dirty";
+          devices = allDirDevices;
+        };
+        "system" = mkFolder "system" {
+          devices = allDirDevices;
         };
         "video" = mkFolder "video" {
           devices = allDirDevices ++ [ "carambola" "coconut" ];

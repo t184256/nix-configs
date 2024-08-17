@@ -6,6 +6,7 @@
   imports = [
     ./disko.nix
     ./hardware.nix
+    ../../nixos/services/syncthing.nix
   ];
 
   boot.loader.grub.enable = true;  # sigh
