@@ -27,6 +27,7 @@
         account_approval_required = true;
         allow_relay = true;
         upload_limit = 41943040;  # 40 MB
+        remote_post_retention_days = 45;
       };
       ":pleroma" = {
         Oban.queues = { federator_incoming = 10; federator_outgoing = 10; };
