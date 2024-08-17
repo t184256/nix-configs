@@ -7,6 +7,7 @@
     ./disko.nix
     ./hardware.nix
     ./network.nix
+    ../../nixos/services/dns.nix
     ../../nixos/services/syncthing.nix
   ];
 

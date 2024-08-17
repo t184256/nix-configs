@@ -5,6 +5,7 @@ let
     duckweed = "51.15.87.8";
     fig = "212.164.221.47";
     loquat = "38.242.239.104";
+    watermelon = "104.152.210.200";
   };
   IP6 = {
     loquat = "2a02:c206:2101:9233::1";
@@ -13,7 +14,7 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2023102001; serial number
+                                 2024081801; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
@@ -22,14 +23,17 @@ let
                     MX 10    loquat.unboiled.info.
                     NS       a.ns.unboiled.info.
                     NS       b.ns.unboiled.info.
+                    NS       c.ns.unboiled.info.
     a.ns            IN A     ${IP4.duckweed}
     b.ns            IN A     ${IP4.loquat}
+    c.ns            IN A     ${IP4.watermelon}
 
     @               IN A     ${IP4.loquat}
     duckweed        IN A     ${IP4.duckweed}
     fig             IN A     ${IP4.fig}
     loquat          IN A     ${IP4.loquat}
     loquat          IN AAAA  ${IP6.loquat}
+    watermelon      IN A     ${IP4.watermelon}
 
     conference.xmpp IN CNAME loquat
     upload.xmpp     IN CNAME loquat
@@ -81,6 +85,7 @@ in
         if config.networking.hostName == "loquat"
           then [ IP4.loquat IP6.loquat ] else
         if config.networking.hostName == "duckweed" then [ "0.0.0.0" ] else
+        if config.networking.hostName == "watermelon" then [ "0.0.0.0" ] else
         [ "127.0.0.1" ];
       inherit zones;
       ipFreebind = true;
