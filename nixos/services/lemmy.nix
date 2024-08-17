@@ -9,6 +9,7 @@
     settings.port = 8536;
     ui.port = 1284;  # non-default ui port
   };
+  services.pict-rs.package = pkgs.pict-rs;  # TODO: remove on migration
   services.nginx = {
     virtualHosts."lemmy.unboiled.info" = {
       enableACME = true;
