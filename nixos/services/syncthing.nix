@@ -18,7 +18,7 @@ let
   mkFolder = name: extraAttrs: {
     path = lib.mkDefault "${dataDir}/${name}";
     type = lib.mkDefault "receiveonly";
-    devices = allDirDevices;
+    devices = allDirDevices ++ (extraAttrs.extraDevices or []);
     versioning = lib.mkDefault {
       type = "staggered";
       # fsPath = ".stversions";  # default
@@ -27,7 +27,7 @@ let
         maxAge = "31536000";
       };
     };
-  } // extraAttrs;
+  } // (lib.attrsets.filterAttrs (n: _: n != "extraDevices") extraAttrs);
 in
 {
 
@@ -56,29 +56,43 @@ in
         fig.id = deviceIDs.fig;
         quince.id = deviceIDs.quince;
         sloe.id = deviceIDs.sloe;
+        tamarillo.id = deviceIDs.tamarillo;
         watermelon.id = deviceIDs.watermelon;
       };
       folders = {
-        # TODO: versioning
+        # TODO: milder/no versioning on non-servers
+        "android-shared" = mkFolder "android-shared" {
+          extraDevices = [ "carambola" ];
+        };
         "books" = mkFolder "books" {
-          devices = allDirDevices ++ [ "carambola" "coconut" ];
+          extraDevices = [ "carambola" "coconut" ];
+        };
+        "DecSync" = mkFolder "DecSync" {
+          id = "8u43w-prlse";  # TODO: reinit on next reinstall
+          extraDevices = [ "carambola" ];
         };
         "Librera" = mkFolder "Librera" {
-          devices = allDirDevices ++ [ "carambola" "coconut" ];
+          extraDevices = [ "carambola" "coconut" ];
         };
-        "notes" = mkFolder "notes" {
-          devices = allDirDevices ++ [ "carambola" ];
+        "camera" = mkFolder "camera" { extraDevices = [ "carambola" ]; };
+        "documents" = mkFolder "documents" { extraDevices = [ "carambola" ]; };
+        "livestreams" = mkFolder "livestreams" {
+          id = "jeiod-gytgw";  # TODO: reinit on fixing
+          extraDevices = [ "carambola" "coconut" ];
         };
-        "music" = mkFolder "music" {
-          id = "music-dirty";
-          devices = allDirDevices;
-        };
-        "system" = mkFolder "system" {
-          devices = allDirDevices;
+        "music" = mkFolder "music" { id = "music-dirty"; };
+        "notes" = mkFolder "notes" { extraDevices = [ "carambola" ]; };
+        "system" = mkFolder "system" { };
+        "tracks" = mkFolder "tracks" {
+          extraDevices = [ "carambola" "tamarillo" ];
         };
         "video" = mkFolder "video" {
-          devices = allDirDevices ++ [ "carambola" "coconut" ];
+          extraDevices = [ "carambola" "coconut" ];
         };
+        "voice" = mkFolder "voice" {
+          extraDevices = [ "carambola" "tamarillo" ];
+        };
+        "voice-raw" = mkFolder "voice-raw" { extraDevices = [ "carambola" ]; };
       };
     };
   };
@@ -134,7 +148,9 @@ in
 
   systemd.services.syncthing = {
     wantedBy = [ "storage.target" ];
-    partOf = [ "storage.target" ];
+    partOf = [
+      "storage.target" "syncthing-init.service" "syncthing-preconfigure.service"
+    ];
     environment.STNODEFAULTFOLDER = "true";
   };
 
