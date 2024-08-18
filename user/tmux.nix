@@ -99,6 +99,8 @@
       q*)     TO=quince;      METHOD=mosh     MOSH_OPTS='-p 22600:22699' ;;
       b*)     TO=bayroot;     METHOD=ssh ;;
       a*)     TO=araceae;     METHOD=ssh ;;
+      s*)     TO=sloe;        METHOD=mosh ;;
+      w*)     TO=watermelon;  METHOD=mosh ;;
     esac
     tmux rename-window $TO 2> /dev/null
     ${pkgs.ncurses}/bin/clear; echo "$METHOD to $TO..."
