@@ -9,6 +9,7 @@ let
   };
   IP6 = {
     loquat = "2a02:c206:2101:9233::1";
+    watermelon = "2602:ffd5:1:1b0::1";
   };
   zones."unboiled.info".data = ''
     $ORIGIN        unboiled.info.
@@ -27,6 +28,7 @@ let
     a.ns            IN A     ${IP4.duckweed}
     b.ns            IN A     ${IP4.loquat}
     c.ns            IN A     ${IP4.watermelon}
+    c.ns            IN AAAA  ${IP6.watermelon}
 
     @               IN A     ${IP4.loquat}
     duckweed        IN A     ${IP4.duckweed}
@@ -34,6 +36,7 @@ let
     loquat          IN A     ${IP4.loquat}
     loquat          IN AAAA  ${IP6.loquat}
     watermelon      IN A     ${IP4.watermelon}
+    watermelon      IN AAAA  ${IP6.watermelon}
 
     conference.xmpp IN CNAME loquat
     upload.xmpp     IN CNAME loquat
