@@ -1,4 +1,4 @@
-{ ... }:
+_ :
 
 {
   programs.ssh = {
@@ -15,16 +15,18 @@
                 port = 226; };
       cocoa = { user = "monk"; hostname = "duckweed.unboiled.info";
                 port = 227; };
+      sloe = { user = "monk"; hostname = "sloe.unboiled.info"; };
+      watermelon = { user = "monk"; hostname = "watermelon.unboiled.info"; };
 
       bayroot64 = {
         user = "monk";
         hostname = "2001:bc8:1d80:2232::1";
-        proxyJump = "loquat";
+        proxyJump = "duckweed";
       };
       araceae64 = {
         user = "monk";
         hostname = "2001:bc8:634:213e::1";
-        proxyJump = "loquat";
+        proxyJump = "duckweed";
       };
     };
   };
