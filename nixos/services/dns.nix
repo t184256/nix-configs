@@ -5,17 +5,19 @@ let
     duckweed = "51.15.87.8";
     fig = "212.164.221.47";
     loquat = "38.242.239.104";
+    sloe = "77.237.232.57";
     watermelon = "104.152.210.200";
   };
   IP6 = {
     loquat = "2a02:c206:2101:9233::1";
+    sloe = "2a02:c206:2207:3890::1";
     watermelon = "2602:ffd5:1:1b0::1";
   };
   zones."unboiled.info".data = ''
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2024081801; serial number
+                                 2024081802; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
@@ -26,7 +28,8 @@ let
                     NS       b.ns.unboiled.info.
                     NS       c.ns.unboiled.info.
     a.ns            IN A     ${IP4.duckweed}
-    b.ns            IN A     ${IP4.loquat}
+    b.ns            IN A     ${IP4.sloe}
+    b.ns            IN AAAA  ${IP6.sloe}
     c.ns            IN A     ${IP4.watermelon}
     c.ns            IN AAAA  ${IP6.watermelon}
 
@@ -35,6 +38,8 @@ let
     fig             IN A     ${IP4.fig}
     loquat          IN A     ${IP4.loquat}
     loquat          IN AAAA  ${IP6.loquat}
+    sloe            IN A     ${IP4.sloe}
+    sloe            IN AAAA  ${IP6.sloe}
     watermelon      IN A     ${IP4.watermelon}
     watermelon      IN AAAA  ${IP6.watermelon}
 
@@ -89,6 +94,7 @@ in
           then [ IP4.loquat IP6.loquat ] else
         if config.networking.hostName == "duckweed" then [ "0.0.0.0" ] else
         if config.networking.hostName == "watermelon" then [ "0.0.0.0" ] else
+        if config.networking.hostName == "sloe" then [ "0.0.0.0" ] else
         [ "127.0.0.1" ];
       inherit zones;
       ipFreebind = true;
