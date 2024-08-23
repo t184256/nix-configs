@@ -52,6 +52,25 @@
       locations."/".proxyPass = "http://unix:/run/akkoma/socket";
     };
   };
+  systemd = {
+    timers.akkoma-cleanup = {
+      wantedBy = [ "timers.target" ];
+      requires = [ "akkoma.service" ];
+      after = [ "akkoma.service" ];
+      timerConfig.OnCalendar = "*-*-* 03:40:00";
+      partOf = [ "akkoma.service" ];
+    };
+    services.akkoma-cleanup = {
+      path = [ "/run/wrappers" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart =
+          "/run/current-system/sw/bin/pleroma_ctl"
+          + " database prune_objects"
+          + " --keep-threads --keep-non-public --prune-orphaned-activities";
+      };
+    };
+  };
   environment.persistence."/mnt/persist".directories = [
     {
       directory = "/var/lib/secrets/akkoma";
