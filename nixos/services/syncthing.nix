@@ -27,6 +27,9 @@ let
         maxAge = "31536000";
       };
     };
+    fsWatcherEnabled =
+      let t = extraAttrs.type or "receiveonly";  # not ideal if overridden later
+      in t == "receiveonly" || t == "receiveencrypted";
   } // (lib.attrsets.filterAttrs (n: _: n != "extraDevices") extraAttrs);
 in
 {
