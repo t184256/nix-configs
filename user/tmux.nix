@@ -100,6 +100,7 @@
       b*)     TO=bayroot;     METHOD=ssh ;;
       a*)     TO=araceae;     METHOD=ssh ;;
       s*)     TO=sloe;        METHOD=mosh ;;
+      o*)     TO=olosapo;     METHOD=mosh ;;
       w*)     TO=watermelon;  METHOD=mosh ;;
     esac
     tmux rename-window $TO 2> /dev/null

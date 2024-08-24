@@ -161,6 +161,7 @@
       quince = mkSystem "x86_64-linux" ./hosts/quince/configuration.nix;
       etrog = mkSystem "x86_64-linux" ./hosts/etrog/configuration.nix;
       sloe = mkSystem "x86_64-linux" ./hosts/sloe/configuration.nix;
+      olosapo = mkSystem "x86_64-linux" ./hosts/olosapo/configuration.nix;
       watermelon = mkSystem "x86_64-linux" ./hosts/watermelon/configuration.nix;
     };
     homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
@@ -273,6 +274,14 @@
         sshUser = "root"; user = "root"; hostname = "sloe";
         path = deploy-rs.lib.x86_64-linux.activate.nixos
                self.nixosConfigurations.sloe;
+      };
+    };
+    deploy.nodes.olosapo = {
+      hostname = "olosapo";
+      profiles.system = {
+        sshUser = "root"; user = "root"; hostname = "olosapo";
+        path = deploy-rs.lib.x86_64-linux.activate.nixos
+               self.nixosConfigurations.olosapo;
       };
     };
     deploy.nodes.watermelon = {

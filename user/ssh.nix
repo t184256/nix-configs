@@ -16,6 +16,7 @@ _ :
       cocoa = { user = "monk"; hostname = "duckweed.unboiled.info";
                 port = 227; };
       sloe = { user = "monk"; hostname = "sloe.unboiled.info"; };
+      olosapo = { user = "monk"; hostname = "olosapo.unboiled.info"; };
       watermelon = { user = "monk"; hostname = "watermelon.unboiled.info"; };
 
       bayroot64 = {

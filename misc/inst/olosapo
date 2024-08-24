@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail; shopt -s inherit_errexit
+
+# boot wubuntu iso, configure networking manually, set password
+# run this script
+
+IP=$1
+[[ $IP =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
+: "${REMOTE_USER:=ubuntu}"
+hostname=olosapo
+
+if ! command -v dasel >/dev/null; then
+  dasel=$(nix build --print-out-paths --no-link 'nixpkgs#dasel') || exit $?
+  PATH=$PATH:$dasel/bin
+fi
+
+ssh "$REMOTE_USER@$IP" "
+  set -Eeuo pipefail; shopt -s inherit_errexit
+  [[ \"\$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)\" \
+    == 'd25e6570-b3f8-4c63-89c3-3c7403adf30f' ]]
+  [[ -e '/dev/sda' ]]
+  grep -Fqx 'Disk /dev/sda: 15.0GB' <(sudo parted /dev/sda -- print)
+  [[ -e '/dev/sdb' ]]
+  grep -Fqx 'Disk /dev/sdb: 2199GB' <(sudo parted /dev/sdb -- print)
+  ip a show dev enp3s0 | grep -Fq 'state UP'
+  grep -q UBUNTU_CODENAME=jammy /etc/os-release
+  [[ ! -e '/mnt/secrets' ]]
+  if [[ ! -e .ssh ]]; then
+    mkdir -p .ssh
+    cat >> .ssh/authorized_keys
+    chmod 600 .ssh/authorized_keys
+    sudo chmod 755 /home/ubuntu
+  fi
+" < misc/pubkeys/ssh
+
+# TODO: far future: also reinstall if there's no service data checked out
+echo 1>&2 "THIS WILL ERASE AT LEAST SOME DRIVES OF $1!"
+
+injdir=$(mktemp -d) || exit $?
+trap 'sudo rm -rf "$injdir"' EXIT
+
+mkdir -p "$injdir/mnt/secrets"
+misc/secrets inject-to-dir "$hostname" "$injdir/mnt/secrets"
+[[ -e "$injdir/mnt/secrets/login/monk" ]]
+[[ -e "$injdir/mnt/secrets/login/root" ]]
+[[ -e "$injdir/mnt/secrets/sshd/ed25519" ]]
+grep -qF 'OPENSSH PRIVATE KEY' "$injdir/mnt/secrets/sshd/ed25519"
+find "$injdir/mnt/secrets" -type d -exec chmod 500 {} \;
+# will be fixed up to 400 later or on latter secrets injections
+
+mkdir "$injdir/etc"
+scp -q "$REMOTE_USER@$IP:/etc/machine-id" "$injdir/etc/machine-id"
+
+nix run 'nixpkgs#nixos-anywhere' -- \
+  --debug \
+  --extra-files "$injdir" \
+  --flake "/etc/nixos#$hostname" \
+  "$REMOTE_USER@$IP"
+# TODO: remote build + my hydra, maybe?
+
+sed -i "/^$IP /d" ~/.ssh/known_hosts
+pubkey="$(dasel -f misc/pubkeys/sshd.toml "$hostname" -w -)"
+echo "$IP $pubkey" >> ~/.ssh/known_hosts
+
+# the promised fix-up
+for i in {180..1}; do echo 1>&2 -n "$i... "; sleep 1; done
+ssh "monk@$IP" 'sudo find /mnt/secrets -type d -exec chmod 400 {} \;'

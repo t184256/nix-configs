@@ -18,6 +18,9 @@ let
     watermelon = {
       int = "192.168.99.22"; ext = [ "watermelon.unboiled.info" ]; routines = 3;
     };
+    olosapo = {
+      int = "192.168.99.23"; ext = [ "olosapo.unboiled.info" ]; routines = 3;
+    };
   };
   exts = lib.lists.flatten (
     builtins.map (ha: ha.int) (

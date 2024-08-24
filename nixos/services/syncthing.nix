@@ -14,7 +14,7 @@ let
   key = "${keyDir}/key.pem";
   cert = "${keyDir}/cert.pem";
 
-  allDirDevices = [ "fig" "quince" "sloe" "watermelon" ];
+  allDirDevices = [ "fig" "olosapo" "quince" "sloe" "watermelon" ];
   mkFolder = name: extraAttrs: {
     path = lib.mkDefault "${dataDir}/${name}";
     type = lib.mkDefault "receiveonly";
@@ -57,6 +57,7 @@ in
         carambola.id = deviceIDs.carambola;
         coconut.id = deviceIDs.coconut;
         fig.id = deviceIDs.fig;
+        olosapo.id = deviceIDs.olosapo;
         quince.id = deviceIDs.quince;
         sloe.id = deviceIDs.sloe;
         tamarillo.id = deviceIDs.tamarillo;
