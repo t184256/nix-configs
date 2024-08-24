@@ -1,33 +1,29 @@
 { pkgs, ... }:
 
 {
+  networking.hostName = "cocoa";
+
   imports = [
-    ./hardware-configuration.nix
-    ../../nixos/services/dyndns.nix
-    ../../nixos/services/ipfs/cluster-leader.nix
-    ../../nixos/services/ipfs/node.nix
+    ../../nixos/profiles/2024.nix
+    ./disko.nix
+    ./hardware.nix
+    ./network.nix
+    #../../nixos/services/dyndns.nix
+    #../../nixos/services/ipfs/cluster-leader.nix
+    #../../nixos/services/ipfs/node.nix
     ../../nixos/services/nebula
   ];
 
-  users.mutableUsers = false;
-  users.users.monk.hashedPasswordFile = "/mnt/persist/secrets/login/monk";
-  users.users.root.hashedPasswordFile = "/mnt/persist/secrets/login/root";
-
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.efi.efiSysMountPoint = "/boot";
+  boot.loader = {
+    systemd-boot.enable = true;
+    efi.canTouchEfiVariables = true;
+  };
 
   hardware.cpu.intel.updateMicrocode = true;
   hardware.graphics.extraPackages = [ pkgs.intel-media-driver ];
   hardware.wirelessRegulatoryDatabase = true;
 
-  #zramSwap = { enable = true; memoryPercent = 50; };
-
-  networking.hostName = "cocoa";
-  networking.networkmanager.enable = true;
-  systemd.network.wait-online.anyInterface = true;
-
-  services.kubo.settings.Datastore.StorageMax = "20G";
+  #services.kubo.settings.Datastore.StorageMax = "20G";
 
   # Enable sound with pipewire.
   #sound.enable = true;
@@ -44,15 +40,6 @@
   #  inputs.deploy-rs.defaultPackage.${pkgs.system}
   #];
 
-  services.openssh.enable = true;
-
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-
-  # accept forwarded SSH/MOSH
-  networking.firewall.allowedUDPPortRanges = [ { from = 22700; to = 22799; } ];
-  services.sshguard.whitelist = [ "192.168.99.2" ];
-
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
   system.role = {
@@ -65,8 +52,8 @@
   #  services.syncthing.enable = true;
   #};
 
-  system.stateVersion = "23.05";
-  home-manager.users.monk.home.stateVersion = "23.05";
+  system.stateVersion = "24.05";
+  home-manager.users.monk.home.stateVersion = "24.05";
 
   home-manager.users.monk.neovim.fat = true;
   home-manager.users.monk.language-support = [
@@ -74,38 +61,19 @@
   ];
 
   environment.persistence."/mnt/persist" = {
-    hideMounts = true;
     directories = [
-      "/etc/nixos"
       "/etc/NetworkManager"
       "/var/lib/NetworkManager"
-      "/var/lib/nixos"
     #  "/var/lib/alsa"
     #  "/var/lib/bluetooth"
     #  "/var/lib/boltd"
     #  "/var/lib/systemd"
     #  "/var/lib/upower"
     #  "/var/lib/waydroid"
-      "/var/log"
     ];
-    files =
-      (let mode = { mode = "0755"; }; in [
-        { file = "/etc/ssh/ssh_host_rsa_key"; parentDirectory = mode; }
-        { file = "/etc/ssh/ssh_host_rsa_key.pub"; parentDirectory = mode; }
-        { file = "/etc/ssh/ssh_host_ed25519_key"; parentDirectory = mode; }
-        { file = "/etc/ssh/ssh_host_ed25519_key.pub"; parentDirectory = mode; }
-      ]) ++ [
-        "/etc/machine-id"
-      ];
-    # TODO: allowlisting of ~
   };
-
-  environment.systemPackages = with pkgs; [ keyutils ];
 
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
-  boot.kernelPackages = pkgs.linuxPackages_testing;  # needed for bcachefs now
-  # currently bcachefs unlocking is broken otherwise
   boot.initrd.systemd.enable = true;
-
 }

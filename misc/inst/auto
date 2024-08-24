@@ -10,9 +10,7 @@ else
     DMI=$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)
     if [[ "$DMI" == 699f2134-bf6f-40f5-b639-ef4d2e04282b ]]; then AUTO=araceae
     elif [[ "$DMI" == 87e941d7-2fe6-4429-85e4-82de0b2342e7 ]]; then AUTO=bayroot
-    elif [[ "$DMI" == b6a5667e-dcbc-edc8-392f-88aedd6259a6 ]]; then AUTO=cocoa
     elif [[ "$DMI" == 03000200-0400-0500-0006-000700080009 ]]; then AUTO=jujube
-    elif [[ "$DMI" == 86a6297f-1e97-124f-9435-a77e07c3508d ]]; then AUTO=quince
     else
         echo 'host has not been autodetected' >&2
         exit 1
