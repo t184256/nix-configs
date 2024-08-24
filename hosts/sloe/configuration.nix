@@ -6,13 +6,12 @@
   imports = [
     ./disko.nix
     ./hardware.nix
+    ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/syncthing.nix
   ];
 
   boot.loader.grub.enable = true;  # sigh
-
-  networking.networkmanager.enable = true;
 
   time.timeZone = "Europe/Prague";
 
