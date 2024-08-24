@@ -11,7 +11,7 @@
       # playground  # :TSHighlightCapturesUnderCursor,
                     # :help treesitter-highlight-groups
       enable = config.language-support != [];
-      moduleConfig.highlight = {
+      settings.highlight = {
         enable = true;
         indent = true;
         #additional_vim_regex_highlighting = false;
