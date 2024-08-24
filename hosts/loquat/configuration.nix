@@ -24,8 +24,6 @@
 
   boot.loader.grub = { enable = true; device = "/dev/sda"; };
 
-  time.timeZone = "Europe/Prague";
-
   networking.useDHCP = false;
   networking.resolvconf.enable = false;
   services.resolved.enable = true;

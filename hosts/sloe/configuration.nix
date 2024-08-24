@@ -13,8 +13,6 @@
 
   boot.loader.grub.enable = true;  # sigh
 
-  time.timeZone = "Europe/Prague";
-
   environment.systemPackages = with pkgs; [
     curl
     git

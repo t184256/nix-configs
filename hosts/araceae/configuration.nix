@@ -14,8 +14,6 @@
   boot.loader.systemd-boot.enable = true;
   boot.kernelParams = [ "console=ttyS0" ];
 
-  time.timeZone = "Europe/Prague";
-
   networking.useDHCP = false;
   services.cloud-init = {
     enable = true;

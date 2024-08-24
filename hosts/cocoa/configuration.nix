@@ -27,9 +27,6 @@
   networking.networkmanager.enable = true;
   systemd.network.wait-online.anyInterface = true;
 
-  # Set your time zone.
-  time.timeZone = "Europe/Prague";
-
   services.kubo.settings.Datastore.StorageMax = "20G";
 
   # Enable sound with pipewire.

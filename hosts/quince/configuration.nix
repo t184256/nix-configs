@@ -21,8 +21,6 @@
 
   networking.networkmanager.enable = true;
 
-  time.timeZone = "Europe/Prague";
-
   hardware.cpu.intel.updateMicrocode = true;
   hardware.graphics.extraPackages = [ pkgs.intel-media-driver ];
 

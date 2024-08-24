@@ -13,8 +13,6 @@
 
   networking.networkmanager.enable = true;
 
-  time.timeZone = "Europe/Prague";
-
   environment.systemPackages = with pkgs; [
     curl
     git

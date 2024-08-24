@@ -28,8 +28,6 @@
 
   zramSwap = { enable = true; memoryPercent = 50; };
 
-  time.timeZone = "Europe/Prague";
-
   nix.settings.auto-optimise-store = true;  # it's tight on disk space
   nix.gc.automatic = true;
   nix.gc.options = "--delete-older-than 21d";

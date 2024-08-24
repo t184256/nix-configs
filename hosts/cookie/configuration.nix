@@ -14,8 +14,6 @@
   networking.wireless.enable = false;
   networking.networkmanager.enable = true;
 
-  time.timeZone = "Europe/Prague";
-
   environment.systemPackages = with pkgs; [
     firefox-wayland alacritty
     gparted parted cryptsetup btrfs-progs bcachefs-tools

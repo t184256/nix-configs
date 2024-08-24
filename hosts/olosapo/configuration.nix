@@ -13,8 +13,6 @@
 
   boot.loader.grub.enable = true;  # sigh
 
-  time.timeZone = "Europe/Prague";
-
   systemd.targets.storage.after = [ "mnt-storage.mount" ];
 
   nixpkgs.flake.setNixPath = false;  # save disk space
