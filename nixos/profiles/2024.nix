@@ -1,4 +1,4 @@
-_:
+{ lib, ... }:
 
 # Shared common profile for hosts provisioned in 2024.
 #
@@ -10,6 +10,10 @@ _:
 #   though unlocking of it can be manual and separate
 
 {
+  boot.loader.systemd-boot.netbootxyz.enable = lib.mkDefault true;
+
+  zramSwap = lib.mkDefault { enable = true; memoryPercent = 50; };
+
   systemd.targets.storage.after = [ "mnt-storage.mount" ];
 
   users = {

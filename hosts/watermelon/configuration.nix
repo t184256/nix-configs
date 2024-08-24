@@ -23,7 +23,4 @@ _:
 
   home-manager.users.monk.home.stateVersion = "24.05";
   system.stateVersion = "24.05";
-
-  boot.loader.systemd-boot.netbootxyz.enable = true;
-  zramSwap = { enable = true; memoryPercent = 50; };
 }
