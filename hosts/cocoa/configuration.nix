@@ -43,6 +43,7 @@
   #];
 
   system.role = {
+    deployer.enable = true;
     desktop.enable = true;
     physical.enable = true;
     physical.portable = true;
