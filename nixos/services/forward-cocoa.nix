@@ -24,10 +24,10 @@
   networking.firewall = {
     extraCommands = ''
       iptables -t nat -I PREROUTING -p tcp --dport 227 -m conntrack --ctstate NEW -m recent --set --name SSH227 -j LOG --log-prefix SSH227-CONNECT-
-      iptables -t nat -I PREROUTING -p tcp --dport 227 -m conntrack --ctstate NEW -m recent --rcheck --name SSH227 --seconds 180 --hitcount 7 -j ACCEPT
+      iptables -t nat -I PREROUTING -p tcp --dport 227 -m conntrack --ctstate NEW -m recent --rcheck --name SSH227 --seconds 120 --hitcount 9 -j ACCEPT
     '';
     extraStopCommands = ''
-      iptables -t nat -D PREROUTING -p tcp --dport 227 -m conntrack --ctstate NEW -m recent --rcheck --name SSH227 --seconds 180 --hitcount 7 -j ACCEPT || true
+      iptables -t nat -D PREROUTING -p tcp --dport 227 -m conntrack --ctstate NEW -m recent --rcheck --name SSH227 --seconds 120 --hitcount 9 -j ACCEPT || true
       iptables -t nat -D PREROUTING -p tcp --dport 227 -m conntrack --ctstate NEW -m recent --set --name SSH227 -j LOG --log-prefix SSH227-CONNECT- || true
     '';
   };
