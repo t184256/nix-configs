@@ -12,6 +12,7 @@
     #../../nixos/services/ipfs/cluster-leader.nix
     #../../nixos/services/ipfs/node.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
+    ../../nixos/services/sunshine.nix
     ../../nixos/services/syncthing.nix
   ];
 
@@ -41,10 +42,8 @@
   #  inputs.deploy-rs.defaultPackage.${pkgs.system}
   #];
 
-  system.noGraphics = true;
-  home-manager.users.monk.system.noGraphics = true;
   system.role = {
-    #desktop.enable = true;
+    desktop.enable = true;
     physical.enable = true;
     physical.portable = true;
     yubikey.enable = true;

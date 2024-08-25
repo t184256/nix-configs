@@ -1,35 +1,45 @@
-{ pkgs, ... }:
+{ lib, config, ... }:
 
-let
-  config = ''
-    origin_web_ui_allowed = lan
-    adapter_name = /dev/dri/renderD128
-    hevc_mode = 1
-  '';
-  configFile = pkgs.writeTextFile { name = "sunshine.conf"; text = config; };
-in
 {
-  systemd.services.sunshine = {
-    description = "Sunshine Gamestream host";
-    wantedBy = [ "graphical.target" ];
-    after = [ "graphical.target" ];
-    environment = {
-      HOME = "/var/lib/sunshine";
-      WAYLAND_DISPLAY = "wayland-0";
-      XDG_RUNTIME_DIR = "/run/user/1000";
+  # TODO: more declarative pairing / secret management?
+  services.sunshine = {
+    enable = true;
+    capSysAdmin = true;
+    openFirewall = true;
+    settings = {
+      sunshine_name = lib.mkDefault config.networking.hostName;
+      origin_web_ui_allowed = "pc";  # pc / lan / wan
+      capture = "kms";
+      lan_encryption_mode = 2;
+      wan_encryption_mode = 2;
+      encoder = "quicksync";
+      # qsv_preset = "medium";
+      # ping_timeout = 10000;
+      # adapter_name = "/dev/dri/renderD128";
+      # min_threads = 2;
+      # hevc_mode = 0;
+      # av1_mode = 0;
+      # channels = 1;
+      # global_prep_cmd = [ "" ];
+      # output_name = "";
+      # min_log_level = "verbose";
     };
-    serviceConfig = {
-      Type = "simple";
-      ExecStartPre = "${pkgs.bash}/bin/bash -c '"
-        + "${pkgs.coreutils}/bin/sleep 6;"
-        + "${pkgs.coreutils}/bin/mkdir -p /var/lib/sunshine/.config;"
-        + "'";
-      ExecStart = "${pkgs.sunshine}/bin/sunshine ${configFile}";
-    };
+    #apps = [
+    #  {
+    #    name = "800x600@60";
+    #    prep-cmd = [
+    #      {
+    #        do = "set resolution";
+    #        undo = "set resolution";
+    #      }
+    #    ];
+    #    exclude-global-prep-cmd = "false";
+    #    auto-detach = "true";
+    #  }
+    #];
   };
 
-  networking.firewall.allowedTCPPorts = [ 47984 47989 47990 48010 ];
-  networking.firewall.allowedUDPPorts = [ 47998 47999 48000 48002 ];
-
-  environment.persistence."/mnt/persist".directories = [ "/var/lib/sunshine" ];
+  environment.persistence."/mnt/persist".users.monk.directories = [
+    ".config/sunshine"
+  ];
 }
