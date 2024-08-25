@@ -30,11 +30,4 @@ _:
   # accept forwarded SSH/MOSH
   networking.firewall.allowedUDPPortRanges = [ { from = 22600; to = 22699; } ];
   services.sshguard.whitelist = [ "192.168.99.2" ];
-
-  environment.persistence."/mnt/persist" = {
-    directories = [
-      "/etc/NetworkManager"
-      "/var/lib/NetworkManager"
-    ];
-  };
 }

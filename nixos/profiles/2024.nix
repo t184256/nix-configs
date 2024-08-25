@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 
 # Shared common profile for hosts provisioned in 2024.
 #
@@ -36,7 +36,10 @@
     directories = [
       "/var/lib/nixos"
       "/var/log"
-    ];
+    ] ++ (if ! config.networking.networkmanager.enable then [] else [
+      "/etc/NetworkManager"
+      "/var/lib/NetworkManager"
+    ]);
     files = [
       "/etc/machine-id"
     ];

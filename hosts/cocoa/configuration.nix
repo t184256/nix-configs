@@ -59,19 +59,6 @@
     "nix" "bash"
   ];
 
-  environment.persistence."/mnt/persist" = {
-    directories = [
-      "/etc/NetworkManager"
-      "/var/lib/NetworkManager"
-    #  "/var/lib/alsa"
-    #  "/var/lib/bluetooth"
-    #  "/var/lib/boltd"
-    #  "/var/lib/systemd"
-    #  "/var/lib/upower"
-    #  "/var/lib/waydroid"
-    ];
-  };
-
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
   boot.initrd.systemd.enable = true;
