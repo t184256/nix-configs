@@ -1,15 +1,27 @@
 # TODO: nxg ported to flake workflow
 # TODO: combinations
 
+
+def _nx_config_dir():
+    import os
+    home_path = os.path.expanduser('~/.nix-configs')
+    for path in (home_path, '/etc/nixos'):
+        if os.path.exists(os.path.join(path, 'flake.nix')):
+            return path
+    raise RuntimeError(f'neither /etc/nixos nor {home_path} were found')
+
+
 def _nxu():
     ref = __hydra_last_successful_ref()
+    $_confdir = _nx_config_dir()
     $_override = f'github:NixOS/nixpkgs?ref={ref}'
-    (cd /etc/nixos && nix flake update --override-input nixpkgs $_override)
-    del $_override
+    (cd $_confdir && nix flake update --override-input nixpkgs $_override)
+    del $_override $_confdir
 
 
 def _nxd(args):
     REMOTE_BUILD = {'cocoa', 'loquat'}
+    confdir = _nx_config_dir()
     if '--' in args:
         if args.count('--') == 1:  # nxd --deploy-opts -- hosts
             opts, hosts = args[:args.index('--')], args[args.index('--')+1:]
@@ -29,7 +41,7 @@ def _nxd(args):
                (['--skip-checks'] if skip_checks else []) +
                (['--remote-build'] if remote_build else []) +
                opts +
-               [f'/etc/nixos#{host}'] +
+               [f'{confdir}#{host}'] +
                (['--'] + nix_opts if nix_opts else []))
         echo @(cmd)
         @(cmd)
@@ -40,8 +52,10 @@ def _nxd(args):
 def _in_tmpdir(cmd):
     def _nxt(extra_args):
         tmp_dir = $(mktemp -d).rstrip()
-        $_cmd = cmd
-        sudo git config --global --add safe.directory /etc/nixos
+        confdir = _nx_config_dir()
+        $_cmd = cmd.replace('%FLAKE%', confdir)
+        if confdir == '/etc/nixos':
+            sudo git config --global --add safe.directory /etc/nixos
         try:
             sh -c @(f'cd {tmp_dir} && $_cmd ' + ' '.join(extra_args))
         finally:
@@ -53,13 +67,14 @@ def _in_tmpdir(cmd):
 
 aliases['nxu'] = _nxu
 aliases['nxd'] = _nxd
-aliases['nxb'] = _in_tmpdir('nixos-rebuild build')
-aliases['nxt'] = _in_tmpdir('sudo nixos-rebuild test')
-aliases['nxf'] = _in_tmpdir('sudo nixos-rebuild test --fast')
-aliases['nxs'] = _in_tmpdir('sudo nixos-rebuild switch')
-aliases['nxe'] = _in_tmpdir('find /etc/nixos | '
+aliases['nxb'] = _in_tmpdir('nixos-rebuild build --flake %FLAKE%')
+aliases['nxt'] = _in_tmpdir('sudo nixos-rebuild test --flake %FLAKE%')
+aliases['nxf'] = _in_tmpdir('sudo nixos-rebuild test --fast --flake %FLAKE%')
+aliases['nxs'] = _in_tmpdir('sudo nixos-rebuild switch --flake %FLAKE%')
+aliases['nxe'] = _in_tmpdir('find %FLAKE% | '
                             'entr -rc env time -f "%Ew %Uu %Ss %PCPU" '
-                            '         nixos-rebuild --no-build-nix build')
+                            '         nixos-rebuild --no-build-nix build'
+                            '                       --flake %FLAKE%')
 
 del _nxu
 del _nxd
