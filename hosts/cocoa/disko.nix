@@ -91,6 +91,8 @@
                     "/sync" = {
                       mountpoint = "/mnt/storage/sync";
                       mountOptions = [ "noatime" ];
+                      # pre-created subvolume means datacow stays enabled
+                      # which is useful for non-receiveonly usage
                     };
                   };
                 };

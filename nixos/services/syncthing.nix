@@ -5,16 +5,16 @@ let
   deviceIDs = builtins.fromTOML deviceIDs';
   storageDir = "/mnt/storage";  # mountpoint
   secret = "${storageDir}/secrets/syncthing";  # file
-  dataDir = "${storageDir}/sync";  # nodatacow subvolume
+  dataDir = "${storageDir}/sync";  # potentially a nodatacow subvolume
   servicesParentDir = "/mnt/storage/services";  # subvolume
-  serviceDir = "${servicesParentDir}/syncthing";  # nodatacow subvolume
+  serviceDir = "${servicesParentDir}/syncthing";  # maybe a nodatacow subvolume
   databaseDir = "${serviceDir}/db";  # dir
   configDir = "${serviceDir}/cfg";  # dir
   keyDir = "${serviceDir}/key";  # dir
   key = "${keyDir}/key.pem";
   cert = "${keyDir}/cert.pem";
 
-  allDirDevices = [ "fig" "olosapo" "quince" "sloe" "watermelon" ];
+  allDirDevices = [ "cocoa" "fig" "olosapo" "quince" "sloe" "watermelon" ];
   mkFolder = name: extraAttrs: {
     path = lib.mkDefault "${dataDir}/${name}";
     type = lib.mkDefault "receiveonly";
@@ -55,6 +55,7 @@ in
       };
       devices = {
         carambola.id = deviceIDs.carambola;
+        cocoa.id = deviceIDs.cocoa;
         coconut.id = deviceIDs.coconut;
         fig.id = deviceIDs.fig;
         olosapo.id = deviceIDs.olosapo;
@@ -83,6 +84,7 @@ in
         "livestreams" = mkFolder "livestreams" {
           id = "jeiod-gytgw";  # TODO: reinit on fixing
           extraDevices = [ "carambola" "coconut" ];
+          versioning = null;
         };
         "music" = mkFolder "music" { id = "music-dirty"; };
         "notes" = mkFolder "notes" { extraDevices = [ "carambola" ]; };
@@ -92,6 +94,7 @@ in
         };
         "video" = mkFolder "video" {
           extraDevices = [ "carambola" "coconut" ];
+          versioning = null;
         };
         "voice" = mkFolder "voice" {
           extraDevices = [ "carambola" "tamarillo" ];
@@ -124,14 +127,14 @@ in
           btrfs subvol create "${servicesParentDir}"
         if [[ ! -e "${dataDir}" ]]; then
           btrfs subvol create "${dataDir}"
-          chattr +C "${dataDir}"
-          chown ${chowner} "${dataDir}"
+          chattr +C "${dataDir}"  # won't happen if it's pre-created
         fi
+        chown ${chowner} "${dataDir}"  # done always
         if [[ ! -e "${serviceDir}" ]]; then
           btrfs subvol create "${serviceDir}"
-          chattr +C "${serviceDir}"
-          chown ${chowner} "${serviceDir}"
+          chattr +C "${serviceDir}"  # won't happen if it's pre-created
         fi
+        chown ${chowner} "${serviceDir}"  # done always
         if [[ ! -e "${databaseDir}" ]]; then
           mkdir -p "${databaseDir}"
           chown ${chowner} "${databaseDir}"

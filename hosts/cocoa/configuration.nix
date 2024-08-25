@@ -12,6 +12,7 @@
     #../../nixos/services/ipfs/cluster-leader.nix
     #../../nixos/services/ipfs/node.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
+    ../../nixos/services/syncthing.nix
   ];
 
   boot.loader = {
@@ -48,9 +49,7 @@
     physical.portable = true;
     yubikey.enable = true;
   };
-  #home-manager.users.monk = {
-  #  services.syncthing.enable = true;
-  #};
+  services.syncthing = { user = "monk"; group = "users"; };
 
   system.stateVersion = "24.05";
   home-manager.users.monk.home.stateVersion = "24.05";
