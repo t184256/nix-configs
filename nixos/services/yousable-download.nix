@@ -24,7 +24,7 @@
     };
     mounts = [ {
       before = [ "remote-fs.target" ];
-      what = "yousable@loquat.unboiled.info:/mnt/persist/cache/yousable";
+      what = "yousable@loquat.unboiled.info:";
       where = "/remote/yousable";
       type = "fuse.sshfs";
       options = "identityfile=/mnt/persist/secrets/yousable-ssh/id_ed25519,uid=yousable,gid=yousable,allow_other";

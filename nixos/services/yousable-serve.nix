@@ -43,8 +43,14 @@
   ];
   services.openssh.extraConfig = ''
     Match User yousable
-      ForceCommand internal-sftp
+      ChrootDirectory /mnt/persist/cache
+      ForceCommand internal-sftp -d /yousable
+      AllowAgentForwarding no
       AllowTcpForwarding no
+      PasswordAuthentication no
+      PermitTunnel no
+      PubkeyAuthentication yes
+      X11Forwarding no
   '';
 
   environment.persistence."/mnt/persist".directories = [
