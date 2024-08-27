@@ -49,7 +49,11 @@
     physical.portable = true;
     yubikey.enable = true;
   };
-  services.syncthing = { user = "monk"; group = "users"; };
+  services.syncthing = {
+    user = "monk";
+    group = "users";
+    settings.options.localAnnounceEnabled = true;
+  };
 
   system.stateVersion = "24.05";
   home-manager.users.monk.home.stateVersion = "24.05";
