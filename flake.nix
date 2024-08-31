@@ -123,6 +123,11 @@
     ...
   }@inputs:
   let
+    nixosHosts = [
+      "cocoa" "quince" "sloe" "olosapo" "watermelon"  # 2024
+      "loquat" "duckweed" "bayroot" "araceae"  # legacy
+      "etrog" "jujube" "lychee"
+    ];
     autoimport = (import ./.autoimport);
     specialArgs = { inherit inputs; };
     common_modules = [ impermanence.nixosModule
@@ -150,20 +155,8 @@
         inherit system specialArgs;
         modules = [ hostcfg ] ++ common_modules;
       };
-    nixosConfigurations = {
-      lychee = mkSystem "x86_64-linux" ./hosts/lychee/configuration.nix;
-      jujube = mkSystem "x86_64-linux" ./hosts/jujube/configuration.nix;
-      cocoa = mkSystem "x86_64-linux" ./hosts/cocoa/configuration.nix;
-      loquat = mkSystem "x86_64-linux" ./hosts/loquat/configuration.nix;
-      duckweed = mkSystem "x86_64-linux" ./hosts/duckweed/configuration.nix;
-      bayroot = mkSystem "x86_64-linux" ./hosts/bayroot/configuration.nix;
-      araceae = mkSystem "x86_64-linux" ./hosts/araceae/configuration.nix;
-      quince = mkSystem "x86_64-linux" ./hosts/quince/configuration.nix;
-      etrog = mkSystem "x86_64-linux" ./hosts/etrog/configuration.nix;
-      sloe = mkSystem "x86_64-linux" ./hosts/sloe/configuration.nix;
-      olosapo = mkSystem "x86_64-linux" ./hosts/olosapo/configuration.nix;
-      watermelon = mkSystem "x86_64-linux" ./hosts/watermelon/configuration.nix;
-    };
+    nixosConfigurations = nixpkgs.lib.genAttrs nixosHosts
+      (name: mkSystem "x86_64-linux" ./hosts/${name}/configuration.nix);
     homeConfigurations.x1c9 = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
         system = "x86_64-linux";
@@ -212,86 +205,15 @@
                          nixosConfigurations)
       // (builtins.mapAttrs (_: v: v.activationPackage) homeConfigurations);
 
-    deploy.nodes.loquat = {
-      hostname = "loquat.unboiled.info";
+    deploy.nodes = nixpkgs.lib.genAttrs nixosHosts (name: {
+      hostname = "${name}.unboiled.info";
       profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "loquat.unboiled.info";
+        sshUser = "root"; user = "root"; hostname = "${name}.unboiled.info";
         path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.loquat;
+               self.nixosConfigurations.${name};
       };
-    };
-    deploy.nodes.duckweed = {
-      hostname = "duckweed.unboiled.info";
-      profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "duckweed.unboiled.info";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.duckweed;
-      };
-    };
-    deploy.nodes.cocoa = {
-      hostname = "cocoa";
-      profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "cocoa";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.cocoa;
-      };
-    };
-    deploy.nodes.bayroot = {
-      hostname = "bayroot";
-      profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "bayroot";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.bayroot;
-      };
-    };
-    deploy.nodes.araceae = {
-      hostname = "araceae";
-      profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "araceae";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.araceae;
-      };
-    };
-    deploy.nodes.quince = {
-      hostname = "quince";
-      profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "quince";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.quince;
-      };
-    };
-    deploy.nodes.etrog = {
-      hostname = "etrog";
-      profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "etrog";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.etrog;
-      };
-    };
-    deploy.nodes.sloe = {
-      hostname = "sloe";
-      profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "sloe";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.sloe;
-      };
-    };
-    deploy.nodes.olosapo = {
-      hostname = "olosapo";
-      profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "olosapo";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.olosapo;
-      };
-    };
-    deploy.nodes.watermelon = {
-      hostname = "watermelon";
-      profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "watermelon";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos
-               self.nixosConfigurations.watermelon;
-      };
-    };
+    });
+
     checks = builtins.mapAttrs
              (system: deployLib: deployLib.deployChecks self.deploy)
              deploy-rs.lib;
