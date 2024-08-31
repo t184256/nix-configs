@@ -2,6 +2,8 @@
 
 {
   programs.command-not-found.enable = false;
+  programs.nano.enable = false;
+  environment.variables.EDITOR = "vi";
   documentation.info.enable = false;
   documentation.nixos.enable = false;
   environment.defaultPackages = [];
