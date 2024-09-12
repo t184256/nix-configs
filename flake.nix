@@ -206,9 +206,9 @@
       // (builtins.mapAttrs (_: v: v.activationPackage) homeConfigurations);
 
     deploy.nodes = nixpkgs.lib.genAttrs nixosHosts (name: {
-      hostname = "${name}.unboiled.info";
+      hostname = name;
       profiles.system = {
-        sshUser = "root"; user = "root"; hostname = "${name}.unboiled.info";
+        sshUser = "root"; user = "root"; hostname = name;
         path = deploy-rs.lib.x86_64-linux.activate.nixos
                self.nixosConfigurations.${name};
       };
