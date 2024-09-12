@@ -49,6 +49,10 @@ in
   };
 
   systemd.services.garage = {
+    wantedBy = [ "storage.target" ];
+    partOf = [
+      "storage.target" "garage-preconfigure.service"
+    ];
     serviceConfig = {
       DynamicUser = false;
       User = "garage";
