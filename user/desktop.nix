@@ -10,6 +10,6 @@
       dino
       transmission-remote-gtk
       moonlight-qt
-      gnome.gnome-session  # for gnome-session-inhibit
+      gnome-session  # for gnome-session-inhibit
     ]);
 }

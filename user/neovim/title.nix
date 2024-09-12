@@ -8,14 +8,16 @@
   programs.nixvim = {
     plugins.navic = lib.mkIf config.neovim.fat {
       enable = true;
-      safeOutput = true;
-      lsp.autoAttach = true;
-      icons = builtins.listToAttrs (map (v: { name = v; value = ""; }) [
-        "Array" "Boolean" "Class" "Constant" "Constructor" "Enum" "EnumMember"
-        "Event" "Field" "File" "Function" "Interface" "Key" "Method" "Module"
-        "Namespace" "Null" "Number" "Object" "Operator" "Package" "Property"
-        "String" "Struct" "TypeParameter" "Variable"
-      ]);
+      settings = {
+        safeOutput = true;
+        lsp.autoAttach = true;
+        icons = builtins.listToAttrs (map (v: { name = v; value = ""; }) [
+          "Array" "Boolean" "Class" "Constant" "Constructor" "Enum" "EnumMember"
+          "Event" "Field" "File" "Function" "Interface" "Key" "Method" "Module"
+          "Namespace" "Null" "Number" "Object" "Operator" "Package" "Property"
+          "String" "Struct" "TypeParameter" "Variable"
+        ]);
+      };
     };
     opts = {
       title = true;
