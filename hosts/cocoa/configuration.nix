@@ -64,6 +64,12 @@
     "nix" "bash"
   ];
 
+  home-manager.users.monk.home.persistence."/mnt/storage/sync" = {
+    directories = [
+      { directory = "code"; method = "symlink"; }
+    ];
+  };
+
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
   boot.initrd.systemd.enable = true;

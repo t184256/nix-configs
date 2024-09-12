@@ -14,7 +14,7 @@ let
   key = "${keyDir}/key.pem";
   cert = "${keyDir}/cert.pem";
 
-  allDirDevices = [ "cocoa" "fig" "olosapo" "quince" "sloe" "watermelon" ];
+  allDirDevices = [ "cocoa" "olosapo" "quince" "sloe" "watermelon" ];
   mkFolder = name: extraAttrs: {
     path = lib.mkDefault "${dataDir}/${name}";
     type = lib.mkDefault "receiveonly";
@@ -31,6 +31,10 @@ let
       let t = extraAttrs.type or "receiveonly";  # not ideal if overridden later
       in t == "receiveonly" || t == "receiveencrypted";
   } // (lib.attrsets.filterAttrs (n: _: n != "extraDevices") extraAttrs);
+  sendReceiveFor = nameList:
+    if builtins.elem config.networking.hostName nameList
+    then "sendreceive"
+    else "receiveonly";
 in
 {
 
@@ -67,39 +71,54 @@ in
       folders = {
         # TODO: milder/no versioning on non-servers
         "android-shared" = mkFolder "android-shared" {
-          extraDevices = [ "carambola" ];
+          extraDevices = [ "carambola" "fig" ];
         };
         "books" = mkFolder "books" {
-          extraDevices = [ "carambola" "coconut" ];
+          extraDevices = [ "carambola" "coconut" "fig" ];
         };
         "DecSync" = mkFolder "DecSync" {
           id = "8u43w-prlse";  # TODO: reinit on next reinstall
-          extraDevices = [ "carambola" ];
+          extraDevices = [ "carambola" "fig" ];
         };
         "Librera" = mkFolder "Librera" {
-          extraDevices = [ "carambola" "coconut" ];
+          extraDevices = [ "carambola" "coconut" "fig" ];
         };
-        "camera" = mkFolder "camera" { extraDevices = [ "carambola" ]; };
-        "documents" = mkFolder "documents" { extraDevices = [ "carambola" ]; };
+        "camera" = mkFolder "camera" { extraDevices = [ "carambola" "fig" ]; };
+        "code" = mkFolder "code" {
+          type = sendReceiveFor [ "cocoa" ];
+          versioning = lib.mkDefault {
+            type = "staggered";
+            params = {
+              cleanInterval = "1800";
+              maxAge = "2764800";
+            };
+          };
+          fsWatcherDelayS = 20;
+        };
+        "documents" = mkFolder "documents" {
+          extraDevices = [ "carambola" "fig" ];
+        };
         "livestreams" = mkFolder "livestreams" {
           id = "jeiod-gytgw";  # TODO: reinit on fixing
-          extraDevices = [ "carambola" "coconut" ];
+          extraDevices = [ "carambola" "coconut" "fig" ];
           versioning = null;
         };
         "music" = mkFolder "music" { id = "music-dirty"; };
-        "notes" = mkFolder "notes" { extraDevices = [ "carambola" ]; };
+        "notes" = mkFolder "notes" { extraDevices = [ "carambola" "fig" ]; };
         "system" = mkFolder "system" { };
         "tracks" = mkFolder "tracks" {
-          extraDevices = [ "carambola" "tamarillo" ];
+          extraDevices = [ "carambola" "tamarillo" "fig" ];
         };
         "video" = mkFolder "video" {
-          extraDevices = [ "carambola" "coconut" ];
+          extraDevices = [ "carambola" "coconut" "fig" ];
           versioning = null;
         };
         "voice" = mkFolder "voice" {
-          extraDevices = [ "carambola" "tamarillo" ];
+          extraDevices = [ "carambola" "tamarillo" "fig" ];
         };
-        "voice-raw" = mkFolder "voice-raw" { extraDevices = [ "carambola" ]; };
+        "voice-raw" = mkFolder "voice-raw" {
+          extraDevices = [ "carambola" "fig" ];
+        };
       };
     };
   };
