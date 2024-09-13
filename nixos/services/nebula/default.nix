@@ -6,8 +6,12 @@ let
       int = "192.168.99.1"; ext = [ "loquat.unboiled.info" ]; routines = 3;
     };
     duckweed = { int = "192.168.99.2"; ext = [ "duckweed.unboiled.info" ]; };
-    bayroot = { int = "192.168.99.3"; v6 = true; };
-    araceae = { int = "192.168.99.4"; v6 = true; };
+    bayroot = {
+      int = "192.168.99.3"; ext = [ "bayroot.dyn.unboiled.info" ]; v6 = true;
+    };
+    araceae = {
+      int = "192.168.99.4"; ext = [ "araceae.dyn.unboiled.info" ]; v6 = true;
+    };
     quince = { int = "192.168.99.6"; routines = 2; };
     cocoa = { int = "192.168.99.7"; routines = 10; };
     lychee = { int = "192.168.99.8"; routines = 2; };
