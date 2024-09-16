@@ -99,6 +99,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+    autosync-voice = {
+      url = "github:t184256/autosync-voice";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
 
   };
 
@@ -120,6 +125,7 @@
     keyboard-remap,
     input-utils,
     yousable,
+    autosync-voice,
     ...
   }@inputs:
   let
@@ -134,6 +140,7 @@
                        disko.nixosModules.disko
                        simple-nixos-mailserver.nixosModule
                        yousable.nixosModule
+                       autosync-voice.nixosModule
                        home-manager.nixosModules.home-manager {
                          # false as overlays are pulled in where needed
                          home-manager.useGlobalPkgs = false;
