@@ -48,6 +48,7 @@ in
         format = "text";
       };
       routines = hostCfg.routines or 1;
+      tun.mtu = "1396";
     };
     tun.device = "unboiled";
 
