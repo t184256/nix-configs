@@ -26,6 +26,7 @@ let
       int = "192.168.99.23"; ext = [ "olosapo.unboiled.info" ]; routines = 3;
     };
     almond = { int = "192.168.99.31"; };
+    carambola = { int = "192.168.99.32"; };
     x1c9 = { int = "192.168.99.41"; };
   };
   exts = lib.lists.flatten (
