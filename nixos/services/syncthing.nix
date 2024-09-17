@@ -31,6 +31,10 @@ let
       let t = extraAttrs.type or "receiveonly";  # not ideal if overridden later
       in t == "receiveonly" || t == "receiveencrypted";
   } // (lib.attrsets.filterAttrs (n: _: n != "extraDevices") extraAttrs);
+  mkDevice = name: extraAttrs: {
+    id = deviceIDs.${name};
+    allowedNetworks = [ "!192.168.99.0/24" "::/0" "0.0.0.0/0" ];  # !nebula
+  } // extraAttrs;
   sendReceiveFor = nameList:
     if builtins.elem config.networking.hostName nameList
     then "sendreceive"
@@ -46,6 +50,7 @@ in
     overrideDevices = true;  # override WebUI
     overrideFolders = true;  # override WebUI
     openDefaultPorts = true;
+    guiAddress = "${configDir}/sock";
     settings = {
       options = {
         urAccepted = -1;  # no usage reports
@@ -58,15 +63,15 @@ in
         ];
       };
       devices = {
-        carambola.id = deviceIDs.carambola;
-        cocoa.id = deviceIDs.cocoa;
-        coconut.id = deviceIDs.coconut;
-        fig.id = deviceIDs.fig;
-        olosapo.id = deviceIDs.olosapo;
-        quince.id = deviceIDs.quince;
-        sloe.id = deviceIDs.sloe;
-        tamarillo.id = deviceIDs.tamarillo;
-        watermelon.id = deviceIDs.watermelon;
+        carambola = mkDevice "carambola" {};
+        cocoa = mkDevice "cocoa" {};
+        coconut = mkDevice "coconut" {};
+        fig = mkDevice "fig" {};
+        olosapo = mkDevice "olosapo" {};
+        quince = mkDevice "quince" {};
+        sloe = mkDevice "sloe" {};
+        tamarillo = mkDevice "tamarillo" {};
+        watermelon = mkDevice "watermelon" {};
       };
       folders = {
         # TODO: milder/no versioning on non-servers
@@ -103,9 +108,14 @@ in
           extraDevices = [ "carambola" "coconut" "fig" ];
           versioning = null;
         };
-        "music" = mkFolder "music" { id = "music-dirty"; };
+        "music" = mkFolder "music" {
+          id = "music-dirty";
+          extraDevices = [ "fig" ];
+        };
         "notes" = mkFolder "notes" { extraDevices = [ "carambola" "fig" ]; };
-        "system" = mkFolder "system" { };
+        "system" = mkFolder "system" {
+          extraDevices = [ "fig" ] ;
+        };
         "tracks" = mkFolder "tracks" {
           extraDevices = [ "carambola" "tamarillo" "fig" ];
         };
@@ -114,9 +124,11 @@ in
           versioning = null;
         };
         "voice" = mkFolder "voice" {
+          type = sendReceiveFor [ "cocoa" ];
           extraDevices = [ "carambola" "tamarillo" "fig" ];
         };
         "voice-raw" = mkFolder "voice-raw" {
+          type = sendReceiveFor [ "cocoa" ];
           extraDevices = [ "carambola" "fig" ];
         };
       };
