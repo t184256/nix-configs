@@ -5,7 +5,6 @@
   programs.nixvim = if (! config.neovim.fat) then {} else {
     plugins = {
       cmp-path.enable = true;
-      cmp-tmux.enable = true;
       cmp-treesitter.enable = true;
       luasnip.enable = true;
       cmp_luasnip.enable = true;
@@ -18,7 +17,6 @@
             { groupIndex = 1; name = "nvim_lsp"; }
             { groupIndex = 2; name = "luasnip"; }
             { groupIndex = 2; name = "buffer"; }
-            { groupIndex = 3; name = "tmux"; }
           ];
           snippet.expand =
             "function(args) require('luasnip').lsp_expand(args.body) end";

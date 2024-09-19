@@ -52,6 +52,21 @@ in
       vim.opt.diffopt = vim.opt.diffopt + 'algorithm:patience'
       vim.opt.suffixes = vim.opt.suffixes + '.pdf'
     '';
+
+    luaLoader.enable = true;
+    performance = {
+      byteCompileLua = {
+        enable = true;
+        configs = true;
+        initLua = true;
+        nvimRuntime = true;
+        plugins = true;
+      };
+      combinePlugins = {
+        enable = true;
+        standalonePlugins = [ "vimagit" "nvim-treesitter" ];
+      };
+    };
   };
 
   home.wraplings.view = "nvim -R";
