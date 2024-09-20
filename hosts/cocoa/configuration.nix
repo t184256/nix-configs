@@ -9,7 +9,7 @@
     ./hardware.nix
     ./network.nix
     ../../nixos/services/autosync-voice.nix
-    #../../nixos/services/dyndns.nix
+    ../../nixos/services/dyndns.nix
     #../../nixos/services/ipfs/cluster-leader.nix
     #../../nixos/services/ipfs/node.nix
     ../../nixos/services/garage.nix

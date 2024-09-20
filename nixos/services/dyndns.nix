@@ -4,7 +4,13 @@ let
   dyndns = pkgs.writeShellScript "dyndns" ''
     set -ueo pipefail
     hostname=$1
-    token="$(cat /mnt/persist/secrets/dynv6)"
+    if [[ -e /run/credentials/dyndns.service/token ]]; then  # 2024
+      token="$(cat /run/credentials/dyndns.service/token)"
+    elif [[ -e /mnt/secrets/dynv6 ]]; then
+      token="$(cat /mnt/secrets/dynv6)"
+    else
+      token="$(cat /mnt/persist/secrets/dynv6)"
+    fi
 
     curl="${pkgs.curl}/bin/curl -fsS --connect-timeout 5 --max-time 10"
     url4="https://ipv4.dynv6.com/api/update?token=$token"
@@ -28,6 +34,7 @@ in
       unitConfig.ConditionPathExists = "/mnt/persist/secrets/dynv6";
       serviceConfig.Type = "oneshot";
       serviceConfig.ExecStart = "${dyndns} ${config.networking.hostName}";
+      # LoadCredential = [ "token:/mnt/secrets/dyndns" ];  # TODO: 2024
     };
   };
 }
