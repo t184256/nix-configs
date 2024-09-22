@@ -31,7 +31,7 @@ in
       partOf = [ "dyndns.service" ];
     };
     services.dyndns = {
-      unitConfig.ConditionPathExists = "/mnt/persist/secrets/dynv6";
+      #unitConfig.ConditionPathExists = "/mnt/secrets/dynv6";  # 2024
       serviceConfig.Type = "oneshot";
       serviceConfig.ExecStart = "${dyndns} ${config.networking.hostName}";
       # LoadCredential = [ "token:/mnt/secrets/dyndns" ];  # TODO: 2024
