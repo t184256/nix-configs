@@ -9,9 +9,23 @@ let
       processed_list = "/mnt/storage/sync/voice/unsorted/.list";
     };
     devices = {
-      tx650 = {
-        glob = "VOICE/FOLDER0*/*.WAV";
+      a = {
+        # locally sourced ICD-TX660
+        glob = "REC_FILE/FOLDER01/*.wav";
+        prefer_channel = "left";
+        # should be unique enough
+        drive.Id = "SONY-IC-RECORDER-180E94E1007818";
+      };
+      b = {
+        # ICD-TX660 bought overseas
+        glob = "REC_FILE/FOLDER01/*.wav";
         prefer_channel = "right";
+        # should be unique enough
+        drive.Id = "SONY-IC-RECORDER-180E93A1001689";
+      };
+      g = {
+        # locally sourced ICD-TX650
+        glob = "VOICE/FOLDER0*/*.WAV";
         drive = {
           # should be enough to detect the right thing
           Id = "SONY-IC-RECORDER-01078CAFCF2B";
@@ -25,12 +39,6 @@ let
           Serial = "01078CAFCF2B";
           Vendor = "SONY";
         };
-      };
-      tx660 = {
-        glob = "REC_FILE/FOLDER01/*.wav";
-        prefer_channel = "left";
-        # should be unique enough
-        drive.Id = "SONY-IC-RECORDER-180E94E1007818";
       };
     };
   };
