@@ -8,9 +8,6 @@
 
   config = lib.mkMerge [
     (lib.mkIf config.system.noGraphics {
-      environment.noXlibs = true;
-    })
-    (lib.mkIf config.system.noGraphics {
       nixpkgs.overlays = [(_: super: {
         qemu = super.qemu.override {
           alsaSupport = false;
