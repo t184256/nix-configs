@@ -1,5 +1,8 @@
-{ pkgs, ... }:
+{ config, ... }:
 
+let
+  lua = config.lib.nixvim.mkRaw;
+in
 {
   # TODO: expand and tweak
   programs.nixvim = {
@@ -20,12 +23,6 @@
             "<Space>p" = "PrevMessage";
             "<Space>n" = "NextMessage";
             "<Space>r" = "ResetMessage";
-            #a = ''
-            #  function()
-            #    vim.fn.system("git absorb");
-            #    require('neogit').refresh());
-            #  end
-            #'';
           };
           finder = {
             "<Space>n" = "Next";
@@ -34,6 +31,13 @@
         };
       };
     };
+    keymaps = [
+      {
+        key = "gG";
+        mode = "n";
+        action = lua "function() require('neogit').open({kind='tab'}) end";
+      }
+    ];
   };
   home.wraplings.ng =
     "nvim '+lua require(\"neogit\").open({kind=\"replace\"})'";
