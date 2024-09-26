@@ -32,5 +32,9 @@ x = 5678901234567890123456789012345678901234567890123456789012345678901234567890
 # snippets and buffer completions don't show up
 A().l
 
+# test type validation
+'a' / 2  # error
+a: int = 'str'  # error
+
 # test snippets with __main__
 # test hints with print(file=
