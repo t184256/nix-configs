@@ -34,6 +34,7 @@ in
   imports = [
     ../config/language-support.nix
     ../config/neovim.nix
+    ../config/os.nix
   ];
   nixpkgs.overlays = [ (import ../../overlays/python-lsp-server.nix) ];
 
@@ -292,5 +293,13 @@ in
         '';
       }
     ];
+  };
+
+  xdg.configFile."clangd/config.yaml" = {
+    enable = config.system.os == "OtherLinux";
+    text = ''
+      CompileFlags:
+        Add: [ "--include-directory=/usr/include" ]
+    '';
   };
 }
