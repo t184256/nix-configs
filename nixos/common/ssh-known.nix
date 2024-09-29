@@ -1,6 +1,21 @@
-{
-  programs.ssh.knownHosts = {
-    "loquat.unboiled.info".publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBra/oIenaBvFOtNsF97uUrWRakng1R1zcJyy0/MoR8";
-    "duckweed.unboiled.info".publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIASTR5SavefPqRkeTrI6bbMNp6AFnf4wHA5Lxo72H/wJ";
+{ config, ... }:
+
+let
+  keys = builtins.fromTOML (builtins.readFile ../../misc/pubkeys/sshd.toml);
+  makeHost = host: key: {
+    # TODO: automatic DNS aliases
+    extraHostNames = [
+      "${host}.unboiled.info"
+      "${host}.dyn.unboiled.info"
+      "${host}.dyn4.unboiled.info"
+      "${host}.dyn6.unboiled.info"
+    ] ++ (if host == config.networking.hostName then [] else [ "localhost" ])
+      ++ (if host == "sloe" then [] else [ "git.unboiled.info" ]);
+    publicKey = key;
   };
+  knownHosts = builtins.mapAttrs makeHost keys;
+in
+{
+  programs.ssh.knownHosts = knownHosts;
+  programs.ssh.knownHostsFiles = [ ../../misc/pubkeys/github ];
 }
