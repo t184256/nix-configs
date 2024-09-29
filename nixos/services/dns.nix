@@ -94,12 +94,11 @@ in
     services.nsd = {
       enable = true;
       interfaces =
-        if config.networking.hostName == "loquat"
-          then [ IP4.loquat IP6.loquat ] else
-        if config.networking.hostName == "duckweed" then [ "0.0.0.0" ] else
-        if config.networking.hostName == "watermelon" then [ "0.0.0.0" ] else
-        if config.networking.hostName == "sloe" then [ "0.0.0.0" ] else
-        [ "127.0.0.1" ];
+        if builtins.elem
+          config.networking.hostName
+          [ "duckweed" "watermelon" "sloe" ]
+        then [ "0.0.0.0" "::" ]
+        else [ "127.0.0.1" ];
       inherit zones;
       ipFreebind = true;
       ipTransparent = true;
