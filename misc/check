@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -xEeuo pipefail; shopt -s inherit_errexit
+
+host -4 sloe.unboiled.info a.ns.unboiled.info
+host -4 sloe.unboiled.info b.ns.unboiled.info
+host -4 sloe.unboiled.info b.ns.unboiled.info
+# no IPv6 on duckweed yet
+host -6 sloe.unboiled.info b.ns.unboiled.info
+host -6 sloe.unboiled.info c.ns.unboiled.info
+
+echo ok
