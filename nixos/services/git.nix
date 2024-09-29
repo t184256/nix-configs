@@ -86,7 +86,7 @@
     repository =
       "s3:http://localhost:3900/service-forgejo-"
       + config.networking.hostName;
-    pruneOpts = [ "--keep-weekly 100" ];
+    pruneOpts = [ "--keep-daily 30" "--keep-weekly 30" "--keep-monthly 30" ];
     backupPrepareCommand = ''
       ${pkgs.btrfs-progs}/bin/btrfs subvolume snapshot -r \
         ${config.services.forgejo.stateDir} \
