@@ -8,4 +8,7 @@ host -4 sloe.unboiled.info b.ns.unboiled.info
 host -6 sloe.unboiled.info b.ns.unboiled.info
 host -6 sloe.unboiled.info c.ns.unboiled.info
 
+curl -s https://git.unboiled.info/user/sign_up \
+	| grep -qF 'Registration is disabled. Please contact your site administrator.'
+
 echo ok
