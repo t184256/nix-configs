@@ -12,14 +12,14 @@ let
   IP6 = {
     loquat = "2a02:c206:2101:9233::1";
     sloe = "2a02:c206:2207:3890::1";
-    olosapo = "2606:a8c0:3:969::";
+    olosapo = "2606:a8c0:3:969::a";
     watermelon = "2602:ffd5:1:1b0::1";
   };
   zones."unboiled.info".data = ''
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2024082402; serial number
+                                 2024092901; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
