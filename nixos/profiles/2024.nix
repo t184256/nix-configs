@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ pkgs, config, lib, ... }:
 
 # Shared common profile for hosts provisioned in 2024.
 #
@@ -52,5 +52,16 @@
         ".bash_history"
       ];
     };
+  };
+
+  systemd.services.mnt-storage-tmp = {
+    wantedBy = [ "storage.target" ];
+    after = [ "mnt-storage.mount" ];
+    serviceConfig = { Type = "oneshot"; RemainAfterExit = true; };
+    script = ''
+      ${pkgs.coreutils}/bin/test -d /mnt/storage/tmp || \
+        ${pkgs.btrfs-progs}/bin/btrfs subvolume create /mnt/storage/tmp
+      ${pkgs.btrfs-progs}/bin/btrfs subvolume show /mnt/storage/tmp > /dev/null
+    '';
   };
 }

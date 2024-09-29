@@ -19,7 +19,7 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2024092901; serial number
+                                 2024092903; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
@@ -49,7 +49,7 @@ let
 
     conference.xmpp IN CNAME loquat
     upload.xmpp     IN CNAME loquat
-    git             IN CNAME loquat
+    git             IN CNAME sloe
     natali          IN CNAME fig
     www.natali      IN CNAME fig
     nica            IN CNAME fig

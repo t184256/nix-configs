@@ -9,7 +9,6 @@
     #../../nixos/services/fedifetcher.nix
     ../../nixos/services/ipfs/cluster-leader.nix
     ../../nixos/services/ipfs/node.nix
-    ../../nixos/services/git.nix
     ../../nixos/services/hydra.nix
     ../../nixos/services/lemmy.nix
     ../../nixos/services/mail.nix
@@ -73,7 +72,6 @@
   };
   #systemd.services.yousable-back.serviceConfig.CPUAffinity = "0-3";
   #systemd.services.syncthing.serviceConfig.CPUAffinity = "0-3";
-  systemd.services.gitea.serviceConfig.CPUAffinity = "0-3";
   systemd.services.akkoma.serviceConfig.CPUAffinity = "0-2";
   systemd.services.lemmy.serviceConfig.CPUAffinity = "0-2";
 
