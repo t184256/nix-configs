@@ -23,6 +23,7 @@ in
     ./noice.nix
     ./nvim-ufo.nix
     ./oil.nix
+    ./selection.nix
     ./tabby.nix
     ./title.nix
     ./treesitter.nix
