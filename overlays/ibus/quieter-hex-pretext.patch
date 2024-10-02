@@ -1,0 +1,13 @@
+diff --git a/ui/gtk3/panelbinding.vala b/ui/gtk3/panelbinding.vala
+index caad1b0b..5c9f9064 100644
+--- a/ui/gtk3/panelbinding.vala
++++ b/ui/gtk3/panelbinding.vala
+@@ -127,6 +127,8 @@ class Preedit : Gtk.Window {
+ 
+ 
+     public IBus.Text get_engine_preedit_text() {
++        return new IBus.Text.from_string("");
++
+         string extension_text = get_extension_text();
+         uint char_count = extension_text.char_count();
+         IBus.Text retval;
