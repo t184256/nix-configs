@@ -67,6 +67,7 @@ in
   programs.lazygit.enable = true;
 
   home.packages = [
+    pkgs.git-absorb
     pkgs.gh
 
     git-t
