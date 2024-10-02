@@ -1,0 +1,26 @@
+diff --git a/src/platform/linux/input.cpp b/src/platform/linux/input.cpp
+index 74d68304..42beb4c3 100644
+--- a/src/platform/linux/input.cpp
++++ b/src/platform/linux/input.cpp
+@@ -1549,6 +1549,8 @@ namespace platf {
+     keyboard_ev(kb, KEY_LEFTSHIFT, 1);
+     keyboard_ev(kb, KEY_U, 1);
+     keyboard_ev(kb, KEY_U, 0);
++    keyboard_ev(kb, KEY_LEFTSHIFT, 0);
++    keyboard_ev(kb, KEY_LEFTCTRL, 0);
+ 
+     /* input each HEX character */
+     for (auto &ch : hex_unicode) {
+@@ -1563,9 +1565,9 @@ namespace platf {
+       }
+     }
+ 
+-    /* releasing <SHIFT> and <CTRL> */
+-    keyboard_ev(kb, KEY_LEFTSHIFT, 0);
+-    keyboard_ev(kb, KEY_LEFTCTRL, 0);
++    /* commit with a Return */
++    keyboard_ev(kb, KEY_ENTER, 1);
++    keyboard_ev(kb, KEY_ENTER, 1);
+   }
+ 
+   /**
