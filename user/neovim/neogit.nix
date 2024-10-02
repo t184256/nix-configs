@@ -39,6 +39,9 @@ in
       }
     ];
   };
-  home.wraplings.ng =
-    "nvim '+lua require(\"neogit\").open({kind=\"replace\"})'";
+  home.wraplings.ng = ''
+    nvim \
+      '+lua require("neogit").open({kind="replace"})' \
+      '+lua vim.api.nvim_buf_set_keymap(0, "n", "q", "<cmd>q<cr>", {})'
+ '';
 }
