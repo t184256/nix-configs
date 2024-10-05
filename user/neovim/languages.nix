@@ -130,6 +130,7 @@ in
       cmp-nvim-lsp.enable = true;
       cmp-nvim-lsp-signature-help.enable = true;
       telescope.enable = true;
+      web-devicons.enable = false;  # thanks, telescope
 
       lsp.servers = {
         #cssls.enable = true;  # requires non-free code now?
