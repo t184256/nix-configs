@@ -71,5 +71,6 @@ in
           ./config/nx-commands-nixos.xsh
        ))
      + (readConfigBit ./config/w.xsh)
+     + (readConfigBit ./config/ptk.xsh)
   ;
 }
