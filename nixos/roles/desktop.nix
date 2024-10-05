@@ -19,6 +19,8 @@ in {
   config = mkIf cfg.enable {
     programs.dconf.enable = true;  # for h-m's dconf.settings
 
+    i18n.inputMethod.enable = true;
+    i18n.inputMethod.type = "ibus";  # fcitx5 also has a working Ctrl-Shift-U
     services = {
       xserver = {
         enable = true;
@@ -29,7 +31,6 @@ in {
             wayland = true;
           };
         };
-        xkb.layout = "us,ru";
         videoDrivers = [ "modesetting" ];
         desktopManager.gnome.enable = true;
       };
