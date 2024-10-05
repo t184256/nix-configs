@@ -24,6 +24,7 @@ in
     ./nvim-ufo.nix
     ./oil.nix
     ./selection.nix
+    ./smart-langmap.nix
     ./tabby.nix
     ./title.nix
     ./treesitter.nix
