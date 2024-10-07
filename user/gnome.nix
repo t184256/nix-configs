@@ -37,20 +37,20 @@
       ];
     };
     "org/gnome/shell/keybindings" = {
-        toggle-overview = [ "<Super><Alt>y" ];
-        toggle-application-view = [ "<Super><Alt>x" ];
-        switch-to-application-1 = [ "<Super><Alt>a" ];
-        switch-to-application-2 = [ "<Super><Alt>r" ];
-        switch-to-application-3 = [ "<Super><Alt>s" ];
-        switch-to-application-4 = [ "<Super><Alt>t" ];
-        switch-to-application-5 = [ "<Super><Alt>d" ];
+        toggle-overview = [ "<Shift><Alt>y" ];
+        toggle-application-view = [ "<Shift><Alt>x" ];
+        switch-to-application-1 = [ "<Shift><Alt>a" ];
+        switch-to-application-2 = [ "<Shift><Alt>r" ];
+        switch-to-application-3 = [ "<Shift><Alt>s" ];
+        switch-to-application-4 = [ "<Shift><Alt>t" ];
+        switch-to-application-5 = [ "<Shift><Alt>d" ];
     };
     "org/gnome/desktop/wm/keybindings" = {
-      switch-to-workspace-1 = [ "<Super><Alt>q" ];
-      switch-to-workspace-2 = [ "<Super><Alt>w" ];
-      switch-to-workspace-3 = [ "<Super><Alt>f" ];
-      switch-to-workspace-4 = [ "<Super><Alt>p" ];
-      switch-to-workspace-5 = [ "<Super><Alt>g" ];
+      switch-to-workspace-1 = [ "<Shift><Alt>q" ];
+      switch-to-workspace-2 = [ "<Shift><Alt>w" ];
+      switch-to-workspace-3 = [ "<Shift><Alt>f" ];
+      switch-to-workspace-4 = [ "<Shift><Alt>p" ];
+      switch-to-workspace-5 = [ "<Shift><Alt>g" ];
     };
     "org/gnome/desktop/wm/preferences" = {
       mouse-button-modifier = "<Control>";  # will break apps, but let's try

@@ -56,35 +56,35 @@ in
       ];
     };
     "org/gnome/shell/keybindings" = {
-        toggle-overview = [ "<Super><Alt>y" ];
-        toggle-application-view = [ "<Super><Alt>x" ];
-        switch-to-application-1 = [ "<Super><Alt>a" ];
-        switch-to-application-2 = [ "<Super><Alt>r" ];
-        switch-to-application-3 = [ "<Super><Alt>s" ];
-        switch-to-application-4 = [ "<Super><Alt>t" ];
-        switch-to-application-5 = [ "<Super><Alt>d" ];
+        toggle-overview = [ "<Shift><Alt>y" ];
+        toggle-application-view = [ "<Shift><Alt>x" ];
+        switch-to-application-1 = [ "<Shift><Alt>a" ];
+        switch-to-application-2 = [ "<Shift><Alt>r" ];
+        switch-to-application-3 = [ "<Shift><Alt>s" ];
+        switch-to-application-4 = [ "<Shift><Alt>t" ];
+        switch-to-application-5 = [ "<Shift><Alt>d" ];
     };
     "org/gnome/desktop/wm/keybindings" = {
-      switch-to-workspace-1 = [ "<Super><Alt>q" ];
-      switch-to-workspace-2 = [ "<Super><Alt>w" ];
-      switch-to-workspace-3 = [ "<Super><Alt>f" ];
-      switch-to-workspace-4 = [ "<Super><Alt>p" ];
-      switch-to-workspace-5 = [ "<Super><Alt>g" ];
-      begin-move = [ "<Super><Alt>y" ];
-      move-to-monitor-left = [ "<Super><Left>" ];
-      move-to-monitor-down = [ "<Super><Down>" ];
-      move-to-monitor-right = [ "<Super><Right>" ];
-      move-to-monitor-up = [ "<Super><Up>" ];
+      switch-to-workspace-1 = [ "<Shift><Alt>q" ];
+      switch-to-workspace-2 = [ "<Shift><Alt>w" ];
+      switch-to-workspace-3 = [ "<Shift><Alt>f" ];
+      switch-to-workspace-4 = [ "<Shift><Alt>p" ];
+      switch-to-workspace-5 = [ "<Shift><Alt>g" ];
+      begin-move = [ "<Shift><Alt>y" ];
+      move-to-monitor-left = [ "<Shift><Left>" ];
+      move-to-monitor-down = [ "<Shift><Down>" ];
+      move-to-monitor-right = [ "<Shift><Right>" ];
+      move-to-monitor-up = [ "<Shift><Up>" ];
     };
     "org/gnome/shell/extensions/focus-changer" = {
-      focus-left = [ "<Control><Alt><Super>Left" ];
-      focus-down = [ "<Control><Alt><Super>Down" ];
-      focus-right = [ "<Control><Alt><Super>Right" ];
-      focus-up = [ "<Control><Alt><Super>Up" ];
+      focus-left = [ "<Control><Alt><Shift>Left" ];
+      focus-down = [ "<Control><Alt><Shift>Down" ];
+      focus-right = [ "<Control><Alt><Shift>Right" ];
+      focus-up = [ "<Control><Alt><Shift>Up" ];
     };
     "org/gnome/settings-daemon/plugins/media-keys" = {
       magnifier = [ ];
-      screensaver = [ "<Alt><Super>8" ];
+      screensaver = [ "<Alt><Shift>8" ];
     };
     "org/gnome/desktop/wm/preferences" = {
       mouse-button-modifier = "<Control>";  # will break apps, but let's try
