@@ -369,11 +369,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1727912816,
-        "narHash": "sha256-7YKpM6feCGi28g0DoF9faE7N9BF43O09StvotNs1sO8=",
+        "lastModified": 1728287558,
+        "narHash": "sha256-VJToioMjrKwaLl5xWoswfSmTpA7nUXQuuFRYvcWs7qI=",
         "owner": "t184256",
         "repo": "keyboard-remap",
-        "rev": "31b8a4bd39e867b2d1c7266b43ef584c411d6a84",
+        "rev": "722465ca79fe54f7898c59c33d9088b7b6dffb78",
         "type": "github"
       },
       "original": {
