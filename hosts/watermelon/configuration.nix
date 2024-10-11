@@ -12,6 +12,7 @@ _:
     ../../nixos/services/dns.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/syncthing.nix
+    ../../nixos/services/yousable.nix
   ];
 
   boot.loader.grub.enable = true;  # sigh
