@@ -29,7 +29,7 @@ let
     };
     fsWatcherEnabled =
       let t = extraAttrs.type or "receiveonly";  # not ideal if overridden later
-      in t == "receiveonly" || t == "receiveencrypted";
+      in t != "receiveonly" && t != "receiveencrypted";
   } // (lib.attrsets.filterAttrs (n: _: n != "extraDevices") extraAttrs);
   mkDevice = name: extraAttrs: {
     id = deviceIDs.${name};
