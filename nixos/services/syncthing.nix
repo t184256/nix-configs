@@ -120,6 +120,7 @@ in
           extraDevices = [ "carambola" "tamarillo" "fig" ];
         };
         "video" = mkFolder "video" {
+          type = sendReceiveFor [ "cocoa" ];
           extraDevices = [ "carambola" "coconut" "fig" ];
           versioning = null;
         };
