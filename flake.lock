@@ -930,11 +930,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1728668982,
-        "narHash": "sha256-jZ9B6tVHmo07QwYD0jW51VApaAaovLm9bJfQmsY6Gk4=",
+        "lastModified": 1728688925,
+        "narHash": "sha256-YtBYVChc44IHkv+SOW/71khXcgVmZeuqa7ZDocPPkFA=",
         "owner": "t184256",
         "repo": "yousable",
-        "rev": "b88618b7602902ca16a0a83aabe5e6d85f3deb4a",
+        "rev": "c7164703616a87d7b0aaddff42978c75272695ae",
         "type": "github"
       },
       "original": {
