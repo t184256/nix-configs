@@ -28,7 +28,9 @@ let
     colors.primary = { background = "#000000"; foreground = "#ffffff"; };
     bell = { animation = "EaseOutExpo"; duration = 100; color = "#7f7f7f"; };
     selection.save_to_clipboard = true;
-    live_config_reload = false;
+    general = {
+      live_config_reload = false;
+    };
 
     # Gotta love GNOME 40. What do they smoke, huh?
     # lack of server-side decorations, mouse never reappearing...
