@@ -9,8 +9,8 @@ let
       "${host}.dyn.unboiled.info"
       "${host}.dyn4.unboiled.info"
       "${host}.dyn6.unboiled.info"
-    ] ++ (if host == config.networking.hostName then [] else [ "localhost" ])
-      ++ (if host == "sloe" then [] else [ "git.unboiled.info" ]);
+    ] ++ (if host == config.networking.hostName then [ "localhost" ] else [])
+      ++ (if host == "sloe" then [ "git.unboiled.info" ] else []);
     publicKey = key;
   };
   knownHosts = builtins.mapAttrs makeHost keys;
