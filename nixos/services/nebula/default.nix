@@ -20,11 +20,9 @@ let
       int = "192.168.99.21"; ext = [ "sloe.unboiled.info" ]; routines = 3;
     };
     watermelon = {
-      int = "192.168.99.22"; ext = [ "watermelon.unboiled.info" ]; routines = 3;
+      int = "192.168.99.22"; ext = [ "watermelon.unboiled.info" ]; routines = 2;
     };
-    olosapo = {
-      int = "192.168.99.23"; ext = [ "olosapo.unboiled.info" ]; routines = 3;
-    };
+    olosapo = { int = "192.168.99.23"; ext = [ "olosapo.unboiled.info" ]; };
     almond = { int = "192.168.99.31"; };
     carambola = { int = "192.168.99.32"; };
     x1c9 = { int = "192.168.99.41"; };
@@ -42,13 +40,18 @@ in
     settings = {
       listen = { host = "[::]"; port = 4242; };
       static_map.network = if hostCfg ? v6 && hostCfg.v6 then "ip6" else "ip";
-      punchy = { punch = true; respond = true; };
       logging = {
         level = "debug";
         format = "text";
       };
       routines = hostCfg.routines or 1;
       tun.mtu = "1396";
+      punchy = {
+        punch = true;
+        respond = true;
+        delay = "2s";
+        respond_delay = "10s";
+      };
     };
     tun.device = "unboiled";
 
