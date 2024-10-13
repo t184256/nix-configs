@@ -105,6 +105,7 @@ in
         };
         "livestreams" = mkFolder "livestreams" {
           id = "jeiod-gytgw";  # TODO: reinit on fixing
+          type = sendReceiveFor [ "watermelon" ];
           extraDevices = [ "carambola" "coconut" "fig" ];
           versioning = null;
         };
