@@ -148,7 +148,7 @@ in
           #pylsp_mypy.enabled = false;  # picks up wrong mypy
           rope.enabled = true;
         };
-        ruff-lsp.enable = withLang "python";
+        ruff_lsp.enable = withLang "python";
         #pylyzer.enable = withLang "python";  # pylyzer!22
         # TODO: pyright, maybe? with a limited set of checks
 
@@ -160,11 +160,11 @@ in
 
         marksman.enable = withLang "markdown";
 
-        nil-ls.enable = withLang "nix";
+        nil_ls.enable = withLang "nix";
 
-        rust-analyzer.enable = withLang "rust";
-        rust-analyzer.installCargo = true;
-        rust-analyzer.installRustc = true;
+        rust_analyzer.enable = withLang "rust";
+        rust_analyzer.installCargo = true;
+        rust_analyzer.installRustc = true;
 
         ltex.enable = withLang "prose";
         ltex.settings = {
