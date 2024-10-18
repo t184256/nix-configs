@@ -90,17 +90,17 @@ touch /tmp/.inst-files/dnf/dnf.conf
 cat > /tmp/.inst-files/dnf/yum.repos.d/fedora.repo << \EOF
 [fedora]
 name=Fedora $releasever - $basearch
-baseurl=https://download.fedoraproject.org/pub/fedora/linux/releases/$releasever/Everything/$basearch/os/
+baseurl=https://download.fedoraproject.org/pub/fedora/linux/development/$releasever/Everything/$basearch/os/
 enabled=1
 gpgcheck=0
 EOF
-cat > /tmp/.inst-files/dnf/yum.repos.d/fedora-updates.repo << \EOF
-[fedora-updates]
-name=Fedora Updates $releasever - $basearch
-baseurl=https://download.fedoraproject.org/pub/fedora/linux/updates/$releasever/Everything/$basearch/
-enabled=1
-gpgcheck=0
-EOF
+#cat > /tmp/.inst-files/dnf/yum.repos.d/fedora-updates.repo << \EOF
+#[fedora-updates]
+#name=Fedora Updates $releasever - $basearch
+#baseurl=https://download.fedoraproject.org/pub/fedora/linux/updates/$releasever/Everything/$basearch/
+#enabled=1
+#gpgcheck=0
+#EOF
 
 # mount what's needed for the chroot
 [[ -d /mnt/tgt/root/curr/dev ]] || sudo mkdir /mnt/tgt/root/curr/dev
@@ -148,7 +148,7 @@ if [[ "$INSPECT" == 1 ]]; then $CHROOT bash; exit 0; fi
 # invoke dnf5 to install the most basic system
 sudo dnf5 -y \
     --noplugins \
-    --releasever=40 \
+    --releasever=41 \
     --installroot=/mnt/tgt/root/curr \
     --config /tmp/.inst-files/dnf/dnf.conf \
     --setopt=reposdir=/tmp/.inst-files/dnf/yum.repos.d \
