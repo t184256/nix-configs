@@ -113,7 +113,10 @@ in
           id = "music-dirty";
           extraDevices = [ "fig" ];
         };
-        "notes" = mkFolder "notes" { extraDevices = [ "carambola" "fig" ]; };
+        "notes" = mkFolder "notes" {
+          type = sendReceiveFor [ "cocoa" ];
+          extraDevices = [ "carambola" "fig" ];
+        };
         "system" = mkFolder "system" {
           extraDevices = [ "fig" ] ;
         };
