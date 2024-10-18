@@ -224,7 +224,8 @@
         #pkgs = import nixpkgs {};
         pkgs = import nixpkgs { system = "x86_64-linux"; };
         modules = [
-          "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+          # minimal is fine and preferred
+          "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-base.nix"
           ./hosts/cookie/configuration.nix
         ] ++ common_modules;
         inherit specialArgs;
