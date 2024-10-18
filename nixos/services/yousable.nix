@@ -49,6 +49,7 @@ in
           chattr +C "/mnt/storage/services/yousable"
         fi
         [[ -e "/mnt/storage/sync/livestreams" ]] && \
+          setfacl -m user:yousable:r-x /mnt/storage/sync
           setfacl -R -m user:yousable:rwx /mnt/storage/sync/livestreams
       '';
     };
