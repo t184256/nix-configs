@@ -14,7 +14,7 @@ let
     };
     quince = { int = "192.168.99.6"; routines = 2; };
     cocoa = { int = "192.168.99.7"; routines = 10; };
-    lychee = { int = "192.168.99.8"; routines = 2; };
+    # lychee = { int = "192.168.99.8"; routines = 2; };
     jujube = { int = "192.168.99.9"; routines = 2; };
     sloe = {
       int = "192.168.99.21"; ext = [ "sloe.unboiled.info" ]; routines = 3;
@@ -34,6 +34,14 @@ let
     )
   );
   hostCfg = nodes.${config.networking.hostName};
+  certsFile = builtins.readFile ../../../misc/pubkeys/nebula.toml;
+  certs = builtins.fromTOML certsFile;
+  cert = certs.${config.networking.hostName};
+  certFile = pkgs.writeText "nebula.cert" ''
+    -----BEGIN NEBULA CERTIFICATE-----
+    ${cert}
+    -----END NEBULA CERTIFICATE-----
+  '';
 in
 {
   services.nebula.networks.unboiled = {
@@ -66,9 +74,8 @@ in
         (builtins.map (ip: ip + ":4242") hostattrs.ext)
     ) (lib.attrsets.filterAttrs (_: ha: ha ? ext) nodes);
 
-    ca = ./certs/ca;
-    # TODO 2024: pull from toml
-    cert = lib.mkDefault ./certs/${config.networking.hostName};
+    ca = ./ca;
+    cert = certFile;
     # TODO 2024: make it just /mnt/secrets/nebula
     key =
       lib.mkDefault "/mnt/persist/secrets/nebula/${config.networking.hostName}";
