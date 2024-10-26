@@ -20,6 +20,55 @@ let
     [[ "$scale" != 'keep' ]] && args+=(--scale "$scale")
     [[ -n "''${args[*]}" ]] && gnome-randr modify "''${args[@]}" '${connector}'
   '';
+  fixer-script = pkgs.writers.writePython3
+    "sunshine-fixer"
+    { libraries = [ pkgs.python3Packages.python-uinput ]; }
+    ''
+      from pathlib import Path
+      import time
+      import subprocess
+      import sys
+
+      import uinput
+
+
+      CONN_ATTEMPT = 'Info: Trying encoder [vaapi]'
+      FATAL = 'Fatal: Unable to find display or encoder during startup.'
+
+
+      def state(output='card1-${connector}'):
+          t = Path(f'/sys/class/drm/{output}/dpms').read_text().strip()
+          return t == 'On'
+
+
+      mouse = uinput.Device([uinput.REL_X, uinput.REL_Y, uinput.BTN_LEFT],
+                            name='sunshine-fixer')
+
+
+      def wiggle():
+          mouse.emit(uinput.REL_X, -1)
+          time.sleep(.05)
+          mouse.emit(uinput.REL_X, 1)
+          time.sleep(.05)
+
+
+      f = subprocess.Popen(['journalctl', '-f', '-u', 'sunshine'],
+                           stdout=subprocess.PIPE, encoding='utf-8')
+
+      while True:
+          line = f.stdout.readline()
+          if CONN_ATTEMPT in line:
+              if state():
+                  print('no wiggling required', file=sys.stderr)
+              else:
+                  wiggle()
+                  print(f'wiggled, new output state={state()}', file=sys.stderr)
+          elif FATAL in line:
+              if state():
+                  print('fatal error, but monitor is on, restarting sunshine',
+                        file=sys.stderr)
+                  subprocess.run(['systemctl', 'restart', 'sunshine'])
+    '';
 in
 {
   # TODO: more declarative pairing / secret management?
@@ -57,6 +106,16 @@ in
       }
       { name = "Desktop"; exit-timeout = 1; auto-detach = "true"; }
     ];
+  };
+
+  systemd.services.sunshine-fixer = {
+    description = "Wiggler that wakes up the display when sunshine struggles";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${fixer-script}";
+      Restart = "on-failure";
+    };
   };
 
   environment.persistence."/mnt/persist".users.monk.directories = [
