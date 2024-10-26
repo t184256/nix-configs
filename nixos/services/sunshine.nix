@@ -1,10 +1,12 @@
 { pkgs, lib, config, ... }:
 
 let
-  connector = "HDMI-1";  # TODO: varies by host
+  sys-connector = "HDMI-A-1";  # TODO: varies by host
+  gnome-connector = "HDMI-1";  # TODO: varies by host
   autores-script = pkgs.writeScript "autores-script" ''
     #!/usr/bin/env bash
     set -Eeuo pipefail; shopt -s inherit_errexit
+
     mode="''${SUNSHINE_CLIENT_WIDTH}x''${SUNSHINE_CLIENT_HEIGHT}"
     hw_mode='keep'; scale='keep'
     case "$mode" in
@@ -18,7 +20,8 @@ let
     args=()
     [[ "$hw_mode" != 'keep' ]] && args+=(-m "$hw_mode")
     [[ "$scale" != 'keep' ]] && args+=(--scale "$scale")
-    [[ -n "''${args[*]}" ]] && gnome-randr modify "''${args[@]}" '${connector}'
+    [[ -n "''${args[*]}" ]] && \
+      gnome-randr modify "''${args[@]}" '${gnome-connector}'
   '';
   fixer-script = pkgs.writers.writePython3
     "sunshine-fixer"
@@ -32,43 +35,31 @@ let
       import uinput
 
 
-      CONN_ATTEMPT = 'Info: Trying encoder [vaapi]'
-      FATAL = 'Fatal: Unable to find display or encoder during startup.'
-
-
-      def state(output='card1-${connector}'):
+      def state(output='card1-${sys-connector}'):
           t = Path(f'/sys/class/drm/{output}/dpms').read_text().strip()
           return t == 'On'
 
 
       mouse = uinput.Device([uinput.REL_X, uinput.REL_Y, uinput.BTN_LEFT],
                             name='sunshine-fixer')
-
-
-      def wiggle():
-          mouse.emit(uinput.REL_X, -1)
-          time.sleep(.05)
-          mouse.emit(uinput.REL_X, 1)
-          time.sleep(.05)
-
-
-      f = subprocess.Popen(['journalctl', '-f', '-u', 'sunshine'],
+      f = subprocess.Popen(['journalctl', '-f', '-t', 'sunshine'],
                            stdout=subprocess.PIPE, encoding='utf-8')
-
       while True:
           line = f.stdout.readline()
-          if CONN_ATTEMPT in line:
+          if 'Info: Trying encoder [vaapi]' in line:  # requires info level
               if state():
                   print('no wiggling required', file=sys.stderr)
               else:
-                  wiggle()
+                  mouse.emit(uinput.REL_X, -1)
+                  time.sleep(.05)
+                  mouse.emit(uinput.REL_X, 1)
+                  time.sleep(.05)
                   print(f'wiggled, new output state={state()}', file=sys.stderr)
-          elif FATAL in line:
-              if state():
-                  print('fatal error, but monitor is on, restarting sunshine',
-                        file=sys.stderr)
-                  subprocess.run(['systemctl', 'restart', 'sunshine'])
     '';
+  edid-custom = pkgs.runCommand "edid-custom" {} ''
+    mkdir -p "$out/lib/firmware/edid"
+    cat ${../../misc/custom.edid} > "$out/lib/firmware/edid/custom.edid"
+  '';
 in
 {
   # TODO: more declarative pairing / secret management?
@@ -83,6 +74,7 @@ in
       lan_encryption_mode = 2;
       wan_encryption_mode = 2;
       encoder = "quicksync";
+      min_log_level = "info";  # fixer requires it
       # qsv_preset = "medium";
       # ping_timeout = 10000;
       # adapter_name = "/dev/dri/renderD128";
@@ -123,4 +115,9 @@ in
   ];
 
   # TODO: applying handmade custom edid
+  hardware.display = {
+    edid.enable = true;
+    edid.packages = [ edid-custom ];
+    outputs."${sys-connector}".edid = "custom.edid";
+  };
 }
