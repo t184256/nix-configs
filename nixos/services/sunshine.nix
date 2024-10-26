@@ -14,7 +14,8 @@ let
             2960x1848) hw_mode='2960x1848@59.980'; scale=2;;  # 14" Tab S8 Ultra
             2560x1600) hw_mode='2560x1600@59.972'; scale=2;;  # 10" OneNetbook 4
             2208x1768) hw_mode='2208x1768@59.955'; scale=2;;  # 8" Samsung Fold2
-            1920x1080) hw_mode='1920x1080@60.000'; scale=1;;  # generic FullHD
+            2048x1536) hw_mode='2048x1536@60.017'; scale=2;;  # 8" Tab S2 8.0
+            1920x1080) hw_mode='1920x1080@60.000';;  # generic FullHD
     esac
 
     args=()
