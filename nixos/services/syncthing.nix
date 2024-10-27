@@ -76,6 +76,7 @@ in
       folders = {
         # TODO: milder/no versioning on non-servers
         "android-shared" = mkFolder "android-shared" {
+          type = sendReceiveFor [ "cocoa" ];
           extraDevices = [ "carambola" "fig" ];
         };
         "books" = mkFolder "books" {
