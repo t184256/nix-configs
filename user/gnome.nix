@@ -32,7 +32,7 @@
         "autohide-volume@unboiled.info"
         "just-perfection-desktop@just-perfection"
         "noannoyance@daase.net"
-        "paperwm@paperwm.github.co"
+        "paperwm@paperwm.github.com"
         "unite@hardpixel.eu"
       ];
     };
