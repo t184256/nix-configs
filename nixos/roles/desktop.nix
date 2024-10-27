@@ -53,13 +53,11 @@ in {
       systemPackages = (with pkgs; [
         wl-clipboard
       ]) ++ (with pkgs.gnomeExtensions; [
-        allow-locked-remote-desktop
         autohide-battery
         autohide-volume
         just-perfection
-        noannoyance-fork
+        open-bar
         paperwm
-        quake-mode
         sound-output-device-chooser
         unite
       ]);
