@@ -68,6 +68,7 @@
   home-manager.users.monk.home.persistence."/mnt/storage/sync" = {
     directories = [
       { directory = "code"; method = "symlink"; }
+      { directory = "notes"; method = "symlink"; }
     ];
   };
 
