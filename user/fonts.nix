@@ -43,6 +43,27 @@
         <?xml version="1.0"?>
         <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
         <fontconfig>
+          <match target="font">
+            <edit mode="assign" name="autohint" >
+              <bool>false</bool>
+            </edit>
+            <edit mode="assign" name="hinting" >
+              <bool>true</bool>
+            </edit>
+            <edit mode="assign" name="hintstyle">
+              <const>hintfull</const>
+            </edit>
+            <edit name="rgba" mode="assign">
+              <const>none</const>
+            </edit>
+            <edit name="antialias" mode="assign">
+              <bool>true</bool>
+            </edit>
+            <edit mode="assign" name="lcdfilter" >
+                <const>lcddefault</const>
+            </edit>
+          </match>
+
           <include ignore_missing="yes">/etc/fonts/conf.d</include>
           <include ignore_missing="yes">/etc/fonts/fonts.conf</include>
           <include ignore_missing="yes" prefix="xdg">fontconfig/conf.d</include>
