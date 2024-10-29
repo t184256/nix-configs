@@ -59,37 +59,22 @@ in
     term-hopper = "${term} --class Console,Console -e ~/.tmux-hopper.sh";
   };
 
-  xdg.dataFile = if config.system.noGraphics then {} else {
-    "applications/term.desktop".text = ''
-      [Desktop Entry]
-      Categories=TerminalEmulator;
-      Exec=term
-      GenericName=Term
-      Icon=org.gnome.Terminal
-      Name=Term
-      Terminal=false
-      Type=Application
-    '';
-    "applications/console.desktop".text = ''
-      [Desktop Entry]
-      Categories=TerminalEmulator;
-      Exec=term-hopper
-      GenericName=Console
-      Icon=org.gnome.Console
-      Name=Console
-      Terminal=false
-      Type=Application
-    '';
+  xdg.desktopEntries = if config.system.noGraphics then {} else {
+    term = {
+      name = "Term";
+      genericName = "Term";
+      icon = "org.gnome.Console";
+      exec = "term";
+      terminal = false;
+      categories = [ "TerminalEmulator" ];
+    };
+    console = {
+      name = "Console";
+      genericName = "Console";
+      icon = "org.gnome.Console";
+      exec = "term-hopper";
+      terminal = false;
+      categories = [ "TerminalEmulator" ];
+    };
   };
-  # TODO: in 21.11, use
-  # xdg.desktopEntries = {
-  #   term = {
-  #     name = "Term";
-  #     genericName = "Term";
-  #     icon = "org.gnome.Terminal";
-  #     exec = "term";
-  #     terminal = false;
-  #     categories = [ "TerminalEmulator" ];
-  #   };
-  # };
 }
