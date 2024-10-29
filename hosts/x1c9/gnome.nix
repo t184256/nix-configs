@@ -51,10 +51,13 @@ in
         "focus-changer@heartmire"
         "gnome-kinit@bonzini.gnu.org"
         "just-perfection-desktop@just-perfection"
+        "paperwm@paperwm.github.com"
         #"noannoyance@daase.net"
         "unite@hardpixel.eu"
       ];
     };
+    # https://github.com/paperwm/PaperWM/issues/261
+    "org/gnome/mutter".experimental-features = [ "scale-monitor-framebuffer" ];
     "org/gnome/shell/keybindings" = {
         toggle-overview = [ "<Shift><Alt>y" ];
         toggle-application-view = [ "<Shift><Alt>x" ];
