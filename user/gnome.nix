@@ -54,23 +54,34 @@ in
         "unite@hardpixel.eu"
       ];
     };
+    # https://github.com/paperwm/PaperWM/issues/261
+    "org/gnome/mutter".experimental-features = [ "scale-monitor-framebuffer" ];
     "org/gnome/shell/keybindings" = {  # a remnant, not sure about these
         toggle-overview = [ "<Shift><Alt>y" ];
     };
+    "org/gnome/settings-daemon/plugins/media-keys" = {
+      magnifier = [ ];
+      #screensaver = [ "<Alt><Shift>8" ];
+    };
     "org/gnome/desktop/wm/preferences" = {
       mouse-button-modifier = "<Control>";  # will break apps, but let's try
+      num-workspaces = 5;
       titlebar-font = "Iosevka Term 14";
       workspace-names = [ "1" "2" "3" "4" "5" ];
     };
-    #"org/gnome/mutter".dynamic-workspaces = true;
+    "org/gnome/mutter".dynamic-workspaces = false;
     "org/gnome/desktop/interface" = {
       gtk-theme = "Adwaita-dark";
-      color-scheme = "prefer-dark";
       icon-theme = "Moka";
+      color-scheme = "prefer-dark";
       clock-show-date = false;
       font-name = "Noto Sans ExtraCondensed 14";
       document-font-name = "Noto Sans ExtraCondensed 14";
       monospace-font-name = "Iosevka Term 14";
+    };
+    "org/gnome/settings-daemon/plugins/color" = {
+      night-light-enabled = true;
+      night-light-temperature = 3200;
     };
     "org/gnome/shell/extensions/unite" = {
       restrict-to-primary-screen = false;
