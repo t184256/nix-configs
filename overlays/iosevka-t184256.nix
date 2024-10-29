@@ -81,6 +81,9 @@ self: super:
 
       # move lines closer to each other, default is 1250
       metricOverride.leading = 1000;
+
+      # see #347
+      hintParams = ["-a" "sss"];
     };
   };
 }
