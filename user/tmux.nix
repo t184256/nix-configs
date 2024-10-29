@@ -32,6 +32,12 @@
       set -g display-time 1000
       set-window-option -g visual-bell on
       set-window-option -g bell-action other
+      bind-key C run -b '> /dev/null term --class Console,Console -e tmux new-session -A -t #{session_name} -s $(date +%s) \; new-window'
+      bind-key W run -b '> /dev/null term --class Console,Console -e tmux new-session -A -t #{session_name} -s $(date +%s) \; choose-window'
+      bind-key S run -b '> /dev/null term --class Console,Console -e tmux new-session'
+      bind-key l choose-tree -Zw "link-window -s '%%'"
+      bind-key g choose-tree -Zw "move-window -s '%%'"
+      bind-key u unlink-window
     '';
   };
 
