@@ -20,7 +20,7 @@ index 74d68304..42beb4c3 100644
 -    keyboard_ev(kb, KEY_LEFTCTRL, 0);
 +    /* commit with a Return */
 +    keyboard_ev(kb, KEY_ENTER, 1);
-+    keyboard_ev(kb, KEY_ENTER, 1);
++    keyboard_ev(kb, KEY_ENTER, 0);
    }
  
    /**
