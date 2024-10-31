@@ -40,6 +40,7 @@ let
     0.66666667
     0.75
     0.83333334
+    1
   ];
   mkWorkspace = i: {
     background = "";
