@@ -79,6 +79,8 @@
 
   #home-manager.users.monk.services.syncthing.enable = true;
 
+  systemd.services.systemd-machine-id-commit.enable = false;
+
   system.stateVersion = "22.05";
   home-manager.users.monk.home.stateVersion = "22.05";
 

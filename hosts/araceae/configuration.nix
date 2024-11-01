@@ -43,6 +43,8 @@
   users.users.monk.hashedPasswordFile = "/mnt/persist/secrets/login/monk";
   users.users.root.hashedPasswordFile = "/mnt/persist/secrets/login/root";
 
+  systemd.services.systemd-machine-id-commit.enable = false;
+
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
 

@@ -31,6 +31,8 @@
   systemd.services.sshd.serviceConfig.LoadCredential =
     "ed25519:/mnt/secrets/sshd/ed25519";
 
+  systemd.services.systemd-machine-id-commit.enable = false;
+
   environment.persistence."/mnt/persist" = {
     hideMounts = true;
     directories = [
