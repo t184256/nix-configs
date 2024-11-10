@@ -166,7 +166,7 @@ sudo dnf5 -y \
             systemd systemd-resolved systemd-boot rootfiles \
             selinux-policy-targeted policycoreutils \
             zram-generator \
-            NetworkManager polkit polkit-gnome \
+            NetworkManager polkit \
             NetworkManager-tui NetworkManager-wifi NetworkManager-openvpn \
             openssh-server openssh-clients hostname firewalld iproute \
             iputils netcat \
