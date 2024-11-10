@@ -80,6 +80,7 @@ in
           extraDevices = [ "carambola" "fig" ];
         };
         "books" = mkFolder "books" {
+          type = sendReceiveFor [ "cocoa" ];
           extraDevices = [ "carambola" "coconut" "fig" ];
         };
         "DecSync" = mkFolder "DecSync" {
@@ -87,6 +88,7 @@ in
           extraDevices = [ "carambola" "fig" ];
         };
         "Librera" = mkFolder "Librera" {
+          type = sendReceiveFor [ "cocoa" ];
           extraDevices = [ "carambola" "coconut" "fig" ];
         };
         "camera" = mkFolder "camera" { extraDevices = [ "carambola" "fig" ]; };
@@ -102,6 +104,7 @@ in
           fsWatcherDelayS = 20;
         };
         "documents" = mkFolder "documents" {
+          type = sendReceiveFor [ "cocoa" ];
           extraDevices = [ "carambola" "fig" ];
         };
         "livestreams" = mkFolder "livestreams" {
