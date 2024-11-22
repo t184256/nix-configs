@@ -14,6 +14,6 @@
     );
     la = l + " -a";
     lt = l + " -T";
-    lla = l + " -la";
+    lla = ll + " -a";
   };
 }
