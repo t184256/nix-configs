@@ -174,7 +174,7 @@ sudo dnf5 -y \
             sudo vim-minimal man-db time diffutils \
             pcsc-lite opensc \
             tar wget curl git-core ca-certificates \
-            htop iotop ncdu strace ltrace mtr bzip2 lz4 p7zip \
+            htop iotop strace ltrace mtr bzip2 lz4 p7zip \
             udisks \
             mesa-dri-drivers \
             gdm gnome-session gnome-online-accounts gnome-console \

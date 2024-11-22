@@ -5,7 +5,7 @@
   environment.systemPackages = with pkgs; [
     git
     rsync
-    htop iotop ncdu
+    htop iotop
     strace ltrace
     wget curl
     vis  # as an emergency text editor
