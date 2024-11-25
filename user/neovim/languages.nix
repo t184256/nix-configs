@@ -180,7 +180,7 @@ in
       ltex-extra = {
         enable = withLang "prose";
         settings = {
-          load_langs = [ "en-US" "ru-RU" ];
+          load_langs = [ "en-US" "en-GB" "ru-RU" ];
           path = ".ltex";
         };
       };
