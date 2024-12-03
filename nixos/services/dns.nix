@@ -10,6 +10,8 @@ let
     watermelon = "104.152.210.200";
   };
   IP6 = {
+    araceae = "2001:bc8:710:9839:dc00:ff:fe81:6e69";
+    bayroot = "2001:bc8:1d90:124:dc00:ff:fe1d:d261";
     loquat = "2a02:c206:2101:9233::1";
     sloe = "2a02:c206:2207:3890::1";
     olosapo = "2606:a8c0:3:969::a";
@@ -19,7 +21,7 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2024092903; serial number
+                                 2024112901; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
@@ -46,6 +48,8 @@ let
     olosapo         IN AAAA  ${IP6.olosapo}
     watermelon      IN A     ${IP4.watermelon}
     watermelon      IN AAAA  ${IP6.watermelon}
+    araceae         IN AAAA  ${IP6.araceae}
+    bayroot         IN AAAA  ${IP6.bayroot}
 
     conference.xmpp IN CNAME loquat
     upload.xmpp     IN CNAME loquat
