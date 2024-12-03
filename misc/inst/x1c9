@@ -374,7 +374,7 @@ sudo chmod +x /mnt/tgt/root/curr/bin/post-inst
 # install Nix
 NIX_URL=https://nix-community.github.io/nix-installers/x86_64
 [[ -e /mnt/tgt/cache/nix-multi-user.rpm ]] ||
-    sudo wget $NIX_URL/nix-multi-user-2.17.1.rpm \
+    sudo wget $NIX_URL/nix-multi-user-2.24.9.rpm \
         -O /mnt/tgt/cache/nix-multi-user.rpm
 sudo cp /mnt/tgt/cache/nix-multi-user.rpm /mnt/tgt/root/curr/
 $CHROOT rpm -i nix-multi-user.rpm
