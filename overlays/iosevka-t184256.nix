@@ -66,7 +66,7 @@ self: super:
         # italic seems largely fine
       };
 
-      # less weights => faster rebuilding
+      # fewer weights => faster rebuilding
       weights = {
         extralight = { css = 200; menu = 200; shape = 200; };
         light = { css = 300; menu = 300; shape = 300; };
