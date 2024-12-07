@@ -95,7 +95,7 @@
   home-manager.users.monk.roles.mua = true;
   home-manager.users.monk.neovim.fat = true;
   home-manager.users.monk.language-support = [
-    "nix" "bash" "prose" "python" "yaml"
+    "nix" "bash" "prose" "python" "typst" "yaml"
   ];
 
   # currently manual:

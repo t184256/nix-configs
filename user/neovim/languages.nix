@@ -166,6 +166,9 @@ in
         rust_analyzer.installCargo = true;
         rust_analyzer.installRustc = true;
 
+        tinymist.enable = withLang "typst";
+        tinymist.extraOptions.offset_encoding = "utf-8";
+
         ltex.enable = withLang "prose";
         ltex.settings = {
           additionalRules = {
@@ -173,6 +176,7 @@ in
             motherTongue = "ru-RU";
           };
           completionEnabled = true;
+          filetypes = [ "latex" "markdown" "typst" ];
           #diagnosticSeverity = "warning";
         };
       };

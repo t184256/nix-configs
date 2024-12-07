@@ -62,7 +62,7 @@
 
   home-manager.users.monk.neovim.fat = true;
   home-manager.users.monk.language-support = [
-    "nix" "bash"
+    "nix" "bash" "prose" "typst"
   ];
 
   home-manager.users.monk.home.persistence."/mnt/storage/sync" = {

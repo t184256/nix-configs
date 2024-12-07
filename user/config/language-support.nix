@@ -13,6 +13,7 @@
       "python"
       "rust"
       "tex"
+      "typst"
       "yaml"
     ]);
     description = ''
