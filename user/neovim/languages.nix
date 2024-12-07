@@ -148,7 +148,7 @@ in
           #pylsp_mypy.enabled = false;  # picks up wrong mypy
           rope.enabled = true;
         };
-        ruff_lsp.enable = withLang "python";
+        ruff.enable = withLang "python";
         #pylyzer.enable = withLang "python";  # pylyzer!22
         # TODO: pyright, maybe? with a limited set of checks
 
