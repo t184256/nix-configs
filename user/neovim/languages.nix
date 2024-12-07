@@ -29,6 +29,17 @@ let
     set -uexo pipefail
     exec ruff format - | ruff --fix --select COM812 - | ruff format -
   '';
+  ltexFiletypes = [
+    "gitcommit"
+    "html"
+    "mail"
+    "markdown"
+    "pandoc"
+    "plaintex"
+    "restructuredtext"
+    "tex"
+    "typst"
+  ];  # no "text"
 in
 {
   imports = [
@@ -169,15 +180,19 @@ in
         tinymist.enable = withLang "typst";
         tinymist.extraOptions.offset_encoding = "utf-8";
 
-        ltex.enable = withLang "prose";
-        ltex.settings = {
-          additionalRules = {
-            enablePickyRules = true;
-            motherTongue = "ru-RU";
+        ltex = {
+          enable = withLang "prose";
+          settings = {
+            enabled = ltexFiletypes;
+            additionalRules = {
+              enablePickyRules = true;
+              motherTongue = "ru-RU";
+            };
+            completionEnabled = true;
+            filetypes = ltexFiletypes;
+            #diagnosticSeverity = "warning";
           };
-          completionEnabled = true;
-          filetypes = [ "latex" "markdown" "typst" ];
-          #diagnosticSeverity = "warning";
+          extraOptions.filetypes = ltexFiletypes;
         };
       };
 
