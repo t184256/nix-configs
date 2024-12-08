@@ -47,7 +47,10 @@ in
     ../config/neovim.nix
     ../config/os.nix
   ];
-  nixpkgs.overlays = [ (import ../../overlays/python-lsp-server.nix) ];
+  nixpkgs.overlays = [
+    (import ../../overlays/python-lsp-server.nix)
+    (import ../../overlays/ltex-ls-plus.nix)
+  ];
 
   programs.nixvim = if (! config.neovim.fat) then {} else {
     keymaps = [
@@ -182,17 +185,19 @@ in
 
         ltex = {
           enable = withLang "prose";
+          package = pkgs.ltex-ls;  # actually a -plus, overlayed
           settings = {
             enabled = ltexFiletypes;
+            filetypes = ltexFiletypes;
             additionalRules = {
               enablePickyRules = true;
               motherTongue = "ru-RU";
             };
             completionEnabled = true;
-            filetypes = ltexFiletypes;
             #diagnosticSeverity = "warning";
           };
           extraOptions.filetypes = ltexFiletypes;
+          #extraOptions.get_language_id = ltexFiletypes;
         };
       };
 
