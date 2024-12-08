@@ -180,8 +180,10 @@ in
         rust_analyzer.installCargo = true;
         rust_analyzer.installRustc = true;
 
-        tinymist.enable = withLang "typst";
-        tinymist.extraOptions.offset_encoding = "utf-8";
+        # ltex conflict:
+        # multiple different client offset_encodings detected for buffer
+        #tinymist.enable = withLang "typst";
+        #tinymist.extraOptions.offset_encoding = "utf-8";
 
         ltex = {
           enable = withLang "prose";
