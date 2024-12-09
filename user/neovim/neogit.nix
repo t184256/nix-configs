@@ -29,6 +29,7 @@ in
             "<Space>p" = "Previous";
           };
         };
+        process_spinner = false;
       };
     };
     keymaps = [
