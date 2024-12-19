@@ -61,12 +61,13 @@
         runtimeInputs = with pkgs; [ sbctl ];
         text = ''
           set -Eeuo pipefail; shopt -s inherit_errexit
-          rm -rf /etc/secureboot
+          rm -rf /var/lib/sbctl
+          mkdir -p /var/lib/sbctl
           sbctl import-keys --directory /mnt/secrets/secureboot
           sbctl sign -s /boot/EFI/BOOT/BOOTX64.EFI
           sbctl sign -s /boot/EFI/systemd/systemd-bootx64.efi
           sbctl sign -s /boot/EFI/nixos/*linux-*-bzImage.efi
-          rm -rf /etc/secureboot
+          rm -rf /var/lib/sbctl
         '';
       };
 
