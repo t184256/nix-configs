@@ -17,7 +17,6 @@
     ../../nixos/services/www-bare.nix
     ../../nixos/services/www-monk.nix
     ../../nixos/services/xmpp.nix
-    ../../nixos/services/yousable-serve.nix
   ];
 
   boot.loader.grub = { enable = true; device = "/dev/sda"; };

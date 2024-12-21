@@ -21,7 +21,7 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2024112901; serial number
+                                 2024121901; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
@@ -66,7 +66,7 @@ let
     tabby           IN CNAME fig
     hydra           IN CNAME loquat
     nix-on-droid    IN CNAME loquat
-    yousable        IN CNAME loquat
+    yousable        IN CNAME watermelon
     lemmy           IN CNAME loquat
     social          IN CNAME loquat
     syncthing-relay IN CNAME duckweed

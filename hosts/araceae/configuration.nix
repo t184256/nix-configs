@@ -7,7 +7,6 @@
     ./hardware-configuration.nix
     ../../nixos/services/dyndns.nix
     ../../nixos/services/nebula
-    ../../nixos/services/yousable-download.nix
   ];
 
   boot.loader.systemd-boot.configurationLimit = 5;  # small-ish /boot

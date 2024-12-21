@@ -54,29 +54,29 @@ in
     };
   };
 
-  #services.nginx = {
-  #  enable = true;
-  #  appendConfig = ''
-  #      worker_processes auto;
-  #  '';
-  #  appendHttpConfig = ''
-  #      sendfile_max_chunk 512k;
-  #  '';
-  #  virtualHosts."yousable.unboiled.info" = {
-  #    enableACME = true;
-  #    forceSSL = true;
-  #    locations."/".proxyPass = "http://127.0.0.1:9696";
-  #    extraConfig = ''
-  #      gzip off;
-  #      gzip_proxied off;
-  #      proxy_cache off;
-  #      proxy_buffering off;
-  #    '';
-  #    locations."/out".root = "/mnt/persist/cache/yousable";
-  #    locations."/out".extraConfig = ''
-  #      autoindex off;
-  #      internal;
-  #    '';
-  #  };
-  #};
+  services.nginx = {
+    enable = true;
+    appendConfig = ''
+        worker_processes auto;
+    '';
+    appendHttpConfig = ''
+        sendfile_max_chunk 512k;
+    '';
+    virtualHosts."yousable.unboiled.info" = {
+      enableACME = true;
+      forceSSL = true;
+      locations."/".proxyPass = "http://127.0.0.1:9696";
+      extraConfig = ''
+        gzip off;
+        gzip_proxied off;
+        proxy_cache off;
+        proxy_buffering off;
+      '';
+      locations."/out".root = "/mnt/storage/services/yousable";
+      locations."/out".extraConfig = ''
+        autoindex off;
+        internal;
+      '';
+    };
+  };
 }
