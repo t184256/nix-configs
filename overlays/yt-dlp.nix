@@ -1,15 +1,15 @@
 _: prev:
 
 let
-  newerVer = "2024.8.6";
+  newerVer = "2024.12.23";
   overrides = _: {
     name = "yt-dlp-${newerVer}";
     version = newerVer;
     src = prev.fetchFromGitHub {
       owner = "yt-dlp";
       repo = "yt-dlp";
-      rev = "2024.08.06";
-      hash = "sha256-NjsP8XbaLs4RTXDuviN1MEYQ2Xv//P5MPXIym1S4hEw=";
+      rev = "2024.12.23";
+      hash = "sha256-6zv2NqbUxirMwa6OCzeKXuqLB4sFiYAcy3TYke2jhKc=";
     };
   };
 in
