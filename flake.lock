@@ -959,16 +959,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1729281851,
-        "narHash": "sha256-tWc15lEFo67kqpeeH9NZgg/kU2Q9Hd+lY300Px2OHhU=",
+        "lastModified": 1735002800,
+        "narHash": "sha256-fvwg3XEDWF58F6OSbUAtjvi9jUML8BgmfBHR/824/dU=",
         "owner": "t184256",
         "repo": "yousable",
-        "rev": "0621f8b88bec863f8d68625024e5fdc2283ee775",
+        "rev": "2746a7200f0067618c4ac97d156585cb35c6afc9",
         "type": "github"
       },
       "original": {
         "owner": "t184256",
-        "ref": "throttling-rewrite",
         "repo": "yousable",
         "type": "github"
       }
