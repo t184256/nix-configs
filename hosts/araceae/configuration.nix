@@ -6,6 +6,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../nixos/services/dyndns.nix
+    ../../nixos/services/microsocks.nix
     ../../nixos/services/nebula
   ];
 
