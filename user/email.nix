@@ -61,7 +61,7 @@
     };
 
     alot = {
-      #enable = true;
+      enable = true;
       bindings = {
         global = {
           h = "bclose";

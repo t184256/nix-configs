@@ -11,6 +11,7 @@ self: super:
         rev = "1090b4bde142fbb2f5c9c5cfa08238c5eaeceb2f";
         sha256 = "1r4qgvzd0s94irwp8kv0gbjn4f04hvyk151bz8lysq8xcj2k7m8v";
       };
+      nativeBuildInputs = [ super.pkgs.vimPlugins.lush-nvim ];
     };
 
     vim-undofile-warn = super.pkgs.vimUtils.buildVimPlugin {
