@@ -39,6 +39,10 @@
   #  alsa.support32Bit = true;
   #  pulse.enable = true;
   #};
+  # Enable sound with pulseaudio.
+  services.pipewire.enable = false;
+  hardware.pulseaudio.enable = true;
+  hardware.pulseaudio.support32Bit = true;
 
   #home-manager.users.monk.home.packages = with pkgs; [
   #  inputs.deploy-rs.defaultPackage.${pkgs.system}
@@ -75,4 +79,10 @@
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
   boot.initrd.systemd.enable = true;
+
+  nixpkgs.config.allowUnfree = true;
+  programs.steam.enable = true;
+  programs.steam.package = pkgs.steam.override {
+      extraLibraries = pkgs: with pkgs.pkgsi686Linux; [ openal pulseaudio speex ];
+  };
 }

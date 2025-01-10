@@ -37,7 +37,8 @@ in {
       displayManager.defaultSession = "gnome";
       gnome = {
         gnome-initial-setup.enable = false;
-        gnome-remote-desktop.enable = true;
+        #gnome-remote-desktop.enable = true;
+        gnome-remote-desktop.enable = false;
       };
     };
     hardware.graphics.enable = true;
