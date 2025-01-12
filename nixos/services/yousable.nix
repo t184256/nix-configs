@@ -79,4 +79,16 @@ in
       '';
     };
   };
+
+  virtualisation.oci-containers.containers = {
+    bgutil-provider = {
+      image = "brainicism/bgutil-ytdlp-pot-provider:latest";
+      ports = ["127.0.0.1:4416:4416"];
+    };
+  };
+  environment.persistence."/mnt/persist" = {
+    directories = [
+      "/var/lib/containers"
+    ];
+  };
 }
