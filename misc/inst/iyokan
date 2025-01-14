@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -xEeuo pipefail; shopt -s inherit_errexit
+
+IP=$1
+[[ $IP =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
+: "${REMOTE_USER:=root}"
+hostname=iyokan
+KEXEC=$(nix build --refresh --print-out-paths github:t184256/nixos-images#packages.x86_64-linux.kexec-installer-nixos-unstable-noninteractive)/nixos-kexec-installer-noninteractive-x86_64-linux.tar.gz
+
+if ! command -v dasel >/dev/null; then
+  dasel=$(nix build --print-out-paths --no-link 'nixpkgs#dasel') || exit $?
+  PATH=$PATH:$dasel/bin
+fi
+
+ssh "$REMOTE_USER@$1" grep ^NAME /etc/os-release | grep -Fx 'NAME="AlmaLinux"'
+ssh "$REMOTE_USER@$1" sudo systemctl stop \
+  auditd chronyd crond dbus-broker gssproxy irqbalance \
+  nix-daemon multipathd rpcbind rsyslog \
+  home-manager-monk sshguard systemd-timesyncd nscd \
+  systemd-zram-setup@zram0 \
+  firewalld getty* cloud* nis* rpc* iscsi* sssd* \
+  systemd-logind systemd-udevd dbus-broker \
+  || true
+
+# TODO: far future: also reinstall if there's no service data checked out
+echo 1>&2 "THIS WILL ERASE ALL DATA ON $1!"
+
+injdir=$(mktemp -d) || exit $?
+trap 'sudo rm -rf "$injdir"' EXIT
+
+mkdir -p "$injdir/mnt/secrets"
+misc/secrets inject-to-dir "$hostname" "$injdir/mnt/secrets"
+[[ -e "$injdir/mnt/secrets/login/monk" ]]
+[[ -e "$injdir/mnt/secrets/login/root" ]]
+[[ -e "$injdir/mnt/secrets/sshd/ed25519" ]]
+grep -qF 'OPENSSH PRIVATE KEY' "$injdir/mnt/secrets/sshd/ed25519"
+find "$injdir/mnt/secrets" -type d -exec chmod 500 {} \;
+# will be fixed up to 400 later or on latter secrets injections
+
+#mkdir "$injdir/etc"
+#scp -q "$REMOTE_USER@$IP:/etc/machine-id" "$injdir/etc/machine-id"
+
+# NixOS impermanence-specific hack
+#ssh "$1" 'sudo mkdir -p /mnt/persist/root-kexec && \
+#          sudo mount -o bind /mnt/persist/root-kexec /root'
+# !!!
+
+nix run 'nixpkgs#nixos-anywhere' -- \
+  --debug \
+  --extra-files "$injdir" \
+  --flake "/etc/nixos#$hostname" \
+  --kexec $KEXEC \
+  --no-substitute-on-destination \
+  "$REMOTE_USER@$IP"
+# TODO: remote build + my hydra, maybe?
+
+sed -i "/^$IP /d" ~/.ssh/known_hosts
+pubkey="$(dasel -f misc/pubkeys/sshd.toml "$hostname" -w -)"
+echo "$IP $pubkey" >> ~/.ssh/known_hosts
+
+# the promised fix-up
+for i in {120..1}; do echo 1>&2 -n "$i... "; sleep 1; done
+ssh "monk@$IP" 'sudo find /mnt/secrets -type d -exec chmod 400 {} \;'

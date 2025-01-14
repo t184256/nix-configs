@@ -130,7 +130,7 @@
   }@inputs:
   let
     nixosHosts = [
-      "cocoa" "quince" "sloe" "olosapo" "watermelon"  # 2024
+      "cocoa" "quince" "sloe" "olosapo" "watermelon" "iyokan"  # 2024
       "loquat" "duckweed" "bayroot" "araceae"  # legacy
       "etrog" "jujube" "lychee"
     ];
