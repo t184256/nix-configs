@@ -2,17 +2,17 @@ _: super:
 
 {
   alacritty = super.alacritty.overrideAttrs (_: rec {
-    version = "v0.14.0-rc1-mod";
+    version = "v0.15.0-mod";
     src = super.fetchFromGitHub {
       owner = "t184256";
       repo = "alacritty";
       rev = version;
-      sha256 = "sha256-FTR4t+bLTPUXNoU6TWnaSChXd4QNtWZA08G5EcbHA6I=";
+      sha256 = "sha256-6NZG7cabDKMPKt1vz0FT7bUf9HrR1rwk061459Vo3wM=";
     };
     cargoDeps = super.rustPlatform.importCargoLock {
       lockFile = ./Cargo.lock;
       outputHashes = {
-        "vte-0.13.0" = "sha256-/9ZTANaciyxg5Y7nHsB3Hcg4y6clxeV0ahyPXtRiXwg=";
+        "vte-0.13.1" = "sha256-PG9lw8ozH4VgwgUXAZ7N/lOz9x1JL2rUjZF58atSAbc=";
       };
     };
   });
