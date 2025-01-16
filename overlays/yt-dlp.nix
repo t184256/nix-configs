@@ -2,15 +2,15 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "2025.01.12";
+  newerVer = "2025.01.15";
   overrides-fresh = _: {
     name = "yt-dlp-${newerVer}";
     version = newerVer;
     src = prev.fetchFromGitHub {
       owner = "yt-dlp";
       repo = "yt-dlp";
-      rev = "2025.01.12";
-      hash = "sha256-YxMjYBYeT5xAe5eHQeMaZApW0hxRjygTYgqUxzCtCVU=";
+      rev = "2025.01.15";
+      hash = "sha256-d9RGlANDkjRInIVADCrzx8+wn4wVc04J7Wn0c1q4N7k=";
     };
   };
   overrides-plugins = oa: {
