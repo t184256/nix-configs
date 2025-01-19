@@ -21,12 +21,12 @@ _ :
 
       bayroot64 = {
         user = "monk";
-        hostname = "2001:bc8:1d80:2232::1";
+        hostname = "bayroot.unboiled.info";
         proxyJump = "duckweed";
       };
       araceae64 = {
         user = "monk";
-        hostname = "2001:bc8:634:213e::1";
+        hostname = "araceae.unboiled.info";
         proxyJump = "duckweed";
       };
     };
