@@ -7,6 +7,7 @@
     initrd.availableKernelModules = [
       "ata_piix" "uhci_hcd" "virtio_pci" "virtio_scsi" "sd_mod"
     ];
+    kernelParams = [ "console=ttyS0" ];
     initrd.kernelModules = [ ];
     kernelModules = [ "kvm-amd" ];
     extraModulePackages = [ ];

@@ -1,35 +1,50 @@
 #!/usr/bin/env bash
-set -ueo pipefail
+set -xEeuo pipefail; shopt -s inherit_errexit
 
-[[ $1 =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
-USER=opc
-#USER=root
+IP=$1
+[[ $IP =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
+: "${REMOTE_USER:=opc}"
+hostname=etrog
+KEXEC=$(nix build --refresh --print-out-paths github:t184256/nixos-images#packages.x86_64-linux.kexec-installer-nixos-unstable-noninteractive)/nixos-kexec-installer-noninteractive-x86_64-linux.tar.gz
 
-ssh "$USER@$1" grep ^NAME /etc/os-release | grep -Fx 'NAME="AlmaLinux"'
-ssh "$USER@$1" sudo systemctl stop \
-  auditd chronyd crond dbus-broker gssproxy irqbalance \
-  nix-daemon multipathd rpcbind rsyslog systemd-journald \
-  home-manager-monk sshguard systemd-timesyncd nscd \
-  systemd-zram-setup@zram0 \
-  || true
+if ! command -v dasel >/dev/null; then
+  dasel=$(nix build --print-out-paths --no-link 'nixpkgs#dasel') || exit $?
+  PATH=$PATH:$dasel/bin
+fi
+
+ssh "$REMOTE_USER@$1" grep ^NAME /etc/os-release | grep -Fx 'NAME="AlmaLinux"'
+ssh "$REMOTE_USER@$1" "
+  sudo auditctl --signal TERM || true
+  sudo systemctl stop \
+    auditd chronyd crond dbus-broker gssproxy irqbalance \
+    nix-daemon multipathd rpcbind rsyslog \
+    home-manager-monk sshguard systemd-timesyncd nscd \
+    systemd-zram-setup@zram0 \
+    firewalld getty* cloud* nis* rpc* iscsi* sssd* \
+    systemd-logind systemd-udevd dbus-broker || true
+  sudo dd if=/dev/zero of=/swap bs=1M count=128
+  sudo mkswap /swap
+  sudo chmod 0600 /swap
+  sudo swapon /swap
+" || true
 
 # TODO: far future: also reinstall if there's no service data checked out
 echo 1>&2 "THIS WILL ERASE ALL DATA ON $1!"
 
-injdir=$(mktemp -d)
+injdir=$(mktemp -d) || exit $?
 trap 'sudo rm -rf "$injdir"' EXIT
 
-mkdir -p "$injdir/mnt/persist/secrets"
-misc/secrets inject-to-dir etrog "$injdir/mnt/persist/secrets"
-[[ -e "$injdir/mnt/persist/secrets/login/root" ]]
-[[ -e "$injdir/mnt/persist/secrets/login/monk" ]]
-[[ -e "$injdir/mnt/persist/secrets/sshd/ed25519" ]]
-grep -qF 'OPENSSH PRIVATE KEY' "$injdir/mnt/persist/secrets/sshd/ed25519"
-find "$injdir/mnt/persist/secrets" -type d -exec chmod 500 {} \;
+mkdir -p "$injdir/mnt/secrets"
+misc/secrets inject-to-dir "$hostname" "$injdir/mnt/secrets"
+[[ -e "$injdir/mnt/secrets/login/monk" ]]
+[[ -e "$injdir/mnt/secrets/login/root" ]]
+[[ -e "$injdir/mnt/secrets/sshd/ed25519" ]]
+grep -qF 'OPENSSH PRIVATE KEY' "$injdir/mnt/secrets/sshd/ed25519"
+find "$injdir/mnt/secrets" -type d -exec chmod 500 {} \;
 # will be fixed up to 400 later or on latter secrets injections
 
 #mkdir "$injdir/etc"
-#scp -q "$USER@$1:/etc/machine-id" "$injdir/etc/machine-id"
+#scp -q "$REMOTE_USER@$IP:/etc/machine-id" "$injdir/etc/machine-id"
 
 # NixOS impermanence-specific hack
 #ssh "$1" 'sudo mkdir -p /mnt/persist/root-kexec && \
@@ -39,10 +54,16 @@ find "$injdir/mnt/persist/secrets" -type d -exec chmod 500 {} \;
 nix run 'nixpkgs#nixos-anywhere' -- \
   --debug \
   --extra-files "$injdir" \
-  --flake '/etc/nixos#etrog' \
-  "$USER@$1"
+  --flake "/etc/nixos#$hostname" \
+  --kexec $KEXEC \
+  --no-substitute-on-destination \
+  "$REMOTE_USER@$IP"
 # TODO: remote build + my hydra, maybe?
 
+sed -i "/^$IP /d" ~/.ssh/known_hosts
+pubkey="$(dasel -f misc/pubkeys/sshd.toml "$hostname" -w -)"
+echo "$IP $pubkey" >> ~/.ssh/known_hosts
+
 # the promised fix-up
-sleep 2
-ssh "$USER@$1" 'sudo find /mnt/persist/secrets -type d -exec chmod 400 {} \;'
+for i in {120..1}; do echo 1>&2 -n "$i... "; sleep 1; done
+ssh "monk@$IP" 'sudo find /mnt/secrets -type d -exec chmod 400 {} \;'

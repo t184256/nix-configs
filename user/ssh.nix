@@ -18,6 +18,8 @@ _ :
       sloe = { user = "monk"; hostname = "sloe.unboiled.info"; };
       olosapo = { user = "monk"; hostname = "olosapo.unboiled.info"; };
       watermelon = { user = "monk"; hostname = "watermelon.unboiled.info"; };
+      etrog = { user = "monk"; hostname = "etrog.unboiled.info"; };
+      iyokan = { user = "monk"; hostname = "iyokan.unboiled.info"; };
 
       bayroot64 = {
         user = "monk";

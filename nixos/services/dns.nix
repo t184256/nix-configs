@@ -4,14 +4,18 @@ let
   IP4 = {
     duckweed = "51.15.87.8";
     fig = "212.164.221.47";
+    etrog = "152.70.59.201";
+    iyokan = "104.152.210.200";
     loquat = "38.242.239.104";
-    sloe = "77.237.232.57";
     olosapo = "38.175.203.172";
+    sloe = "77.237.232.57";
     watermelon = "104.152.210.200";
   };
   IP6 = {
     araceae = "2001:bc8:710:9839:dc00:ff:fe81:6e69";
     bayroot = "2001:bc8:1d90:124:dc00:ff:fe1d:d261";
+    etrog = "2603:c022:c004:2424:38fd:cc4e:5757:6d9";
+    iyokan = "2603:c022:c004:2424:38fd:cc4e:5757:6d9";
     loquat = "2a02:c206:2101:9233::1";
     sloe = "2a02:c206:2207:3890::1";
     olosapo = "2606:a8c0:3:969::a";
@@ -21,7 +25,7 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2024121901; serial number
+                                 2025011901; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
@@ -50,6 +54,10 @@ let
     watermelon      IN AAAA  ${IP6.watermelon}
     araceae         IN AAAA  ${IP6.araceae}
     bayroot         IN AAAA  ${IP6.bayroot}
+    etrog           IN A     ${IP4.etrog}
+    etrog           IN AAAA  ${IP6.etrog}
+    iyokan          IN A     ${IP4.iyokan}
+    iyokan          IN AAAA  ${IP6.iyokan}
 
     conference.xmpp IN CNAME loquat
     upload.xmpp     IN CNAME loquat

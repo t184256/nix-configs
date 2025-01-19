@@ -108,6 +108,8 @@
       s*)     TO=sloe;        METHOD=mosh ;;
       o*)     TO=olosapo;     METHOD=mosh ;;
       w*)     TO=watermelon;  METHOD=mosh ;;
+      e*)     TO=etrog;       METHOD=mosh ;;
+      i*)     TO=iyokan;      METHOD=mosh ;;
     esac
     tmux rename-window $TO 2> /dev/null
     ${pkgs.ncurses}/bin/clear; echo "$METHOD to $TO..."

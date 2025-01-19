@@ -26,9 +26,8 @@ _:
               extraArgs = [ "-f" ];  # overwrite existing
               subvolumes = {
                 "nix".mountpoint = "/nix";
+                "secrets".mountpoint = "/mnt/secrets";
                 "persist".mountpoint = "/mnt/persist";
-                "home".mountpoint = "/home";
-                "home/monk".mountpoint = "/home/monk";
               };
             };
           };

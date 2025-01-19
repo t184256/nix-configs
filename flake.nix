@@ -130,9 +130,9 @@
   }@inputs:
   let
     nixosHosts = [
-      "cocoa" "quince" "sloe" "olosapo" "watermelon" "iyokan"  # 2024
+      "cocoa" "quince" "sloe" "olosapo" "watermelon" "etrog" "iyokan"  # 2024
       "loquat" "duckweed" "bayroot" "araceae"  # legacy
-      "etrog" "jujube" "lychee"
+      "jujube" "lychee"
     ];
     autoimport = (import ./.autoimport);
     specialArgs = { inherit inputs; };
