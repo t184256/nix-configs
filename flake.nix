@@ -12,7 +12,6 @@
     gitignore.inputs.nixpkgs.follows = "nixpkgs";
     git-hooks.url = "github:cachix/git-hooks.nix";
     git-hooks.inputs.nixpkgs.follows = "nixpkgs";
-    git-hooks.inputs.nixpkgs-stable.follows = "nixpkgs";
     git-hooks.inputs.flake-compat.follows = "flake-compat";
     git-hooks.inputs.gitignore.follows = "gitignore";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
