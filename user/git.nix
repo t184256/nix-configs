@@ -66,6 +66,8 @@ in
   #programs.gh = { enable = true; gitProtocol = "ssh"; };  # h-m#1654
   programs.lazygit.enable = true;
 
+  programs.jujutsu.enable = true;
+
   home.packages = [
     pkgs.git-absorb
     pkgs.gh
