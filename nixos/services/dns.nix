@@ -14,7 +14,7 @@ let
   IP6 = {
     araceae = "2001:bc8:710:9839:dc00:ff:fe81:6e69";
     bayroot = "2001:bc8:1d90:124:dc00:ff:fe1d:d261";
-    etrog = "2603:c022:c004:2424:38fd:cc4e:5757:6d9";
+    etrog = "2603:c022:c004:2424:355a:eee5:3e59:8866";
     iyokan = "2603:c022:c004:2424:38fd:cc4e:5757:6d9";
     loquat = "2a02:c206:2101:9233::1";
     sloe = "2a02:c206:2207:3890::1";
@@ -25,7 +25,7 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2025011901; serial number
+                                 2025012001; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
