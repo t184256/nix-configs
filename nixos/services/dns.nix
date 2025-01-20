@@ -5,7 +5,7 @@ let
     duckweed = "51.15.87.8";
     fig = "212.164.221.47";
     etrog = "152.70.59.201";
-    iyokan = "104.152.210.200";
+    iyokan = "152.70.58.224";
     loquat = "38.242.239.104";
     olosapo = "38.175.203.172";
     sloe = "77.237.232.57";
@@ -25,7 +25,7 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2025012001; serial number
+                                 2025012002; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
