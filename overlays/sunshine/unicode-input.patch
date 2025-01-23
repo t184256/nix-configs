@@ -1,8 +1,8 @@
-diff --git a/src/platform/linux/input.cpp b/src/platform/linux/input.cpp
-index 74d68304..42beb4c3 100644
---- a/src/platform/linux/input.cpp
-+++ b/src/platform/linux/input.cpp
-@@ -1549,6 +1549,8 @@ namespace platf {
+diff --git a/src/platform/linux/input/legacy_input.cpp b/src/platform/linux/input/legacy_input.cpp
+index 3d894d47..956031bb 100644
+--- a/src/platform/linux/input/legacy_input.cpp
++++ b/src/platform/linux/input/legacy_input.cpp
+@@ -1551,6 +1551,8 @@ namespace platf {
      keyboard_ev(kb, KEY_LEFTSHIFT, 1);
      keyboard_ev(kb, KEY_U, 1);
      keyboard_ev(kb, KEY_U, 0);
@@ -11,7 +11,7 @@ index 74d68304..42beb4c3 100644
  
      /* input each HEX character */
      for (auto &ch : hex_unicode) {
-@@ -1563,9 +1565,9 @@ namespace platf {
+@@ -1565,9 +1567,9 @@ namespace platf {
        }
      }
  
@@ -23,4 +23,4 @@ index 74d68304..42beb4c3 100644
 +    keyboard_ev(kb, KEY_ENTER, 0);
    }
  
-   /**
+   int

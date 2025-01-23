@@ -29,7 +29,7 @@
   networking.hostName = "lychee"; # Define your hostname.
   networking.networkmanager.enable = true;
 
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -43,7 +43,7 @@
     # no need to redefine it in your config for now)
     #media-session.enable = true;
   };
-  #hardware.pulseaudio.enable = true;
+  #services.pulseaudio.enable = true;
   #systemd.services.depop = {
   #  wantedBy = [ "powertop.service" ];
   #  after = [ "powertop.service" ];
