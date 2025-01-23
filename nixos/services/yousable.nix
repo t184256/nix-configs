@@ -33,8 +33,6 @@ in
       after = [ "mnt-storage.mount" ];
       requiredBy = svcList;
       before = svcList;
-      partOf = svcList;
-      bindsTo = svcList;
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
