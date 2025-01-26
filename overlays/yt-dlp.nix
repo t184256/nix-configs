@@ -27,13 +27,13 @@ let
   );
   yt-dlp-get-pot = prev.python3Packages.buildPythonPackage rec {
     pname = "yt-dlp-get-pot";
-    version = "0.2.0";
+    version = "0.3.0";
     pyproject = true;
     src = prev.fetchFromGitHub {
       owner = "coletdjnz";
       repo = "yt-dlp-get-pot";
       rev = "v${version}";
-      hash = "sha256-c5iKnZ7rYckbqvEI20nymOV6/QJAWyu/FX0QM6ps2D4=";
+      hash = "sha256-MtQFXWJByo/gyftMtywCCfpf8JtldA2vQP8dnpLEl7U=";
     };
     build-system = [ prev.python3Packages.hatchling ];
     doCheck = false;
