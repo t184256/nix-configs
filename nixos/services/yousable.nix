@@ -2,7 +2,12 @@
 
 let
   cred = "config:/mnt/storage/secrets/yousable";
-  svcExtra = { serviceConfig = { Type = "exec"; LoadCredential = cred; }; };
+  svcExtra = {
+    serviceConfig = { Type = "exec"; LoadCredential = cred; };
+    wantedBy = [ "storage.target" ];
+    partOf = [ "storage.target" ];
+    requires = [ "podman-bgutil-provider.service" ];
+  };
   svcList = [
     "yousable-crawler.service"
     "yousable-downloader.service"
@@ -31,6 +36,7 @@ in
     yousable-preconfigure = {
       requires = [ "mnt-storage.mount" ];
       after = [ "mnt-storage.mount" ];
+      partOf = [ "storage.target" ];
       requiredBy = svcList;
       before = svcList;
       serviceConfig = {
