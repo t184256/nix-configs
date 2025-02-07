@@ -118,9 +118,9 @@
       shell)  exec bash ;;
       attach) exec ~/.tmux.sh ;;
       mosh)   exec mosh $MOSH_OPTS $TO -o -- ~/.tmux.sh ;;
-      mosh-)  exec mosh $MOSH_OPTS $TO -o -- sh -c 'exec tmux new-session -A -t main -s $(date +%s)';;
+      mosh-)  exec mosh $MOSH_OPTS $TO -o -- tmux new-session -A -t main -s $(date +%s);;
       ssh)    exec ssh $TO -t ~/.tmux.sh ;;
-      ssh-)   exec ssh $TO -t sh -c 'exec tmux new-session -A -t main -s $(date +%s)' ;;
+      ssh-)   exec ssh $TO -t tmux new-session -A -t main -s $(date +%s) ;;
     esac
   ''; };
 
