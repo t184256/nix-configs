@@ -111,6 +111,9 @@
       w*)     TO=watermelon;  METHOD=mosh ;;
       e*)     TO=etrog;       METHOD=mosh ;;
       i*)     TO=iyokan;      METHOD=mosh ;;
+      r*a)    TO=rey-crypto-a;METHOD=ssh- ;;
+      r*b)    TO=rey-crypto-b;METHOD=ssh- ;;
+      r*g)    TO=rey-crypto-g;METHOD=ssh- ;;
     esac
     tmux rename-window $TO 2> /dev/null
     ${pkgs.ncurses}/bin/clear; echo "$METHOD to $TO..."
