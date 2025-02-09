@@ -1,0 +1,5 @@
+repo,branch,alias
+https://github.com/Bekaboo/deadcolumn.nvim/,HEAD,
+https://github.com/rktjmp/shipwright.nvim/,HEAD,
+https://github.com/arp242/undofile_warn.vim/,HEAD,
+https://github.com/t184256/vim-boring/,HEAD,
