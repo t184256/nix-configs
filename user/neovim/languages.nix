@@ -132,7 +132,7 @@ in
     ];
 
     extraPlugins = with pkgs.vimPlugins; [
-      actions-preview
+      actions-preview-nvim
     ] ++ (if ! (withLang "python") then [] else [
       neotest neotest-python
     ]);

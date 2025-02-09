@@ -25,17 +25,6 @@ self: super:
         };
     };
 
-    actions-preview = super.pkgs.vimUtils.buildVimPlugin {
-      pname = "actions-preview";
-      version = "2024-02-25";
-      src = super.fetchFromGitHub {
-        owner = "aznhe21";
-        repo = "actions-preview.nvim";
-        rev = "5c240e6356156b72cfbf7c05feefadae61d7a06f";
-        sha256 = "sha256-XJxwKusvtKvLdtvOjLwmwCP09djhjm9DqL4C1Eca4oY=";
-      };
-    };
-
     deadcolumn = super.pkgs.vimUtils.buildVimPlugin rec {
       pname = "deadcolumn";
       version = "1.0.0";
@@ -55,17 +44,6 @@ self: super:
         repo = "shipwright.nvim";
         rev = "ab70e80bb67b7ed3350bec89dd73473539893932";
         sha256 = "sha256-Gy0tIqH1dmZgcUvrUcNrqpMXi3gOgHq9X1SbjIZqSns=";
-      };
-    };
-
-    vim-tabby = super.pkgs.vimUtils.buildVimPlugin rec {
-      pname = "vim-tabby";
-      version = "1.4.0";
-      src = super.fetchFromGitHub {
-        owner = "TabbyML";
-        repo = "vim-tabby";
-        rev = version;
-        sha256 = "sha256-z6SlQpLJSgeKvgYyplsS5c0KL89oEYm4BgDMkmpg5XI=";
       };
     };
   };
