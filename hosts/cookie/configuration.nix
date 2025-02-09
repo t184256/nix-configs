@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   imports = [
@@ -8,7 +8,6 @@
   system.live = true;
   home-manager.users.monk.system.live = true;
   hardware.enableRedistributableFirmware = true;
-  boot.supportedFilesystems = [ "bcachefs" "xfs" ];
 
   networking.hostName = "cookie";
   networking.wireless.enable = false;
@@ -33,6 +32,9 @@
 
   #boot.kernelPackages = pkgs.linuxPackages_testing;  # needed for bcachefs now
 
-  system.stateVersion = "24.05";
-  home-manager.users.monk.home.stateVersion = "24.05";
+  # nixos/modules/installer/cd-dvd/installation-cd-minimal-new-kernel-no-zfs.nix
+  boot.supportedFilesystems.zfs = lib.mkForce false;
+
+  system.stateVersion = "24.11";
+  home-manager.users.monk.home.stateVersion = "24.11";
 }
