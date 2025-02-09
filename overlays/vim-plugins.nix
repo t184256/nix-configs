@@ -27,23 +27,23 @@ self: super:
 
     deadcolumn = super.pkgs.vimUtils.buildVimPlugin rec {
       pname = "deadcolumn";
-      version = "1.0.0";
+      version = "1.0.2";
       src = super.fetchFromGitHub {
         owner = "Bekaboo";
         repo = "deadcolumn.nvim";
         rev = "v${version}";
-        sha256 = "sha256-SWjXeu6d22T+naYvYPdnU8V2L0K7QviHo1B5GIG6r1k=";
+        sha256 = "sha256-/EtRvosijeVAMa7vQhcrFRkOs+gslDUHmbvbIGTjqr8=";
       };
     };
 
     shipwright = super.pkgs.vimUtils.buildVimPlugin rec {
       pname = "shipwright";
-      version = "2022-01-07";
+      version = "2024-03-29";
       src = super.fetchFromGitHub {
         owner = "rktjmp";
         repo = "shipwright.nvim";
-        rev = "ab70e80bb67b7ed3350bec89dd73473539893932";
-        sha256 = "sha256-Gy0tIqH1dmZgcUvrUcNrqpMXi3gOgHq9X1SbjIZqSns=";
+        rev = "e596ab48328c31873f4f4d2e070243bf9de16ff3";
+        sha256 = "sha256-xh/2m//Cno5gPucjOYih79wVZj3X1Di/U3/IQhKXjc0=";
       };
     };
   };
