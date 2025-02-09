@@ -22,7 +22,7 @@ in
   services.yousable = {
     enable = true;
     package = pkgs.python3Packages.yousable;  # with overlays applied
-    configFile = "/run/credentials/yousable-server.service/config";
+    configFile = "/run/credentials/yousable-server.service/config";  # HACK!
     server = {
       address = "127.0.0.1";
       port = 9696;
@@ -87,9 +87,20 @@ in
   virtualisation.oci-containers.containers = {
     bgutil-provider = {
       image = "brainicism/bgutil-ytdlp-pot-provider:latest";
-      ports = ["127.0.0.1:4416:4416"];
+      ports = ["127.0.0.1:4416:4416"];  # only listens on 4
+      cmd = ["--verbose"];
+      environment.DEBUG = "socks-proxy-agent,proxy-agent";
     };
   };
+  services.xinetd.enable = true;
+  services.xinetd.services = [{
+      name = "ipv6ize-pot-provider"; unlisted = true; port = 4416;
+      server = "/usr/bin/env";  # must be something executable
+      extraConfig = ''
+        redirect = 127.0.0.1 4416
+        bind = ::1
+      '';
+  }];
   environment.persistence."/mnt/persist" = {
     directories = [
       "/var/lib/containers"
