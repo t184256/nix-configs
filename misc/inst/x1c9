@@ -90,7 +90,7 @@ touch /tmp/.inst-files/dnf/dnf.conf
 cat > /tmp/.inst-files/dnf/yum.repos.d/fedora.repo << \EOF
 [fedora]
 name=Fedora $releasever - $basearch
-baseurl=https://download.fedoraproject.org/pub/fedora/linux/development/$releasever/Everything/$basearch/os/
+baseurl=https://download.fedoraproject.org/pub/fedora/linux/releases/$releasever/Everything/$basearch/os/
 enabled=1
 gpgcheck=0
 EOF
