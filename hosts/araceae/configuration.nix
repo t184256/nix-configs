@@ -28,6 +28,8 @@
     DNS = 2001:67c:2960::64
     [DHCPv4]
     UseDNS=false
+    [DHCPv6]
+    UseDNS=false
   '';
   services.resolved.fallbackDns = [ "2a00:1098:2c::1" ];
 
