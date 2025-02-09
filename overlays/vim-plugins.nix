@@ -1,7 +1,23 @@
 self: super:
 
-{
-  vimPlugins = super.vimPlugins // {
+rec {
+  luajit = super.luajit.override {
+    packageOverrides = luaself: luaprev: {
+      lush-nvim = luaprev.lush-nvim.overrideAttrs (oa: {
+      postInstall = ''
+        rm -vf $out/lush.nvim-*/lush.nvim/scm-1/examples/lush-template/README.md
+      '';
+      });
+    };
+  };
+  luajitPackages = luajit.pkgs;
+
+  vimPlugins = super.vimPlugins.extend ( final: prev: {
+    lush-nvim = prev.lush-nvim.overrideAttrs (oa: {
+      postInstall = ''
+        rm -vf $out/lush.nvim-*/lush.nvim/scm-1/examples/lush-template/README.md
+      '';
+    });
     vim-boring = super.pkgs.vimUtils.buildVimPlugin {
       pname = "vim-boring";
       version = "unstable-2024-03-28";
@@ -11,7 +27,7 @@ self: super:
         rev = "1090b4bde142fbb2f5c9c5cfa08238c5eaeceb2f";
         sha256 = "1r4qgvzd0s94irwp8kv0gbjn4f04hvyk151bz8lysq8xcj2k7m8v";
       };
-      nativeBuildInputs = [ super.pkgs.vimPlugins.lush-nvim ];
+      nativeBuildInputs = [ self.pkgs.vimPlugins.lush-nvim ];
     };
 
     vim-undofile-warn = super.pkgs.vimUtils.buildVimPlugin {
@@ -36,7 +52,7 @@ self: super:
       };
     };
 
-    shipwright = super.pkgs.vimUtils.buildVimPlugin rec {
+    shipwright = super.pkgs.vimUtils.buildVimPlugin {
       pname = "shipwright";
       version = "2024-03-29";
       src = super.fetchFromGitHub {
@@ -46,5 +62,5 @@ self: super:
         sha256 = "sha256-xh/2m//Cno5gPucjOYih79wVZj3X1Di/U3/IQhKXjc0=";
       };
     };
-  };
+  });
 }
