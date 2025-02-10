@@ -48,7 +48,6 @@ in
     ../config/os.nix
   ];
   nixpkgs.overlays = [
-    (import ../../overlays/python-lsp-server.nix)
     (import ../../overlays/ltex-ls-plus.nix)
   ];
 
@@ -153,6 +152,7 @@ in
         yamlls.enable = withLang "yaml";
 
         pylsp.enable = withLang "python";
+        pylsp.package = pkgs.python3Packages.python-lsp-server;  # why?
         pylsp.settings.plugins = {
           pycodestyle.enabled = true;
           pycodestyle.maxLineLength = 79;
