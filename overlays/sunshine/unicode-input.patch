@@ -1,26 +1,26 @@
-diff --git a/src/platform/linux/input/legacy_input.cpp b/src/platform/linux/input/legacy_input.cpp
-index 3d894d47..956031bb 100644
---- a/src/platform/linux/input/legacy_input.cpp
-+++ b/src/platform/linux/input/legacy_input.cpp
-@@ -1551,6 +1551,8 @@ namespace platf {
-     keyboard_ev(kb, KEY_LEFTSHIFT, 1);
-     keyboard_ev(kb, KEY_U, 1);
-     keyboard_ev(kb, KEY_U, 0);
-+    keyboard_ev(kb, KEY_LEFTSHIFT, 0);
-+    keyboard_ev(kb, KEY_LEFTCTRL, 0);
- 
-     /* input each HEX character */
-     for (auto &ch : hex_unicode) {
-@@ -1565,9 +1567,9 @@ namespace platf {
+diff --git a/src/platform/linux/input/inputtino_keyboard.cpp b/src/platform/linux/input/inputtino_keyboard.cpp
+index e384b312..13e217ba 100644
+--- a/src/platform/linux/input/inputtino_keyboard.cpp
++++ b/src/platform/linux/input/inputtino_keyboard.cpp
+@@ -173,6 +173,8 @@ namespace platf::keyboard {
+       (*raw->keyboard).press(0xA0);  // LEFTSHIFT
+       (*raw->keyboard).press(0x55);  // U
+       (*raw->keyboard).release(0x55);  // U
++      (*raw->keyboard).release(0xA0);  // LEFTSHIFT
++      (*raw->keyboard).release(0xA2);  // LEFTCTRL
+
+       /* input each HEX character */
+       for (auto &ch : hex_unicode) {
+@@ -187,9 +189,9 @@ namespace platf::keyboard {
+         }
        }
+
+-      /* releasing <SHIFT> and <CTRL> */
+-      (*raw->keyboard).release(0xA0);  // LEFTSHIFT
+-      (*raw->keyboard).release(0xA2);  // LEFTCTRL
++      /* commit with a Return */
++      (*raw->keyboard).press(0x0D);  // ENTER
++      (*raw->keyboard).release(0x0D);  // ENTER
      }
- 
--    /* releasing <SHIFT> and <CTRL> */
--    keyboard_ev(kb, KEY_LEFTSHIFT, 0);
--    keyboard_ev(kb, KEY_LEFTCTRL, 0);
-+    /* commit with a Return */
-+    keyboard_ev(kb, KEY_ENTER, 1);
-+    keyboard_ev(kb, KEY_ENTER, 0);
    }
- 
-   int
+ }  // namespace platf::keyboard

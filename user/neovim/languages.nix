@@ -231,13 +231,11 @@ in
         };
         settings.temp_dir = "/tmp";
       };
-      dap = {  # for neotest
-        enable = withLang "python";
-        extensions.dap-python.enable = withLang "python";
-        extensions.dap-python.testRunner = "pytest";
-        extensions.dap-virtual-text.enable = withLang "python";
-        extensions.dap-ui.enable = withLang "python";
-      };
+      dap.enable = withLang "python";  # for neotest
+      dap-python.enable = withLang "python";
+      dap-python.testRunner = "pytest";
+      dap-virtual-text.enable = withLang "python";
+      dap-ui.enable = withLang "python";
     };
     extraConfigLua = ''
       vim.diagnostic.config({
