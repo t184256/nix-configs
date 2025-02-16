@@ -21,7 +21,6 @@ in
       imports = [
         ../../user/config/identity.nix
         ../../user/assorted-tools.nix
-        ../../user/common.nix
         ../../user/eza.nix
         ../../user/git.nix
         ../../user/htop.nix

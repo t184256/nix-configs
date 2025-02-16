@@ -17,7 +17,6 @@
     ../../user/config/identity.nix
     ../../user/config/language-support.nix
     ../../user/assorted-tools.nix
-    ../../user/common.nix
     ../../user/du.nix
     ../../user/entr.nix
     ../../user/eza.nix
