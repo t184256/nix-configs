@@ -32,7 +32,7 @@
     nix-on-droid.inputs.nmd.follows = "nmd";
     nix-on-droid.inputs.nix-formatter-pack.follows = "nix-formatter-pack";
 
-    nixos-hardware.url = "github:t184256/nixos-hardware/onenetbook-4-patch-6.12";  # TODO: revert to mainline once #1341 is merged
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
 
     impermanence.url = "github:nix-community/impermanence";
 
