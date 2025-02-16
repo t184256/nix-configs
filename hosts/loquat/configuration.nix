@@ -9,7 +9,6 @@
     ../../nixos/services/fedifetcher.nix
     ../../nixos/services/ipfs/cluster-leader.nix
     ../../nixos/services/ipfs/node.nix
-    ../../nixos/services/hydra.nix
     ../../nixos/services/lemmy.nix
     ../../nixos/services/mail.nix
     ../../nixos/services/nebula
@@ -48,18 +47,6 @@
 
   services.kubo.settings.Datastore.StorageMax = "20G";
 
-  services.hydra.buildMachinesFiles = [(
-    pkgs.writeText "machines" ''
-      localhost x86_64-linux - 1 1 kvm,nixos-test,big-parallel,benchmark  -
-    ''
-  )];
-  nix.buildMachines = [ {
-    hostName = "localhost";
-    system = "x86_64-linux";
-    supportedFeatures = ["kvm" "nixos-test" "big-parallel" "benchmark"];
-    maxJobs = 1;  # we're not in a hurry, we save RAM/SWAP
-  } ];
-  nix.settings.cores = 3;  # we're not in a hurry, we save RAM/SWAP
   boot.tmp.useTmpfs = true;
   boot.tmp.tmpfsSize = "2G";
   systemd.services.nix-daemon.environment.TMPDIR = "/nix/tmp";  # large builds

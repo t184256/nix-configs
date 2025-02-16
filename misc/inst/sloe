@@ -46,7 +46,6 @@ nix run 'nixpkgs#nixos-anywhere' -- \
   --extra-files "$injdir" \
   --flake "/etc/nixos#$hostname" \
   "$REMOTE_USER@$IP"
-# TODO: remote build + my hydra, maybe?
 
 sed -i "/^$IP /d" ~/.ssh/known_hosts
 pubkey="$(dasel -f misc/pubkeys/sshd.toml "$hostname" -w -)"

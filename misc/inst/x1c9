@@ -379,10 +379,6 @@ NIX_URL=https://nix-community.github.io/nix-installers/x86_64
 sudo cp /mnt/tgt/cache/nix-multi-user.rpm /mnt/tgt/root/curr/
 $CHROOT rpm -i nix-multi-user.rpm
 sudo rm /mnt/tgt/root/curr/nix-multi-user.rpm
-sudo sed -i \
-    -e "s|^substituters = .*|substituters = https://hydra.unboiled.info?priority=200 https://cache.nixos.org/|" \
-    -e "s|^trusted-public-keys = .*|trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.unboiled.info-1:c7i8vKOB30a+DaJ2M04F0EM8CPRfU+WpbqWie4n221M=|" \
-    /mnt/tgt/root/curr/etc/nix/nix.conf
 #$CHROOT /nix/var/nix/profiles/system/bin/nix-daemon &
 #nix_daemon_pid=$!  # TODO: obtain nix-daemon pid, not wrapping pid
 #$CHROOT su - asosedki -c "/nix/var/nix/profiles/system/bin/nix build 'github:t184256/nix-configs#homeConfigurations.x1c9.activationPackage' --out-link /home/asosedki/.first-activation"

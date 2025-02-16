@@ -1,5 +1,5 @@
 # just an assortment of commands
-nix --extra-experimental-features nix-command --extra-experimental-features flakes hydra.unboiled.info-1:c7i8vKOB30a+DaJ2M04F0EM8CPRfU+WpbqWie4n221M= build '.#nixosConfigurations.lychee.config.system.build.toplevel'
+nix --extra-experimental-features nix-command --extra-experimental-features flakes build '.#nixosConfigurations.lychee.config.system.build.toplevel'
 mkdir -p ~/.local/share
 git clone git@git.unboiled.info:monk/pass ~/.local/share/password-store
 gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys b0e9dd20b29f1432

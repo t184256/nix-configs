@@ -60,17 +60,6 @@
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
     nixgl.inputs.flake-utils.follows = "flake-utils";
 
-    hydra.url = "github:thufschmitt/hydra/nix-ca";
-    hydra-nix = {
-      url = "github:NixOS/nix/2.22-maintenance";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-parts.follows = "flake-parts";
-      inputs.flake-compat.follows = "flake-compat";
-      inputs.pre-commit-hooks.follows = "pre-commit-hooks";
-    };
-    #hydra.inputs.nixpkgs.follows = "nixpkgs";  # breaks
-    hydra.inputs.nix.follows = "hydra-nix";
-
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.inputs.utils.follows = "flake-utils";
@@ -117,7 +106,6 @@
     home-manager,
     nixvim,
     nixgl,
-    hydra,
     deploy-rs,
     nixos-generators,
     alacritty-autoresizing,

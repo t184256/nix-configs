@@ -72,7 +72,6 @@ let
     www.monk        IN CNAME loquat
     transmission    IN CNAME fig
     tabby           IN CNAME fig
-    hydra           IN CNAME loquat
     nix-on-droid    IN CNAME loquat
     yousable        IN CNAME watermelon
     lemmy           IN CNAME loquat

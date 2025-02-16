@@ -227,12 +227,6 @@ fi
 
 ### Installation from a flake ###
 
-NIXOS_URL=https://cache.nixos.org?priority=200
-HYDRA_URL=https://hydra.unboiled.info
-NIXOS_KEY=cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-HYDRA_KEY=hydra.unboiled.info-1:c7i8vKOB30a+DaJ2M04F0EM8CPRfU+WpbqWie4n221M=
 sudo nixos-install --root /mnt/tgt --no-root-password \
 	--option extra-experimental-features 'cgroups nix-command flakes' \
-	--option substituters "$NIXOS_URL $HYDRA_URL" \
-	--option trusted-public-keys "$NIXOS_KEY $HYDRA_KEY" \
 	--flake "$FLAKE#${HOST,,}"

@@ -3,7 +3,6 @@ _:
 {
   nix = {
     settings = {
-      substituters = [ "https://hydra.unboiled.info?priority=200" ];
     };
     settings.trusted-users = [ "monk" ];
     extraOptions = ''

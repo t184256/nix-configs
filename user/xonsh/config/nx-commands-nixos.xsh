@@ -11,14 +11,6 @@ def _nx_config_dir():
     raise RuntimeError(f'neither /etc/nixos nor {home_path} were found')
 
 
-def _nxu():
-    ref = __hydra_last_successful_ref()
-    $_confdir = _nx_config_dir()
-    $_override = f'github:NixOS/nixpkgs?ref={ref}'
-    (cd $_confdir && nix flake update --override-input nixpkgs $_override)
-    del $_override $_confdir
-
-
 def _nxd(args):
     REMOTE_BUILD = {'cocoa', 'loquat'}
     confdir = _nx_config_dir()
@@ -65,7 +57,6 @@ def _in_tmpdir(cmd):
     return _nxt
 
 
-aliases['nxu'] = _nxu
 aliases['nxd'] = _nxd
 aliases['nxb'] = _in_tmpdir('nixos-rebuild build --flake %FLAKE%')
 aliases['nxt'] = _in_tmpdir('sudo nixos-rebuild test --flake %FLAKE%')
@@ -76,6 +67,5 @@ aliases['nxe'] = _in_tmpdir('find %FLAKE% | '
                             '         nixos-rebuild --no-build-nix build'
                             '                       --flake %FLAKE%')
 
-del _nxu
 del _nxd
 del _in_tmpdir
