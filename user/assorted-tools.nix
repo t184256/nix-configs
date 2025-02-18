@@ -7,5 +7,6 @@
     ripgrep
     tokei
     hyperfine
+    nps
   ];
 }
