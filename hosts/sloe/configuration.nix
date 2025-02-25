@@ -12,6 +12,7 @@ _:
     ../../nixos/services/garage.nix
     ../../nixos/services/git.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
+    ../../nixos/services/short.nix
     ../../nixos/services/syncthing.nix
   ];
 
