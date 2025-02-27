@@ -1,0 +1,363 @@
+#!/bin/bash
+set -xEeuo pipefail; shopt -s inherit_errexit
+
+# running remotely:
+#   there$ sudo passwd liveuser && sudo systemctl start sshd && ip a
+#   here$ ssh-copy-id liveuser@...
+#   here$ scp misc/inst/t14g5 liveuser@...: && ssh -t liveuser@... ./t14g5
+
+
+# Goal: Install bare-bones Fedora, wiping the drive clean.
+#       The important thing is the drive layout, rest is handled in stage2.
+
+: "${BOOT_SIZE:=768MB}"
+: "${SWAP_SIZE:=32GB}"
+: "${HOST:=T14G5}"
+: "${NVME:=/dev/nvme0}"
+: "${DISK:=/dev/nvme0n1}"
+: "${SEED:=/var/run/media/liveuser/VTOYEFI/seed.gpg}"
+: "${AUTO_REBOOT:=false}"
+
+
+# Set up cleanup:
+
+cleanup() {
+    sudo rm -f /tmp/.inst-files/rclone.conf ||:
+    sudo umount /mnt/0 2>/dev/null ||:
+    sudo umount /mnt/tgt/etc/resolv.conf 2>/dev/null ||:
+    sudo rm -f /mnt/tgt/etc/resolv.conf 2>/dev/null ||:
+    sudo umount /mnt/tgt/sys/firmware/efi/efivars 2>/dev/null ||:
+    sudo umount /mnt/tgt/sys/fs/selinux 2>/dev/null ||:
+    sudo umount /mnt/tgt/sys 2>/dev/null ||:
+    sudo umount /mnt/tgt/proc 2>/dev/null ||:
+    sudo umount /mnt/tgt/dev 2>/dev/null ||:
+    sudo umount /mnt/tgt/home 2>/dev/null ||:
+    sudo umount /mnt/tgt/cache 2>/dev/null ||:
+    sudo umount /mnt/tgt/mnt/secrets 2>/dev/null ||:
+    sudo umount /mnt/tgt/boot 2>/dev/null ||:
+    sudo umount /mnt/tgt 2>/dev/null ||:
+    sudo cryptsetup close ${HOST} 2>/dev/null ||:
+    sudo swapoff /dev/mapper/${HOST}_SWAP 2>/dev/null ||:
+    sudo cryptsetup close ${HOST}_SWAP 2>/dev/null ||:
+    sudo umount /dev/disk/by-partlabel/${HOST}_BOOT 2>/dev/null ||:
+}
+trap 'set +x; cleanup' EXIT
+
+
+# Prerequisites/safeguards: specific disk on a specific machine,
+#                           booted from a Fedora live-USB,
+#                           having yubikey and seed.gpg
+
+PRODUCT_UUID=$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)
+[[ "$PRODUCT_UUID" == 'e5534e4c-2b89-11b2-a85c-d17fa6dbf6d0' ]]
+PARTITIONS=$(sudo fdisk -l $DISK)
+grep -F '476.94 GiB, 512110190592 bytes, 1000215216 sectors' <<<"$PARTITIONS"
+grep -F 'UMIS RPETJ512MHP2MDQ' <<<"$PARTITIONS"
+
+
+# Live system configuration
+
+[[ "$(id -un)" == 'liveuser' ]]
+[[ "$(hostname)" == 'localhost-live' ]]
+
+gsettings set \
+    org.gnome.settings-daemon.plugins.power sleep-inactive-ac-timeout 0
+
+sudo sed -i "s|^%wheel.*|%wheel ALL=(ALL:ALL) NOPASSWD:SETENV: ALL|" \
+    /etc/sudoers
+
+sudo tee /usr/share/polkit-1/rules.d/10-pcsc.rules <<EOF
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.debian.pcsc-lite.access_card" &&
+        action.lookup("reader") == 'Yubico YubiKey CCID 00 00' &&
+        subject.user == "liveuser") {
+            return polkit.Result.YES;
+    }
+});
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.debian.pcsc-lite.access_pcsc" &&
+        subject.user == "liveuser") {
+            return polkit.Result.YES;
+    }
+});
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart polkit
+sudo systemctl restart pcscd
+gpg --keyserver hkps://keys.openpgp.org --recv-keys b0e9dd20b29f1432
+gpg --card-status || (sleep 1; sudo systemctl restart pcscd; gpg --card-status)
+mkdir -p /tmp/.inst-files
+cp "$SEED" /tmp/.inst-files/seed.gpg
+gpg -d /tmp/.inst-files/seed.gpg > /tmp/.inst-files/rclone.conf
+
+
+# (minimal) User interaction:
+
+echo >&2 'THIS WILL WIPE THE ENTIRE DEVICE!'
+if [[ -z "$PASSPHRASE" ]]; then
+	read -rsp 'New passphrase: ' PASSPHRASE  # last chance to cancel
+fi
+
+
+# Wipe:
+#sudo nvme sanitize $NVME --sanact=start-crypto-erase
+#for i in {1..20}; do
+#	echo "waiting for device to become usable: $i/20"
+#	if sudo blkdiscard $DISK; then break; fi
+#	sleep $i
+#done
+
+# Partition:
+sudo parted -s $DISK -- mklabel gpt
+sudo parted $DISK -- mkpart primary fat32 1MB $BOOT_SIZE
+sudo parted $DISK -- set 1 esp on
+sudo parted $DISK -- name 1 ${HOST}_BOOT
+sudo parted $DISK -- mkpart primary $BOOT_SIZE -$SWAP_SIZE
+sudo parted $DISK -- name 2 ${HOST}
+sudo parted $DISK -- mkpart primary linux-swap -$SWAP_SIZE 100%
+sudo parted $DISK -- name 3 ${HOST}_SWAP
+sudo partprobe -s
+[[ -e /dev/disk/by-partlabel/${HOST}_BOOT ]] || sleep 1
+[[ -e /dev/disk/by-partlabel/${HOST} ]] || sleep 1
+[[ -e /dev/disk/by-partlabel/${HOST}_SWAP ]] || sleep 1
+sleep 1
+sudo mkfs.fat -F 32 -n ${HOST:0:6}_BOOT /dev/disk/by-partlabel/${HOST}_BOOT
+echo -n "$PASSPHRASE" | \
+    sudo cryptsetup -q luksFormat /dev/disk/by-partlabel/${HOST} -d-
+echo -n "$PASSPHRASE" | \
+    sudo cryptsetup -q open /dev/disk/by-partlabel/${HOST} ${HOST} -d-
+sudo mkfs.btrfs -f -L ${HOST} /dev/mapper/${HOST}
+echo -n "$PASSPHRASE" | \
+    sudo cryptsetup -q luksFormat /dev/disk/by-partlabel/${HOST}_SWAP -d-
+echo -n "$PASSPHRASE" | \
+    sudo cryptsetup -q open /dev/disk/by-partlabel/${HOST}_SWAP ${HOST}_SWAP -d-
+sudo mkswap -f -L ${HOST}_SWAP /dev/mapper/${HOST}_SWAP
+sudo swapon /dev/mapper/${HOST}_SWAP
+SWAP_UUID=$(sudo blkid -o value -s UUID /dev/disk/by-label/${HOST}_SWAP)
+ROOT_PUUID=$(sudo blkid -o value -s UUID /dev/disk/by-partlabel/${HOST})
+SWAP_PUUID=$(sudo blkid -o value -s UUID /dev/disk/by-partlabel/${HOST}_SWAP)
+
+# Create subvolumes:
+GENERATION=$(TZ='Europe/Prague' date +%Y-%m-%d-%H-%M-%S)
+sudo mkdir -p /mnt/0 /mnt/tgt
+sudo mount -o subvolid=0 /dev/mapper/${HOST} /mnt/0
+sudo btrfs subvol create /mnt/0/gen
+sudo btrfs subvol create /mnt/0/gen/$GENERATION
+sudo btrfs subvol create /mnt/0/gen/$GENERATION/root
+sudo btrfs subvol create /mnt/0/gen/$GENERATION/home
+sudo btrfs subvol create /mnt/0/gen/$GENERATION/persist
+sudo btrfs subvol create /mnt/0/gen/$GENERATION/secrets
+sudo chown 1000:1000 /mnt/0/gen/$GENERATION/secrets
+sudo btrfs subvol create /mnt/0/cache
+
+# Prepare for invoking dnf:
+sudo rm -rf /tmp/.inst-files/dnf
+mkdir -p /tmp/.inst-files/dnf/yum.repos.d
+touch /tmp/.inst-files/dnf/dnf.conf
+cat > /tmp/.inst-files/dnf/yum.repos.d/fedora.repo << \EOF
+[fedora]
+name=Fedora $releasever - $basearch
+baseurl=https://download.fedoraproject.org/pub/fedora/linux/releases/$releasever/Everything/$basearch/os/
+enabled=1
+gpgcheck=0
+EOF
+cat > /tmp/.inst-files/dnf/yum.repos.d/fedora-updates.repo << \EOF
+[fedora-updates]
+name=Fedora Updates $releasever - $basearch
+baseurl=https://download.fedoraproject.org/pub/fedora/linux/updates/$releasever/Everything/$basearch/
+enabled=1
+gpgcheck=0
+EOF
+
+# Mount what's needed for the chroot:
+sudo mount -o subvol=gen/$GENERATION/root /dev/mapper/${HOST} /mnt/tgt/
+sudo mkdir -p /mnt/tgt/{home,boot,cache}
+sudo mount -o subvol=gen/$GENERATION/home /dev/mapper/${HOST} /mnt/tgt/home
+sudo mount -o subvol=cache /dev/mapper/${HOST} /mnt/tgt/cache
+sudo mount /dev/disk/by-partlabel/${HOST}_BOOT /mnt/tgt/boot
+sudo mkdir -p /mnt/tgt/mnt/{secrets,persist}
+sudo mount -o subvol=gen/$GENERATION/secrets /dev/mapper/${HOST} \
+              /mnt/tgt/mnt/secrets
+sudo mkdir -p /mnt/tgt/mnt/persist
+sudo mount -o subvol=gen/$GENERATION/persist /dev/mapper/${HOST} \
+              /mnt/tgt/mnt/persist
+sudo mkdir -p /mnt/tgt/{dev,proc,sys}
+sudo mount --bind /dev /mnt/tgt/dev
+sudo mount --bind /proc /mnt/tgt/proc
+sudo mount --bind /sys /mnt/tgt/sys
+sudo mount --bind /sys/fs/selinux /mnt/tgt/sys/fs/selinux
+sudo mount --bind /sys/firmware/efi/efivars /mnt/tgt/sys/firmware/efi/efivars
+sudo mkdir -p /mnt/tgt/etc
+sudo touch /mnt/tgt/etc/resolv.conf
+sudo mount --bind -o ro /etc/resolv.conf /mnt/tgt/etc/resolv.conf
+CHROOT='sudo chroot /mnt/tgt /bin/env PATH=/bin:/sbin'
+
+# Install
+if [[ -r /tmp/.inst-files/dnf-reinstall.tar ]]; then
+    sudo tar -C / -xf /tmp/.inst-files/dnf-reinstall.tar
+fi
+sudo dnf5 -y \
+    --noplugins \
+    --releasever=41 \
+    --installroot=/mnt/tgt \
+    --config /tmp/.inst-files/dnf/dnf.conf \
+    --setopt=reposdir=/tmp/.inst-files/dnf/yum.repos.d \
+    --setopt=varsdir=/tmp/.inst-files/dnf/vars \
+    --setopt=cachedir=/mnt/tgt/cache/dnf-reinstall \
+    --refresh \
+    --setopt=install_weak_deps=0 \
+    --setopt=max_parallel_downloads=10 \
+    --setopt=keepcache=1 \
+    install dnf5 fedora-gpg-keys bash coreutils psmisc passwd \
+            glibc-minimal-langpack glibc-langpack-en kernel dracut zstd agetty \
+            linux-firmware intel-gpu-firmware iwlwifi-mvm-firmware \
+            systemd systemd-resolved systemd-boot rootfiles \
+            selinux-policy-targeted \
+            policycoreutils policycoreutils-python-utils \
+            NetworkManager NetworkManager-tui NetworkManager-wifi \
+            NetworkManager-openvpn NetworkManager-openvpn-gnome \
+            openssh-server openssh-clients hostname firewalld iproute iputils \
+            mtr ca-certificates git-core wget curl rclone \
+            tar cryptsetup parted btrfs-progs e2fsprogs \
+            sudo vim-minimal man-db \
+            pcsc-lite opensc gnupg pinentry-tty \
+            mesa-dri-drivers gdm gnome-session gnome-console pinentry-gnome3 \
+            adobe-source-code-pro-fonts  # GNOME default
+sudo tar -C / -cf /tmp/.inst-files/dnf-reinstall.tar \
+                  /mnt/tgt/cache/dnf-reinstall
+
+sudo tee /mnt/tgt/etc/selinux/fixfiles_exclude_dirs <<EOF
+/home
+/mnt
+EOF
+$CHROOT restorecon -R /boot /etc /home /usr || sudo touch /mnt/tgt/.autorelabel
+
+# (background) makecache
+$CHROOT dnf makecache --refresh &>/dev/null &
+makecache_pid=$!
+
+# Configure some basic things:
+$CHROOT systemd-firstboot \
+    --locale=C.UTF-8 --locale-messages=C.UTF-8 \
+    --timezone=Europe/Prague \
+    --hostname="${HOST,,}" \
+    --root-shell=/bin/bash
+$CHROOT groupadd -g 1000 asosedki
+$CHROOT useradd -g 1000 -u 1000 -M -d /home/asosedki -s /bin/bash asosedki
+$CHROOT usermod -a -G wheel,users,audio,input asosedki
+sudo sed -i "s|^%wheel.*|%wheel ALL=(ALL:ALL) NOPASSWD:SETENV: ALL|" \
+    /mnt/tgt/etc/sudoers
+
+# configure filesystems
+sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/asosedki
+sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/mnt/secrets
+[[ ! -e /mnt/tgt/etc/fstab ]]
+sudo tee /mnt/tgt/etc/fstab <<EOF
+/dev/disk/by-label/${HOST} / btrfs subvol=gen/$GENERATION/root
+/dev/disk/by-label/${HOST} /home btrfs subvol=gen/$GENERATION/home
+/dev/disk/by-label/${HOST} /mnt/cache btrfs subvol=cache
+/dev/disk/by-label/${HOST} /mnt/persist btrfs subvol=gen/$GENERATION/persist
+/dev/disk/by-label/${HOST} /mnt/secrets btrfs subvol=gen/$GENERATION/secrets
+/dev/disk/by-label/${HOST} /mnt/0 btrfs subvolid=0
+/dev/disk/by-label/${HOST}_BOOT /boot vfat defaults
+/dev/disk/by-label/${HOST}_SWAP none swap defaults,pri=-5
+EOF
+sudo tee /mnt/tgt/etc/crypttab <<EOF
+${HOST} /dev/disk/by-partlabel/${HOST} - discard
+${HOST}_SWAP /dev/disk/by-partlabel/${HOST}_SWAP - discard
+EOF
+
+# Login configuration:
+if [[ -e /mnt/tgt/etc/gdm/custom.conf ]]; then
+    sudo sed -i 's|^\[daemon\]$|[daemon]\nAutomaticLogin=asosedki|' \
+             /mnt/tgt/etc/gdm/custom.conf
+    sudo sed -i 's|^\[daemon\]$|[daemon]\nAutomaticLoginEnable=True|' \
+             /mnt/tgt/etc/gdm/custom.conf
+fi
+sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/asosedki
+sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/mnt/persist/ssh
+wget https://github.com/t184256.keys -O /tmp/.inst-files/keys
+sudo sed 's|.*#PasswordAuthentication .*|PasswordAuthentication no|' \
+         -i /mnt/tgt/etc/ssh/sshd_config
+sudo grep -Fx 'PasswordAuthentication no' /mnt/tgt/etc/ssh/sshd_config
+sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/mnt/persist/ssh
+sudo install -m 600 -o 1000 -g 1000 /tmp/.inst-files/keys \
+                                    /mnt/tgt/mnt/persist/ssh/authorized_keys
+$CHROOT ln -sf /mnt/persist/ssh /home/asosedki/.ssh
+$CHROOT semanage fcontext -a -t ssh_home_t '/home/[^\/]+/.ssh'
+$CHROOT semanage fcontext -a -t default_t \
+    '/home/[^\/]+/.ssh/(/.*)?/[^authorized_keys]'
+$CHROOT semanage fcontext -a -t ssh_home_t '/mnt/persist/ssh'
+$CHROOT semanage fcontext -a -t ssh_home_t '/mnt/persist/ssh/authorized_keys'
+$CHROOT semanage fcontext -a -t default_t '/mnt/persist/ssh/[^authorized_keys]'
+$CHROOT restorecon -Rv /mnt/persist/ssh
+$CHROOT passwd  --stdin root <<<"$PASSPHRASE"
+$CHROOT passwd  --stdin asosedki <<<"$PASSPHRASE"
+sudo sed 's|liveuser|asosedki|' /usr/share/polkit-1/rules.d/10-pcsc.rules \
+    | sudo tee /mnt/tgt/usr/share/polkit-1/rules.d/10-pcsc.rules
+
+# Prepare for stage2:
+sudo install -m 600 -o 1000 -g 1000 /tmp/.inst-files/rclone.conf \
+                                    /mnt/tgt/mnt/secrets/rclone.conf
+
+sudo tee /mnt/tgt/bin/stage2 <<\EOF
+#!/bin/bash
+set -xEeuo pipefail; shopt -s inherit_errexit
+[[ "$(id -un)" == 'asosedki' ]]
+[[ -e /mnt/secrets/rclone.conf ]]
+rclone --config=/mnt/secrets/rclone.conf \
+       copy gdrive-asosedki-backups-crypt:stage2.tar.gpg /tmp/
+sudo install -m 700 -o 1000 -g 1000 -d /mnt/persist/gnupg
+if [[ ! -e ~/.gnupg ]]; then
+    ln -sf /mnt/persist/gnupg ~/.gnupg
+    #echo disable-ccid > ~/.gnupg/scdaemon.conf
+    gpg --keyserver hkps://keys.openpgp.org --recv-keys b0e9dd20b29f1432
+fi
+gpg --card-status || (sleep 1; sudo systemctl restart pcscd; gpg --card-status)
+cd /tmp
+rm -rf stage2
+gpg -d stage2.tar.gpg | tar xvv
+cd stage2
+echo stage2
+./stage2
+EOF
+sudo chmod +x /mnt/tgt/bin/stage2
+
+# Install the bootloader using BLS scheme:
+echo "$GENERATION" | sudo tee /mnt/tgt/etc/kernel/entry-token
+sudo mkdir -p "/mnt/tgt/boot/$GENERATION"
+echo \
+    rd.luks.name=$ROOT_PUUID=${HOST} \
+    rd.luks.name=$SWAP_PUUID=${HOST}_SWAP \
+    root=LABEL=${HOST} \
+    resume=UUID=$SWAP_UUID \
+    rootflags=subvol=gen/$GENERATION/root \
+    quiet splash rhbg \
+    preempt=full \
+    | sudo tee /mnt/tgt/etc/kernel/cmdline
+sudo efibootmgr -BL 'Linux Boot Manager' ||:
+sudo efibootmgr -BL 'Fedora' ||:
+$CHROOT bootctl install
+find /mnt/tgt/boot
+
+# Add kernel
+FEDORA_VER=$(. /mnt/tgt/etc/os-release && echo "$VERSION_ID")
+ls /mnt/tgt/boot/loader/entries || true
+sudo sed "s|^PRETTY_NAME=.*|PRETTY_NAME=\"Fedora $FEDORA_VER $GENERATION\"|" \
+          -i /mnt/tgt/etc/os-release
+GEN_NUM=${GENERATION//-}
+GEN_NUM_INVERSE=$((30000000000000 - GEN_NUM))  # I want them sorted new-to-old
+echo "IMAGE_ID=\"$GEN_NUM_INVERSE\"" | sudo tee -a /mnt/tgt/etc/os-release
+KERNEL=$(ls /mnt/tgt/lib/modules/ | head -n1)  # should be just one
+$CHROOT kernel-install -v add "$KERNEL" "/lib/modules/$KERNEL/vmlinuz"
+find /mnt/tgt/boot
+grep . /mnt/tgt/boot/loader/entries/*
+
+echo 'waiting for makecache to finish...'
+wait $makecache_pid
+
+if [[ "$AUTO_REBOOT" == 'true' ]]; then
+    sudo reboot
+else
+    echo 'done'
+fi
