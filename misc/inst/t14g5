@@ -16,7 +16,7 @@ set -xEeuo pipefail; shopt -s inherit_errexit
 : "${NVME:=/dev/nvme0}"
 : "${DISK:=/dev/nvme0n1}"
 : "${SEED:=/var/run/media/liveuser/VTOYEFI/seed.gpg}"
-: "${AUTO_REBOOT:=false}"
+: "${AUTO_REBOOT:=true}"
 
 
 # Set up cleanup:
@@ -25,7 +25,6 @@ cleanup() {
     sudo rm -f /tmp/.inst-files/rclone.conf ||:
     sudo umount /mnt/0 2>/dev/null ||:
     sudo umount /mnt/tgt/etc/resolv.conf 2>/dev/null ||:
-    sudo rm -f /mnt/tgt/etc/resolv.conf 2>/dev/null ||:
     sudo umount /mnt/tgt/sys/firmware/efi/efivars 2>/dev/null ||:
     sudo umount /mnt/tgt/sys/fs/selinux 2>/dev/null ||:
     sudo umount /mnt/tgt/sys 2>/dev/null ||:
@@ -35,6 +34,7 @@ cleanup() {
     sudo umount /mnt/tgt/cache 2>/dev/null ||:
     sudo umount /mnt/tgt/mnt/secrets 2>/dev/null ||:
     sudo umount /mnt/tgt/boot 2>/dev/null ||:
+    sudo rm -f /mnt/tgt/etc/resolv.conf 2>/dev/null ||:
     sudo umount /mnt/tgt 2>/dev/null ||:
     sudo cryptsetup close ${HOST} 2>/dev/null ||:
     sudo swapoff /dev/mapper/${HOST}_SWAP 2>/dev/null ||:
@@ -94,7 +94,7 @@ gpg -d /tmp/.inst-files/seed.gpg > /tmp/.inst-files/rclone.conf
 # (minimal) User interaction:
 
 echo >&2 'THIS WILL WIPE THE ENTIRE DEVICE!'
-if [[ -z "$PASSPHRASE" ]]; then
+if [[ -z "${PASSPHRASE-}" ]]; then
 	read -rsp 'New passphrase: ' PASSPHRASE  # last chance to cancel
 fi
 
