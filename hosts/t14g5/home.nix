@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 {
-  home.stateVersion = "22.05";
+  home.stateVersion = "24.11";
   home.username = "asosedki";
   home.homeDirectory = "/home/asosedki";
   programs.home-manager.enable = true;
@@ -48,7 +48,6 @@
   home.packages = with pkgs; [
     bash-completion
     nixgl.nixGLIntel
-    tiny
     wl-clipboard
     git-absorb
     sccache

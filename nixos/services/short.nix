@@ -1,8 +1,9 @@
 { pkgs, lib, ... }:
 
-# curl https://s.unboiled.info/ssh | bash -s
+# . <(curl https://s.unboiled.info/ssh)
 
 let
+  #selfUrl = "https://raw.githubusercontent.com/t184256/nix-configs/staging/";
   strict = "set -Eeuo pipefail; shopt -s inherit_errexit\n";
   mkScript = name: text: pkgs.writeText ("short-script-" + name) (strict + text);
   scripts = {
@@ -13,6 +14,7 @@ let
       id -un
       ip a | grep inet | grep -vwF 127.0.0.1/8 | grep -vwF 'inet6 ::1/128' ||:
     '';
+    t14 = builtins.readFile ../../misc/inst/t14g5;
   };
   short-scripts-dir = pkgs.linkFarm "short-scripts" (lib.mapAttrsToList
     (name: text: { inherit name; path = mkScript name text; }) scripts

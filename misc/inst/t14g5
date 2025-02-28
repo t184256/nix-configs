@@ -310,7 +310,7 @@ rclone --config=/mnt/secrets/rclone.conf \
 sudo install -m 700 -o 1000 -g 1000 -d /mnt/persist/gnupg
 if [[ ! -e ~/.gnupg ]]; then
     ln -sf /mnt/persist/gnupg ~/.gnupg
-    #echo disable-ccid > ~/.gnupg/scdaemon.conf
+    echo disable-ccid > ~/.gnupg/scdaemon.conf
     gpg --keyserver hkps://keys.openpgp.org --recv-keys b0e9dd20b29f1432
 fi
 gpg --card-status || (sleep 1; sudo systemctl restart pcscd; gpg --card-status)
@@ -355,6 +355,9 @@ grep . /mnt/tgt/boot/loader/entries/*
 
 echo 'waiting for makecache to finish...'
 wait $makecache_pid
+
+sudo umount /mnt/tgt/etc/resolv.conf
+sudo rm /mnt/tgt/etc/resolv.conf
 
 if [[ "$AUTO_REBOOT" == 'true' ]]; then
     sudo reboot
