@@ -6,6 +6,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../nixos/services/dyndns.nix
+    ../../nixos/services/microsocks.nix
     ../../nixos/services/nebula
   ];
 
@@ -45,6 +46,10 @@
   users.users.root.hashedPasswordFile = "/mnt/persist/secrets/login/root";
 
   systemd.services.systemd-machine-id-commit.enable = false;
+
+  services.beesd.filesystems.persist = {
+    spec = "/mnt/persist"; hashTableSizeMB =16;
+  };
 
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;

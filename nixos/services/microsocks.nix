@@ -4,6 +4,7 @@ _:
   services.microsocks = {
     enable = true;
     ip = "::";
+    #outgoingBindIp = "::";
     port = 2780;
     authUsername = "y";
     authPasswordFile = "/mnt/persist/secrets/microsocks";
