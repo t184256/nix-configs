@@ -15,7 +15,6 @@ in
         # don't show signs column and don't highlight until I press <gl>
         signcolumn = false;
         linehl = false;  # toggleable
-        show_deleted = false;  # toggleable
         word_diff = false;  # toggleable
       };
     };
