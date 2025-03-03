@@ -14,5 +14,6 @@
     e2fsprogs  # chattr
     parted
     cryptsetup
+    btdu
   ];
 }
