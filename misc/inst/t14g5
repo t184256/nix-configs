@@ -250,7 +250,7 @@ sudo sed -i "s|^%wheel.*|%wheel ALL=(ALL:ALL) NOPASSWD:SETENV: ALL|" \
 
 # configure filesystems
 sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/asosedki
-sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/mnt/secrets
+sudo install -m 711 -o 1000 -g 1000 -d /mnt/tgt/mnt/secrets
 [[ ! -e /mnt/tgt/etc/fstab ]]
 sudo tee /mnt/tgt/etc/fstab <<EOF
 /dev/disk/by-label/${HOST} / btrfs subvol=gen/$GENERATION/root
