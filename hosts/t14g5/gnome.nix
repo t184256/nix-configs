@@ -65,11 +65,12 @@ in
       enabled-extensions = [
         "autohide-battery@sitnik.ru"
         "autohide-volume@unboiled.info"
+        "freon@UshakovVasilii_Github.yahoo.com"
         "gnome-kinit@bonzini.gnu.org"
         "just-perfection-desktop@just-perfection"
         "paperwm@paperwm.github.com"
-        #"noannoyance@daase.net"
         "unite@hardpixel.eu"
+        #"noannoyance@daase.net"
       ];
     };
     # https://github.com/paperwm/PaperWM/issues/261
