@@ -93,7 +93,8 @@ in
       #show-desktop-name = true;
       desktop-name-text = "";  # could be hostname, but I'm feeling minimalistic
       show-window-buttons = "never";
-      reduce-panel-spacing = true;
+      show-window-title = "always";
+      reduce-panel-spacing = false;
       notifications-position = "right";
       show-legacy-tray = false;
     };
@@ -103,8 +104,11 @@ in
       app-menu-icon = false;
       clock-menu-position = 1;  # right
       clock-menu-position-offset = 9;  # rightmost, actually
-      power-icon = false;
+      power-icon = true;
+      panel-button-padding-size = 1;
+      panel-indicator-padding-size = 1;
       search = false;
+      support-notifier-type = 0;
       window-maximized-on-create = true;
       #workspace = false;
       workspace-popup = false;
@@ -112,6 +116,7 @@ in
     "org/gnome/shell/extensions/paperwm" = {
       cycle-height-steps = steps;
       cycle-width-steps = steps;
+      default-focus-mode = 1;  # center
       disable-topbar-styling = true;
       horizontal-margin = 0;
       show-open-position-icon = false;
@@ -129,6 +134,7 @@ in
       switch-global-right = ["<Shift><Alt>s"];
       switch-down-workspace-from-all-monitors = ["<Shift><Alt>f"];
       switch-up-workspace-from-all-monitors = ["<Shift><Alt>w"];
+      switch-focus-mode = ["<Shift><Alt>d"];
       take-window = ["<Shift><Alt>x"];  # experimental
     };
     "org/gnome/shell/extensions/paperwm/workspaces" = {
