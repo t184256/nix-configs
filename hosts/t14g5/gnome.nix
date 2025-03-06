@@ -63,6 +63,7 @@ in
       ];
       disable-user-extensions = false;
       enabled-extensions = [
+        "auto-activities@CleoMenezesJr.github.io"
         "autohide-battery@sitnik.ru"
         "autohide-volume@unboiled.info"
         "freon@UshakovVasilii_Github.yahoo.com"
@@ -101,6 +102,7 @@ in
     };
     "org/gnome/settings-daemon/plugins/color" = {
       night-light-enabled = true;
+      night-light-schedule-automatic = true;
       night-light-temperature = 3200;
     };
     "org/gnome/shell/extensions/unite" = {
@@ -112,9 +114,15 @@ in
       #show-desktop-name = true;
       desktop-name-text = "";  # could be hostname, but I'm feeling minimalistic
       show-window-buttons = "never";
-      reduce-panel-spacing = true;
+      show-window-title = "always";
+      reduce-panel-spacing = false;
       notifications-position = "right";
       show-legacy-tray = false;
+    };
+    "org/gnome/shell/extensions/freon" = {
+      hot-sensors = ["__max__" "fan1"];
+      show-icon-on-panel = false;
+      update-time = 2;  # faster than the default 5
     };
     "org/gnome/shell/extensions/just-perfection" = {
       animation = 3;  # Faster
@@ -124,6 +132,7 @@ in
       clock-menu-position-offset = 9;  # rightmost, actually
       power-icon = false;
       search = false;
+      support-notifier-type = 0;
       window-maximized-on-create = true;
       #workspace = false;
       workspace-popup = false;
@@ -131,6 +140,7 @@ in
     "org/gnome/shell/extensions/paperwm" = {
       cycle-height-steps = steps;
       cycle-width-steps = steps;
+      default-focus-mode = 1;  # center
       disable-topbar-styling = true;
       horizontal-margin = 0;
       show-open-position-icon = false;
@@ -148,6 +158,7 @@ in
       switch-global-right = ["<Shift><Alt>s"];
       switch-down-workspace-from-all-monitors = ["<Shift><Alt>f"];
       switch-up-workspace-from-all-monitors = ["<Shift><Alt>w"];
+      switch-focus-mode = ["<Shift><Alt>d"];
       take-window = ["<Shift><Alt>x"];  # experimental
     };
     "org/gnome/shell/extensions/paperwm/workspaces" = {
