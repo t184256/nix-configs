@@ -68,6 +68,7 @@ in
         "freon@UshakovVasilii_Github.yahoo.com"
         "gnome-kinit@bonzini.gnu.org"
         "just-perfection-desktop@just-perfection"
+        "openbar@neuromorph"
         "paperwm@paperwm.github.com"
         "unite@hardpixel.eu"
         #"noannoyance@daase.net"
