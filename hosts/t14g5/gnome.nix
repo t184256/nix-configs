@@ -86,11 +86,8 @@ in
     };
     "org/gnome/desktop/wm/preferences" = {
       mouse-button-modifier = "<Control>";  # will break apps, but let's try
-      num-workspaces = 5;
       titlebar-font = "Iosevka Term 14";
-      workspace-names = [ "1" "2" "3" "4" "5" ];
     };
-    "org/gnome/mutter".dynamic-workspaces = false;
     "org/gnome/desktop/interface" = {
       #gtk-theme = "Adwaita-dark";
       #icon-theme = "Moka";
@@ -102,12 +99,11 @@ in
     };
     "org/gnome/settings-daemon/plugins/color" = {
       night-light-enabled = true;
-      night-light-schedule-automatic = true;
       night-light-temperature = 3200;
     };
     "org/gnome/shell/extensions/unite" = {
       restrict-to-primary-screen = false;
-      hide-activities-button = "never";
+      hide-activities-button = "auto";
       use-activities-text = false;
       #show-appmenu-icon = true;
       hide-app-menu-icon = false;
@@ -130,7 +126,9 @@ in
       app-menu-icon = false;
       clock-menu-position = 1;  # right
       clock-menu-position-offset = 9;  # rightmost, actually
-      power-icon = false;
+      power-icon = true;
+      panel-button-padding-size = 1;
+      panel-indicator-padding-size = 1;
       search = false;
       support-notifier-type = 0;
       window-maximized-on-create = true;
@@ -143,13 +141,14 @@ in
       default-focus-mode = 1;  # center
       disable-topbar-styling = true;
       horizontal-margin = 0;
+      show-focus-mode-icon = false;
       show-open-position-icon = false;
       show-window-position-bar = false;
       show-workspace-indicator = false;  # show a pill instead
+      use-default-background = false;
       vertical-margin = 0;
       vertical-margin-bottom = 0;
       window-gap = 0;
-      use-default-background = false;
     };
     "org/gnome/shell/extensions/paperwm/keybindings" = {
       cycle-width = ["<Shift><Alt>t"];
@@ -194,6 +193,9 @@ in
     "org/gnome/GWeather".temperature-unit = "centigrade";
     "org/gnome/nautilus/preferences" = {
       default-folder-viewer = "list-view";
+    };
+    "org/gnome/settings-daemon/plugins/power" = {
+      sleep-inactive-ac-type = "nothing";
     };
   };
 }
