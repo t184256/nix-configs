@@ -48,7 +48,6 @@
         nginx
         ninja
         nix
-        org
         passwd
         pem
         printf

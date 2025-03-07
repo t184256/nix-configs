@@ -50,11 +50,7 @@
 
     nixvim.url = "github:nix-community/nixvim";
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
-    nixvim.inputs.home-manager.follows = "home-manager";
     nixvim.inputs.flake-parts.follows = "flake-parts";
-    nixvim.inputs.flake-compat.follows = "flake-compat";
-    nixvim.inputs.git-hooks.follows = "git-hooks";
-    nixvim.inputs.devshell.follows = "devshell";
 
     nixgl.url = "github:guibou/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";

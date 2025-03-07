@@ -53,6 +53,7 @@ in {
       systemPackages = (with pkgs; [
         wl-clipboard
       ]) ++ (with pkgs.gnomeExtensions; [
+        auto-activities
         autohide-battery
         autohide-volume
         just-perfection
