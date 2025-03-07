@@ -37,7 +37,11 @@
     };
   };
 
-  #home-manager.users.monk.home.persistence."/mnt/persist" = {
+  #home-manager.users.monk.home.persistence."/mnt/persist/home/monk" = {
+  #  directories = [
+  #    ".cache/nix"
+  #  ]
+  #};
   environment.persistence."/mnt/persist" = {
     directories = [
       { directory = "/var/cache/nps"; user = "monk"; }

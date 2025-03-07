@@ -6,6 +6,7 @@
     ./hardware-configuration.nix
     ../lychee/onemix-keyboard-remap.nix
     ../../nixos/services/nebula
+    ../../nixos/services/nps.nix  # rather condition on interactive or something
   ];
 
   users.mutableUsers = false;
