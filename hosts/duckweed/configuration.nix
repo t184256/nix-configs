@@ -12,6 +12,7 @@
     ../../nixos/services/ipfs/node.nix
     ../../nixos/services/ipfs/micro.nix
     ../../nixos/services/meshcentral.nix
+    ../../nixos/services/microsocks.nix
     ../../nixos/services/nebula
     ../../nixos/services/syncthing-relay.nix
     ../../nixos/services/wireguard-nl.nix
