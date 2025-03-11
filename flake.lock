@@ -782,11 +782,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1736949271,
-        "narHash": "sha256-fxY+kNmFvvaPd6mxl87ZknxbHxSxmRgs0n4dbqvtY6U=",
+        "lastModified": 1741704954,
+        "narHash": "sha256-D7sU9be+DwhQqBNpT3TrVZZG+KfTmW6zG6x1dq7mobM=",
         "owner": "t184256",
         "repo": "yousable",
-        "rev": "a6eed0bc2bbfbd16a16a083d88b024de02c439b2",
+        "rev": "5dc1b726e816c8eb4393a98a556d68facb185107",
         "type": "github"
       },
       "original": {
