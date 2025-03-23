@@ -2,15 +2,15 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "2025.02.19";
+  newerVer = "2025.03.21";
   overrides-fresh = _: {
     name = "yt-dlp-${newerVer}";
     version = newerVer;
     src = prev.fetchFromGitHub {
       owner = "yt-dlp";
       repo = "yt-dlp";
-      rev = "2025.02.19";
-      hash = "sha256-otgB9rrv6mgqLdRCuxhZirl5npNQhIKdzFLBrfPer4M=";
+      rev = newerVer;
+      hash = "sha256-76XGI/0UFweaQV6bWejhaIiPGCV7cl0BQMrotSIBkkU=";
     };
   };
   overrides-plugins = oa: {
@@ -41,13 +41,13 @@ let
   };
   bgutil-ytdlp-pot-provider = prev.python3Packages.buildPythonPackage rec {
     pname = "bgutil-ytdlp-pot-provider";
-    version = "0.7.2";
+    version = "0.8.1";
     pyproject = true;
     src = prev.fetchFromGitHub {
       owner = "Brainicism";
       repo = "bgutil-ytdlp-pot-provider";
       rev = version;
-      hash = "sha256-IiPle9hZEHFG6bjMbe+psVJH0iBZXOMg3pjgoERH3Eg=";
+      hash = "sha256-P1kIbb8J/4I/fNpwYPXbNx9ao01Slsn3ijm4dXyMZ+w=";
     };
     propagatedBuildInputs = [ yt-dlp-get-pot ];
     postUnpack = "pwd; ls; cp source/README.md source/plugin/";
