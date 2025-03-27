@@ -105,6 +105,11 @@
   # * syncthing
   # * thunderbird
 
+  # let's try to fix suspend
+  systemd.services.systemd-suspend = {
+    environment.SYSTEMD_SLEEP_FREEZE_USER_SESSIONS = "false";
+  };
+
   programs.adb.enable = true;
   users.extraGroups.plugdev.members = [ "monk" ];
   networking.firewall.allowedTCPPorts = [ 3389 47984 47989 48010  ];
