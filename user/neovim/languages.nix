@@ -175,6 +175,7 @@ in
         marksman.enable = withLang "markdown";
 
         nil_ls.enable = withLang "nix";
+        nil_ls.extraOptions.autoArchive = false;
 
         rust_analyzer.enable = withLang "rust";
         rust_analyzer.installCargo = true;
