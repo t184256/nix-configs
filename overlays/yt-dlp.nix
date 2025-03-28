@@ -2,7 +2,7 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "2025.03.26";
+  newerVer = "2025.03.27";
   overrides-fresh = _: {
     name = "yt-dlp-${newerVer}";
     version = newerVer;
@@ -10,7 +10,7 @@ let
       owner = "yt-dlp";
       repo = "yt-dlp";
       rev = newerVer;
-      hash = "sha256-TYif7jVXrklMdULTEHYkdAy4MySnOhrJyA4vy2uTSSg=";
+      hash = "sha256-zTbPS2AzU8DHECSKm9LcgS0GECzQAhU02DkhSFzxbuY=";
     };
     postPatch = "";  # remove next update
   };
