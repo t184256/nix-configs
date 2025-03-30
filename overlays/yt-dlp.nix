@@ -42,13 +42,13 @@ let
   };
   bgutil-ytdlp-pot-provider = prev.python3Packages.buildPythonPackage rec {
     pname = "bgutil-ytdlp-pot-provider";
-    version = "0.8.1";
+    version = "0.8.2";
     pyproject = true;
     src = prev.fetchFromGitHub {
       owner = "Brainicism";
       repo = "bgutil-ytdlp-pot-provider";
       rev = version;
-      hash = "sha256-P1kIbb8J/4I/fNpwYPXbNx9ao01Slsn3ijm4dXyMZ+w=";
+      hash = "sha256-u34RkPmNr0yC2PH8GWF24T+uwCsrVQmg9/qfE3YJQHw=";
     };
     propagatedBuildInputs = [ yt-dlp-get-pot ];
     postUnpack = "pwd; ls; cp source/README.md source/plugin/";
