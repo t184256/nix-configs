@@ -9,6 +9,7 @@
     settings.port = 8536;
     ui.port = 1284;  # non-default ui port
   };
+  systemd.services.lemmy.serviceConfig.LimitNOFILE = 8192;
   services.pict-rs.package = pkgs.pict-rs;  # TODO: remove on migration
   # https://join-lemmy.org/docs/administration/from_scratch.html?
   services.nginx = {
