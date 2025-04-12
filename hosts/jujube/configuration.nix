@@ -24,7 +24,7 @@
 
   services.logind.lidSwitch = "suspend-then-hibernate";
   systemd.sleep.extraConfig = ''
-    HibernateDelaySec=90m
+    HibernateDelaySec=45m
     HibernateOnACPower=true
   '';
 
