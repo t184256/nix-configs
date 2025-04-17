@@ -198,7 +198,7 @@ if [[ -r /tmp/.inst-files/dnf-reinstall.tar ]]; then
 fi
 sudo dnf5 -y \
     --noplugins \
-    --releasever=41 \
+    --releasever=42 \
     --installroot=/mnt/tgt \
     --config /tmp/.inst-files/dnf/dnf.conf \
     --setopt=reposdir=/tmp/.inst-files/dnf/yum.repos.d \
