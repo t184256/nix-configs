@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
   imports = [
@@ -109,6 +109,8 @@
   # * thunderbird
 
   # let's try to fix suspend
+  #boot.kernelPackages = pkgs.linuxPackages_latest;
+  hardware.sensor.iio.enable = lib.mkForce false;
   systemd.services.systemd-suspend = {
     environment.SYSTEMD_SLEEP_FREEZE_USER_SESSIONS = "false";
   };
