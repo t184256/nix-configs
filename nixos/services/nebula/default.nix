@@ -25,6 +25,8 @@ let
     olosapo = { int = "192.168.99.23"; ext = [ "olosapo.unboiled.info" ]; };
     almond = { int = "192.168.99.31"; };
     carambola = { int = "192.168.99.32"; };
+    pistachio = { int = "192.168.99.33"; };
+    candlenut = { int = "192.168.99.34"; };
     t14g5 = { int = "192.168.99.42"; };
   };
   exts = lib.lists.flatten (
