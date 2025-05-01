@@ -15,7 +15,7 @@
     enable = true;
     enableSshSupport = true;
     sshKeys = [ "208CCF6C1601D1351502A91D919D98C48CB12B6D" ];
-    pinentryPackage =
+    pinentry.package =
       if config.system.noGraphics
       then pkgs.pinentry-tty
       else pkgs.pinentry-gnome3;
