@@ -1,0 +1,36 @@
+diff --git a/alot/db/manager.py b/alot/db/manager.py
+index 39c34e2e..09c537ab 100644
+--- a/alot/db/manager.py
++++ b/alot/db/manager.py
+@@ -4,6 +4,7 @@
+ # For further details see the COPYING file
+ from collections import deque
+ import contextlib
++import itertools
+ import logging
+ 
+ from notmuch2 import Database, NotmuchError, XapianError
+@@ -344,11 +345,18 @@ class DBManager:
+         assert sort in self._sort_orders
+         db = Database(path=self.path, mode=Database.MODE.READ_ONLY,
+                       config=self.config)
+-        thread_ids = [t.threadid for t in db.threads(querystring,
+-                            sort=self._sort_orders[sort],
+-                            exclude_tags=self.exclude_tags)]
+-        for t in thread_ids:
+-            yield t
++
++        # retrieve and store the first 1000 thread IDs
++        thread_iterator = db.threads(querystring,
++                                     sort=self._sort_orders[sort],
++                                     exclude_tags=self.exclude_tags)
++        thread_ids = [t.threadid for t in
++                      itertools.islice(thread_iterator, 1000)]
++
++        # yield the stored thread IDs first, then proceed with iterator
++        yield from thread_ids
++        for t in thread_iterator:
++            yield t.threadid
+ 
+     def add_message(self, path, tags=None, afterwards=None):
+         """
