@@ -9,7 +9,7 @@
     settings.port = 8536;
     ui.port = 1284;  # non-default ui port
   };
-  systemd.services.lemmy.serviceConfig.LimitNOFILE = 8192;
+  systemd.services.lemmy.serviceConfig.LimitNOFILE = 32768;
   services.pict-rs.package = pkgs.pict-rs;  # TODO: remove on migration
   # https://join-lemmy.org/docs/administration/from_scratch.html?
   services.nginx = {
@@ -60,7 +60,7 @@
       '';
     };
     appendHttpConfig = ''
-      limit_req_zone $binary_remote_addr zone=lemmy_ratelimit:1m rate=3r/s;
+      limit_req_zone $binary_remote_addr zone=lemmy_ratelimit:1m rate=150r/s;
     '';  # TODO: 1r/s
   };
   environment.persistence."/mnt/persist".directories = [
