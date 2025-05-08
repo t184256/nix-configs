@@ -9,7 +9,6 @@
     settings.port = 8536;
     ui.port = 1284;  # non-default ui port
   };
-  systemd.services.lemmy.serviceConfig.LimitNOFILE = 32768;
   services.pict-rs.package = pkgs.pict-rs;  # TODO: remove on migration
   # https://join-lemmy.org/docs/administration/from_scratch.html?
   services.nginx = {
@@ -62,6 +61,28 @@
     appendHttpConfig = ''
       limit_req_zone $binary_remote_addr zone=lemmy_ratelimit:1m rate=150r/s;
     '';  # TODO: 1r/s
+  };
+  systemd = {
+    services.lemmy.serviceConfig.LimitNOFILE = 32768;
+    timers.lemmy-hackrestart = {
+      wantedBy = [ "timers.target" ];
+      timerConfig.OnCalendar = "*-*-* *:0/20:00";
+    };
+    services.lemmy-hackrestart = {
+      serviceConfig.Type = "oneshot";
+      path = with pkgs; [ lsof gnugrep ];
+      script = ''
+        set -Eueo pipefail; shopt -s inherit_errexit
+        FDS=$(lsof | grep lemmy | wc -l)
+        echo open fds: "$FDS"
+        if ((FDS > 4000)); then
+          systemctl restart nginx
+          systemctl restart lemmy
+          systemctl restart lemmy-ui
+          echo 'restarted'
+        fi
+      '';
+    };
   };
   environment.persistence."/mnt/persist".directories = [
     { directory = "/var/lib/private"; mode = "0700"; }
