@@ -24,17 +24,17 @@ in {
     services = {
       xserver = {
         enable = true;
-        displayManager = {
+        videoDrivers = [ "modesetting" ];
+        desktopManager.gnome.enable = true;
+      };
+      displayManager = {
+        defaultSession = "gnome";
           gdm = {
             enable = true;
             debug = true;
             wayland = true;
           };
-        };
-        videoDrivers = [ "modesetting" ];
-        desktopManager.gnome.enable = true;
       };
-      displayManager.defaultSession = "gnome";
       gnome = {
         gnome-initial-setup.enable = false;
         gnome-remote-desktop.enable = true;
