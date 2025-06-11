@@ -61,7 +61,7 @@ _:
         "option:classless-static-route,192.168.98.0/24,192.168.98.1"  # !
         "option:netmask,255.255.255.0"  # netmask
         "option:dns-server,192.168.98.1"  # DNS
-        "option:mtu,1396"  # MTU
+        "option:mtu,1300"  # MTU
       ];
       dhcp-range = "192.168.98.2,192.168.98.2,255.255.255.0,10m";
       dhcp-broadcast = true;

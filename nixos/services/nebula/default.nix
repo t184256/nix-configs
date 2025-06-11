@@ -55,7 +55,7 @@ in
         format = "text";
       };
       routines = hostCfg.routines or 1;
-      tun.mtu = "1396";
+      tun.mtu = "1300";
       punchy = {
         punch = true;
         respond = true;
