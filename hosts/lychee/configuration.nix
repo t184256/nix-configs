@@ -1,28 +1,34 @@
-{ config, pkgs, inputs, ... }:
+{ lib, pkgs, inputs, ... }:
 
 {
   imports = [
+    ../../nixos/profiles/2024.nix
+    ./disko.nix
     "${inputs.nixos-hardware}/onenetbook/4"
-    ./hardware-configuration.nix
+    ./hardware.nix
     ./onemix-keyboard-remap.nix
     ../../nixos/services/nebula
+    ../../nixos/services/nps.nix  # rather condition on interactive or something
   ];
 
-  users.mutableUsers = false;
-  users.users.monk.hashedPasswordFile = "/mnt/persist/secrets/login/monk";
-  users.users.root.hashedPasswordFile = "/mnt/persist/secrets/login/root";
+  #users.mutableUsers = false;
+  #users.users.monk.hashedPasswordFile = "/mnt/persist/secrets/login/monk";
+  #users.users.root.hashedPasswordFile = "/mnt/persist/secrets/login/root";
 
   boot.loader.systemd-boot.configurationLimit = 15;  # small-ish /boot
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.efi.efiSysMountPoint = "/boot/efi";
+  #boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
   hardware.cpu.intel.updateMicrocode = true;
   hardware.graphics.extraPackages = [ pkgs.intel-media-driver ];
   hardware.wirelessRegulatoryDatabase = true;
 
   services.logind.lidSwitch = "suspend-then-hibernate";
-  systemd.sleep.extraConfig = "HibernateDelaySec=90m";
+  systemd.sleep.extraConfig = ''
+    HibernateDelaySec=45m
+    HibernateOnACPower=true
+  '';
 
   zramSwap = { enable = true; memoryPercent = 50; };
 
@@ -36,12 +42,6 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
   };
   #services.pulseaudio.enable = true;
   #systemd.services.depop = {
@@ -55,7 +55,6 @@
   #  };
   #};
 
-  #nixpkgs.overlays = [ (import ../../overlays/plymouth-better-bgrt.nix) ];
   # the closest NixOS currently has to silent boot:
   boot.plymouth.enable = true;
   boot.consoleLogLevel = 0;
@@ -67,8 +66,9 @@
   console.earlySetup = false;
   boot.loader.timeout = 0;
 
+  services.displayManager.autoLogin = { enable = true; user = "monk"; };
+
   home-manager.users.monk.home.packages = with pkgs; [
-    inputs.deploy-rs.defaultPackage.${pkgs.system}
     alacritty freerdp openvpn
   ];
 
@@ -83,9 +83,9 @@
     physical.portable = true;
     yubikey.enable = true;
   };
-  home-manager.users.monk = {
-    services.syncthing.enable = true;
-  };
+  #home-manager.users.monk = {
+  #  services.syncthing.enable = true;
+  #};
 
   # unplug Yubikey = lock screen
   services.udev.extraRules =
@@ -102,15 +102,16 @@
       ''
         SUBSYSTEM=="usb", ACTION=="remove", ENV{PRODUCT}=="1050/404/543", \
           RUN+="${pkgs.bash}/bin/bash ${script}"
+        DRIVER=="vkms", SUBSYSTEM=="platform", TAG-="mutter-device-ignore"
       '';
 
-  system.stateVersion = "22.05";
-  home-manager.users.monk.home.stateVersion = "22.05";
+  system.stateVersion = "25.05";
+  home-manager.users.monk.home.stateVersion = "25.05";
 
   home-manager.users.monk.roles.mua = true;
   home-manager.users.monk.neovim.fat = true;
   home-manager.users.monk.language-support = [
-    "nix" "bash" "prose" "python" "yaml"
+    "nix" "bash" "prose" "python" "typst" "yaml"
   ];
 
   # currently manual:
@@ -119,33 +120,47 @@
   # * syncthing
   # * thunderbird
 
+  # let's try to fix suspend
+  #boot.kernelPackages = pkgs.linuxPackages_latest;
+  hardware.sensor.iio.enable = lib.mkForce false;
+  systemd.services.systemd-suspend = {
+    environment.SYSTEMD_SLEEP_FREEZE_USER_SESSIONS = "false";
+  };
+
   programs.adb.enable = true;
   users.extraGroups.plugdev.members = [ "monk" ];
   networking.firewall.allowedTCPPorts = [ 3389 ];  # RDP
+
+  #systemd.services.systemd-machine-id-commit.enable = false;
 
   environment.persistence."/mnt/persist" = {
     hideMounts = true;
     directories = [
       "/etc/nixos"
-      "/etc/NetworkManager"
-      "/var/lib/NetworkManager"
+      #"/etc/NetworkManager"
+      #"/var/lib/NetworkManager"
       "/var/lib/alsa"
       "/var/lib/bluetooth"
       "/var/lib/boltd"
-      "/var/lib/nixos"
+      #"/var/lib/nixos"
       "/var/lib/systemd"
       "/var/lib/upower"
-      "/var/log"
+      #"/var/log"
     ];
-    files =
-      (let mode = { mode = "0755"; }; in [
-        { file = "/etc/ssh/ssh_host_rsa_key"; parentDirectory = mode; }
-        { file = "/etc/ssh/ssh_host_rsa_key.pub"; parentDirectory = mode; }
-        { file = "/etc/ssh/ssh_host_ed25519_key"; parentDirectory = mode; }
-        { file = "/etc/ssh/ssh_host_ed25519_key.pub"; parentDirectory = mode; }
-      ]) ++ [
-        "/etc/machine-id"
-      ];
-    # TODO: allowlisting of ~
+    #files =
+    #  (let mode = { mode = "0755"; }; in [
+    #    { file = "/etc/ssh/ssh_host_rsa_key"; parentDirectory = mode; }
+    #    { file = "/etc/ssh/ssh_host_rsa_key.pub"; parentDirectory = mode; }
+    #    { file = "/etc/ssh/ssh_host_ed25519_key"; parentDirectory = mode; }
+    #    { file = "/etc/ssh/ssh_host_ed25519_key.pub"; parentDirectory = mode; }
+    #  ]) ++ [
+    #    "/etc/machine-id"
+    #  ];
+    ## TODO: allowlisting of ~
   };
+
+  ###
+
+  #nixpkgs.config.allowUnfree = true;
+  #environment.systemPackages = [ pkgs.android-studio ];
 }
