@@ -7,7 +7,7 @@
     "${inputs.nixos-hardware}/onenetbook/4"
     ./hardware.nix
     ./onemix-keyboard-remap.nix
-    ../../nixos/services/nebula
+    ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/nps.nix  # rather condition on interactive or something
   ];
 
@@ -78,6 +78,7 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
 
   system.role = {
+    deployer.enable = true;
     desktop.enable = true;
     physical.enable = true;
     physical.portable = true;
@@ -156,7 +157,14 @@
     #  ]) ++ [
     #    "/etc/machine-id"
     #  ];
-    ## TODO: allowlisting of ~
+    users.monk = {
+      directories = [
+        ".mozilla"
+      ];
+      files = [
+        ".config/monitors.xml"
+      ];
+    };
   };
 
   ###
