@@ -25,8 +25,8 @@ in {
       xserver = {
         enable = true;
         videoDrivers = [ "modesetting" ];
-        desktopManager.gnome.enable = true;
       };
+      desktopManager.gnome.enable = true;
       displayManager = {
         defaultSession = "gnome";
           gdm = {

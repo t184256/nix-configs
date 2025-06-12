@@ -56,7 +56,6 @@
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
   home-manager.users.monk.home.packages = with pkgs; [
-    inputs.deploy-rs.defaultPackage.${pkgs.system}
     alacritty freerdp openvpn
   ];
 
@@ -67,6 +66,7 @@
 
   system.role = {
     desktop.enable = true;
+    deployer.enable = true;
     physical.enable = true;
     physical.portable = true;
     yubikey.enable = true;

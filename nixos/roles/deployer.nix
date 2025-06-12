@@ -18,7 +18,7 @@ in {
 
   config = mkIf cfg.enable {
     home-manager.users.monk = {
-      home.packages = [ inputs.deploy-rs.defaultPackage.${pkgs.system} ];
+      home.packages = [ inputs.deploy-rs.packages.${pkgs.system}.deploy-rs ];
       language-support = [ "nix" ];
     };
     environment.persistence."/mnt/persist".users.monk.directories = [
