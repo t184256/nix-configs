@@ -15,6 +15,8 @@ let
   cert = "${keyDir}/cert.pem";
 
   allDirDevices = [ "cocoa" "olosapo" "quince" "sloe" "watermelon" ];
+  mkFolderList = lib.attrsets.filterAttrs
+    (_: t: (builtins.elem config.networking.hostName t.devices));
   mkFolder = name: extraAttrs: {
     path = lib.mkDefault "${dataDir}/${name}";
     type = lib.mkDefault "receiveonly";
@@ -74,7 +76,7 @@ in
         tamarillo = mkDevice "tamarillo" {};
         watermelon = mkDevice "watermelon" {};
       };
-      folders = {
+      folders = mkFolderList {
         # TODO: milder/no versioning on non-servers
         "android-shared" = mkFolder "android-shared" {
           type = sendReceiveFor [ "cocoa" ];
