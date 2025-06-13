@@ -4,6 +4,7 @@ let
   keys = builtins.fromTOML (builtins.readFile ../../misc/pubkeys/sshd.toml);
   makeHost = host: key: {
     # TODO: automatic DNS aliases
+    # TODO: nebula names or IPs
     extraHostNames = [
       "${host}.unboiled.info"
       "${host}.dyn.unboiled.info"
