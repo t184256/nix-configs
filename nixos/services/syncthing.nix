@@ -67,6 +67,7 @@ in
         cocoa = mkDevice "cocoa" {};
         coconut = mkDevice "coconut" {};
         fig = mkDevice "fig" {};
+        lychee = mkDevice "lychee" {};
         olosapo = mkDevice "olosapo" {};
         quince = mkDevice "quince" {};
         sloe = mkDevice "sloe" {};
@@ -93,7 +94,8 @@ in
         };
         "camera" = mkFolder "camera" { extraDevices = [ "carambola" "fig" ]; };
         "code" = mkFolder "code" {
-          type = sendReceiveFor [ "cocoa" ];
+          extraDevices = [ "lychee" ];
+          type = sendReceiveFor [ "cocoa" "lychee" ];
           versioning = lib.mkDefault {
             type = "staggered";
             params = {
@@ -118,8 +120,8 @@ in
           extraDevices = [ "fig" ];
         };
         "notes" = mkFolder "notes" {
-          type = sendReceiveFor [ "cocoa" ];
-          extraDevices = [ "carambola" "fig" ];
+          type = sendReceiveFor [ "cocoa" "lychee" ];
+          extraDevices = [ "carambola" "fig" "lychee" ];
         };
         "system" = mkFolder "system" {
           extraDevices = [ "fig" ] ;

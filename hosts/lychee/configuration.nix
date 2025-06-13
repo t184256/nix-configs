@@ -9,6 +9,7 @@
     ./onemix-keyboard-remap.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/nps.nix  # rather condition on interactive or something
+    ../../nixos/services/syncthing.nix
   ];
 
   #users.mutableUsers = false;
@@ -84,9 +85,6 @@
     physical.portable = true;
     yubikey.enable = true;
   };
-  #home-manager.users.monk = {
-  #  services.syncthing.enable = true;
-  #};
 
   # unplug Yubikey = lock screen
   services.udev.extraRules =
@@ -115,10 +113,11 @@
     "nix" "bash" "prose" "python" "typst" "yaml"
   ];
 
+  services.syncthing = { user = "monk"; group = "users"; };
+
   # currently manual:
   # * touchpad speed bump in GNOME
   # * screen locking in GNOME
-  # * syncthing
   # * thunderbird
 
   # let's try to fix suspend
