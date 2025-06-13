@@ -13,7 +13,7 @@
   boot.initrd.supportedFilesystems = [ "vfat" ];
 
   fileSystems."/mnt/persist".neededForBoot = true;
-  #fileSystems."/mnt/storage".neededForBoot = true;
+  fileSystems."/mnt/storage".neededForBoot = true;
 
   # CPU
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
