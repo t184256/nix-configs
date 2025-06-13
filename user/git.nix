@@ -63,14 +63,22 @@ in
       max-line-length = 0;  # disable truncation
     };
   };
-  #programs.gh = { enable = true; gitProtocol = "ssh"; };  # h-m#1654
+  programs.gh = {
+    enable = true;  # h-m#1654 might not be fully fixed
+    extensions = [
+      pkgs.gh-s  # interactive search
+      pkgs.gh-i  # interactive issues
+      pkgs.gh-dash  # dashboard
+      pkgs.gh-poi  # remove merged branches
+    ];
+    settings.git_protocol = "ssh";
+  };
   programs.lazygit.enable = true;
 
   programs.jujutsu.enable = true;
 
   home.packages = [
     pkgs.git-absorb
-    pkgs.gh
 
     git-t
     (pkgs.writeShellScriptBin "git-v" ''

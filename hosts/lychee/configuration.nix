@@ -165,6 +165,7 @@
     users.monk = {
       directories = [
         ".mozilla"
+        ".config/gh"
       ];
       files = [
         ".config/monitors.xml"
