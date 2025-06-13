@@ -23,15 +23,23 @@
           "browser.uiCustomization.state" = "{" + (
             "\"placements\":{" + (
               "\"widget-overflow-fixed-list\":[]," +
-              "\"unified-extensions-area\":[]," +
+              "\"unified-extensions-area\":[" + (
+                "\"ublock0_raymondhill_net-browser-action\"," +
+                "\"streetpass_streetpass_social-browser-action\"," +
+                "\"browserpass_maximbaz_com-browser-action\"," +
+                "\"addon_darkreader_org-browser-action\"," +
+                "\"chrome-gnome-shell_gnome_org-browser-action\"," +
+                "\"jid1-kkzogwgsw3ao4q_jetpack-browser-action\""
+              ) + "]," +
               "\"nav-bar\":[" + (
                 "\"sidebar-button\"," +  # assumes its place 2nd time?..
+                "\"vertical-spacer\"," +
                 "\"back-button\"," +
                 "\"forward-button\"," +
                 #"\"stop-reload-button\"," +
                 "\"urlbar-container\"," +
-                "\"vertical-spacer\"," +
-                "\"unified-extensions-button\""
+                "\"unified-extensions-button\"," +
+                "\"vertical-spacer\""
               ) + "]," +
               "\"toolbar-menubar\":[\"menubar-items\"]," +
               "\"TabsToolbar\":[]," +
@@ -175,12 +183,71 @@
           "toolkit.telemetry.unifiedIsOptIn" = false;
           "toolkit.telemetry.updatePing.enabled" = false;
         };
+        # Best debugged in Style Editor of the Browser Toolbox
         userChrome = ''
           /* sidebar: gear icon + other tool icons */
           .tools-and-extensions.actions-list { display: none !important; }
           /* more sidebar tweaks */
           #tabbrowser-arrowscrollbox { min-width: 0 !important; }
           .tools-and-extensions.actions-list { display: none !important; }
+          /* make the toolbar expander element narrower */
+          toolbar toolbarspring {
+            -moz-box-flex: 40 !important;
+            min-width: 10px !important;
+            max-width: 24px !important;
+          }
+          /* sidebar more flush to the left (was 8 px) */
+          #sidebar-button {
+            padding-left: 2px !important;
+            padding-right: 2px !important;
+          }
+          /* large-yet-compact side-tabs */
+          tabs#tabbrowser-tabs[orient="vertical"] {
+            --icon-size-default: 24px;
+            --tab-pinned-min-width-expanded: 24px;
+            --tab-pinned-container-margin-inline-expanded: 0px;
+            --tab-inner-inline-margin: 1px;
+            --tab-collapsed-background-width: 24px;
+            --tab-collapsed-width: 32px;
+            --tab-icon-end-margin: 4px;
+            --tab-inline-padding: 0px !important;
+            --button-border-radius: 0px;
+            padding-block: 1px !important;
+          }
+          #vertical-pinned-tabs-container > tab.tabbrowser-tab {
+            max-width: 32px !important;
+          }
+          .tab-content {
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+          }
+          vbox.tab-background {
+            margin: 0px 1px !important;
+            border-radius: 0px !important;
+            min-width: 30px;
+            /*outline-color: green;*/ /* debugging aid */
+          }
+          label.tab-text {
+            font-size: 90%;
+          }
+          #tabbrowser-arrowscrollbox-periphery {
+            display: none !important;
+          }
+          .tab-icon-image {
+            width: 24px !important;
+            height: 24px !important;
+          }
+          image.tab-close-button {
+            border-radius: 0px !important;
+            padding: 0 !important;
+            margin-right: 1px !important;
+            width: 12px !important;
+            height: 12px !important;
+          }
+          #vertical-pinned-tabs-container-separator {
+            display: none !important;
+            margin: 0 !important;
+          }
         '';
       };
     };
