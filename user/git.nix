@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 
 let
-  git-t = (pkgs.writeShellScriptBin "git-t" ''
-    set -ueo pipefail
+  git-t = pkgs.writeShellScriptBin "git-t" ''
+    set -Eeuo pipefail; shopt -s inherit_errexit
     refs=""; opts=""; ((c=0))||true
     for arg in $@; do
       if [[ $arg == -* ]]; then
@@ -15,7 +15,23 @@ let
     (( $c == 0 )) && exec git log --oneline --graph $opts --all
     (( $c == 1 )) && refs="HEAD $refs"
     exec git log --oneline --graph $opts $refs --not $(git merge-base $refs)^
-  '');
+  '';
+  git-wclone = pkgs.writeShellScriptBin "git-wclone" ''
+    set -Eeuo pipefail; shopt -s inherit_errexit
+    url=$1
+    basename=''${url##*/}
+    name=''${2:-''${basename%.git}}
+    mkdir "$name.tmp"
+    cd "$name.tmp"
+    git clone --bare "$url" .bare --reference-if-able "~/code/$basename"
+    echo "gitdir: ./.bare" > .git
+    git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+    git fetch origin
+    branch=''$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+    git worktree add "$branch" "$branch"
+    cd ..
+    mv -T "$name.tmp" "$name"
+  '';
 in
 {
   programs.git = {
@@ -86,5 +102,6 @@ in
         exec ${git-t}/bin/git-t --ancestry-path "$@" HEAD origin/HEAD
       exec ${git-t}/bin/git-t --ancestry-path "$@"
     '')
+    git-wclone
   ];
 }
