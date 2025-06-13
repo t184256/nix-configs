@@ -114,6 +114,12 @@
   ];
 
   services.syncthing = { user = "monk"; group = "users"; };
+  home-manager.users.monk.home.persistence."/mnt/storage/sync" = {
+    directories = [
+      { directory = "code"; method = "symlink"; }
+      { directory = "notes"; method = "symlink"; }
+    ];
+  };
 
   # currently manual:
   # * touchpad speed bump in GNOME
