@@ -64,8 +64,13 @@
   ];
 
   environment.persistence."/mnt/persist".directories = [
-    "/var/dkim"
-    "/var/lib/rspamd"
-    "/var/vmail"
+    { directory = "/var/dkim"; user = "rspamd"; group = "rspamd"; }
+    {
+      directory = "/var/lib/redis-rspamd";
+      user = "redis-rspamd"; group = "redis-rspamd";
+    }
+    { directory = "/var/lib/rspamd"; user = "rspamd"; group = "rspamd"; }
+    { directory = "/var/sieve"; user = "virtualMail"; group = "virtualMail"; }
+    { directory = "/var/vmail"; user = "virtualMail"; group = "virtualMail"; }
   ];
 }
