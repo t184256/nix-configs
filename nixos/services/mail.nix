@@ -4,7 +4,7 @@
 {
   mailserver = {
     enable = true;
-    stateVersion = 2;
+    stateVersion = 3;
     fqdn = "unboiled.info";
     domains = [ "unboiled.info" ];
     messageSizeLimit = 209715200;  # 200 MB
