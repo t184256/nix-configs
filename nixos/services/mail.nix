@@ -68,7 +68,4 @@
     "/var/lib/rspamd"
     "/var/vmail"
   ];
-
-  # https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/issues/275
-  services.dovecot2.sieve.extensions = [ "fileinto" ];
 }
