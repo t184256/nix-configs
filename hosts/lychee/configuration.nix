@@ -164,8 +164,11 @@
     #  ];
     users.monk = {
       directories = [
-        ".mozilla"
+        ".android"
+        ".config/Moonlight Game Streaming Project"
         ".config/gh"
+        ".local/share/password-store"
+        ".mozilla"
       ];
       files = [
         ".config/monitors.xml"
@@ -176,5 +179,8 @@
   ###
 
   #nixpkgs.config.allowUnfree = true;
-  #environment.systemPackages = [ pkgs.android-studio ];
+  #environment.systemPackages = with pkgs; [
+  #  android-studio gradle_7 openjdk17 gnumake
+  #];
+  #programs.nix-ld.enable = true;
 }
