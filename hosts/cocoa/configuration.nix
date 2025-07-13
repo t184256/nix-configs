@@ -76,4 +76,10 @@
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
   boot.initrd.systemd.enable = true;
+
+  virtualisation.libvirtd = {
+    enable = true;
+    qemu.ovmf.packages = [ pkgs.OVMFFull.fd ];
+  };
+  users.users.monk.extraGroups = [ "libvirtd" ];
 }
