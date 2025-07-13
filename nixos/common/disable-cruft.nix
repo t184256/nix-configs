@@ -9,7 +9,6 @@
   environment.defaultPackages = [];
   networking.networkmanager.plugins = lib.mkForce (with pkgs; [
     # openconnect specifically pulls in graphics and sound. ugh.
-    networkmanager-iodine
     networkmanager-openvpn
   ]);
 }

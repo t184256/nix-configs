@@ -10,6 +10,8 @@ let
       rev = "a1f75c956f669a6175088693802d5392e6bd7e51";
       sha256 = "1i3xj04zxz9vi57gbkmnnyh9cypf3bm966ic685s162p1xhnz2qp";
     };
+    pyproject = true;
+    build-system = [ python3Packages.setuptools ];
     meta = {
       homepage = "https://github.com/nir0s/backtrace";
       license = pkgs.lib.licenses.asl20;
@@ -32,6 +34,8 @@ python3Packages.buildPythonPackage rec {
     rev = version;
     sha256 = "sha256-ek+GTWGUpm2b6lBw/7n4W46W2R0Gy6JxqWoLuQilCXQ=";
   };
+  pyproject = true;
+  build-system = [ python3Packages.setuptools ];
   meta = {
     homepage = "https://github.com/vaaaaanquish/xontrib-readable-traceback";
     license = pkgs.lib.licenses.mit;

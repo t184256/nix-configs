@@ -9,6 +9,8 @@ python3Packages.buildPythonPackage rec {
     rev = version;
     sha256 = "sha256-97c2cuqG0EitDdCM40r2IFOlRMHlKC4cLemJrPcxsZo=";
   };
+  pyproject = true;
+  build-system = [ python3Packages.setuptools ];
   propagatedBuildInputs = [ pkgs.direnv ];
   meta = {
     homepage = "https://github.com/74th/xonsh-direnv";
