@@ -7,5 +7,7 @@ def _nxs():
 
 
 aliases['nxs'] = _nxs
+aliases['nxu'] = ('nix flake update --flake ~/.nix-configs && '
+                  'nix flake archive --flake ~/.nix-configs')
 
 del _nxs
