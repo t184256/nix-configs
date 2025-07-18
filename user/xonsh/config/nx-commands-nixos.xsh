@@ -48,6 +48,7 @@ def _in_tmpdir(cmd):
         $_cmd = cmd.replace('%FLAKE%', confdir)
         if confdir == '/etc/nixos':
             sudo git config --global --add safe.directory /etc/nixos
+        nix flake archive --flake @(confdir) --option warn-dirty false
         try:
             sh -c @(f'cd {tmp_dir} && $_cmd ' + ' '.join(extra_args))
         finally:
