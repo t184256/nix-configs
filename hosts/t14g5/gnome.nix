@@ -101,6 +101,18 @@ in
       night-light-enabled = true;
       night-light-temperature = 3200;
     };
+    "org/gnome/settings-daemon/plugins/media-keys" = {
+      custom-keybindings = [ (
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings" +
+        "/custom0/"
+      )];
+    };
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" =
+      {
+        binding = "<Shift><Alt>g";
+        command = "doer";
+        name = "doer";
+      };
     "org/gnome/shell/extensions/unite" = {
       restrict-to-primary-screen = false;
       hide-activities-button = "auto";
