@@ -72,6 +72,15 @@
       { directory = "notes"; method = "symlink"; }
     ];
   };
+  environment.persistence."/mnt/persist" = {
+    users.monk = {
+      directories = [
+        ".config/gh"
+        ".local/share/password-store"
+        ".mozilla"
+      ];
+    };
+  };
 
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
