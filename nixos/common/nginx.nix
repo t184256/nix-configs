@@ -3,8 +3,7 @@
 {
   services.nginx = {
     recommendedGzipSettings = true;
-    recommendedZstdSettings = true;  # use zstd when it's fixed
-    recommendedBrotliSettings = true;  # use zstd when it's fixed
+    recommendedBrotliSettings = true;
     recommendedOptimisation = true;
     recommendedTlsSettings = true;
     recommendedProxySettings = true;
