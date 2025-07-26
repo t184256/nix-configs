@@ -90,5 +90,6 @@
     enable = true;
     qemu.ovmf.packages = [ pkgs.OVMFFull.fd ];
   };
+  networking.firewall.trustedInterfaces = [ "virbr0" ];  # #425874
   users.users.monk.extraGroups = [ "libvirtd" ];
 }
