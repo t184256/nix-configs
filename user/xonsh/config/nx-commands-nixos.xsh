@@ -48,7 +48,7 @@ def _in_tmpdir(cmd):
         $_cmd = cmd.replace('%FLAKE%', confdir)
         if confdir == '/etc/nixos':
             sudo git config --global --add safe.directory /etc/nixos
-        nix flake archive --flake @(confdir) --option warn-dirty false
+        nix flake archive @(confdir) --option warn-dirty false
         try:
             sh -c @(f'cd {tmp_dir} && $_cmd ' + ' '.join(extra_args))
         finally:
@@ -60,7 +60,7 @@ def _in_tmpdir(cmd):
 
 aliases['nxd'] = _nxd
 aliases['nxu'] = _in_tmpdir('nix flake update --flake %FLAKE && '
-                            'nix flake archive --flake %FLAKE%')
+                            'nix flake archive %FLAKE%')
 aliases['nxb'] = _in_tmpdir('nixos-rebuild build --flake %FLAKE%')
 aliases['nxt'] = _in_tmpdir('sudo nixos-rebuild test --flake %FLAKE%')
 aliases['nxf'] = _in_tmpdir('sudo nixos-rebuild test --fast --flake %FLAKE%')
