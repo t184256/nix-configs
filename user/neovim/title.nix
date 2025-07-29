@@ -9,8 +9,8 @@
     plugins.navic = lib.mkIf config.neovim.fat {
       enable = true;
       settings = {
-        safeOutput = true;
-        lsp.autoAttach = true;
+        safe_output = true;
+        lsp.auto_attach = true;
         icons = builtins.listToAttrs (map (v: { name = v; value = ""; }) [
           "Array" "Boolean" "Class" "Constant" "Constructor" "Enum" "EnumMember"
           "Event" "Field" "File" "Function" "Interface" "Key" "Method" "Module"
