@@ -101,8 +101,6 @@
   home-manager.users.monk.language-support = [
     "nix" "bash" "prose" "python" "typst" "yaml"
   ];
-  home-manager.users.monk.sessionVariables.SSH_AUTH_SOCK =
-    "/run/user/1000/gnupg/S.gpg-agent.ssh";
 
   # currently manual:
   # * touchpad speed bump in GNOME
