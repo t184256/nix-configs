@@ -1,9 +1,10 @@
-def _nxs():
+def _nxs(args):
     import os
     flake = os.path.expanduser('~/.nix-configs')
     hostname = $HOSTNAME
     nix flake archive @(flake) --option warn-dirty false
     nix build @(f'{flake}#homeConfigurations.{hostname}.activationPackage') \
+        @(args) \
         --out-link /tmp/h-m && /tmp/h-m/activate
 
 
