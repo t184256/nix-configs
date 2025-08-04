@@ -50,6 +50,10 @@ in
     extraPlugins = with pkgs.vimPlugins; [
     ];
 
+    extraConfigLua = ''
+      vim.api.nvim_command('aunmenu PopUp.How-to\\ disable\\ mouse')
+      vim.api.nvim_command('aunmenu PopUp.-2-')
+    '';
     extraConfigLuaPost = ''
       vim.opt.diffopt = vim.opt.diffopt + 'algorithm:patience'
       vim.opt.suffixes = vim.opt.suffixes + '.pdf'
