@@ -15,6 +15,7 @@
     secureSocket = false;  # survives user logout
     shortcut = "a";
     extraConfig = ''
+      bind-key C-a last-window
       set -ga terminal-overrides ",*256col*:Tc"
       set-option -sa terminal-features ',alacritty:RGB'
       set-option -ga terminal-features ',alacritty:usstyle,font0,font1'
