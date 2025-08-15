@@ -64,6 +64,7 @@ in
         #yt-dlp = builtins.trace yt-dlp pyPrev.toPythonModule (yt-dlp.override {
         #  python3Packages = pyFinal;
         #});
+        inherit bgutil-ytdlp-pot-provider;
     })
   ];
 

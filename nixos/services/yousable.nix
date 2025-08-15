@@ -84,11 +84,14 @@ in
     };
   };
 
-  virtualisation.oci-containers.containers = {
+  virtualisation.oci-containers.containers =
+    let
+      ver = pkgs.python3Packages.bgutil-ytdlp-pot-provider.version;
+    in
+  {
     bgutil-provider = {
-      image = "brainicism/bgutil-ytdlp-pot-provider:latest";
+      image = "brainicism/bgutil-ytdlp-pot-provider:${ver}";
       ports = ["127.0.0.1:4416:4416"];  # only listens on 4
-      #cmd = ["--verbose"];
       environment.DEBUG = "socks-proxy-agent,proxy-agent";
     };
   };
