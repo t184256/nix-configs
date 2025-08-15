@@ -2,7 +2,7 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "2025.07.21";
+  newerVer = "2025.08.11";
   overrides-fresh = _: {
     name = "yt-dlp-${newerVer}";
     version = newerVer;
