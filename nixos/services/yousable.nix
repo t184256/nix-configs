@@ -88,7 +88,7 @@ in
     bgutil-provider = {
       image = "brainicism/bgutil-ytdlp-pot-provider:latest";
       ports = ["127.0.0.1:4416:4416"];  # only listens on 4
-      cmd = ["--verbose"];
+      #cmd = ["--verbose"];
       environment.DEBUG = "socks-proxy-agent,proxy-agent";
     };
   };
