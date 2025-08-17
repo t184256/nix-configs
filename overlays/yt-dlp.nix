@@ -15,7 +15,6 @@ let
   };
   overrides-plugins = oa: {
     propagatedBuildInputs = (oa.propagatedBuildInputs or []) ++ [
-      yt-dlp-get-pot
       bgutil-ytdlp-pot-provider
     ];
   };
@@ -25,31 +24,16 @@ let
     then overrides-plugins
     else overrides-fresh-plugins
   );
-  yt-dlp-get-pot = prev.python3Packages.buildPythonPackage rec {
-    pname = "yt-dlp-get-pot";
-    version = "0.3.0";
-    pyproject = true;
-    src = prev.fetchFromGitHub {
-      owner = "coletdjnz";
-      repo = "yt-dlp-get-pot";
-      rev = "v${version}";
-      hash = "sha256-MtQFXWJByo/gyftMtywCCfpf8JtldA2vQP8dnpLEl7U=";
-    };
-    build-system = [ prev.python3Packages.hatchling ];
-    doCheck = false;
-    pythonImportsCheck = [ "yt_dlp_plugins" ];
-  };
   bgutil-ytdlp-pot-provider = prev.python3Packages.buildPythonPackage rec {
     pname = "bgutil-ytdlp-pot-provider";
-    version = "1.2.1";
+    version = "1.2.2";
     pyproject = true;
     src = prev.fetchFromGitHub {
       owner = "Brainicism";
       repo = "bgutil-ytdlp-pot-provider";
       rev = version;
-      hash = "sha256-rx3H7UHgdAhmkk2eIJ2nUTYb2EaME/gnYaCxrBDeFaw=";
+      hash = "sha256-KKImGxFGjClM2wAk/L8nwauOkM/gEwRVMZhTP62ETqY=";
     };
-    propagatedBuildInputs = [ yt-dlp-get-pot ];
     postUnpack = "pwd; ls; cp source/README.md source/plugin/";
     sourceRoot = "source/plugin";
     build-system = [ prev.python3Packages.hatchling ];
