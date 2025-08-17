@@ -10,7 +10,7 @@
     allowRegistration = false;  # it's even false by default
 
     muc = [ { domain = "conference.xmpp.unboiled.info"; } ];
-    uploadHttp.domain = "upload.xmpp.unboiled.info";
+    httpFileShare.domain = "upload.xmpp.unboiled.info";
 
     modules = {
       mam = true;
