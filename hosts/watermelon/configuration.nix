@@ -20,6 +20,8 @@ _:
   nixpkgs.flake.setNixPath = false;  # save disk space
   nixpkgs.flake.setFlakeRegistry = false;  # save disk space
 
+  boot.kernel.sysctl."vm.swappiness" = 10;  # slow swap
+
   system.noGraphics = true;
   home-manager.users.monk.system.noGraphics = true;
 
