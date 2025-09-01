@@ -108,8 +108,8 @@ in
           fsWatcherDelayS = 20;
         };
         "documents" = mkFolder "documents" {
-          type = sendReceiveFor [ "cocoa" ];
-          extraDevices = [ "carambola" "fig" ];
+          type = sendReceiveFor [ "cocoa" "lychee" ];
+          extraDevices = [ "carambola" "fig" "lychee" ];
         };
         "livestreams" = mkFolder "livestreams" {
           id = "jeiod-gytgw";  # TODO: reinit on fixing
