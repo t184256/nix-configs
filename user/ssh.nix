@@ -3,6 +3,7 @@ _ :
 {
   programs.ssh = {
     enable = true;
+    enableDefaultConfig = false;
     matchBlocks = {
       fig = { user = "monk"; hostname = "fig.unboiled.info"; };
       mango = { user = "monk"; hostname = "mango.unboiled.info"; };

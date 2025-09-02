@@ -130,7 +130,7 @@
                          home-manager.useUserPackages = true;
                          home-manager.extraSpecialArgs = specialArgs;
                          home-manager.users.monk.imports = [
-                           nixvim.homeManagerModules.nixvim
+                           nixvim.homeModules.nixvim
                            impermanence.nixosModules.home-manager.impermanence
                          ];
                      }] ++
@@ -154,7 +154,7 @@
         overlays = (autoimport.asList ./overlays) ++ [ nixgl.overlay ];
       };
       modules = [
-        nixvim.homeManagerModules.nixvim
+        nixvim.homeModules.nixvim
         ./hosts/t14g5/home.nix
       ];
       extraSpecialArgs = { inherit inputs; };
