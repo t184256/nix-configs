@@ -80,6 +80,7 @@ let
     meshcentral     IN CNAME duckweed
     ipfs            IN CNAME duckweed
     s               IN CNAME sloe
+    meet            IN CNAME duckweed
 
     _xmpp-client._tcp 86400 IN SRV 5 0 5222 unboiled.info.
     _xmpp-server._tcp 86400 IN SRV 5 0 5269 unboiled.info.
