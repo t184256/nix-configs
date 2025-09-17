@@ -8,9 +8,9 @@
     ../../nixos/services/dns.nix
     ../../nixos/services/forward-cocoa.nix
     ../../nixos/services/forward-quince.nix
-    ../../nixos/services/ipfs/gateway.nix
-    ../../nixos/services/ipfs/micro.nix
-    ../../nixos/services/ipfs/node.nix
+    #../../nixos/services/ipfs/gateway.nix
+    #../../nixos/services/ipfs/micro.nix
+    #../../nixos/services/ipfs/node.nix
     ../../nixos/services/jitsi.nix
     ../../nixos/services/meshcentral.nix
     ../../nixos/services/microsocks.nix

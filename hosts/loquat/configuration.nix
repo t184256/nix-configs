@@ -7,8 +7,8 @@
     ./hardware-configuration.nix
     ../../nixos/services/akkoma.nix
     ../../nixos/services/fedifetcher.nix
-    ../../nixos/services/ipfs/cluster-leader.nix
-    ../../nixos/services/ipfs/node.nix
+    #../../nixos/services/ipfs/cluster-leader.nix
+    #../../nixos/services/ipfs/node.nix
     ../../nixos/services/lemmy.nix
     ../../nixos/services/mail.nix
     ../../nixos/services/nebula
