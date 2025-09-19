@@ -52,5 +52,6 @@
     git-absorb
     sccache
     btdu
+    gitlab-ci-local
   ];
 }
