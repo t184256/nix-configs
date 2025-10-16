@@ -2,7 +2,7 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "2025.09.26";
+  newerVer = "2025.10.14";
   overrides-fresh = _: {
     name = "yt-dlp-${newerVer}";
     version = newerVer;
@@ -10,12 +10,13 @@ let
       owner = "yt-dlp";
       repo = "yt-dlp";
       rev = newerVer;
-      hash = "sha256-/uzs87Vw+aDNfIJVLOx3C8RyZvWLqjggmnjrOvUX1Eg=";
+      hash = "sha256-x7vpuXUihlC4jONwjmWnPECFZ7xiVAOFSDUgBNvl+aA=";
     };
   };
   overrides-plugins = oa: {
     propagatedBuildInputs = (oa.propagatedBuildInputs or []) ++ [
       bgutil-ytdlp-pot-provider
+      final.deno
     ];
   };
   overrides-fresh-plugins = oa: (overrides-fresh oa) // (overrides-plugins oa);
