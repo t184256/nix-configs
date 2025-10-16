@@ -84,7 +84,7 @@ in
         };
         "books" = mkFolder "books" {
           type = sendReceiveFor [ "cocoa" ];
-          extraDevices = [ "carambola" "coconut" "fig" ];
+          extraDevices = [ "carambola" "fig" ];
         };
         "DecSync" = mkFolder "DecSync" {
           id = "8u43w-prlse";  # TODO: reinit on next reinstall
@@ -92,7 +92,7 @@ in
         };
         "Librera" = mkFolder "Librera" {
           type = sendReceiveFor [ "cocoa" ];
-          extraDevices = [ "carambola" "coconut" "fig" ];
+          extraDevices = [ "carambola" "fig" ];
         };
         "camera" = mkFolder "camera" { extraDevices = [ "carambola" "fig" ]; };
         "code" = mkFolder "code" {
