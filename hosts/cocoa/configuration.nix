@@ -63,7 +63,7 @@
 
   home-manager.users.monk.neovim.fat = true;
   home-manager.users.monk.language-support = [
-    "nix" "bash" "prose" "typst"
+    "nix" "bash" "prose" "python" "typst" "yaml"
   ];
 
   home-manager.users.monk.home.sessionVariables.SSH_AUTH_SOCK =
