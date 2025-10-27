@@ -66,8 +66,11 @@ in
         newMovedAlternative = "#97c4f0";
       };
     };
-    delta.enable = true;
-    delta.options = {
+  };
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+    options = {
       whitespace-error-style = "22 reverse";
       syntax-theme = "none";
       zero-style = "#ecf0eb";
