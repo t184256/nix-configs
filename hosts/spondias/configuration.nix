@@ -25,4 +25,11 @@
   system.stateVersion = "25.05";
 
   system.role.physical.enable = true;
+
+  nixpkgs.config.allowUnfree = true;
+  environment.systemPackages = with pkgs; [
+    claude-code
+    goose-cli
+    aider-chat#-full
+  ];
 }
