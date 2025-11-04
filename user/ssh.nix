@@ -14,6 +14,7 @@ _ :
       araceae = { user = "monk"; hostname = "192.168.99.4"; };
       quince = { user = "monk"; hostname = "duckweed.unboiled.info";
                 port = 226; };
+      spondias = { user = "monk"; hostname = "192.168.99.51"; };
       cocoa = { user = "monk"; hostname = "duckweed.unboiled.info";
                 port = 227; };
       sloe = { user = "monk"; hostname = "sloe.unboiled.info"; };
