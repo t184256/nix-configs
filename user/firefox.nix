@@ -10,7 +10,7 @@
     browserpass = { enable = true; browsers = [ "firefox" ]; };
     firefox = {
       enable = config.system.os == "NixOS";
-      package = pkgs.firefox-wayland.override {
+      package = pkgs.firefox.override {
         cfg = {
           enableGnomeExtensions = true;
         };

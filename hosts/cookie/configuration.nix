@@ -14,7 +14,7 @@
   networking.networkmanager.enable = true;
 
   environment.systemPackages = with pkgs; [
-    firefox-wayland alacritty
+    firefox alacritty
     gparted parted cryptsetup btrfs-progs bcachefs-tools
     dnf5
     evtest

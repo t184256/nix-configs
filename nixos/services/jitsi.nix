@@ -5,7 +5,7 @@
   # sudo prosodyctl register monk meet.unboiled.info TEMPORARY_PASSWORD
   # login through an XMPP client and change password
   #networking.firewall.allowedTCPPorts = [ 5222 ];
-  nixpkgs.config.permittedInsecurePackages = [ "jitsi-meet-1.0.8043" ];
+  nixpkgs.config.permittedInsecurePackages = [ "jitsi-meet-1.0.8792" ];
   services.jitsi-meet = {
     enable = true;
     hostName = "meet.unboiled.info";

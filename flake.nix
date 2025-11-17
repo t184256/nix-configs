@@ -43,7 +43,6 @@
       "gitlab:simple-nixos-mailserver/nixos-mailserver";
     simple-nixos-mailserver.inputs.flake-compat.follows = "flake-compat";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
-    simple-nixos-mailserver.inputs.nixpkgs-25_05.follows = "nixpkgs";
 
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
