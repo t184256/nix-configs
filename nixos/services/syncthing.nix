@@ -198,9 +198,9 @@ in
   };
 
   systemd.services.syncthing = {
-    wantedBy = [ "storage.target" ];
+    wantedBy = [ "mnt-storage.target" ];
     partOf = [
-      "storage.target" "syncthing-init.service" "syncthing-preconfigure.service"
+      "mnt-storage.target" "syncthing-init.service" "syncthing-preconfigure.service"
     ];
     environment.STNODEFAULTFOLDER = "true";
   };

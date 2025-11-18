@@ -35,10 +35,10 @@ in
   };
   systemd.services = {
     ipfs-preconfigure = {
-      wantedBy = ifStorage [ "storage.target" ];
+      wantedBy = ifStorage [ "mnt-storage.target" ];
       requires = ifStorage [ "mnt-storage.mount" ];
-      after = ifStorage [ "mnt-storage.mount" "storage.target" ];
-      partOf = ifStorage [ "storage.target" ];
+      after = ifStorage [ "mnt-storage.mount" "mnt-storage.target" ];
+      partOf = ifStorage [ "mnt-storage.target" ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
@@ -70,11 +70,11 @@ in
       requires =
         [ "ipfs-preconfigure.service" ] ++
         ifStorage [ "mnt-storage.mount" ];
-      wantedBy = ifStorage [ "storage.target" ];
+      wantedBy = ifStorage [ "mnt-storage.target" ];
       after =
         [ "ipfs-preconfigure.service" ] ++
-        ifStorage [ "mnt-storage.mount" "storage.target" ];
-      partOf = ifStorage [ "storage.target" ];
+        ifStorage [ "mnt-storage.mount" "mnt-storage.target" ];
+      partOf = ifStorage [ "mnt-storage.target" ];
       environment.LIBP2P_FORCE_PNET = "1";
     };
   };

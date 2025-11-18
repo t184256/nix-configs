@@ -44,12 +44,12 @@ let
 in
 {
   systemd.services.ipfs-cluster = {
-    wantedBy = ifStorage [ "storage.target" ];
+    wantedBy = ifStorage [ "mnt-storage.target" ];
     requires = [ "ipfs.service" ] ++ ifStorage [ "mnt-storage.mount" ];
     after =
       [ "ipfs.service" ] ++
-      ifStorage [ "mnt-storage.mount" "storage.target" ];
-    partOf = ifStorage [ "storage.target" ];
+      ifStorage [ "mnt-storage.mount" "mnt-storage.target" ];
+    partOf = ifStorage [ "mnt-storage.target" ];
     environment.IPFS_PATH = config.services.kubo.dataDir;
     serviceConfig = {
       User = config.services.kubo.user;

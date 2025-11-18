@@ -14,7 +14,10 @@
 
   zramSwap = lib.mkDefault { enable = true; memoryPercent = 50; };
 
-  systemd.targets.storage.after = [ "mnt-storage.mount" ];
+  systemd.targets.mnt-storage = {
+    after = [ "mnt-storage.mount" ];
+    unitConfig.ConditionPathIsMountPoint = "/mnt/storage";
+  };
 
   users = {
     mutableUsers = false;
@@ -59,9 +62,11 @@
   };
 
   systemd.services.mnt-storage-tmp = {
-    wantedBy = [ "storage.target" ];
+    wantedBy = [ "mnt-storage.target" ];
     after = [ "mnt-storage.mount" ];
+    requires = [ "mnt-storage.mount" ];
     serviceConfig = { Type = "oneshot"; RemainAfterExit = true; };
+    unitConfig.ConditionPathIsMountPoint="/mnt/storage";
     script = ''
       ${pkgs.coreutils}/bin/test -d /mnt/storage/tmp || \
         ${pkgs.btrfs-progs}/bin/btrfs subvolume create /mnt/storage/tmp

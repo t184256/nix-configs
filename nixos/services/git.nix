@@ -50,8 +50,8 @@
       CPUAffinity = "0-1";
       MemoryHigh = "768M"; MemoryMax = "1G";  # anecdotal mem peak is 252M
     };
-    wantedBy = [ "storage.target" ];
-    partOf = [ "storage.target" "forgejo-preconfigure.service" ];
+    wantedBy = [ "mnt-storage.target" ];
+    partOf = [ "mnt-storage.target" "forgejo-preconfigure.service" ];
   };
   systemd.services.forgejo-preconfigure = {
     requires = [ "mnt-storage.mount" ];

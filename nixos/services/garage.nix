@@ -49,9 +49,9 @@ in
   };
 
   systemd.services.garage = {
-    wantedBy = [ "storage.target" ];
+    wantedBy = [ "mnt-storage.target" ];
     partOf = [
-      "storage.target" "garage-preconfigure.service"
+      "mnt-storage.target" "garage-preconfigure.service"
     ];
     serviceConfig = {
       DynamicUser = false;
