@@ -36,9 +36,9 @@ in
 {
   programs.git = {
     enable = true;
-    userName = "Alexander Sosedkin";
-    userEmail = config.identity.email;
-    extraConfig = {
+    settings = {
+      user.name = "Alexander Sosedkin";
+      user.email = config.identity.email;
       alias.tip = "show HEAD";
       alias.ci = "commit";
       alias.sw = "switch";
