@@ -105,9 +105,10 @@
       l*)     TO=loquat;      METHOD=mosh ;;
       c*)     TO=cocoa;       METHOD=mosh     MOSH_OPTS='-p 22700:22799' ;;
       q*)     TO=quince;      METHOD=mosh     MOSH_OPTS='-p 22600:22699' ;;
+      sp*)    TO=spondias;    METHOD=mosh ;;
       b*)     TO=bayroot;     METHOD=ssh ;;
       a*)     TO=araceae;     METHOD=ssh ;;
-      s*)     TO=sloe;        METHOD=mosh ;;
+      sl*)    TO=sloe;        METHOD=mosh ;;
       o*)     TO=olosapo;     METHOD=mosh ;;
       w*)     TO=watermelon;  METHOD=mosh ;;
       e*)     TO=etrog;       METHOD=mosh ;;

@@ -27,9 +27,18 @@
   system.role.physical.enable = true;
 
   nixpkgs.config.allowUnfree = true;
-  environment.systemPackages = with pkgs; [
-    claude-code
-    goose-cli
-    aider-chat#-full
-  ];
+  #environment.systemPackages = with pkgs; [
+  #  claude-code
+  #  goose-cli
+  #  aider-chat#-full
+  #];
+  environment.persistence."/mnt/persist" = {
+    users.monk = {
+      directories = [
+        "slop"
+        ".claude"
+        ".config/goose"
+      ];
+    };
+  };
 }
