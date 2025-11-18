@@ -20,7 +20,7 @@
     ];
     plugins.rainbow-delimiters = lib.mkIf config.neovim.fat {
       enable = true;
-      highlight = [
+      settings.highlight = [
         "RainbowDelimiterCyan"  # is, actually, grey
         "RainbowDelimiterBlue"
         "RainbowDelimiterYellow"
