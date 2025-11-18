@@ -96,4 +96,7 @@
   };
   networking.firewall.trustedInterfaces = [ "virbr0" ];  # #425874
   users.users.monk.extraGroups = [ "libvirtd" ];
+  environment.persistence."/mnt/persist".directories = [
+    "/var/lib/libvirt"
+  ];
 }

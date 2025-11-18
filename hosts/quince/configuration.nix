@@ -35,4 +35,5 @@
   #services.kubo.settings.Datastore.StorageMax = "20G";
 
   system.role.physical.enable = true;
+  system.role.virtualizer.enable = true;
 }

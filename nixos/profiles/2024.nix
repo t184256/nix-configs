@@ -44,8 +44,8 @@
     ] ++ (if ! config.networking.networkmanager.enable then [] else [
       "/etc/NetworkManager"
       "/var/lib/NetworkManager"
-    ]) ++ (if ! config.virtualisation.libvirtd.enable then [] else [
-      "/var/lib/libvirt"
+    #]) ++ (if ! config.virtualisation.libvirtd.enable then [] else [
+    #  "/var/lib/libvirt"
     ]);
     files = [
       "/etc/machine-id"
