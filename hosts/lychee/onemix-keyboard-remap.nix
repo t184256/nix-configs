@@ -1,8 +1,8 @@
 { pkgs, inputs, ... }:
 
 let
-  input-utils = inputs.input-utils.defaultPackage.${pkgs.system};
-  keyboard-remap = inputs.keyboard-remap.defaultPackage.${pkgs.system};
+  input-utils = inputs.input-utils.defaultPackage.${pkgs.stdenv.hostPlatform.system};
+  keyboard-remap = inputs.keyboard-remap.defaultPackage.${pkgs.stdenv.hostPlatform.system};
   juggler = pkgs.writeScript "keyboard-remapper-juggler" ''
     #!/bin/sh
     while true; do

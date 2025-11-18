@@ -8,7 +8,7 @@ let
   );
 
   alacritty-autoresizing =
-    inputs.alacritty-autoresizing.defaultPackage.${pkgs.system};
+    inputs.alacritty-autoresizing.defaultPackage.${pkgs.stdenv.hostPlatform.system};
 
   baseSettings = {
     env = { TERM = "alacritty"; };

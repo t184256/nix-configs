@@ -1,7 +1,7 @@
 { pkgs, inputs, ... }:
 
 let
-  keyboard-remap = inputs.keyboard-remap.defaultPackage.${pkgs.system};
+  keyboard-remap = inputs.keyboard-remap.defaultPackage.${pkgs.stdenv.hostPlatform.system};
   keyboard-remap-service = {
     Unit.Description = "keyboard-remap";
     Install.WantedBy = [ "default.target" ];
