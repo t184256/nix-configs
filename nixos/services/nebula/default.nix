@@ -52,7 +52,7 @@ in
       listen = { host = "[::]"; port = 4242; };
       static_map.network = if hostCfg ? v6 && hostCfg.v6 then "ip6" else "ip";
       logging = {
-        level = "debug";
+        level = "info";
         format = "text";
       };
       routines = hostCfg.routines or 1;
