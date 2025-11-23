@@ -63,6 +63,7 @@ let
   '';
 in
 {
+  hardware.uinput.enable = true;
   # TODO: more declarative pairing / secret management?
   services.sunshine = {
     enable = true;

@@ -3,7 +3,7 @@
 {
   users.users.monk = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "video" ];
+    extraGroups = [ "wheel" "video" "uinput" ];
   };
 
   # a hack to `loginctl enable-linger monk`
