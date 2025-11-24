@@ -185,11 +185,6 @@
         };
         # Best debugged in Style Editor of the Browser Toolbox
         userChrome = ''
-          /* sidebar: gear icon + other tool icons */
-          .tools-and-extensions.actions-list { display: none !important; }
-          /* more sidebar tweaks */
-          #tabbrowser-arrowscrollbox { min-width: 0 !important; }
-          .tools-and-extensions.actions-list { display: none !important; }
           /* make the toolbar expander element narrower */
           toolbar toolbarspring {
             -moz-box-flex: 40 !important;
@@ -201,6 +196,8 @@
             padding-left: 2px !important;
             padding-right: 2px !important;
           }
+          #main-button { padding: 2px !important; }
+          .buttons-wrapper { min-height: 32px !important; }
           /* large-yet-compact side-tabs */
           tabs#tabbrowser-tabs[orient="vertical"] {
             --icon-size-default: 24px;
