@@ -217,22 +217,26 @@
       }).config.system.build.isoImage;
       nixpkgs = nixpkgs_with_overlays;
 
-      everything = let
-        allNixOS = builtins.attrValues (builtins.mapAttrs
-          (_: v: v.config.system.build.toplevel)
-          nixosConfigurations);
-        allHome = builtins.attrValues (builtins.mapAttrs
-          (_: v: v.activationPackage)
-          homeConfigurations);
-        #allNixOnDroid = builtins.attrValues (builtins.mapAttrs
-        #  (_: v: v.activationPackage)
-        #  nixOnDroidConfigurations);
-        # cookie = ???
-      in nixpkgs_with_overlays.linkFarm "all-systems"
-        (map (drv: { name = drv.name or "system"; path = drv; })
-             #(allNixOS ++ allHome ++ allNixOnDroid));
-             (allNixOS ++ allHome));
+      everything =
+        let
+          deriverNixOS = v: v.config.system.build.toplevel;
+          deriverActivation = v: v.activationPackage;
+          derive = deriver: nixpkgs.lib.mapAttrsToList (
+            name: v: { inherit name; path = deriver v; }
+          );
+          allNixOS = derive deriverNixOS nixosConfigurations;
+          allHomeManager = derive deriverActivation homeConfigurations;
+          #allNixOnDroid = derive deriverActivation nixOnDroidConfigurations;
+          allLive = [
+            { name = "cookie"; path = self.packages.x86_64-linux.cookie; }
+          ];
+        in
+          nixpkgs_with_overlays.linkFarm "everything" (
+            allNixOS
+            ++ allHomeManager
+            #++ allNixOnDroid
+            ++ allLive
+          );
     };
-
   };
 }
