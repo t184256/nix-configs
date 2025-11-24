@@ -15,6 +15,35 @@
           enableGnomeExtensions = true;
         };
       };
+      policies = {
+        GenerativeAI.Enabled = false;
+        UserMessaging = {
+          ExtensionRecommendations = false;
+          FeatureRecommendations = false;
+          SkipOnboarding = false;
+          MoreFromMozilla = false;
+          FirefoxLabs = false;
+          UrlbarInterventions = false;
+        };
+        SkipTermsOfUse = true;
+        DisableTelemetry = true;
+        FirefoxHome = {
+          TopSites = false;
+          SponsoredTopSites = false;
+          Pocket = false;
+          SponsoredPocket = false;
+          SponsoredStories = false;
+        };
+        EnableTrackingProtection = {
+          Value = true;
+          Cryptomining = true;
+          SuspectedFingerprinting = true;
+          Fingerprinting = true;
+        };
+        RequestedLocales = [ "en-GB" "en-US" "en" "ru-RU" "ru" "cz-CZ" "cz" ];
+        languagePacks = [ "en-GB" "en-US" "en" "ru-RU" "ru" "cz-CZ" "cz" ];
+        # TODO: ExtensionSettings?
+      };
       profiles.default = {
         settings = {
           # extra finicky ones
