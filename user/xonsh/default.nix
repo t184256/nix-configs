@@ -44,7 +44,15 @@ in
         else:  # use bash from nix
             $PATH.add('${pkgs.bash}/bin')
             source-bash /etc/profile
-        # Source the NixOS environment config.
+'' + (if (config.system.os == "OtherLinux") then ''
+        # Source home-manager session variables if present.
+        _hm_session_vars = _os.path.expanduser(
+          '~/.nix-profile/etc/profile.d/hm-session-vars.sh'
+        )
+        if _os.path.exists(_hm_session_vars):
+            source-bash @(_hm_session_vars)
+        del _hm_session_vars
+'' else "") + ''
         # Restore xonsh's ls alias, overriding that from Bash (if any).
         if _ls_alias is not None:
             aliases['ls'] = _ls_alias
@@ -52,7 +60,9 @@ in
         if 'll' in aliases:
             del aliases['ll']
         del _os
-        ${if config.system.os == "OtherLinux" then "$EDITOR='nvim'" else ""}
+'' + (if (config.system.os == "OtherLinux") then ''
+        $EDITOR='nvim'
+'' else "") + ''
 
     $XONSH='${my-xonsh}/bin/xonsh'
     xontrib load direnv
