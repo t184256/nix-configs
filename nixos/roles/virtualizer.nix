@@ -37,6 +37,13 @@ in {
         sshProxy = true;
       };
       users.users.monk.extraGroups = [ "libvirtd" ];
+      environment.systemPackages = [
+        (pkgs.runCommand "libvirt-ssh-proxy" {} ''
+          mkdir -p $out/bin
+          ln -s ${pkgs.libvirt}/libexec/libvirt-ssh-proxy \
+                $out/bin/libvirt-ssh-proxy
+        '')
+      ];
     }
 
     (mkIf (cfg.storageLocation == "storage") {
