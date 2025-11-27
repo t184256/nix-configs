@@ -55,9 +55,11 @@ in {
       systemd.services =
         let
           x = {
-            unitConfig.RequiresMountsFor = "/mnt/storage /var/lib/libvirt";
-            unitConfig.ConditionPathIsMountPoint="/mnt/storage";
-            unitConfig.ConditionPathIsDirectory="/mnt/storage/var/lib/libvirt";
+            unitConfig = {
+              RequiresMountsFor = "/mnt/storage /var/lib/libvirt";
+              ConditionPathIsMountPoint = "/mnt/storage";
+              ConditionPathIsDirectory = "/mnt/storage/var/lib/libvirt";
+            };
             wantedBy = [ "mnt-storage.target" ];
             after = [ "mnt-storage.target" ];
           };
