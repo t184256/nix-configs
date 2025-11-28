@@ -24,7 +24,7 @@ add_to_path() { local cmd_or_drv=$1
     fi
     command -v "$cmd" >/dev/null
 }
-add_to_path libvirt/bin/virtsh
+add_to_path libvirt/bin/virsh
 add_to_path virt-manager/bin/virt-install
 
 if [[ -z "${SSH_KEY:-}" ]]; then
@@ -68,10 +68,12 @@ sshkey --username root '${SSH_KEY}'
 
 %packages --exclude-weakdeps --timeout 900
 @Core --nodefaults
+checkpolicy
 chrony
 glibc-minimal-langpack
 openssh-server
 qemu-guest-agent
+setools-console
 -dhcp-client
 -dracut-config-rescue
 -firewalld
@@ -99,6 +101,28 @@ dnf -y clean packages
 
 btrfs filesystem mkswapfile --size ${SWAP_GB}G /swap
 echo '/swap none swap defaults' >> /etc/fstab
+
+cat > sshd-vsock.te << 'SEOF'
+module sshd-vsock 1.0;
+require {
+    type sshd_net_t;
+    type sshd_t;
+    type unconfined_t;
+    type chkpwd_t;
+    class vsock_socket { read write };
+    class process { dyntransition noatsecure rlimitinh siginh };
+}
+# Allow sshd_net_t to read/write vsock sockets
+allow sshd_net_t sshd_t:vsock_socket { read write };
+# Allow sshd dynamic transition to unconfined_t for user sessions
+allow sshd_t unconfined_t:process dyntransition;
+# Allow sshd to spawn chkpwd for password checking
+allow sshd_t chkpwd_t:process { noatsecure rlimitinh siginh };
+SEOF
+
+checkmodule -M -m -o sshd-vsock.mod sshd-vsock.te
+semodule_package -o sshd-vsock.pp -m sshd-vsock.mod
+semodule -i sshd-vsock.pp
 ) &> /dev/hvc0
 %end
 
@@ -114,6 +138,11 @@ XARGS=(
     'inst.notmux'
     'console=hvc0'
 )
+
+if virsh --connect "${LIBVIRT_URL}" dominfo "${VM_HOSTNAME}" &>/dev/null; then
+    virsh --connect "${LIBVIRT_URL}" destroy "${VM_HOSTNAME}" 2>/dev/null || true
+    virsh --connect "${LIBVIRT_URL}" undefine "${VM_HOSTNAME}" --remove-all-storage
+fi
 
 virt-install \
     --noreboot \
