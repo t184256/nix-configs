@@ -8,7 +8,7 @@ set -Eueo pipefail; shopt -s inherit_errexit
 : "${RAM_GB:=8}"
 : "${SWAP_GB:=4}"
 : "${DISK_GB:=64}"
-: "${FEDORA:=42}"
+: "${FEDORA:=43}"
 : "${ARCH:=x86_64}"
 : "${MIRROR:=https://download.fedoraproject.org/pub/fedora/linux}"
 
@@ -63,7 +63,7 @@ sshkey --username root '${SSH_KEY}'
 
 
 %packages --exclude-weakdeps --timeout 900
-@Core --nodefaults
+@core --nodefaults
 checkpolicy
 chrony
 glibc-minimal-langpack
