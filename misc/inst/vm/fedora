@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eueo pipefail; shopt -s inherit_errexit
 
-: "${VM_HOSTNAME:=dumpster-fire}"
+: "${VM_HOSTNAME:=some-fedora}"
 : "${LIBVIRT_URL:=qemu:///system}"  # only use with hosts you trust
 # remote example: qemu+ssh://$USER@$HOST/system
 : "${VCPUS:=4}"
@@ -28,15 +28,10 @@ add_to_path libvirt/bin/virsh
 add_to_path virt-manager/bin/virt-install
 
 if [[ -z "${SSH_KEY:-}" ]]; then
-    if [[ -e ~/.ssh/id_ed25519.pub ]]; then
-        SSH_KEY=$(head -n1 ~/.ssh/id_ed25519.pub)
-    elif [[ -e ~/.ssh/id_rsa.pub ]]; then
-        SSH_KEY=$(head -n1 ~/.ssh/id_rsa.pub)
-    elif [[ -e ~/.ssh/authorized_keys ]]; then
-        SSH_KEY=$(head -n1 ~/.ssh/authorized_keys)
+    if [[ -e misc/pubkeys/ssh ]]; then
+        SSH_KEY=$(cat misc/pubkeys/ssh)
     else
-        echo >&2 'no SSH key detected'
-        exit 1
+        SSH_KEY=$(curl https://github.com/t184256.keys)
     fi
 fi
 
@@ -56,7 +51,8 @@ bootloader --timeout=0
 cmdline
 keyboard us
 lang en_US
-rootpw --iscrypted \$y\$j9T\$zsT7iOKjPy9gvvkdN6vmT.\$ht2NsaBzjlghsP9kwZ5S/.OcuE3jeDsv2sglAHji6s7
+rootpw --iscrypted \
+  \$y\$j9T\$zsT7iOKjPy9gvvkdN6vmT.\$ht2NsaBzjlghsP9kwZ5S/.OcuE3jeDsv2sglAHji6s7
 timesource --ntp-disable
 timezone UTC --utc
 zerombr
@@ -140,8 +136,9 @@ XARGS=(
 )
 
 if virsh --connect "${LIBVIRT_URL}" dominfo "${VM_HOSTNAME}" &>/dev/null; then
-    virsh --connect "${LIBVIRT_URL}" destroy "${VM_HOSTNAME}" 2>/dev/null || true
-    virsh --connect "${LIBVIRT_URL}" undefine "${VM_HOSTNAME}" --remove-all-storage
+    virsh --connect "${LIBVIRT_URL}" destroy "${VM_HOSTNAME}" 2>/dev/null ||:
+    virsh --connect "${LIBVIRT_URL}" undefine "${VM_HOSTNAME}" \
+          --remove-all-storage
 fi
 
 virt-install \
