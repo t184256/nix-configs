@@ -45,6 +45,7 @@ in
             $PATH.add('${pkgs.bash}/bin')
             source-bash /etc/profile
 '' + (if (config.system.os == "OtherLinux") then ''
+    #if not ''${...}.get('__NIXOS_SET_ENVIRONMENT_DONE'):
         # Source home-manager session variables if present.
         _hm_session_vars = _os.path.expanduser(
           '~/.nix-profile/etc/profile.d/hm-session-vars.sh'
@@ -53,6 +54,7 @@ in
             source-bash @(_hm_session_vars)
         del _hm_session_vars
 '' else "") + ''
+    #if not ''${...}.get('__NIXOS_SET_ENVIRONMENT_DONE'):
         # Restore xonsh's ls alias, overriding that from Bash (if any).
         if _ls_alias is not None:
             aliases['ls'] = _ls_alias
@@ -61,6 +63,7 @@ in
             del aliases['ll']
         del _os
 '' + (if (config.system.os == "OtherLinux") then ''
+    #if not ''${...}.get('__NIXOS_SET_ENVIRONMENT_DONE'):
         $EDITOR='nvim'
 '' else "") + ''
 
