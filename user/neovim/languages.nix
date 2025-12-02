@@ -104,18 +104,10 @@ in
           end
         '';
       }
-    ]) ++ (if ! withLang "python" then [] else [
       {
-        key = "<space>d";  # debug
+        key = "<space>t";
         mode = "n";
-        action = lua ''
-          function() require('neotest').run.run({strategy = 'dap'}) end
-        '';
-      }
-      {
-        key = "<space>i";  # inspect
-        mode = [ "n" "v" ];
-        action = lua "require('dap.ui.widgets').hover";
+        action = lua "function () require('neotest').summary.toggle() end";
       }
     ]);
 
@@ -128,13 +120,13 @@ in
       shellcheck
     ] ++ lib.optionals (withLang "nix") [
       update-nix-fetchgit
+    ] ++ lib.optionals (withLang "rust") [
+      cargo-nextest
     ];
 
     extraPlugins = with pkgs.vimPlugins; [
       actions-preview-nvim
-    ] ++ (if ! (withLang "python") then [] else [
-      neotest neotest-python
-    ]);
+    ];
 
     plugins = {
       lsp.enable = true;
@@ -181,6 +173,8 @@ in
         rust_analyzer.installCargo = true;
         rust_analyzer.installRustc = true;
 
+        #rustaceanvim.enable = withLang "rust";  # too powerful for me?
+
         # ltex conflict:
         # multiple different client offset_encodings detected for buffer
         #tinymist.enable = withLang "typst";
@@ -212,6 +206,26 @@ in
         };
       };
 
+      neotest = {
+        enable = (withLang "python") || (withLang "rust");
+        adapters.rust.enable = withLang "rust";
+        settings = {
+          status.virtual_text = true;
+          icons = {
+            failed = "○";
+            final_child_indent = " ";
+            final_child_prefix = "╰";
+            non_collapsible = "─";
+            passed = "◉";
+            running = "◐";
+            running_animated = [ "◐" "◓" "◑" "◒" ];
+            skipped = "○";
+            unknown = "○";
+            watching = "○";
+          };
+        };
+      };
+
       none-ls = {
         enable = true;
         sources = {
@@ -232,11 +246,6 @@ in
         };
         settings.temp_dir = "/tmp";
       };
-      dap.enable = withLang "python";  # for neotest
-      dap-python.enable = withLang "python";
-      dap-python.testRunner = "pytest";
-      dap-virtual-text.enable = withLang "python";
-      dap-ui.enable = withLang "python";
     };
     extraConfigLua = ''
       vim.diagnostic.config({
@@ -262,52 +271,38 @@ in
         },
         backend = { "telescope" },
       }
-    '' + (if ! withLang "python" then "" else ''
-      require("neotest").setup({
-        output = {
-          enabled = false,
-        },
-        status = {
-          virtual_text = true,
-        },
-        icons = {
-          failed = "○",
-          final_child_indent = " ",
-          final_child_prefix = "╰",
-          non_collapsible = "─",
-          passed = "◉",
-          running = "◐",
-          running_animated = { "◐", "◓", "◑", "◒" },
-          skipped = "○",
-          unknown = "○",
-          watching = "○"
-        },
-        adapters = {
-          require("neotest-python") {
-            python = "${pythonPlusDot}",
-            runner = "pytest",
-          }
-        }
-      })
-    '');
+      _direnv_allowed_cache = nil
+      if_direnv_allowed = function(callback)
+        if _direnv_allowed_cache ~= nil then
+          if _direnv_allowed_cache then
+            callback()
+          end
+          return
+        end
+        local on_exit = function(obj)
+          local allowed = string.find(obj.stdout, 'Found RC allowed 0\n') ~= nil
+          _direnv_allowed_cache = allowed
+          if allowed then
+            callback()
+          end
+        end
+        vim.system(
+          {'${pkgs.direnv}/bin/direnv', 'status'},
+          { text = true },
+          on_exit
+        )
+      end
+    '';
     autoCmd = [
       {
         event = [ "BufReadPost" ];
-        pattern = [ "test_*.py" ];
+        pattern = [ "*.rs" ];
         callback.__raw = ''
           function()
-              curr = vim.fn.expand('%')
-              local on_exit = function(obj)
-                if string.find(obj.stdout, 'Found RC allowed 0\n') then
-                  require('neotest').watch.watch(curr)
-                end
-              end
               local delayed_neotest = function()
-                vim.system(
-                  {'${pkgs.direnv}/bin/direnv', 'status'},
-                  { text = true },
-                  on_exit
-                )
+                if_direnv_allowed(function()
+                  require('neotest').run.run(vim.uv.cwd())
+                end)
               end
               -- 700ms, no repeating
               if vim.b.neotest_deferred == nil then
@@ -315,6 +310,17 @@ in
                 timer:start(700, 0, vim.schedule_wrap(delayed_neotest))
                 vim.b.neotest_deferred = true
               end
+          end
+        '';
+      }
+      {
+        event = [ "BufWritePost" ];
+        pattern = [ "*.rs" ];
+        callback.__raw = ''
+          function()
+            if_direnv_allowed(function()
+              require('neotest').run.run(vim.uv.cwd())
+            end)
           end
         '';
       }
