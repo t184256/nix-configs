@@ -26,19 +26,6 @@
 
   system.role.physical.enable = true;
 
-  nixpkgs.config.allowUnfree = true;
-  #environment.systemPackages = with pkgs; [
-  #  claude-code
-  #  goose-cli
-  #  aider-chat#-full
-  #];
-  environment.persistence."/mnt/persist" = {
-    users.monk = {
-      directories = [
-        "slop"
-        ".claude"
-        ".config/goose"
-      ];
-    };
-  };
+  system.role.virtualizer.enable = true;
+  system.role.virtualizer.storageLocation = "persist";
 }
