@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -xEeuo pipefail; shopt -s inherit_errexit
+
+# boot into cookie
+
+IP=$1
+[[ $IP =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
+: "${REMOTE_USER:=root}"
+hostname=grapefruit
+
+if ! command -v dasel >/dev/null; then
+  dasel=$(nix build --print-out-paths --no-link 'nixpkgs#dasel') || exit $?
+  PATH=$PATH:$dasel/bin
+fi
+
+ssh "$REMOTE_USER@$IP" "
+  set -xEeuo pipefail; shopt -s inherit_errexit
+  [[ \"\$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)\" \
+    == 'db47e28e-caaa-f011-bee3-9cbf0d0102fb' ]]
+  [[ -e '/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0Y837900L' ]]
+  [[ -e '/dev/nvme0n1' ]]
+  [[ ! -e '/mnt/secrets' ]]
+"
+
+# TODO: far future: also reinstall if there's no service data checked out
+echo 1>&2 "THIS WILL ERASE ALL DATA ON $1!"
+
+injdir=$(mktemp -d) || exit $?
+trap 'sudo rm -rf "$injdir"' EXIT
+
+mkdir -p "$injdir/mnt/secrets"
+misc/secrets inject-to-dir "$hostname" "$injdir/mnt/secrets"
+[[ -e "$injdir/mnt/secrets/login/monk" ]]
+[[ -e "$injdir/mnt/secrets/login/root" ]]
+[[ -e "$injdir/mnt/secrets/sshd/ed25519" ]]
+grep -qF 'OPENSSH PRIVATE KEY' "$injdir/mnt/secrets/sshd/ed25519"
+find "$injdir/mnt/secrets" -type d -exec chmod 500 {} \;
+# will be fixed up to 400 later or on latter secrets injections
+
+mkdir "$injdir/etc"
+scp -q "$REMOTE_USER@$IP:/etc/machine-id" "$injdir/etc/machine-id"
+
+nix run 'nixpkgs#nixos-anywhere' -- \
+  --extra-files "$injdir" \
+  --flake ".#$hostname" \
+  --kexec /dev/null \
+  "$REMOTE_USER@$IP"
+
+sed -i "/^$IP /d" ~/.ssh/known_hosts
+pubkey="$(dasel -f misc/pubkeys/sshd.toml "$hostname" -w -)"
+echo "$IP $pubkey" >> ~/.ssh/known_hosts
+
+# the promised fix-up
+for i in {120..1}; do echo 1>&2 -n "$i... "; sleep 1; done
+ssh "monk@$IP" 'sudo find /mnt/secrets -type d -exec chmod 400 {} \;'

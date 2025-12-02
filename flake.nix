@@ -114,7 +114,7 @@
     nixosHosts = [
       # 2024
       "cocoa" "quince" "spondias" "sloe" "olosapo" "watermelon" "etrog" "iyokan"
-      "lychee"
+      "lychee" "grapefruit"
       # legacy
       "loquat" "duckweed" "bayroot" "araceae"
       "jujube"

@@ -17,6 +17,7 @@ _ :
       spondias = { user = "monk"; hostname = "192.168.99.51"; };
       cocoa = { user = "monk"; hostname = "duckweed.unboiled.info";
                 port = 227; };
+      grapefruit = { user = "monk"; hostname = "192.168.99.52"; };
       sloe = { user = "monk"; hostname = "sloe.unboiled.info"; };
       olosapo = { user = "monk"; hostname = "olosapo.unboiled.info"; };
       watermelon = { user = "monk"; hostname = "watermelon.unboiled.info"; };

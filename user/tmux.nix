@@ -104,6 +104,7 @@
       d*)     TO=duckweed;    METHOD=mosh ;;
       l*)     TO=loquat;      METHOD=mosh ;;
       c*)     TO=cocoa;       METHOD=mosh     MOSH_OPTS='-p 22700:22799' ;;
+      g*)     TO=grapefruit;  METHOD=mosh ;;
       q*)     TO=quince;      METHOD=mosh     MOSH_OPTS='-p 22600:22699' ;;
       sp*)    TO=spondias;    METHOD=mosh ;;
       b*)     TO=bayroot;     METHOD=ssh ;;

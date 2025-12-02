@@ -29,6 +29,7 @@ let
     candlenut = { int = "192.168.99.34"; };
     t14g5 = { int = "192.168.99.42"; };
     spondias = { int = "192.168.99.51"; routines = 2; };
+    grapefruit = { int = "192.168.99.52"; routines = 4; };
   };
   exts = lib.lists.flatten (
     builtins.map (ha: ha.int) (
