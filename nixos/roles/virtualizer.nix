@@ -38,6 +38,9 @@ in {
       };
       users.users.monk.extraGroups = [ "libvirtd" ];
       environment.systemPackages = [
+        pkgs.socat
+        pkgs.nmap  # for ncat
+        pkgs.libxml2
         (pkgs.runCommand "libvirt-ssh-proxy" {} ''
           mkdir -p $out/bin
           ln -s ${pkgs.libvirt}/libexec/libvirt-ssh-proxy \
