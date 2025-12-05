@@ -8,7 +8,7 @@
     ./disko.nix
     ./hardware.nix
     ./network.nix
-    #../../nixos/services/ollama.nix
+    ../../nixos/services/llama-cpp.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/nps.nix  # rather condition on interactive or something
     #../../nixos/services/sunshine.nix
@@ -20,7 +20,28 @@
     efi.canTouchEfiVariables = true;
   };
 
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelParams = [
+    "amd_iommu=off"  # kills VFIO for speed
+    "amd.gttsize=110592"
+    "amdttm.pages_limit=27648000"
+    "amdttm.page_pool_size=27648000"
+    "ttm.pages_limit=27648000"
+    "ttm.page_pool_size=27648000"
+  ];
+  hardware.graphics.enable = true;
   hardware.wirelessRegulatoryDatabase = true;
+  #hardware.amdgpu.opencl.enable = true;
+  #hardware.amdgpu.overdrive.enable = true;
+  #hardware.amdgpu.overdrive.ppfeaturemask = "0xf7fd7fff";  # -PP_GFXOFF_MASK
+  #services.lact.enable = true;
+  environment.systemPackages = with pkgs; [
+    rocmPackages.amdsmi
+    rocmPackages.rocminfo
+    rocmPackages.rocm-smi
+    amdgpu_top
+    radeontop
+  ];
 
   # Enable sound with pipewire.
   #sound.enable = true;
@@ -68,10 +89,15 @@
       directories = [
         ".config/gh"
         ".local/share/password-store"
+        ".localai"
         ".mozilla"
       ];
     };
   };
+
+  #home-manager.users.monk.services.local-ai = {
+  #  enable = true;
+  #};
 
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
