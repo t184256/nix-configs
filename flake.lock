@@ -34,11 +34,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1752439900,
-        "narHash": "sha256-uZWnmR+6+JvSpeZP6LdMf/jNVj8AplbMT7M1GB3LCo0=",
+        "lastModified": 1764946891,
+        "narHash": "sha256-mvB/rhNo1dp1CTaUfzbg4J9znABzpxd+Kihe+wfaTNY=",
         "owner": "t184256",
         "repo": "autosync-voice",
-        "rev": "2640d5a7430d8cb835bf343cff3db1734c8cecc9",
+        "rev": "9e516b769863abbf7ef2583d76ffd7cdb95662cc",
         "type": "github"
       },
       "original": {
