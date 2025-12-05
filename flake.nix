@@ -215,7 +215,6 @@
         ] ++ common_modules;
         inherit specialArgs;
       }).config.system.build.isoImage;
-      nixpkgs = nixpkgs_with_overlays;
 
       everything =
         let
@@ -238,5 +237,9 @@
             ++ allLive
           );
     };
+  legacyPackages.x86_64-linux = {
+    nixpkgs = nixpkgs_with_overlays;
+  };
+
   };
 }
