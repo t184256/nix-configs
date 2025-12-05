@@ -33,6 +33,7 @@ in
   ];
 
   programs.nixvim = {
+    version.enableNixpkgsReleaseCheck = false;  # FIXME: remove in 2026
     enable = true;
     viAlias = true;
 
