@@ -111,15 +111,10 @@
     ...
   }@inputs:
   let
-    nixosHosts = [
-      # 2024
-      "cocoa" "quince" "spondias" "sloe" "olosapo" "watermelon" "etrog" "iyokan"
-      "lychee" "grapefruit"
-      # legacy
-      "loquat" "duckweed" "bayroot" "araceae"
-      "jujube"
-    ];
-    autoimport = (import ./.autoimport);
+    nixosHosts = builtins.filter (nm:
+      nm != "cookie" && builtins.pathExists "${./hosts}/${nm}/configuration.nix"
+    ) (builtins.attrNames (builtins.readDir ./hosts));
+    autoimport = import ./.autoimport;
     specialArgs = { inherit inputs; };
     common_modules = [ impermanence.nixosModule
                        disko.nixosModules.disko
