@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   networking.hostName = "grapefruit";
@@ -6,6 +6,7 @@
   imports = [
     ../../nixos/profiles/2024.nix
     ./disko.nix
+    "${inputs.nixos-hardware}/framework/desktop/amd-ai-max-300-series"
     ./hardware.nix
     ./network.nix
     ../../nixos/services/llama-cpp.nix
