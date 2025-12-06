@@ -19,13 +19,14 @@
     port = 11111;
     model = "/var/lib/llama/model.gguf";
     extraFlags = [
-      "-c" "0"
-      "-ub" "2048" "-b" "2048"
-      "-fa" "1"
-      "--jinja"
-      "--reasoning-format" "none"
+      #"--model-draft" "/var/lib/llama/draft-model.gguf"
+      "--ctx-size" "0"
+      "--ubatch-size" "2048" "--batch-size" "2048"
+      #"--flash-attn" "on"
       "--temp" "1.0" "--top-p" "1.0"
-      "--chat-template-kwargs" "{\"reasoning_effort\": \"high\"}"
+      "--jinja"
+      #"--chat-template-kwargs" "{\"reasoning_effort\": \"high\"}"
+      "--offline"
     ];
   };
   environment.persistence."/mnt/persist".directories = [
