@@ -92,7 +92,8 @@
         "conference.xmpp.unboiled.info"
         "upload.xmpp.unboiled.info"
       ];
-      postRun = "systemctl restart prosody";
+      #postRun = "systemctl restart prosody";
+      reloadServices = [ "prosody.service" ];
     };
   };
   environment.persistence."/mnt/persist".directories = [

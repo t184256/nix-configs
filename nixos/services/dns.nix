@@ -25,13 +25,13 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2025022501; serial number
+                                 2025120705; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
                                  180       ; ttl
                              )
-                    MX 10    loquat.unboiled.info.
+                    MX 10    sloe.unboiled.info.
                     NS       a.ns.unboiled.info.
                     NS       b.ns.unboiled.info.
                     NS       c.ns.unboiled.info.
@@ -41,7 +41,7 @@ let
     c.ns            IN A     ${IP4.watermelon}
     c.ns            IN AAAA  ${IP6.watermelon}
 
-    @               IN A     ${IP4.loquat}
+    @               IN A     ${IP4.sloe}
     duckweed        IN A     ${IP4.duckweed}
     fig             IN A     ${IP4.fig}
     loquat          IN A     ${IP4.loquat}
@@ -59,8 +59,8 @@ let
     iyokan          IN A     ${IP4.iyokan}
     iyokan          IN AAAA  ${IP6.iyokan}
 
-    conference.xmpp IN CNAME loquat
-    upload.xmpp     IN CNAME loquat
+    conference.xmpp IN CNAME sloe
+    upload.xmpp     IN CNAME sloe
     git             IN CNAME sloe
     natali          IN CNAME fig
     www.natali      IN CNAME fig

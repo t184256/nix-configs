@@ -10,12 +10,9 @@
     #../../nixos/services/ipfs/cluster-leader.nix
     #../../nixos/services/ipfs/node.nix
     ../../nixos/services/lemmy.nix
-    ../../nixos/services/mail.nix
     ../../nixos/services/nebula
     ../../nixos/services/nix-on-droid.nix
-    ../../nixos/services/www-bare.nix
     ../../nixos/services/www-monk.nix
-    ../../nixos/services/xmpp.nix
   ];
 
   boot.loader.grub = { enable = true; device = "/dev/sda"; };

@@ -11,9 +11,12 @@ _:
     ../../nixos/services/dns.nix
     ../../nixos/services/garage.nix
     ../../nixos/services/git.nix
+    ../../nixos/services/mail.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/short.nix
     ../../nixos/services/syncthing.nix
+    ../../nixos/services/www-bare.nix
+    ../../nixos/services/xmpp.nix
   ];
 
   boot.loader.grub.enable = true;  # sigh
