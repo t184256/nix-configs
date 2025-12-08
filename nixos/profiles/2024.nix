@@ -41,7 +41,9 @@
     directories = [
       "/var/lib/nixos"
       "/var/log"
-    ] ++ (if ! config.networking.networkmanager.enable then [] else [
+    ] ++ (if ! config.services.nginx.enable then [] else [
+      "/var/lib/acme"
+    ]) ++ (if ! config.networking.networkmanager.enable then [] else [
       "/etc/NetworkManager"
       "/var/lib/NetworkManager"
     #]) ++ (if ! config.virtualisation.libvirtd.enable then [] else [
