@@ -148,7 +148,9 @@
     homeConfigurations.t14g5 = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
         system = "x86_64-linux";
-        overlays = (autoimport.asList ./overlays) ++ [ nixgl.overlay ];
+        # false as overlays are pulled in where needed
+        #overlays = (autoimport.asList ./overlays) ++ [ nixgl.overlay ];
+        overlays = [ nixgl.overlay ];
       };
       modules = [
         nixvim.homeModules.nixvim
