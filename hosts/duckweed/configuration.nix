@@ -16,6 +16,7 @@
     ../../nixos/services/microsocks.nix
     ../../nixos/services/nebula
     ../../nixos/services/syncthing-relay.nix
+    ../../nixos/services/tang.nix
     ../../nixos/services/wireguard-nl.nix
   ];
 

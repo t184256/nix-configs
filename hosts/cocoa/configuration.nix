@@ -17,6 +17,7 @@
     ../../nixos/services/nps.nix  # rather condition on interactive or something
     ../../nixos/services/sunshine.nix
     ../../nixos/services/syncthing.nix
+    ../../nixos/services/tang.nix
   ];
 
   boot.loader = {
