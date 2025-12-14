@@ -1,0 +1,58 @@
+commit 912ee01bb411d56fd7f20aaf5588092e85f6a1b1
+Author: Alexander Sosedkin <monk@unboiled.info>
+Date:   Sun Dec 14 17:29:12 2025 +0100
+
+    altfont font attribute support
+
+diff --git a/src/terminal/terminalframebuffer.cc b/src/terminal/terminalframebuffer.cc
+index 70284a4..ae91827 100644
+--- a/src/terminal/terminalframebuffer.cc
++++ b/src/terminal/terminalframebuffer.cc
+@@ -497,6 +497,8 @@ void Renditions::set_rendition( color_type num )
+   case 5: case 25: set_attribute(blink, value); break;
+   case 7: case 27: set_attribute(inverse, value); break;
+   case 8: case 28: set_attribute(invisible, value); break;
++  case 10: set_attribute(alt_font1, 0); break;
++  case 11: set_attribute(alt_font1, 1); break;
+   default: break; /* ignore unknown rendition */
+   }
+ }
+@@ -531,6 +533,7 @@ std::string Renditions::sgr( void ) const
+   if ( get_attribute( blink ) ) ret.append( ";5" );
+   if ( get_attribute( inverse ) ) ret.append( ";7" );
+   if ( get_attribute( invisible ) ) ret.append( ";8" );
++  if ( get_attribute( alt_font1 ) ) ret.append( ";11" );
+ 
+   if ( foreground_color ) {
+     // Since foreground_color is a 25-bit field, it is promoted to an int when
+diff --git a/src/terminal/terminalframebuffer.h b/src/terminal/terminalframebuffer.h
+index de93869..988f296 100644
+--- a/src/terminal/terminalframebuffer.h
++++ b/src/terminal/terminalframebuffer.h
+@@ -53,13 +53,24 @@ namespace Terminal {
+ 
+   class Renditions {
+   public:
+-    typedef enum { bold, faint, italic, underlined, blink, inverse, invisible, SIZE } attribute_type;
++    typedef enum
++    {
++      bold,  // 1
++      faint,  // 2
++      italic,  // 3
++      underlined,  // 4
++      blink,  // 5
++      inverse,  // 6
++      invisible,  // 7
++      alt_font1,  // 11
++      SIZE
++    } attribute_type;
+ 
+   private:
+     static const uint64_t true_color_mask = 0x1000000;
+     uint64_t foreground_color : 25;
+     uint64_t background_color : 25;
+-    uint64_t attributes : 8;
++    uint64_t attributes : 9;
+ 
+   public:
+     Renditions( color_type s_background );
