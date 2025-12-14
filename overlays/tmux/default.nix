@@ -1,5 +1,7 @@
 _: super:
 
 {
-  tmux = super.tmux.overrideAttrs (_: { patches = ./altfont.patch; });
+  tmux = super.tmux.overrideAttrs (oa: {
+    patches = (oa.patches or []) ++ [ ./altfont.patch ];
+  });
 }

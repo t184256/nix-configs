@@ -1,18 +1,16 @@
 diff --git a/attributes.c b/attributes.c
-index b839f06d..81bb84d6 100644
+index 8eaa8897..e03f9ce1 100644
 --- a/attributes.c
 +++ b/attributes.c
-@@ -45,7 +45,8 @@ attributes_tostring(int attr)
- 	    (attr & GRID_ATTR_UNDERSCORE_3) ? "curly-underscore," : "",
+@@ -46,6 +46,7 @@ attributes_tostring(int attr)
  	    (attr & GRID_ATTR_UNDERSCORE_4) ? "dotted-underscore," : "",
  	    (attr & GRID_ATTR_UNDERSCORE_5) ? "dashed-underscore," : "",
--	    (attr & GRID_ATTR_OVERLINE) ? "overline," : "");
-+	    (attr & GRID_ATTR_OVERLINE) ? "overline," : "",
-+	    (attr & GRID_ATTR_ALTFONT) ? "altfont," : "");
+         (attr & GRID_ATTR_OVERLINE) ? "overline," : "",
++	    (attr & GRID_ATTR_ALTFONT) ? "altfont," : "",
+ 	    (attr & GRID_ATTR_NOATTR) ? "noattr," : "");
  	if (len > 0)
  		buf[len - 1] = '\0';
- 
-@@ -77,7 +78,8 @@ attributes_fromstring(const char *str)
+@@ -78,7 +79,8 @@ attributes_fromstring(const char *str)
  		{ "curly-underscore", GRID_ATTR_UNDERSCORE_3 },
  		{ "dotted-underscore", GRID_ATTR_UNDERSCORE_4 },
  		{ "dashed-underscore", GRID_ATTR_UNDERSCORE_5 },
@@ -23,10 +21,10 @@ index b839f06d..81bb84d6 100644
  
  	if (*str == '\0' || strcspn(str, delimiters) == 0)
 diff --git a/grid.c b/grid.c
-index edada819..4894416f 100644
+index 63eea68d..e5de958a 100644
 --- a/grid.c
 +++ b/grid.c
-@@ -944,6 +944,7 @@ grid_string_cells_code(const struct grid_cell *lastgc,
+@@ -968,6 +968,7 @@ grid_string_cells_code(const struct grid_cell *lastgc,
  		{ GRID_ATTR_REVERSE, 7 },
  		{ GRID_ATTR_HIDDEN, 8 },
  		{ GRID_ATTR_STRIKETHROUGH, 9 },
@@ -35,10 +33,10 @@ index edada819..4894416f 100644
  		{ GRID_ATTR_UNDERSCORE_3, 43 },
  		{ GRID_ATTR_UNDERSCORE_4, 44 },
 diff --git a/input.c b/input.c
-index eb421b28..1bf6010d 100644
+index 58a1b091..12940a3d 100644
 --- a/input.c
 +++ b/input.c
-@@ -2181,6 +2181,12 @@ input_csi_dispatch_sgr(struct input_ctx *ictx)
+@@ -2351,6 +2351,12 @@ input_csi_dispatch_sgr(struct input_ctx *ictx)
  		case 9:
  			gc->attr |= GRID_ATTR_STRIKETHROUGH;
  			break;
@@ -52,10 +50,10 @@ index eb421b28..1bf6010d 100644
  			gc->attr &= ~GRID_ATTR_ALL_UNDERSCORE;
  			gc->attr |= GRID_ATTR_UNDERSCORE_2;
 diff --git a/tmux.1 b/tmux.1
-index 1916f16e..d17cf65f 100644
+index 404909bd..fee7a17a 100644
 --- a/tmux.1
 +++ b/tmux.1
-@@ -3900,6 +3900,8 @@ mouse sequences.
+@@ -4376,6 +4376,8 @@ mouse sequences.
  Supports the OSC 7 working directory extension.
  .It overline
  Supports the overline SGR attribute.
@@ -64,7 +62,7 @@ index 1916f16e..d17cf65f 100644
  .It rectfill
  Supports the DECFRA rectangle fill escape sequence.
  .It RGB
-@@ -5646,6 +5648,7 @@ Set no attributes (turn off any active attributes).
+@@ -6359,6 +6361,7 @@ Set no attributes (turn off any active attributes).
  .Ic hidden ,
  .Ic italics ,
  .Ic overline ,
@@ -72,7 +70,7 @@ index 1916f16e..d17cf65f 100644
  .Ic strikethrough ,
  .Ic double-underscore ,
  .Ic curly-underscore ,
-@@ -6807,6 +6810,8 @@ Tell
+@@ -7583,6 +7586,8 @@ Tell
  that the terminal supports rectangle operations.
  .It Em \&Smol
  Enable the overline attribute.
@@ -82,10 +80,10 @@ index 1916f16e..d17cf65f 100644
  Set a styled underscore.
  The single parameter is one of: 0 for no underscore, 1 for normal
 diff --git a/tmux.h b/tmux.h
-index a50adbfa..d803751b 100644
+index 60795e09..08e21863 100644
 --- a/tmux.h
 +++ b/tmux.h
-@@ -380,6 +380,8 @@ enum tty_code_code {
+@@ -436,6 +436,8 @@ enum tty_code_code {
  	TTYC_ENEKS,
  	TTYC_ENFCS,
  	TTYC_ENMG,
@@ -94,16 +92,16 @@ index a50adbfa..d803751b 100644
  	TTYC_FSL,
  	TTYC_HLS,
  	TTYC_HOME,
-@@ -660,6 +662,7 @@ struct colour_palette {
+@@ -727,6 +729,7 @@ struct colour_palette {
  #define GRID_ATTR_UNDERSCORE_4 0x800
  #define GRID_ATTR_UNDERSCORE_5 0x1000
  #define GRID_ATTR_OVERLINE 0x2000
-+#define GRID_ATTR_ALTFONT 0x4000
++#define GRID_ATTR_ALTFONT 0x8000
+ #define GRID_ATTR_NOATTR 0x4000
  
  /* All underscore attributes. */
- #define GRID_ATTR_ALL_UNDERSCORE \
 diff --git a/tty-features.c b/tty-features.c
-index 9bd0d843..054514d5 100644
+index 31d9b7a8..335c3537 100644
 --- a/tty-features.c
 +++ b/tty-features.c
 @@ -151,6 +151,17 @@ static const struct tty_feature tty_feature_overline = {
@@ -125,7 +123,7 @@ index 9bd0d843..054514d5 100644
  static const char *const tty_feature_usstyle_capabilities[] = {
  	"Smulx=\\E[4::%p1%dm",
 diff --git a/tty-term.c b/tty-term.c
-index 67face26..9117d22d 100644
+index 29dbaf59..9859fe03 100644
 --- a/tty-term.c
 +++ b/tty-term.c
 @@ -102,6 +102,8 @@ static const struct tty_term_code_entry tty_term_codes[] = {
@@ -138,10 +136,10 @@ index 67face26..9117d22d 100644
  	[TTYC_HLS] = { TTYCODE_STRING, "Hls" },
  	[TTYC_HOME] = { TTYCODE_STRING, "home" },
 diff --git a/tty.c b/tty.c
-index 359dc137..597fb278 100644
+index 605ab1ec..31eb60a4 100644
 --- a/tty.c
 +++ b/tty.c
-@@ -2764,6 +2764,8 @@ tty_attributes(struct tty *tty, const struct grid_cell *gc,
+@@ -2806,6 +2806,8 @@ tty_attributes(struct tty *tty, const struct grid_cell *gc,
  		tty_putcode(tty, TTYC_SMXX);
  	if (changed & GRID_ATTR_OVERLINE)
  		tty_putcode(tty, TTYC_SMOL);
