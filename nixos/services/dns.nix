@@ -19,7 +19,7 @@ let
     loquat = "2a02:c206:2101:9233::1";
     sloe = "2a02:c206:2207:3890::1";
     olosapo = "2606:a8c0:3:969::a";
-    watermelon = "2602:ffd5:1:1b0::1";
+    watermelon = "2602:ffd5:907:2::2";
   };
   zones."unboiled.info".data = ''
     $ORIGIN        unboiled.info.
