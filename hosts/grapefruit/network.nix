@@ -1,4 +1,4 @@
-_:
+{ config, lib, ... }:
 
 {
   hardware.wirelessRegulatoryDatabase = true;
@@ -24,6 +24,18 @@ _:
           wifi-security = { key-mgmt = "wpa-psk"; psk = "$PASS2"; };
         };
       };
+    };
+  };
+  boot.initrd = lib.mkIf config.boot.initrd.systemd.network.enable {
+    kernelModules = [ "r8169" ];
+    availableKernelModules = [ "r8169" ];
+    systemd.network = {
+      networks."10-wired" = {
+        matchConfig.Name = "enp191s0";
+        networkConfig.DHCP = "yes";
+      };
+      wait-online.anyInterface = true;
+      wait-online.timeout = 60;
     };
   };
 }

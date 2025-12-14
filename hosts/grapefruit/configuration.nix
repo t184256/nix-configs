@@ -105,4 +105,15 @@
   boot.initrd.systemd.enable = true;
 
   programs.nix-ld.enable = true;
+
+  boot.initrd.systemd.network.enable = true;  # see network.nix
+  boot.initrd.clevis = {
+    enable = true;
+    useTang = true;
+    devices = {
+      root.secretFile = "/mnt/secrets/clevis";
+      storage.secretFile = "/mnt/secrets/clevis";
+      swap.secretFile = "/mnt/secrets/clevis";
+    };
+  };
 }
