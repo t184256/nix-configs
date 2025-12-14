@@ -12,7 +12,7 @@ def _nx_config_dir():
 
 
 def _nxd(args):
-    REMOTE_BUILD = {'cocoa', 'loquat'}
+    REMOTE_BUILD = {'cocoa', 'grapefruit'}
     confdir = _nx_config_dir()
     if '--' in args:
         if args.count('--') == 1:  # nxd --deploy-opts -- hosts
