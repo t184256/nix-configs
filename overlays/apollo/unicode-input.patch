@@ -1,0 +1,26 @@
+diff --git a/src/platform/linux/input/inputtino_keyboard.cpp b/src/platform/linux/input/inputtino_keyboard.cpp
+index e384b312..13e217ba 100644
+--- a/src/platform/linux/input/inputtino_keyboard.cpp
++++ b/src/platform/linux/input/inputtino_keyboard.cpp
+@@ -173,6 +173,8 @@ namespace platf::keyboard {
+       (*raw->keyboard).press(0xA0);  // LEFTSHIFT
+       (*raw->keyboard).press(0x55);  // U
+       (*raw->keyboard).release(0x55);  // U
++      (*raw->keyboard).release(0xA0);  // LEFTSHIFT
++      (*raw->keyboard).release(0xA2);  // LEFTCTRL
+
+       /* input each HEX character */
+       for (auto &ch : hex_unicode) {
+@@ -187,9 +189,9 @@ namespace platf::keyboard {
+         }
+       }
+
+-      /* releasing <SHIFT> and <CTRL> */
+-      (*raw->keyboard).release(0xA0);  // LEFTSHIFT
+-      (*raw->keyboard).release(0xA2);  // LEFTCTRL
++      /* commit with a Return */
++      (*raw->keyboard).press(0x0D);  // ENTER
++      (*raw->keyboard).release(0x0D);  // ENTER
+     }
+   }
+ }  // namespace platf::keyboard

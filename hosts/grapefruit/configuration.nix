@@ -9,10 +9,10 @@
     "${inputs.nixos-hardware}/framework/desktop/amd-ai-max-300-series"
     ./hardware.nix
     ./network.nix
+    ../../nixos/services/apollo.nix
     ../../nixos/services/llama-cpp.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/nps.nix  # rather condition on interactive or something
-    #../../nixos/services/sunshine.nix
     #../../nixos/services/syncthing.nix
   ];
 
