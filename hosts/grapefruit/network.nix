@@ -33,6 +33,8 @@
       networks."10-wired" = {
         matchConfig.Name = "enp191s0";
         networkConfig.DHCP = "yes";
+        linkConfig.RequiredForOnline = "routable";
+        linkConfig.RequiredFamilyForOnline = "ipv4";
       };
       wait-online.anyInterface = true;
       wait-online.timeout = 60;
