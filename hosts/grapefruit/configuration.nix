@@ -116,4 +116,8 @@
       swap.secretFile = "/mnt/secrets/clevis";
     };
   };
+
+  systemd.sleep.extraConfig = ''
+    AllowSuspend=no
+  '';
 }
