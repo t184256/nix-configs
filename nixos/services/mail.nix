@@ -8,7 +8,7 @@
     fqdn = "unboiled.info";
     domains = [ "unboiled.info" ];
     messageSizeLimit = 209715200;  # 200 MB
-    certificateScheme = "acme-nginx";
+    x509.useACMEHost = "unboiled.info";
     enableManageSieve = true;
     localDnsResolver = false;  # I have a DNS server on the same host
     loginAccounts = {

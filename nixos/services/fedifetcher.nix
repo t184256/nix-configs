@@ -23,7 +23,7 @@ in
       serviceConfig.WorkingDirectory = stateRoot;
       serviceConfig.Type = "oneshot";
       serviceConfig.ExecStart =
-        "${pkgs.fedifetcher}/bin/fedifetcher"
+        "${pkgs.fedifetcher-restored}/bin/fedifetcher"
         + " --config ${configPath}"
         + " --state-dir ${stateRoot}";
       serviceConfig.User = "fedifetcher";
