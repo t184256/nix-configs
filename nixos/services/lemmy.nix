@@ -59,7 +59,7 @@
       '';
     };
     appendHttpConfig = ''
-      limit_req_zone $binary_remote_addr zone=lemmy_ratelimit:1m rate=150r/s;
+      limit_req_zone $binary_remote_addr zone=lemmy_ratelimit:1m rate=10r/s;
     '';  # TODO: 1r/s
   };
   systemd = {
