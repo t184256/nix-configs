@@ -24,6 +24,10 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [
+    #"amdgpu.cwsr_enable=0"  # should bring back stability
+                             # if/when coupled with MES 0x00000080
+    ##sudo cat /sys/kernel/debug/dri/1/amdgpu_firmware_info | grep MES
+
     "amd_iommu=off"  # kills VFIO for speed
     "amd.gttsize=110592"
     "amdttm.pages_limit=27648000"
@@ -43,6 +47,17 @@
     rocmPackages.rocm-smi
     amdgpu_top
     radeontop
+    #(vllm.override {
+    #  torch = python312Packages.torch.override {
+    #    cudaSupport = false;
+    #    rocmSupport = true;
+    #    vulkanSupport = true;
+    #  };
+    #  #torch = python312Packages.torchWithRocm;
+    #  cudaSupport = false;
+    #  rocmSupport = true;
+    #  gpuTargets = [ "gfx1151" ];
+    #})
   ];
 
   # Enable sound with pipewire.
@@ -121,4 +136,9 @@
   systemd.sleep.extraConfig = ''
     AllowSuspend=no
   '';
+
+  system.role.virtualizer.enable = true;
+  system.role.virtualizer.storageLocation = "storage";
+
+  networking.firewall.allowedTCPPorts = [ 8000 ];  # slopfest
 }
