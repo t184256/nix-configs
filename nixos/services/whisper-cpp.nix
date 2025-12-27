@@ -17,25 +17,24 @@
         )
       ];
       CapabilityBoundingSet = "";
-      #DevicePolicy = "closed";
       LockPersonality = true;
       MemoryDenyWriteExecute = true;
+      PrivateTmp = true;
       PrivateUsers = true;
+      ProtectControlGroups = true;
       ProtectHome = true;
       ProtectHostname = true;
       ProtectKernelLogs = true;
       ProtectKernelModules = true;
       ProtectKernelTunables = true;
-      ProtectControlGroups = true;
       ProtectProc = "invisible";
-      #ProcSubset = "all";
-      #RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
       RestrictAddressFamilies = [ ];  # full offline
       RestrictNamespaces = true;
       RestrictRealtime = true;
       SystemCallArchitectures = "native";
       SystemCallFilter = [ "@system-service" "~@privileged" ];
       UMask = "0077";
+      WorkingDirectory = "/tmp/";
     };
   };
   networking.firewall.allowedTCPPorts = [ 11112 ];
