@@ -33,6 +33,8 @@ in {
         enable = true;
         allowedBridges = lib.mkForce [];
         qemu.runAsRoot = false;
+        # IDK why we're rebuilding it every time anyway. ibus?
+        qemu.package = pkgs.qemu_kvm;
         nss.enableGuest = true;
         sshProxy = true;
       };
