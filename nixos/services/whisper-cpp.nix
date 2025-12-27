@@ -11,7 +11,7 @@
       User = "whisper-cpp";
       ExecStart = [
         ("${pkgs.whisper-cpp-vulkan}/bin/whisper-server" +
-         " --host 0.0.0.0 --port 11112 --language auto --flash-attn" +
+         " --host 192.168.99.52 --port 11112 --language auto --flash-attn" +
          " --inference-path /v1/audio/transcriptions --convert" +
          " --model /var/lib/whisper/model.bin"
         )

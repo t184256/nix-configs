@@ -25,7 +25,7 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2025120705; serial number
+                                 2025122701; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
@@ -81,6 +81,9 @@ let
     ipfs            IN CNAME duckweed
     s               IN CNAME sloe
     meet            IN CNAME duckweed
+    whisper.slop    IN CNAME duckweed
+    llm.slop        IN CNAME duckweed
+    goose.slop      IN CNAME duckweed
 
     _xmpp-client._tcp 86400 IN SRV 5 0 5222 unboiled.info.
     _xmpp-server._tcp 86400 IN SRV 5 0 5269 unboiled.info.
