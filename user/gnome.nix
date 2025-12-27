@@ -28,6 +28,9 @@ in
   ];
 
   dconf.settings = if config.system.noGraphics then {} else {
+    "org/gnome/settings-daemon/plugins/housekeeping" = {
+      donation-reminder-last-shown = "int64 2000000000000000";  # shame on them
+    };
     "org/gnome/shell" = {
       favorite-apps =
         if ! config.system.live then
