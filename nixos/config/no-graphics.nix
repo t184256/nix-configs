@@ -16,6 +16,7 @@
           sdlSupport = false;
           jackSupport = false;
           gtkSupport = false;
+          minimal = true;
         };
       })];
     })
