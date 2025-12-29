@@ -18,7 +18,7 @@ let
     iyokan = "2603:c022:c004:2424:38fd:cc4e:5757:6d9";
     loquat = "2a02:c206:2101:9233::1";
     sloe = "2a02:c206:2207:3890::1";
-    olosapo = "2606:a8c0:3:969::a";
+    olosapo = "2606:a8c0:3::955";
     watermelon = "2602:ffd5:907:2::2";
   };
   zones."unboiled.info".data = ''

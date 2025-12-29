@@ -7,7 +7,7 @@ _:
       ipv4.addresses =
         [ { address = "216.181.107.104"; prefixLength = 24; } ];
       ipv6.addresses =
-        [{ address = "2606:a8c0:3:969::a"; prefixLength = 64; } ];
+        [{ address = "2606:a8c0:3::955"; prefixLength = 128; } ];
     };
     defaultGateway = "216.181.107.1";
     defaultGateway6 = { address = "2606:a8c0:3::1"; interface = "enp3s0"; };
