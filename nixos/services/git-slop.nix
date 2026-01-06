@@ -8,6 +8,7 @@
     database.user = "git";  # must match
     database.type = "sqlite3";  # default, but just in case
     settings = {
+      actions.DEFAULT_ACTIONS_URL = "https://github.com";
       cache = {
         ADAPTER = "twoqueue";
         HOST = "{\"size\": 100, \"recent_ratio\":0.25, \"ghost_ratio\":0.5}";
