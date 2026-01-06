@@ -7,6 +7,7 @@
     ./disko.nix
     ./hardware.nix
     ../../nixos/profiles/2024.nix
+    ../../nixos/services/git-slop-runner.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
