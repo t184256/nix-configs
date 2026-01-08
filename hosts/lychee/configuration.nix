@@ -135,7 +135,6 @@
     environment.SYSTEMD_SLEEP_FREEZE_USER_SESSIONS = "false";
   };
 
-  programs.adb.enable = true;
   users.extraGroups.plugdev.members = [ "monk" ];
   networking.firewall.allowedTCPPorts = [ 3389 ];  # RDP
 
@@ -181,8 +180,9 @@
   ###
 
   #nixpkgs.config.allowUnfree = true;
-  #environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; [
+     android-tools
   #  android-studio gradle_7 openjdk17 gnumake
-  #];
+  ];
   #programs.nix-ld.enable = true;
 }
