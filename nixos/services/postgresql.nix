@@ -1,6 +1,16 @@
-{ config, ... }:
+{ pkgs, config, ... }:
 
 {
+  services.postgresql = {
+    package = pkgs.postgresql_17;
+    enableJIT = true;
+    settings = {
+      shared_buffers = "768MB";
+      work_mem = "16MB";
+      maintenance_work_mem = "256MB";
+    };
+  };
+
   environment.persistence."/mnt/persist".directories = [
     {
       directory = "/var/lib/postgresql";
