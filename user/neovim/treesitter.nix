@@ -55,7 +55,6 @@
         python
         regex
         requirements
-        robots
         rst
         ruby
         rust

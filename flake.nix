@@ -134,7 +134,7 @@
                          home-manager.extraSpecialArgs = specialArgs;
                          home-manager.users.monk.imports = [
                            nixvim.homeModules.nixvim
-                           impermanence.nixosModules.home-manager.impermanence
+                           #impermanence.nixosModules.home-manager.impermanence
                          ];
                      }] ++
                      [ (_: {
