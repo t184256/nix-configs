@@ -62,13 +62,19 @@
     };
     services.akkoma-cleanup = {
       path = [ "/run/wrappers" ];
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart =
-          "/run/current-system/sw/bin/pleroma_ctl"
-          + " database prune_objects"
-          + " --keep-threads --keep-non-public --prune-orphaned-activities";
-      };
+      script = ''
+        /run/current-system/sw/bin/pleroma_ctl \
+            database prune_objects \
+            --keep-followed full \
+            --keep-threads --keep-non-public --prune-orphaned-activities
+        /run/current-system/sw/bin/pleroma_ctl \
+            database prune_orphaned_activities --no-singles
+        /run/current-system/sw/bin/pleroma_ctl \
+            database prune_orphaned_activities --no-arrays
+        /run/current-system/sw/bin/pleroma_ctl \
+            database prune_task
+      '';
+      serviceConfig.Type = "oneshot";
     };
   };
   environment.persistence."/mnt/persist".directories = [
