@@ -70,7 +70,7 @@ in
   };
   home.file.".config/git/hooks/prepare-commit-msg".source =
     pkgs.writeShellScript "prepare-commit-msg" ''
-      sed -i '/^# Please enter the commit/d;/will be ignored/d' "$1"
+      sed -i '/^# Please enter the commit/d;/will be ignored/d;/^#$/d' "$1"
     '';
   programs.delta = {
     enable = true;
