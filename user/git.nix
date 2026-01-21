@@ -65,8 +65,13 @@ in
         oldMovedAlternative = "#e0c0e4";
         newMovedAlternative = "#97c4f0";
       };
+      core.hooksPath = "~/.config/git/hooks";
     };
   };
+  home.file.".config/git/hooks/prepare-commit-msg".source =
+    pkgs.writeShellScript "prepare-commit-msg" ''
+      sed -i '/^# Please enter the commit/d;/will be ignored/d' "$1"
+    '';
   programs.delta = {
     enable = true;
     enableGitIntegration = true;
