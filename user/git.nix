@@ -45,6 +45,7 @@ in
       alias.ff = "pull --ff-only";
       alias.tree = "log --graph --oneline '--exclude=refs/notes/*' --all";
       alias.mr = "!sh -c 'git fetch $2 merge-requests/$3/head:mr-$2-$3 && git checkout mr-$2-$3'";
+      alias.difft = "!GIT_EXTERNAL_DIFF='difft --display inline' git diff";
       diff.algorithm = "patience";
       init.defaultBranch = "main";
       merge.conflictStyle = "diff3";
@@ -98,6 +99,7 @@ in
     settings.git_protocol = "ssh";
   };
   programs.lazygit.enable = true;
+  programs.difftastic.enable = true;
 
   programs.jujutsu.enable = true;
 
