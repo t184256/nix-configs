@@ -87,6 +87,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+    llm-commit-msg = {
+      url = "github:t184256/llm-commit-msg";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
 
   };
 
@@ -108,6 +113,7 @@
     input-utils,
     yousable,
     autosync-voice,
+    llm-commit-msg,
     ...
   }@inputs:
   let

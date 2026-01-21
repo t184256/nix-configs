@@ -22,6 +22,7 @@
     ../../user/eza.nix
     ../../user/fonts.nix
     ../../user/git.nix
+    ../../user/llm-commit-msg.nix
     ../../user/htop.nix
     ../../user/mosh.nix
     ../../user/neovim

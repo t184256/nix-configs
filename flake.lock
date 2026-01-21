@@ -355,6 +355,29 @@
         "type": "github"
       }
     },
+    "llm-commit-msg": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1769007423,
+        "narHash": "sha256-sGDvz8cp4g9TGOfIz6E/9UMz3rlQqSdxtChOsRKBK8Y=",
+        "owner": "t184256",
+        "repo": "llm-commit-msg",
+        "rev": "4fced5c6b5c831f2d234bc05791e8cd6b55749da",
+        "type": "github"
+      },
+      "original": {
+        "owner": "t184256",
+        "repo": "llm-commit-msg",
+        "type": "github"
+      }
+    },
     "nix-formatter-pack": {
       "inputs": {
         "nixpkgs": [
@@ -650,6 +673,7 @@
         "impermanence": "impermanence",
         "input-utils": "input-utils",
         "keyboard-remap": "keyboard-remap",
+        "llm-commit-msg": "llm-commit-msg",
         "nix-formatter-pack": "nix-formatter-pack",
         "nix-on-droid": "nix-on-droid",
         "nixgl": "nixgl",
