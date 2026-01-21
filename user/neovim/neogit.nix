@@ -1,4 +1,4 @@
-{ config, ... }:
+{ pkgs, config, ... }:
 
 let
   lua = config.lib.nixvim.mkRaw;
@@ -8,6 +8,7 @@ in
   programs.nixvim = {
     plugins.neogit = {
       enable = true;
+      package = pkgs.vimPlugins.neogit;  # overlayed in overlays/vim-plugins.nix
       settings = {
         graph_style = "unicode";
         commit_select_view.kind = "replace";
