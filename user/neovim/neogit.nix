@@ -40,6 +40,19 @@ in
         action = lua "function() require('neogit').open({kind='tab'}) end";
       }
     ];
+    autoCmd = [
+      {
+        event = "FileType";
+        pattern = "gitcommit";
+        callback = lua ''
+          function()
+            vim.opt_local.wrap = true
+            vim.opt_local.linebreak = true
+            vim.opt_local.undofile = false
+          end
+        '';
+      }
+    ];
   };
   home.wraplings.ng = ''
     nvim \
