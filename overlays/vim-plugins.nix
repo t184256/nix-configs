@@ -18,10 +18,19 @@ rec {
   vimPlugins = super.vimPlugins.extend ( final: prev: {
     neogit = prev.neogit.overrideAttrs (oa: {
       postPatch = (oa.postPatch or "") + ''
+        # fewer useless lines in the git commit buffer
         substituteInPlace lua/neogit/buffers/editor/init.lua \
           --replace-fail \
             "local help_lines = {" \
             "local help_lines = {}; local _ = {"
+        # disable forced nowrapping that I don't vibe with
+        substituteInPlace lua/neogit/lib/buffer.lua \
+          --replace-fail \
+            'vim.wo[winid].wrap = false' \
+            '-- vim.wo[winid].wrap = false' \
+          --replace-fail \
+            'buffer:set_window_option("wrap", false)' \
+            '-- buffer:set_window_option("wrap", false)'
       '';
     });
 

@@ -14,10 +14,12 @@ in
     ./colorscheme.nix
     ./completion.nix
     ./flash.nix
+    ./gitcommit.nix
     ./gitmessenger.nix
     ./gitsigns.nix
     ./indent-guides.nix
     ./languages.nix
+    ./llm-commit-msg.nix
     ./mark-radar.nix
     ./neogit.nix
     ./noice.nix
