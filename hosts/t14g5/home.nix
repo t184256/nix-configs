@@ -49,6 +49,7 @@
   home.packages = with pkgs; [
     bash-completion
     nixgl.nixGLIntel
+    nixgl.nixVulkanIntel
     wl-clipboard
     git-absorb
     sccache
