@@ -42,7 +42,10 @@ let
     forceSSL = true;
     locations."/" = {
       proxyPass = address;
-      extraConfig = "auth_request /custom-auth;";
+      extraConfig = ''
+        auth_request /custom-auth;
+        proxy_read_timeout 240s;
+      '';
     };
     locations."/custom-auth" = {
       proxyPass = "http://unix:/run/custom-auth.sock:/";
