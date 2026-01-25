@@ -1,4 +1,4 @@
-{pkgs, ...}:
+{ pkgs, lib, config, utils, ... }:
 
 {
   services.llama-cpp = {
@@ -37,22 +37,26 @@
     openFirewall = true;
     host = "192.168.99.52";
     port = 11111;
-    model = "/var/lib/llama/model.gguf";
-    #model = "/var/lib/llama/draft-model.gguf";
+    model = "/-unused-";
     extraFlags = [
-      #"--model-draft" "/var/lib/llama/draft-model.gguf"
-      #"--ctx-size" "0"
-      "--ctx-size" "262144" "--parallel" "2"
-      "--ubatch-size" "2048" "--batch-size" "32768"
-      "--flash-attn" "on"
-      "--temp" "1.0" "--top-p" "1.0"
-      #"--top-k" "0.0"  # ggml-org/llama.cpp#15223
-      "--min-p" "0.01"
+      "--models-dir" "/var/lib/llama"
+      "--models-preset" "/var/lib/llama/config.ini"
+      "--models-max" "2"
+      "-ngl" "999"
+      "--no-mmap"
       "--jinja"
-      #"--chat-template-kwargs" "{\"reasoning_effort\": \"high\"}"
       "--offline"
     ];
   };
+  # omit `-m <model>`
+  systemd.services.llama-cpp.serviceConfig.ExecStart =
+    let cfg = config.services.llama-cpp; in lib.mkForce [
+        ""
+        ("${cfg.package}/bin/llama-server --log-disable " +
+         "--host ${cfg.host} --port ${builtins.toString cfg.port} " +
+         "${utils.escapeSystemdExecArgs cfg.extraFlags}")
+      ];
+
   environment.persistence."/mnt/persist".directories = [
     { directory = "/var/lib/llama"; }
   ];
