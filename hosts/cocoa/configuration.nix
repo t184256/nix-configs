@@ -91,13 +91,6 @@
 
   boot.initrd.systemd.enable = true;
 
-  virtualisation.libvirtd = {
-    enable = true;
-    #qemu.ovmf.packages = [ pkgs.OVMFFull.fd ];
-  };
-  networking.firewall.trustedInterfaces = [ "virbr0" ];  # #425874
-  users.users.monk.extraGroups = [ "libvirtd" ];
-  environment.persistence."/mnt/persist".directories = [
-    "/var/lib/libvirt"
-  ];
+  system.role.virtualizer.enable = true;
+  system.role.virtualizer.storageLocation = "storage";
 }

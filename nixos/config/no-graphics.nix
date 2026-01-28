@@ -16,7 +16,8 @@
           sdlSupport = false;
           jackSupport = false;
           gtkSupport = false;
-          minimal = true;
+          # stops building bridge helper. FIXME: stop expecting one
+          #minimal = true;
         };
       })];
     })
