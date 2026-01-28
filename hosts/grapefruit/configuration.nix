@@ -29,11 +29,12 @@
     ##sudo cat /sys/kernel/debug/dri/1/amdgpu_firmware_info | grep MES
 
     "amd_iommu=off"  # kills VFIO for speed
-    "amd.gttsize=110592"
-    "amdttm.pages_limit=27648000"
-    "amdttm.page_pool_size=27648000"
-    "ttm.pages_limit=27648000"
-    "ttm.page_pool_size=27648000"
+    # 128 GiB - 16 GiB = 112 GiB
+    "amd.gttsize=114688"  # MiB
+    "amdttm.pages_limit=29360128"  # 4k unit size
+    "amdttm.page_pool_size=29360128"
+    "ttm.pages_limit=29360128"
+    "ttm.page_pool_size=29360128"
   ];
   hardware.graphics.enable = true;
   hardware.wirelessRegulatoryDatabase = true;
