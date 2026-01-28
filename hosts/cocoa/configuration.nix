@@ -71,12 +71,12 @@
   home-manager.users.monk.home.sessionVariables.SSH_AUTH_SOCK =
     "/run/user/1000/gnupg/S.gpg-agent.ssh";
 
-  home-manager.users.monk.home.persistence."/mnt/storage/sync" = {
-    directories = [
-      { directory = "code"; method = "symlink"; }
-      { directory = "notes"; method = "symlink"; }
-    ];
-  };
+  #home-manager.users.monk.home.persistence."/mnt/storage/sync" = {
+  #  directories = [
+  #    { directory = "code"; method = "symlink"; }
+  #    { directory = "notes"; method = "symlink"; }
+  #  ];
+  #};
   environment.persistence."/mnt/persist" = {
     users.monk = {
       directories = [
