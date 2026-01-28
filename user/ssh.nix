@@ -39,7 +39,7 @@ _ :
         user = "sloppy";
         hostname = "qemu:system/slopfest";
         proxyCommand =
-          "ssh -T grapefruit '" +
+          "ssh -T cocoa '" +
           " cid=$(virsh -c qemu:///system dumpxml slopfest" +
           " | xmllint --xpath \"string(//cid/@address)\" -);" +
           " exec ncat --vsock $cid 22" +
