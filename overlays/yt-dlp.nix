@@ -2,7 +2,7 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "2025.12.08";
+  newerVer = "2026.01.29";
   overrides-fresh = _: {
     name = "yt-dlp-${newerVer}";
     version = newerVer;
@@ -10,13 +10,23 @@ let
       owner = "yt-dlp";
       repo = "yt-dlp";
       rev = newerVer;
-      hash = "sha256-y06MDP+CrlHGrell9hcLOGlHp/gU2OOxs7can4hbj+g=";
+      hash = "sha256-nw/L71aoAJSCbW1y8ir8obrFPSbVlBA0UtlrxL6YtCQ=";
     };
+    ### !!! remove
+    postPatch = ''
+      substituteInPlace yt_dlp/version.py \
+        --replace-fail "UPDATE_HINT = None" 'UPDATE_HINT = "Nixpkgs/NixOS likely already contain an updated version.\n       To get it run nix-channel --update or nix flake update in your config directory."'
+        # deno is required for full YouTube support (since 2025.11.12).
+        # This makes yt-dlp find deno even if it is used as a python dependency, i.e. in kodiPackages.sendtokodi.
+        # Crafted so people can replace deno with one of the other JS runtimes.
+        substituteInPlace yt_dlp/utils/_jsruntime.py \
+          --replace-fail "path = _determine_runtime_path(self._path, '${final.deno.meta.mainProgram}')" "path = '${prev.lib.getExe final.deno}'"
+    ### !!! remove
+  '';
   };
   overrides-plugins = oa: {
     propagatedBuildInputs = (oa.propagatedBuildInputs or []) ++ [
       bgutil-ytdlp-pot-provider
-      final.deno
     ];
   };
   overrides-fresh-plugins = oa: (overrides-fresh oa) // (overrides-plugins oa);
