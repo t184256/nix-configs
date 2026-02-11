@@ -1,6 +1,6 @@
 self: super:
-{
-  iosevka-t184256 = super.iosevka.override {
+let
+  iosevka-t184256-no-nerdfont = super.iosevka.override {
     set = "t184256";
     privateBuildPlan = {
       family = "Iosevka Term";
@@ -85,5 +85,23 @@ self: super:
       # see #347
       hintParams = ["-a" "sss"];
     };
+  };
+in
+{
+  iosevka-t184256 = super.stdenv.mkDerivation {
+    pname = "iosevka-t184256-nerdfont";
+    inherit (iosevka-t184256-no-nerdfont) version;
+    src = iosevka-t184256-no-nerdfont;
+    nativeBuildInputs = [ super.nerd-font-patcher super.parallel ];
+    buildPhase = ''
+      mkdir -p patched
+      find $src/share/fonts/truetype -name '*.ttf' | \
+        parallel nerd-font-patcher --complete --careful --makegroups -1 \
+          --outputdir patched {}
+    '';
+    installPhase = ''
+      mkdir -p $out/share/fonts/truetype
+      cp patched/*.ttf $out/share/fonts/truetype/
+    '';
   };
 }
