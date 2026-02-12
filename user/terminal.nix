@@ -42,7 +42,7 @@ in
 {
   nixpkgs.overlays = [ (import ../overlays/alacritty) ];
 
-  imports = [ ./config/no-graphics.nix ];
+  imports = [ ./config/no-graphics.nix ./wraplings.nix ];
 
   programs.alacritty = if config.system.noGraphics then {} else {
     enable = true;
