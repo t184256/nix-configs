@@ -14,7 +14,7 @@
         #endpoint = "<gl.inet jungle>";
         allowedIPs = [ "192.168.21.2/32" ];
         publicKey = "WVUFjmv6nEawCT8mjXBW0DRlyMJrYJxMox0zdADS7i4=";
-        persistentKeepalive = 5;
+        persistentKeepalive = 35;
       }
     ];
     privateKeyFile = "/mnt/persist/secrets/wireguard/junglenet-nl";
