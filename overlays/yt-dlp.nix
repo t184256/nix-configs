@@ -2,7 +2,7 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "2026.01.29";
+  newerVer = "2026.02.21";
   overrides-fresh = _: {
     name = "yt-dlp-${newerVer}";
     version = newerVer;
@@ -10,7 +10,7 @@ let
       owner = "yt-dlp";
       repo = "yt-dlp";
       rev = newerVer;
-      hash = "sha256-nw/L71aoAJSCbW1y8ir8obrFPSbVlBA0UtlrxL6YtCQ=";
+      hash = "sha256-r9I/zLyqGPeIzsHsLxJcfnLC3jpuyKMyX1UaMoM08jk=";
     };
     ### !!! remove
     postPatch = ''
@@ -21,8 +21,8 @@ let
         # Crafted so people can replace deno with one of the other JS runtimes.
         substituteInPlace yt_dlp/utils/_jsruntime.py \
           --replace-fail "path = _determine_runtime_path(self._path, '${final.deno.meta.mainProgram}')" "path = '${prev.lib.getExe final.deno}'"
+    '';
     ### !!! remove
-  '';
   };
   overrides-plugins = oa: {
     propagatedBuildInputs = (oa.propagatedBuildInputs or []) ++ [
