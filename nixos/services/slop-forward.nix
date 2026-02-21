@@ -44,7 +44,7 @@ let
       proxyPass = address;
       extraConfig = ''
         auth_request /custom-auth;
-        proxy_read_timeout 240s;
+        proxy_read_timeout 1800s;
       '';
     };
     locations."/custom-auth" = {
