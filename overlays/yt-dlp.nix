@@ -2,7 +2,7 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "2026.02.21";
+  newerVer = "2026.03.03";
   overrides-fresh = _: {
     name = "yt-dlp-${newerVer}";
     version = newerVer;
@@ -10,7 +10,7 @@ let
       owner = "yt-dlp";
       repo = "yt-dlp";
       rev = newerVer;
-      hash = "sha256-r9I/zLyqGPeIzsHsLxJcfnLC3jpuyKMyX1UaMoM08jk=";
+      hash = "sha256-BPZzMT1IrZvgva/m5tYMaDYoUaP3VmpmcYeOUOwuoUY=";
     };
     ### !!! remove
     postPatch = ''
@@ -37,13 +37,13 @@ let
   );
   bgutil-ytdlp-pot-provider = prev.python3Packages.buildPythonPackage rec {
     pname = "bgutil-ytdlp-pot-provider";
-    version = "1.2.2";
+    version = "1.3.0";
     pyproject = true;
     src = prev.fetchFromGitHub {
       owner = "Brainicism";
       repo = "bgutil-ytdlp-pot-provider";
       rev = version;
-      hash = "sha256-KKImGxFGjClM2wAk/L8nwauOkM/gEwRVMZhTP62ETqY=";
+      hash = "sha256-WPLNjfVYDbPsEMVhjuF3dVarahdIKT7pt518SePfB8A=";
     };
     postUnpack = "pwd; ls; cp source/README.md source/plugin/";
     sourceRoot = "source/plugin";
