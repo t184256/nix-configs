@@ -1,0 +1,52 @@
+From 1aa2eacdf69c7f8516f409ee17c2b721ca3686a0 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <asosedkin@redhat.com>
+Date: Thu, 5 Mar 2026 01:12:47 +0000
+Subject: [PATCH 4/5] fix off-by-one in render lnum calculations
+
+---
+ lua/blink-edit/core/render.lua | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/lua/blink-edit/core/render.lua b/lua/blink-edit/core/render.lua
+index c73439b..c48ff28 100644
+--- a/lua/blink-edit/core/render.lua
++++ b/lua/blink-edit/core/render.lua
+@@ -120,7 +120,7 @@ local function show_deletion(bufnr, hunk, window_start, extmark_list)
+   local line_count = vim.api.nvim_buf_line_count(bufnr)
+ 
+   for i = 1, hunk.count_old do
+-    local lnum = window_start + hunk.start_old + i - 2 -- 0-indexed
++    local lnum = window_start + hunk.start_old + i - 3 -- 0-indexed
+     if lnum >= 0 and lnum < line_count then
+       local mark_id = vim.api.nvim_buf_set_extmark(bufnr, ns, lnum, 0, {
+         virt_text = { { " [delete]", "BlinkEditDeletion" } },
+@@ -150,7 +150,7 @@ local function show_modification(bufnr, hunk, window_start, extmark_list)
+   end
+ 
+   for _, lc in ipairs(hunk.line_changes) do
+-    local lnum = window_start + hunk.start_old + lc.index - 2 -- 0-indexed
++    local lnum = window_start + hunk.start_old + lc.index - 3 -- 0-indexed
+     if lnum >= 0 and lnum < line_count then
+       local change = lc.change
+ 
+@@ -183,7 +183,7 @@ local function show_replacement(bufnr, hunk, window_start, extmark_list)
+ 
+   -- Mark old lines with [replace]
+   for i = 1, hunk.count_old do
+-    local lnum = window_start + hunk.start_old + i - 2 -- 0-indexed
++    local lnum = window_start + hunk.start_old + i - 3 -- 0-indexed
+     if lnum >= 0 and lnum < line_count then
+       local mark_id = vim.api.nvim_buf_set_extmark(bufnr, ns, lnum, 0, {
+         virt_text = { { " [replace]", "BlinkEditDeletion" } },
+@@ -196,7 +196,7 @@ local function show_replacement(bufnr, hunk, window_start, extmark_list)
+   -- Show new content as virt_lines after last old line
+   if hunk.count_new > 0 then
+     -- Anchor at the last line being replaced
+-    local anchor_line_0 = window_start + hunk.start_old + hunk.count_old - 2 -- 0-indexed
++    local anchor_line_0 = window_start + hunk.start_old + hunk.count_old - 3 -- 0-indexed
+     if anchor_line_0 < 0 then
+       anchor_line_0 = 0
+     end
+-- 
+2.53.0
+

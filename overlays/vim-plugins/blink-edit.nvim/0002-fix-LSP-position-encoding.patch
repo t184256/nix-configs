@@ -1,0 +1,26 @@
+From 1698b3a83f4f9ccfd31d2058d53246903c9bdc67 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <asosedkin@redhat.com>
+Date: Thu, 5 Mar 2026 00:12:43 +0000
+Subject: [PATCH 2/5] fix LSP position encoding
+
+---
+ lua/blink-edit/core/context_manager.lua | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/lua/blink-edit/core/context_manager.lua b/lua/blink-edit/core/context_manager.lua
+index fd56e6a..602eac2 100644
+--- a/lua/blink-edit/core/context_manager.lua
++++ b/lua/blink-edit/core/context_manager.lua
+@@ -363,7 +363,8 @@ function M.collect_lsp_locations(
+     return {}
+   end
+ 
+-  local params = vim.lsp.util.make_position_params()
++  local client = vim.lsp.get_clients({ bufnr = bufnr })[1]
++  local params = vim.lsp.util.make_position_params(0, client and client.offset_encoding or "utf-16")
+   if method == "textDocument/references" then
+     params.context = { includeDeclaration = false }
+   end
+-- 
+2.53.0
+

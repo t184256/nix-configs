@@ -1,0 +1,51 @@
+From 3a315424001002373164ebfbc3f2972809c39ad5 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <asosedkin@redhat.com>
+Date: Thu, 5 Mar 2026 00:13:04 +0000
+Subject: [PATCH 3/5] add BlinkEditAnchor underline on modified characters
+
+---
+ lua/blink-edit/config.lua      | 1 +
+ lua/blink-edit/core/render.lua | 2 +-
+ lua/blink-edit/init.lua        | 1 +
+ 3 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/lua/blink-edit/config.lua b/lua/blink-edit/config.lua
+index e56b234..14b46d9 100644
+--- a/lua/blink-edit/config.lua
++++ b/lua/blink-edit/config.lua
+@@ -248,6 +248,7 @@ local defaults = {
+     deletion = { bg = "#4f2f2f" }, -- Deleted text background
+     preview = { fg = "#80899c", italic = true }, -- Ghost text
+     jump = { fg = "#5c6370", bg = "#2d3343", bold = true }, -- Jump indicator (⇥ TAB)
++    anchor = { underline = true, sp = "#5c6370" }, -- Underline on characters being modified
+   },
+ 
+   ui = {
+diff --git a/lua/blink-edit/core/render.lua b/lua/blink-edit/core/render.lua
+index 3116f9c..c73439b 100644
+--- a/lua/blink-edit/core/render.lua
++++ b/lua/blink-edit/core/render.lua
+@@ -160,7 +160,7 @@ local function show_modification(bufnr, hunk, window_start, extmark_list)
+       local col = math.min(change.col, #current_line)
+ 
+       local mark_id = vim.api.nvim_buf_set_extmark(bufnr, ns, lnum, col, {
+-        virt_text = { { change.text, "BlinkEditPreview" } },
++        virt_text = { { change.text, { "BlinkEditPreview", "BlinkEditAnchor" } } },
+         virt_text_pos = "overlay",
+         hl_mode = "combine",
+       })
+diff --git a/lua/blink-edit/init.lua b/lua/blink-edit/init.lua
+index df8b72e..1767c20 100644
+--- a/lua/blink-edit/init.lua
++++ b/lua/blink-edit/init.lua
+@@ -90,6 +90,7 @@ function M._setup_highlights()
+   vim.api.nvim_set_hl(0, "BlinkEditDeletion", cfg.highlight.deletion)
+   vim.api.nvim_set_hl(0, "BlinkEditPreview", cfg.highlight.preview)
+   vim.api.nvim_set_hl(0, "BlinkEditJump", cfg.highlight.jump)
++  vim.api.nvim_set_hl(0, "BlinkEditAnchor", cfg.highlight.anchor)
+ end
+ 
+ --- Check if any completion plugin menu is visible
+-- 
+2.53.0
+

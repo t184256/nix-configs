@@ -83,5 +83,33 @@ rec {
         sha256 = "sha256-xh/2m//Cno5gPucjOYih79wVZj3X1Di/U3/IQhKXjc0=";
       };
     };
+
+    blink-edit-nvim = import ./blink-edit.nvim super.pkgs;
+
+    cursortab-nvim =
+      let
+        src = super.fetchFromGitHub {
+          owner = "leonardcser";
+          repo = "cursortab.nvim";
+          rev = "6d46a79153b4b654fe034d3aa0d16b821d2f5f75";
+          hash = "sha256-YBRFbgleh/PLj5QdlZtLd13K9msBzSgiWFoqlAdPFw4=";
+        };
+        server = super.pkgs.buildGoModule {
+          pname = "cursortab-server";
+          version = "0.6.4-beta";
+          inherit src;
+          sourceRoot = "source/server";
+          vendorHash = "sha256-IvJw+89eZ5Ghppjt0KT9IRL8XPyU6XbiAYL3axQO6u4=";
+        };
+      in
+      super.pkgs.vimUtils.buildVimPlugin {
+        pname = "cursortab-nvim";
+        version = "0.6.4-beta";
+        inherit src;
+        postInstall = ''
+          mkdir -p $out/server
+          cp ${server}/bin/cursortab $out/server/cursortab
+        '';
+      };
   });
 }

@@ -1,0 +1,338 @@
+From a4df18fe8f47f83d0d3f3747e0e126e7b017e396 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <asosedkin@redhat.com>
+Date: Thu, 5 Mar 2026 01:12:52 +0000
+Subject: [PATCH 5/5] =?UTF-8?q?three-stage=20accept:=20marker=20=E2=86=92?=
+ =?UTF-8?q?=20jump=20=E2=86=92=20preview=20=E2=86=92=20apply?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ lua/blink-edit/config.lua      |  3 +-
+ lua/blink-edit/core/engine.lua | 46 +++++++++++++++++++++
+ lua/blink-edit/core/render.lua | 75 ++++++++++++++++++++++++++++++----
+ lua/blink-edit/core/state.lua  |  1 +
+ lua/blink-edit/init.lua        | 27 ++++++------
+ 5 files changed, 131 insertions(+), 21 deletions(-)
+
+diff --git a/lua/blink-edit/config.lua b/lua/blink-edit/config.lua
+index 14b46d9..9b4444c 100644
+--- a/lua/blink-edit/config.lua
++++ b/lua/blink-edit/config.lua
+@@ -247,7 +247,8 @@ local defaults = {
+     addition = { bg = "#394f2f" }, -- Added text background
+     deletion = { bg = "#4f2f2f" }, -- Deleted text background
+     preview = { fg = "#80899c", italic = true }, -- Ghost text
+-    jump = { fg = "#5c6370", bg = "#2d3343", bold = true }, -- Jump indicator (⇥ TAB)
++    jump = { fg = "#5c6370", bg = "#2d3343", bold = true }, -- Jump indicator (marker stage)
++    jump_active = { fg = "#7ca3cc", bg = "#2d3343", bold = true }, -- Jump indicator (preview stage)
+     anchor = { underline = true, sp = "#5c6370" }, -- Underline on characters being modified
+   },
+ 
+diff --git a/lua/blink-edit/core/engine.lua b/lua/blink-edit/core/engine.lua
+index 86eccc4..f79b31d 100644
+--- a/lua/blink-edit/core/engine.lua
++++ b/lua/blink-edit/core/engine.lua
+@@ -822,6 +822,7 @@ local function on_prefetch_response(bufnr, err, result, metadata, snapshot, prov
+     created_at = uv.now(),
+     cursor_after = cursor_after,
+     cursor = snapshot.cursor,
++    stage = "marker",
+   }
+ 
+   state.set_prefetch(bufnr, prefetch)
+@@ -1056,6 +1057,7 @@ function on_response(bufnr, err, result, metadata, snapshot, provider)
+     cursor_after = cursor_after,
+     cursor = snapshot.cursor, -- Cursor position when prediction was made
+     allow_fallback = allow_fallback,
++    stage = "marker",
+   }
+   if allow_fallback then
+     state.clear_invalid_response(bufnr)
+@@ -1141,6 +1143,12 @@ function M.trigger(bufnr)
+   -- Cancel existing debounce timer
+   cancel_debounce(bufnr)
+ 
++  -- Don't query while a prediction is being previewed/applied
++  local existing = state.get_prediction(bufnr)
++  if existing and existing.stage ~= "marker" then
++    return
++  end
++
+   -- Check if buffer is valid
+   if not vim.api.nvim_buf_is_valid(bufnr) then
+     return
+@@ -1249,6 +1257,12 @@ function M.trigger_now(bufnr)
+   -- Cancel any existing debounce
+   cancel_debounce(bufnr)
+ 
++  -- Don't query while a prediction is being previewed/applied
++  local existing = state.get_prediction(bufnr)
++  if existing and existing.stage ~= "marker" then
++    return
++  end
++
+   -- Check if buffer is valid
+   if not vim.api.nvim_buf_is_valid(bufnr) then
+     return
+@@ -1271,6 +1285,12 @@ function M.trigger_force(bufnr)
+ 
+   cancel_prefetch(bufnr)
+ 
++  -- Don't query while a prediction is being previewed/applied
++  local existing = state.get_prediction(bufnr)
++  if existing and existing.stage ~= "marker" then
++    return
++  end
++
+   -- Check if buffer is valid
+   if not vim.api.nvim_buf_is_valid(bufnr) then
+     return
+@@ -1330,6 +1350,25 @@ function M.accept(bufnr)
+     return false
+   end
+ 
++  -- Stage 1 (marker): jump cursor to first hunk, advance to preview
++  if prediction.stage == "marker" then
++    local line_1, col_0 = render.get_first_hunk_pos(bufnr, prediction)
++    prediction.stage = "preview"
++    if line_1 then
++      -- Suppress both insert and normal mode cursor-move handlers so the
++      -- programmatic cursor move doesn't clear the prediction
++      state.set_suppress_trigger(bufnr, true)
++      state.set_suppress_normal_move(bufnr, true)
++      vim.api.nvim_win_set_cursor(0, { line_1, col_0 })
++    end
++    -- Reassert after cursor-move autocmds have fired
++    vim.schedule(function()
++      state.set_prediction(bufnr, prediction)
++      render.show(bufnr, prediction)
++    end)
++    return true
++  end
++
+   if prediction.accept_queue and #prediction.accept_queue > 0 then
+     local queue = prediction.accept_queue
+     local delta = prediction.accept_queue_delta or 0
+@@ -1413,6 +1452,7 @@ function M.accept(bufnr)
+         and prefetch.snapshot.window_end == prediction.window_end
+         and utils.lines_equal(prefetch.snapshot.lines, prediction.snapshot_lines)
+       if snapshot_match then
++        prefetch.prediction.stage = "marker"
+         state.set_prediction(bufnr, prefetch.prediction)
+         state.clear_prefetch(bufnr)
+         render.show(bufnr, prefetch.prediction)
+@@ -1585,6 +1625,8 @@ function M.accept(bufnr)
+     if vim.g.blink_edit_debug then
+       log.debug("Accept: remaining hunks, re-rendering")
+     end
++    prediction.stage = "marker"
++    state.set_prediction(bufnr, prediction)
+     render.show(bufnr, prediction)
+   else
+     if vim.g.blink_edit_debug then
+@@ -1601,6 +1643,7 @@ function M.accept(bufnr)
+         and prefetch.snapshot.window_end == prediction.window_end
+         and utils.lines_equal(prefetch.snapshot.lines, prediction.snapshot_lines)
+       if snapshot_match then
++        prefetch.prediction.stage = "marker"
+         state.set_prediction(bufnr, prefetch.prediction)
+         state.clear_prefetch(bufnr)
+         render.show(bufnr, prefetch.prediction)
+@@ -1630,6 +1673,9 @@ function M.accept_line(bufnr)
+   if not prediction then
+     return false
+   end
++  if prediction.stage == "marker" then
++    return M.accept(bufnr)
++  end
+   local function finalize_prediction()
+     if vim.g.blink_edit_debug then
+       log.debug("Accept line: last line applied")
+diff --git a/lua/blink-edit/core/render.lua b/lua/blink-edit/core/render.lua
+index c48ff28..401b42e 100644
+--- a/lua/blink-edit/core/render.lua
++++ b/lua/blink-edit/core/render.lua
+@@ -252,12 +252,13 @@ local function get_jump_anchor_line(bufnr, hunk, window_start)
+   return anchor_line_0
+ end
+ 
+---- Show a jump indicator for the next hunk (rendered as a virtual line below the target)
++--- Show a jump indicator as eol virtual text on the hunk anchor line
+ ---@param bufnr number
+ ---@param hunk DiffHunk
+ ---@param window_start number
+ ---@param extmark_list number[]
+-local function show_jump_indicator(bufnr, hunk, window_start, extmark_list)
++---@param hl_group string|nil highlight group (default "BlinkEditJump")
++local function show_jump_indicator(bufnr, hunk, window_start, extmark_list, hl_group)
+   local anchor_line_0 = get_jump_anchor_line(bufnr, hunk, window_start)
+   if anchor_line_0 == nil then
+     return
+@@ -265,10 +266,9 @@ local function show_jump_indicator(bufnr, hunk, window_start, extmark_list)
+ 
+   local jump_text = get_jump_text()
+ 
+-  -- Render as a virtual line below the target hunk
+   local mark_id = vim.api.nvim_buf_set_extmark(bufnr, ns, anchor_line_0, 0, {
+-    virt_lines = { { { jump_text, "BlinkEditJump" } } },
+-    virt_lines_above = false, -- Show below the anchor line
++    virt_text = { { jump_text, hl_group or "BlinkEditJump" } },
++    virt_text_pos = "eol",
+   })
+   table.insert(extmark_list, mark_id)
+ end
+@@ -300,6 +300,40 @@ function M.has_visible(bufnr)
+   return marks ~= nil and #marks > 0
+ end
+ 
++--- Return the position (1-indexed line, 0-indexed col) of the first eligible hunk, for cursor jumping
++---@param bufnr number
++---@param prediction BlinkEditPrediction
++---@return number|nil, number  -- line_1, col_0
++function M.get_first_hunk_pos(bufnr, prediction)
++  local snapshot = prediction.snapshot_lines
++  local predicted = prediction.predicted_lines
++  local window_start = prediction.window_start or 1
++  if not snapshot or not predicted then return nil, 0 end
++  local diff_result = diff.compute(snapshot, predicted)
++  if not diff_result.has_changes or #diff_result.hunks == 0 then return nil, 0 end
++  local cursor_offset = 1
++  if prediction.cursor then
++    cursor_offset = prediction.cursor[1] - window_start + 1
++    cursor_offset = math.max(1, cursor_offset)
++  end
++  local first_hunk = nil
++  for _, hunk in ipairs(diff_result.hunks) do
++    local anchor = hunk.start_old
++    if hunk.type == "insertion" then anchor = hunk.start_old + 1 end
++    if anchor >= cursor_offset then first_hunk = hunk; break end
++  end
++  if not first_hunk and prediction.allow_fallback then first_hunk = diff_result.hunks[1] end
++  if not first_hunk then return nil, 0 end
++  local line_1 = window_start + first_hunk.start_old - 1
++  local line_count = vim.api.nvim_buf_line_count(bufnr)
++  line_1 = math.max(1, math.min(line_1, line_count))
++  local col_0 = 0
++  if first_hunk.type == "modification" and first_hunk.line_changes and first_hunk.line_changes[1] then
++    col_0 = first_hunk.line_changes[1].change.col or 0
++  end
++  return line_1, col_0
++end
++
+ --- Show prediction as ghost text
+ --- Uses vim.diff() to properly identify insertions, deletions, and modifications
+ --- Only shows changes at or below cursor position (next-edit semantics)
+@@ -323,6 +357,33 @@ function M.show(bufnr, prediction)
+     return
+   end
+ 
++  -- Marker stage: only show the jump indicator, no full preview
++  if prediction.stage == "marker" then
++    extmarks[bufnr] = extmarks[bufnr] or {}
++    local cursor_offset = 1
++    if cursor then
++      cursor_offset = cursor[1] - window_start + 1
++      cursor_offset = math.max(1, cursor_offset)
++    end
++    local dr = diff.compute(snapshot, predicted)
++    if dr.has_changes and #dr.hunks > 0 then
++      local first_hunk = nil
++      for _, hunk in ipairs(dr.hunks) do
++        local anchor = hunk.start_old
++        if hunk.type == "insertion" then anchor = hunk.start_old + 1 end
++        if anchor >= cursor_offset then first_hunk = hunk; break end
++      end
++      if not first_hunk and prediction.allow_fallback then first_hunk = dr.hunks[1] end
++      if first_hunk then
++        show_jump_indicator(bufnr, first_hunk, window_start, extmarks[bufnr])
++      end
++    end
++    if visibility.on_show and extmarks[bufnr] and #extmarks[bufnr] > 0 then
++      visibility.on_show(bufnr)
++    end
++    return
++  end
++
+   if prediction.accept_queue and #prediction.accept_queue > 0 then
+     local delta = prediction.accept_queue_delta or 0
+     local shown_count = 0
+@@ -416,7 +477,7 @@ function M.show(bufnr, prediction)
+     end
+ 
+     if first_hunk then
+-      show_jump_indicator(bufnr, first_hunk, window_start, extmarks[bufnr])
++      show_jump_indicator(bufnr, first_hunk, window_start, extmarks[bufnr], "BlinkEditJumpActive")
+     end
+ 
+     if visibility.on_show and extmarks[bufnr] and #extmarks[bufnr] > 0 then
+@@ -513,7 +574,7 @@ function M.show(bufnr, prediction)
+   end
+ 
+   if first_hunk then
+-    show_jump_indicator(bufnr, first_hunk, window_start, extmarks[bufnr])
++    show_jump_indicator(bufnr, first_hunk, window_start, extmarks[bufnr], "BlinkEditJumpActive")
+   end
+ 
+   if visibility.on_show and extmarks[bufnr] and #extmarks[bufnr] > 0 then
+diff --git a/lua/blink-edit/core/state.lua b/lua/blink-edit/core/state.lua
+index a08472b..7ed9b29 100644
+--- a/lua/blink-edit/core/state.lua
++++ b/lua/blink-edit/core/state.lua
+@@ -34,6 +34,7 @@ local log = require("blink-edit.log")
+ ---@field allow_fallback boolean|nil
+ ---@field accept_queue { kind: string, anchor_line: number, text: string|nil }[]|nil
+ ---@field accept_queue_delta number|nil
++---@field stage "marker"|"preview"|nil
+ 
+ ---@class BlinkEditPrefetch
+ ---@field request_id number|nil
+diff --git a/lua/blink-edit/init.lua b/lua/blink-edit/init.lua
+index 1767c20..28e2005 100644
+--- a/lua/blink-edit/init.lua
++++ b/lua/blink-edit/init.lua
+@@ -90,6 +90,7 @@ function M._setup_highlights()
+   vim.api.nvim_set_hl(0, "BlinkEditDeletion", cfg.highlight.deletion)
+   vim.api.nvim_set_hl(0, "BlinkEditPreview", cfg.highlight.preview)
+   vim.api.nvim_set_hl(0, "BlinkEditJump", cfg.highlight.jump)
++  vim.api.nvim_set_hl(0, "BlinkEditJumpActive", cfg.highlight.jump_active)
+   vim.api.nvim_set_hl(0, "BlinkEditAnchor", cfg.highlight.anchor)
+ end
+ 
+@@ -190,20 +191,20 @@ function M._setup_keymaps()
+   -- Normal Mode Keymaps (only when normal_mode.enabled)
+   -- ==========================================================================
+ 
+-  if normal_mode_enabled then
+-    -- Accept prediction in normal mode
+-    if normal_km.accept then
+-      vim.keymap.set("n", normal_km.accept, function()
+-        if M.has_prediction() then
+-          vim.schedule(function()
+-            M.accept()
+-          end)
+-          return ""
+-        end
+-        return normal_km.accept
+-      end, { expr = true, noremap = true, desc = "Accept blink-edit prediction (normal)" })
+-    end
++  -- Accept prediction in normal mode (always; passes through when no prediction)
++  if normal_km.accept then
++    vim.keymap.set("n", normal_km.accept, function()
++      if M.has_prediction() then
++        vim.schedule(function()
++          M.accept()
++        end)
++        return ""
++      end
++      return normal_km.accept
++    end, { expr = true, noremap = true, desc = "Accept blink-edit prediction (normal)" })
++  end
+ 
++  if normal_mode_enabled then
+     -- Accept first line of hunk in normal mode
+     if normal_km.accept_line then
+       vim.keymap.set("n", normal_km.accept_line, function()
+-- 
+2.53.0
+

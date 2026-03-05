@@ -4,11 +4,12 @@ let
   withLang = lang: builtins.elem lang config.language-support;
 in
 {
-  nixpkgs.overlays = [ (import ../../overlays/vim-plugins.nix) ];
+  nixpkgs.overlays = [ (import ../../overlays/vim-plugins) ];
 
   imports = [
     ../config/language-support.nix
     ../config/neovim.nix
+    ./blink-edit.nix
     ./classic-plugins.nix
     ./colorcolumn.nix
     ./colorscheme.nix
@@ -27,7 +28,6 @@ in
     ./oil.nix
     ./selection.nix
     ./smart-langmap.nix
-    ./tabby.nix
     ./title.nix
     ./treesitter.nix
     ./vimagit.nix
