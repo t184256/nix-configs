@@ -3,6 +3,7 @@
 {
   boot.initrd.kernelModules = [ "efi_pstore" "efivarfs" "tpm_crb" "tpm_tis" ];
   environment.systemPackages = with pkgs; [ sbctl ];
+  security.tpm2.enable = true;
 
   boot.initrd.systemd = {
     enable = true;
