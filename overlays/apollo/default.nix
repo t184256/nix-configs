@@ -1,7 +1,7 @@
 self: super:
 
 {
-  apollo = (super.sunshine.override { boost = super.boost188; })
+  apollo = super.sunshine
     .overrideAttrs ( oa: rec {
       pname = "apollo";
       version = "0.4.6";
@@ -12,6 +12,7 @@ self: super:
         hash = "sha256-bjQdGo7JttWnrp7Z7BeU20A7y4YqIURtIzC146mr7go=";
         fetchSubmodules = true;
       };
+      postPatch = builtins.replaceStrings ["1.87.0"] ["1.88.0"] oa.postPatch;
       ui = super.sunshine.ui.overrideAttrs ( _: rec {
         pname = "apollo-ui";
         inherit src version;
