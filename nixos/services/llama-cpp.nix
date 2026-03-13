@@ -48,14 +48,18 @@
       "--offline"
     ];
   };
-  # omit `-m <model>`
-  systemd.services.llama-cpp.serviceConfig.ExecStart =
-    let cfg = config.services.llama-cpp; in lib.mkForce [
-        ""
-        ("${cfg.package}/bin/llama-server --log-disable " +
-         "--host ${cfg.host} --port ${builtins.toString cfg.port} " +
-         "${utils.escapeSystemdExecArgs cfg.extraFlags}")
-      ];
+  systemd.services.llama-cpp.serviceConfig = {
+    # persist shader cache
+    Environment = [ "XDG_CACHE_HOME=/var/lib/llama/.cache" ];
+    # omit `-m <model>`
+    ExecStart =
+      let cfg = config.services.llama-cpp; in lib.mkForce [
+          ""
+          ("${cfg.package}/bin/llama-server --log-disable " +
+           "--host ${cfg.host} --port ${builtins.toString cfg.port} " +
+           "${utils.escapeSystemdExecArgs cfg.extraFlags}")
+        ];
+  };
 
   environment.persistence."/mnt/persist".directories = [
     { directory = "/var/lib/llama"; }

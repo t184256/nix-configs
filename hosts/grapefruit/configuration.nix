@@ -134,9 +134,7 @@
     };
   };
 
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=no
-  '';
+  systemd.sleep.settings.Sleep.AllowSuspend = false;
 
   system.role.virtualizer.enable = true;
   system.role.virtualizer.storageLocation = "storage";

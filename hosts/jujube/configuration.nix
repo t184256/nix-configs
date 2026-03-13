@@ -115,7 +115,6 @@
     environment.SYSTEMD_SLEEP_FREEZE_USER_SESSIONS = "false";
   };
 
-  programs.adb.enable = true;
   users.extraGroups.plugdev.members = [ "monk" ];
   networking.firewall.allowedTCPPorts = [ 3389 47984 47989 48010  ];
   networking.firewall.allowedUDPPorts = [ 47998 47999 48000 48002 ];
@@ -151,5 +150,5 @@
   ###
 
   nixpkgs.config.allowUnfree = true;
-  environment.systemPackages = [ pkgs.android-studio ];
+  environment.systemPackages = [ pkgs.android-tools pkgs.android-studio ];
 }

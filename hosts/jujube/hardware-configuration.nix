@@ -33,6 +33,7 @@
     device = "/dev/disk/by-label/JUJUBE";
     fsType = "btrfs";
     options = [ "subvol=home" ];
+    neededForBoot = true;
   };
 
   boot.initrd.luks.devices."JUJUBE".device = "/dev/disk/by-partlabel/JUJUBE";

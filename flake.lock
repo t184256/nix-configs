@@ -520,15 +520,16 @@
     },
     "nixos-hardware": {
       "locked": {
-        "lastModified": 1771969195,
-        "narHash": "sha256-qwcDBtrRvJbrrnv1lf/pREQi8t2hWZxVAyeMo7/E9sw=",
-        "owner": "NixOS",
+        "lastModified": 1773358396,
+        "narHash": "sha256-44+AtJap8Q1EDLNN6EyZuWsNVYUpWCVS/RLLVsHVWKE=",
+        "owner": "t184256",
         "repo": "nixos-hardware",
-        "rev": "41c6b421bdc301b2624486e11905c9af7b8ec68e",
+        "rev": "325752f90964c6d8baa74bd122377166d439043d",
         "type": "github"
       },
       "original": {
-        "owner": "NixOS",
+        "owner": "t184256",
+        "ref": "onenetbook4-newer-kernels",
         "repo": "nixos-hardware",
         "type": "github"
       }
@@ -598,11 +599,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1772400599,
-        "narHash": "sha256-nKaB9HLCAoQg+ViQoL0MGcjA3ndJpP2yE+CBQeAwf0A=",
+        "lastModified": 1773357155,
+        "narHash": "sha256-iYxQJqZTMFPeN7RyEbW7tOH7Lag5H69cWKPqYbUywQQ=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "84c918bf3668bbdb80511e13b0b740e9af122af9",
+        "rev": "98d6950e15f36939b41fb9091dd597b5054ac101",
         "type": "github"
       },
       "original": {

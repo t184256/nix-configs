@@ -79,6 +79,7 @@ in {
         {
           libvirtd = x;
           libvirtd-config = x;
+          virt-secret-init-encryption = x;
         };
     })
 
