@@ -10,6 +10,10 @@
 
   programs.gpg.enable = true;
   programs.gpg.publicKeys = [ { source = ../misc/pubkeys/pgp; trust = 5; } ];
+  programs.gpg.scdaemonSettings = {
+      disable-ccid = true;
+      pcsc-shared = true;
+  };
 
   services.gpg-agent = {
     enable = true;
@@ -19,16 +23,15 @@
       if config.system.noGraphics
       then pkgs.pinentry-tty
       else pkgs.pinentry-gnome3;
+    noAllowExternalCache = true;
   };
 
   # hacky hack: https://releases.nixos.org/nix-dev/2016-June/020831.html
   xdg.configFile = if config.system.noGraphics then {} else {
-    "autostart/gnome-keyring-ssh.desktop".text = ''
+    "autostart/gcr-ssh-agent.desktop".text = ''
       [Desktop Entry]
       Type=Application
       Name=SSH Agent
-      Comment=GNOME Keyring: SSH Agent
-      Exec=/usr/bin/env true
       Hidden=true
     '';
   };
