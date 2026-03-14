@@ -32,7 +32,7 @@
     [DHCPv6]
     UseDNS=false
   '';
-  services.resolved.fallbackDns = [ "2a00:1098:2c::1" ];
+  services.resolved.settings.Resolve.FallbackDNS = [ "2a00:1098:2c::1" ];
 
   zramSwap = { enable = true; memoryPercent = 50; };
 

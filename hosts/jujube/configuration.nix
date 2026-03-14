@@ -23,10 +23,8 @@
   hardware.wirelessRegulatoryDatabase = true;
 
   services.logind.settings.Login.HandleLidSwitch = "suspend-then-hibernate";
-  systemd.sleep.extraConfig = ''
-    HibernateDelaySec=45m
-    HibernateOnACPower=true
-  '';
+  systemd.sleep.settings.Sleep.HibernateDelaySec = "45m";
+  systemd.sleep.settings.Sleep.HibernateOnACPower = true;
 
   zramSwap = { enable = true; memoryPercent = 50; };
 
