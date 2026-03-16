@@ -10,7 +10,7 @@ pkgs: pkgs.vimUtils.buildVimPlugin {
   patches = [
     ./0001-add-API-key-auth-support.patch
     ./0002-fix-LSP-position-encoding.patch
-    ./0003-add-BlinkEditAnchor-underline-on-modified-characters.patch
+    #./0003-add-BlinkEditAnchor-underline-on-modified-characters.patch
     #./0004-fix-off-by-one-in-render-lnum-calculations.patch
     #./0005-three-stage-accept-marker-jump-preview-apply.patch
   ];

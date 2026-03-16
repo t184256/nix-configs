@@ -86,6 +86,13 @@ rec {
 
     blink-edit-nvim = import ./blink-edit.nvim super.pkgs;
 
+    actions-preview-nvim = prev.actions-preview-nvim.overrideAttrs (oa: {
+      patches = (oa.patches or []) ++ [
+        ./actions-preview.nvim/0001-suppress-preview-not-available-message.patch
+        ./actions-preview.nvim/0002-omit-diff-filename-headers.patch
+      ];
+    });
+
     cursortab-nvim =
       let
         src = super.fetchFromGitHub {

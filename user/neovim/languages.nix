@@ -270,6 +270,18 @@ in
           algorithm = "patience",
         },
         backend = { "telescope" },
+        telescope = {
+          sorting_strategy = "ascending",
+          layout_strategy = "vertical",
+          layout_config = {
+            vertical = {
+              height = 0.999,
+              preview_height = math.max(5, vim.o.lines - 8),
+              preview_cutoff = 0,
+            },
+          },
+          border = false,
+        },
       }
       _direnv_allowed_cache = nil
       if_direnv_allowed = function(callback)

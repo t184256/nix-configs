@@ -1,0 +1,28 @@
+diff --git a/lua/actions-preview/action.lua b/lua/actions-preview/action.lua
+index 8b5d47f..cc464b7 100644
+--- a/lua/actions-preview/action.lua
++++ b/lua/actions-preview/action.lua
+@@ -25,23 +25,17 @@ function Changes:diff(opts)
+       table.insert(lines, string.format("rename to %s", change.new_path))
+       table.insert(lines, "")
+     elseif change.kind == "create" then
+-      table.insert(lines, string.format("diff %s a/%s b/%s", opts.pseudo_args, change.path, change.path))
+       -- delta needs file mode
+       table.insert(lines, "new file mode 100644")
+       -- diff-so-fancy needs index
+       table.insert(lines, "index 0000000..fffffff")
+       table.insert(lines, "")
+     elseif change.kind == "delete" then
+-      table.insert(lines, string.format("diff %s a/%s b/%s", opts.pseudo_args, change.path, change.path))
+-      table.insert(lines, string.format("--- a/%s", change.path))
+       table.insert(lines, "+++ /dev/null")
+       table.insert(lines, "")
+     elseif change.kind == "edit" then
+       local text = vim.diff(table.concat(change.old, "\n") .. "\n", table.concat(change.new, "\n") .. "\n", config.diff)
+ 
+-      table.insert(lines, string.format("diff %s a/%s b/%s", opts.pseudo_args, change.path, change.path))
+-      table.insert(lines, string.format("--- a/%s", change.path))
+-      table.insert(lines, string.format("+++ b/%s", change.path))
+       for line in vim.gsplit(vim.trim(text), "\n", true) do
+         table.insert(lines, line)
+       end

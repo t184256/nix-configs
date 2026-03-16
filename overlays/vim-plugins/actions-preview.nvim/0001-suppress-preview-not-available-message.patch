@@ -1,0 +1,25 @@
+From 4278eeba5b02cb7c2781e8e05334c2ce50cb352d Mon Sep 17 00:00:00 2001
+From: patch <patch@local>
+Date: Sun, 15 Mar 2026 22:39:35 +0000
+Subject: [PATCH] suppress preview not available message
+
+---
+ lua/actions-preview/backend/telescope.lua | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lua/actions-preview/backend/telescope.lua b/lua/actions-preview/backend/telescope.lua
+index 5fd8bed..58f9bf0 100644
+--- a/lua/actions-preview/backend/telescope.lua
++++ b/lua/actions-preview/backend/telescope.lua
+@@ -149,7 +149,7 @@ function M.select(config, acts)
+                   term_ids[bufnr] = vim.fn.termopen(preview.cmdline)
+                 end)
+               else
+-                preview = preview or { syntax = "", lines = { "preview not available" } }
++                preview = preview or { syntax = "", lines = {} }
+ 
+                 vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, preview.lines)
+                 putils.highlighter(bufnr, preview.syntax, opts)
+-- 
+2.53.0
+
