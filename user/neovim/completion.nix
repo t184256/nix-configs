@@ -13,7 +13,6 @@
         settings = {
           completion.autocomplete = false;
           sources = [
-            { groupIndex = 0; name = "blink_edit"; }
             { groupIndex = 1; name = "path"; }
             { groupIndex = 1; name = "nvim_lsp"; }
             { groupIndex = 2; name = "luasnip"; }
@@ -21,8 +20,6 @@
           ];
           snippet.expand =
             "function(args) require('luasnip').lsp_expand(args.body) end";
-          formatting.format =
-            "function(entry, vim_item) if entry.source.name == \"blink_edit\" then vim_item.kind = \"AI\" end return vim_item end";
           mapping = {
             "<C-c>" = "cmp.mapping.abort()";
             "<CR>" = "cmp.mapping(function(fallback) if cmp.visible() and cmp.get_selected_entry() then cmp.confirm({ select = false }) else fallback() end end)";
@@ -35,11 +32,9 @@
                 local double_tap = (now - _blink_edit_last_tab_ms) < 300
                 _blink_edit_last_tab_ms = now
                 if blink_edit and blink_edit.has_prediction() and not cmp.visible() and double_tap then
-                  blink_edit.accept_line()
+                  if _blink_edit_apply_suggestion then _blink_edit_apply_suggestion() else blink_edit.accept_line() end
                 elseif cmp.visible() then
                   cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-                elseif blink_edit and blink_edit.has_prediction() then
-                  cmp.complete()
                 elseif check_backspace() then
                   fallback()
                 elseif luasnip.expandable() then
@@ -77,7 +72,9 @@
           local be = package.loaded["blink-edit"] and require("blink-edit")
           local at_end = vim.fn.col(".") > #vim.api.nvim_get_current_line()
           if be and be.has_prediction() and at_end then
-            vim.schedule(function() be.accept_line() end)
+            vim.schedule(function()
+              if _blink_edit_apply_suggestion then _blink_edit_apply_suggestion() else be.accept_line() end
+            end)
             return ""
           end
           return "<Right>"
