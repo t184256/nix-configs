@@ -40,25 +40,17 @@ local ul_ns = api.nvim_create_namespace("blink-edit-underline")
 -- String helpers
 -- ===========================================================
 
--- Shared prefix and suffix lengths between two strings,
--- with suffix clamped so it doesn't overlap the prefix.
--- Returns plen, slen (both in bytes).
-local function diff_bounds(a, b)
-  local n = math.min(#a, #b)
-  local plen = 0
-  for i = 1, n do
-    if a:sub(i, i) ~= b:sub(i, i) then break end
-    plen = i
-  end
-  local slen = 0
-  for i = 0, n - plen - 1 do
+-- Number of trailing characters shared by two strings,
+-- not overlapping with the first plen prefix characters.
+local function common_suffix(a, b, plen)
+  local n = math.min(#a, #b) - plen
+  for i = 0, n - 1 do
     if a:sub(#a - i, #a - i)
        ~= b:sub(#b - i, #b - i) then
-      break
+      return i
     end
-    slen = i + 1
   end
-  return plen, slen
+  return n
 end
 
 -- Replace leading whitespace with visible characters so
@@ -111,62 +103,70 @@ end
 -- Modification hunks: equal old/new line counts (1:1).
 -- Split at unchanged-line gaps so Tab cycles each change.
 --
+-- hunk.line_changes (from diff module) already lists only
+-- the changed lines with their indices and divergence col.
+-- We group consecutive indices into separate Suggestions,
+-- then refine with common_suffix for tighter strike.
+--
 -- Example: 5-line mod, lines 1,4 changed, 2,3,5 same
 --   → two Suggestions (line 1 and line 4).
 local function decompose_modification_hunk(ws, hunk)
-  -- Walk lines in lockstep; consecutive changed lines
-  -- form a group; unchanged lines break groups.
-  local groups = {}
-  local cur = {}
-  for i = 1, hunk.count_old do
-    if hunk.old_lines[i] == hunk.new_lines[i] then
-      -- Unchanged — flush current group
-      if #cur > 0 then
-        table.insert(groups, cur)
-        cur = {}
-      end
+  local lcs = hunk.line_changes or {}
+  if #lcs == 0 then return {} end
+
+  -- Group consecutive indices. A gap means a new group.
+  local groups = { { lcs[1] } }
+  for i = 2, #lcs do
+    if lcs[i].index == lcs[i - 1].index + 1 then
+      table.insert(groups[#groups], lcs[i])
     else
-      table.insert(cur, {
-        index = i,
-        old = hunk.old_lines[i],
-        new = hunk.new_lines[i],
-      })
+      table.insert(groups, { lcs[i] })
     end
   end
-  if #cur > 0 then table.insert(groups, cur) end
 
-  -- Each group → one Suggestion with modification changes.
   local suggestions = {}
   for _, group in ipairs(groups) do
     local changes = {}
-    local first_entry = group[1]
+    local first = group[1]
     -- Hunk-relative index → 0-indexed buffer line:
     --   ws(1-idx) + start_old(1-idx) + index(1-idx) - 3
     local lnum0 =
-      ws + hunk.start_old + first_entry.index - 3
+      ws + hunk.start_old + first.index - 3
     local target_col = 0
 
-    for _, entry in ipairs(group) do
-      -- 0-indexed buffer line for this entry
-      local el = ws + hunk.start_old + entry.index - 3
+    for _, lc in ipairs(group) do
+      local el = ws + hunk.start_old + lc.index - 3
+      local old = hunk.old_lines[lc.index]
+      local new = hunk.new_lines[lc.index]
+      local c = lc.change
+      local s_start, s_end, ghost
 
-      -- Find changed portion: trim shared prefix/suffix
-      local plen, slen = diff_bounds(entry.old, entry.new)
-
-      local s_start = plen
-      local s_end = #entry.old - slen
-      local ghost =
-        entry.new:sub(plen + 1, #entry.new - slen)
+      if c.type == "append_chars" then
+        -- Append: no strike, ghost is the tail
+        s_start = c.col
+        s_end = c.col
+        ghost = c.text
+      elseif c.type == "modification" then
+        -- Prefix from diff module; suffix for tighter strike
+        local slen = common_suffix(old, new, c.col)
+        s_start = c.col
+        s_end = #old - slen
+        ghost = new:sub(c.col + 1, #new - slen)
+      else -- "replace_line"
+        s_start = 0
+        s_end = #old
+        ghost = new
+      end
 
       if s_end > s_start or ghost ~= "" then
-        if entry == first_entry then
+        if lc == first then
           target_col = s_start > 0 and s_start or 0
         end
         table.insert(changes, {
           kind = "modification",
           lnum = el,
-          old_text = entry.old,
-          new_text = entry.new,
+          old_text = old,
+          new_text = new,
           strike_start = s_start,
           strike_end = s_end,
           ghost = ghost,
@@ -176,7 +176,7 @@ local function decompose_modification_hunk(ws, hunk)
 
     if #changes > 0 then
       table.insert(suggestions, {
-        target_line = lnum0 + 1, -- 1-indexed
+        target_line = lnum0 + 1,
         target_col = target_col,
         changes = changes,
       })
@@ -253,7 +253,7 @@ end
 -- Remaining old lines → deletions.
 -- Sorted: modifications > insertions > deletions.
 local function decompose_replacement_hunk(bufnr, ws, hunk)
-  -- base_lnum: 0-indexed line of first old line
+  -- base: 0-indexed line of first old line
   local base = ws + hunk.start_old - 2
   local old1 = hunk.old_lines and hunk.old_lines[1] or ""
   local new1 = hunk.new_lines and hunk.new_lines[1] or ""
@@ -266,56 +266,56 @@ local function decompose_replacement_hunk(bufnr, ws, hunk)
   local ate_old = false
   local ate_new = false
 
-  if vim.startswith(new1, old1) and #new1 > #old1 then
-    -- Case 1: Extension — old + more text at end.
+  -- Use the diff module's line classifier to decide
+  -- how to present the first old→new line change.
+  local lc = diff.analyze_line_change(old1, new1)
+
+  if lc.type == "append_chars" then
+    -- Extension — old + more text at end.
     -- Ghost at EOL, no strikethrough.
     table.insert(changes, {
       kind = "modification",
       lnum = base,
       old_text = old1,
       new_text = new1,
-      strike_start = #old1, -- empty range
-      strike_end = #old1,
-      ghost = new1:sub(#old1 + 1),
+      strike_start = lc.col, -- empty range
+      strike_end = lc.col,
+      ghost = lc.text,
     })
-    tgt_col = math.max(0, #old1 - 1)
+    tgt_col = math.max(0, lc.col - 1)
     ate_old, ate_new = true, true
 
-  else
-    -- Case 2: check for shared prefix.
-    -- If prefix > 0, show as modification with strike
-    -- on diverging portion. Otherwise, first new line
-    -- becomes an insertion (⮐) on the preceding line.
-    local plen, slen = diff_bounds(old1, new1)
-    if plen > 0 then
+  elseif lc.type == "modification" then
+    -- Prefix from diff module; suffix for tighter strike
+    local slen = common_suffix(old1, new1, lc.col)
+    table.insert(changes, {
+      kind = "modification",
+      lnum = base,
+      old_text = old1,
+      new_text = new1,
+      strike_start = lc.col,
+      strike_end = #old1 - slen,
+      ghost = new1:sub(lc.col + 1, #new1 - slen),
+    })
+    tgt_col = lc.col
+    ate_old, ate_new = true, true
+
+  else -- "replace_line"
+    -- No shared prefix — insertion on prev line.
+    local arrow = math.max(0, base - 1)
+    if new1 ~= "" then
       table.insert(changes, {
-        kind = "modification",
-        lnum = base,
-        old_text = old1,
+        kind = "insertion",
+        lnum = arrow,
         new_text = new1,
-        strike_start = plen,
-        strike_end = #old1 - slen,
-        ghost = new1:sub(plen + 1, #new1 - slen),
+        ghost = new1,
       })
-      tgt_col = plen
-      ate_old, ate_new = true, true
-    else
-      -- No shared prefix — insertion on prev line.
-      local arrow = math.max(0, base - 1)
-      if new1 ~= "" then
-        table.insert(changes, {
-          kind = "insertion",
-          lnum = arrow,
-          new_text = new1,
-          ghost = new1,
-        })
-        ate_new = true
-      end
-      -- Target at end of ⮐ line
-      local al = buf_line(bufnr, arrow)
-      tgt_line = arrow + 1
-      tgt_col = math.max(0, #al - 1)
+      ate_new = true
     end
+    -- Target at end of ⮐ line
+    local al = buf_line(bufnr, arrow)
+    tgt_line = arrow + 1
+    tgt_col = math.max(0, #al - 1)
   end
 
   -- Remaining new lines → insertions.
