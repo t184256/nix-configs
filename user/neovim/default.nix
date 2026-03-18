@@ -9,6 +9,7 @@ in
   imports = [
     ../config/language-support.nix
     ../config/neovim.nix
+    ./aider.nix
     ./classic-plugins.nix
     ./colorcolumn.nix
     ./colorscheme.nix

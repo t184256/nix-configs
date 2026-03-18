@@ -14,6 +14,7 @@
     ./gnome.nix
     ./email.nix
     ./keyboard-remap-cz.nix
+    ../../user/aider.nix
     ../../user/config/identity.nix
     ../../user/config/language-support.nix
     ../../user/assorted-tools.nix
