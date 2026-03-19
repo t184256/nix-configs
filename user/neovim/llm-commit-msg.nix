@@ -13,7 +13,7 @@ in
         args = {
           "--api-endpoint", "https://llm.slop.unboiled.info",
           "--api-token-file", "/mnt/secrets/llm",
-          "--model", "gpt-oss:20b",
+          "--model", "qwen3.5-coder-dense-blitz",
           "--show-off", "0.001",
         },
         --debug = true,
