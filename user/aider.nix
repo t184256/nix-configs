@@ -76,6 +76,8 @@ in
 {
   imports = [ ./config/no-graphics.nix ];
 
+  nixpkgs.overlays = [ (import ../overlays/aider) ];
+
   programs.aider-chat = {
     enable = true;
     package = null;

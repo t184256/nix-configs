@@ -1,0 +1,20 @@
+From a15d10ea Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 19 Mar 2026 17:16:50 +0100
+Subject: [PATCH] fix: inconsistent opening reasoning tag
+
+a15d10ea has changed reasoning tags to a mismatched pair
+
+diff --git a/aider/coders/base_coder.py b/aider/coders/base_coder.py
+index 56613782..87205b21 100755
+--- a/aider/coders/base_coder.py
++++ b/aider/coders/base_coder.py
+@@ -1934,7 +1934,7 @@ class Coder:
+
+             if reasoning_content:
+                 if not self.got_reasoning_content:
+-                    text += f"<{REASONING_TAG}>\n\n"
++                    text += f"<{self.reasoning_tag_name}>\n\n"
+                 text += reasoning_content
+                 self.got_reasoning_content = True
+                 received_content = True
