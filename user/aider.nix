@@ -4,8 +4,29 @@ let
   ctx128k = 131072;
   ctx256k = 262144;
 
+  consumptionW = 100; # Electricity-based cost model, assuming 100W consumption
+  USDperWs = 5.0e-8; # 0.15 USD/KWh = 0.15 / (3600 * 1000) USD/Ws = ~5e-8 USD/Ws
+  tpsCost = tps: consumptionW * USDperWs / tps; # 100W * 5e-8 USD/Ws
+
+  tps32k = {  # benchmarked at 32k context
+    "qwen3.5-coder-sparse-quick" = { input_tps = 450; output_tps = 42; };
+    "qwen3.5-coder-sparse" = { input_tps = 180; output_tps = 18; };
+    "qwen3.5-coder-dense" = { input_tps = 85; output_tps = 9; };
+    "qwen3.5-coder-dense-quick" = { input_tps = 260; output_tps = 28; };
+    "qwen3.5-coder-dense-blitz" = { input_tps = 3000; output_tps = 133; };
+    "gpt-oss:20b" = { input_tps = 450; output_tps = 41; };
+    "gpt-oss:120b" = { input_tps = 280; output_tps = 29; };
+  };
+
   mkModel = extra: ctx: name:
-    let fullName = "hosted_vllm/${name}"; in {
+    let
+      fullName = "hosted_vllm/${name}";
+      t = tps32k."${name}" or null;
+      costAttrs = if t != null then {
+        input_cost_per_token = tpsCost t.input_tps;
+        output_cost_per_token = tpsCost t.output_tps;
+      } else {};
+    in {
       alias = "${name}:${fullName}";
       settings = {
         name = fullName;
@@ -20,7 +41,7 @@ let
         #mode = "chat";
         #supports_function_calling = true;
         #supports_tool_choice = true;
-      };
+      } // costAttrs;
     };
 
   mkGptOss = mkModel { accepts_settings = [ "reasoning_effort" ]; } ctx128k;
