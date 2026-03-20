@@ -9,11 +9,11 @@ let
   tpsCost = tps: consumptionW * USDperWs / tps; # 100W * 5e-8 USD/Ws
 
   tps32k = {  # benchmarked at 32k context
-    "qwen3.5-coder-sparse-quick" = { input_tps = 450; output_tps = 42; };
-    "qwen3.5-coder-sparse" = { input_tps = 180; output_tps = 18; };
-    "qwen3.5-coder-dense" = { input_tps = 85; output_tps = 9; };
-    "qwen3.5-coder-dense-quick" = { input_tps = 260; output_tps = 28; };
-    "qwen3.5-coder-dense-blitz" = { input_tps = 3000; output_tps = 133; };
+    "qwen3.5-sparse-quick" = { input_tps = 450; output_tps = 42; };
+    "qwen3.5-sparse" = { input_tps = 180; output_tps = 18; };
+    "qwen3.5-dense" = { input_tps = 85; output_tps = 9; };
+    "qwen3.5-dense-quick" = { input_tps = 260; output_tps = 28; };
+    "qwen3.5-dense-blitz" = { input_tps = 3000; output_tps = 133; };
     "gpt-oss:20b" = { input_tps = 450; output_tps = 41; };
     "gpt-oss:120b" = { input_tps = 280; output_tps = 29; };
   };
@@ -74,11 +74,11 @@ let
     "gpt-oss:120b" = mkGptOss;
     "gpt-oss:20b" = mkGptOss;
     "nemotron-super" = mkNemotron;
-    "qwen3.5-coder-sparse" = mkQwen;
-    "qwen3.5-coder-dense" = mkQwen;
-    "qwen3.5-coder-sparse-quick" = mkQwenQuick;
-    "qwen3.5-coder-dense-quick" = mkQwenQuick;
-    "qwen3.5-coder-dense-blitz" = mkQwenQuick;
+    "qwen3.5-sparse" = mkQwen;
+    "qwen3.5-dense" = mkQwen;
+    "qwen3.5-sparse-quick" = mkQwenQuick;
+    "qwen3.5-dense-quick" = mkQwenQuick;
+    "qwen3.5-dense-blitz" = mkQwenQuick;
   };
 
   modelSettings = builtins.toJSON (
@@ -104,9 +104,9 @@ in
     enable = true;
     package = null;
     settings = {
-      model = "qwen3.5-coder-sparse";
-      editor-model = "qwen3.5-coder-sparse-quick";
-      weak-model = "qwen3.5-coder-dense-blitz";
+      model = "qwen3.5-sparse";
+      editor-model = "qwen3.5-sparse-quick";
+      weak-model = "qwen3.5-dense-blitz";
       architect = true;
       alias = builtins.attrValues (
         builtins.mapAttrs (n: mk: (mk n).alias) models
