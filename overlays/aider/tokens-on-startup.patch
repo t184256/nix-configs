@@ -1,0 +1,12 @@
+diff --git a/aider/main.py b/aider/main.py
+index afb3f83..57b829f 100644
+--- a/aider/main.py
++++ b/aider/main.py
+@@ -1153,6 +1153,7 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
+         return
+
+     analytics.event("cli session", main_model=main_model, edit_format=main_model.edit_format)
++    coder.commands.cmd_tokens("")
+
+     while True:
+         try:

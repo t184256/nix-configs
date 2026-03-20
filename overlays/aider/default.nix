@@ -5,6 +5,11 @@ let
   patch = oa: {
     patches = (oa.patches or []) ++ [
       ./fix-inconsistent-opening-reasoning-tag.patch
+      ./suppress-analytics-message.patch
+      ./tokens-on-startup.patch
+      ./strip-provider-prefix-from-announcements.patch
+      ./compact-tokens-output.patch
+      ./reduce-blank-lines.patch
     ];
   };
 in {

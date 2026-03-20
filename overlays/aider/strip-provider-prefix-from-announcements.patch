@@ -1,0 +1,39 @@
+diff --git a/aider/coders/base_coder.py b/aider/coders/base_coder.py
+index b824e92..ecbfff2 100755
+--- a/aider/coders/base_coder.py
++++ b/aider/coders/base_coder.py
+@@ -208,6 +208,9 @@ class Coder:
+         lines = []
+         lines.append(f"Aider v{__version__}")
+ 
++        def short_name(model):
++            return model.name.split("/", 1)[-1]
++
+         # Model
+         main_model = self.main_model
+         weak_model = main_model.weak_model
+@@ -217,7 +220,7 @@ class Coder:
+         else:
+             prefix = "Model"
+ 
+-        output = f"{prefix}: {main_model.name} with {self.edit_format} edit format"
++        output = f"{prefix}: {short_name(main_model)} with {self.edit_format} edit format"
+ 
+         # Check for thinking token budget
+         thinking_tokens = main_model.get_thinking_tokens()
+@@ -238,13 +241,13 @@ class Coder:
+ 
+         if self.edit_format == "architect":
+             output = (
+-                f"Editor model: {main_model.editor_model.name} with"
++                f"Editor model: {short_name(main_model.editor_model)} with"
+                 f" {main_model.editor_edit_format} edit format"
+             )
+             lines.append(output)
+ 
+         if weak_model is not main_model:
+-            output = f"Weak model: {weak_model.name}"
++            output = f"Weak model: {short_name(weak_model)}"
+             lines.append(output)
+ 
+         # Repo

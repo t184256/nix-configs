@@ -1,0 +1,62 @@
+diff --git a/aider/commands.py b/aider/commands.py
+index b9a3d3c..cd94cf5 100644
+--- a/aider/commands.py
++++ b/aider/commands.py
+@@ -505,11 +505,6 @@ class Commands:
+         file_res.sort()
+         res.extend(file_res)
+ 
+-        self.io.tool_output(
+-            f"Approximate context window usage for {self.coder.main_model.name}, in tokens:"
+-        )
+-        self.io.tool_output()
+-
+         width = 8
+         cost_width = 9
+ 
+@@ -529,26 +524,23 @@ class Commands:
+             self.io.tool_output(f"${cost:7.4f} {fmt(tk)} {msg} {tip}")  # noqa: E231
+ 
+         self.io.tool_output("=" * (width + cost_width + 1))
+-        self.io.tool_output(f"${total_cost:7.4f} {fmt(total)} tokens total")  # noqa: E231
+ 
+         limit = self.coder.main_model.info.get("max_input_tokens") or 0
+         if not limit:
++            self.io.tool_output(f"${total_cost:7.4f} {fmt(total)} tokens total")  # noqa: E231
+             return
+ 
+         remaining = limit - total
+         if remaining > 1024:
+-            self.io.tool_output(f"{cost_pad}{fmt(remaining)} tokens remaining in context window")
++            self.io.tool_output(f"${total_cost:7.4f} {fmt(remaining)} remaining ({total:,} used of {limit:,} max)")  # noqa: E231
+         elif remaining > 0:
+             self.io.tool_error(
+-                f"{cost_pad}{fmt(remaining)} tokens remaining in context window (use /drop or"
+-                " /clear to make space)"
++                f"${total_cost:7.4f} {fmt(remaining)} remaining ({total:,} used of {limit:,} max, use /drop or /clear to make space)"  # noqa: E231
+             )
+         else:
+             self.io.tool_error(
+-                f"{cost_pad}{fmt(remaining)} tokens remaining, window exhausted (use /drop or"
+-                " /clear to make space)"
++                f"${total_cost:7.4f} {fmt(remaining)} remaining, window exhausted ({total:,} used of {limit:,} max, use /drop or /clear to make space)"  # noqa: E231
+             )
+-        self.io.tool_output(f"{cost_pad}{fmt(limit)} tokens max context window size")
+ 
+     def cmd_undo(self, args):
+         "Undo the last git commit if it was done by aider"
+diff --git a/tests/basic/test_commands.py b/tests/basic/test_commands.py
+index 47b8832..40fae28 100644
+--- a/tests/basic/test_commands.py
++++ b/tests/basic/test_commands.py
+@@ -568,8 +568,8 @@ class TestCommands(TestCase):
+             self.assertTrue(any("file1.txt" in line for line in output_lines))
+ 
+             # Check if the total tokens and remaining tokens are reported
+-            self.assertTrue(any("tokens total" in line for line in output_lines))
+-            self.assertTrue(any("tokens remaining" in line for line in output_lines))
++            self.assertTrue(any("remaining" in line for line in output_lines))
++            self.assertTrue(any("used of" in line for line in output_lines))
+ 
+     def test_cmd_add_dirname_with_special_chars(self):
+         with ChdirTemporaryDirectory():

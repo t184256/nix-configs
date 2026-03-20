@@ -1,0 +1,20 @@
+diff --git a/aider/main.py b/aider/main.py
+index afb3f83..d8a9f5e 100644
+--- a/aider/main.py
++++ b/aider/main.py
+@@ -514,7 +514,6 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
+
+     if args.analytics_disable:
+         analytics = Analytics(permanently_disable=True)
+-        print("Analytics have been permanently disabled.")
+
+     if not args.verify_ssl:
+         import httpx
+@@ -653,7 +652,6 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
+             analytics.asked_opt_in = True
+             if disable:
+                 analytics.disable(permanently=True)
+-                io.tool_output("Analytics have been permanently disabled.")
+
+             analytics.save_data()
+             io.tool_output()

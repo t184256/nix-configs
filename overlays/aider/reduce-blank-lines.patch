@@ -1,0 +1,33 @@
+diff --git a/aider/coders/base_coder.py b/aider/coders/base_coder.py
+index b824e92..505a6b4 100755
+--- a/aider/coders/base_coder.py
++++ b/aider/coders/base_coder.py
+@@ -1527,8 +1527,6 @@ class Coder:
+         # print("=" * 20)
+         # dump(self.partial_response_content)
+ 
+-        self.io.tool_output()
+-
+         self.show_usage_report()
+ 
+         self.add_assistant_reply_to_cur_messages()
+diff --git a/aider/io.py b/aider/io.py
+index ed6f22d..2e8a8ae 100644
+--- a/aider/io.py
++++ b/aider/io.py
+@@ -846,7 +846,6 @@ class InputOutput:
+             question += options + f" [{default}]: "
+ 
+         if subject:
+-            self.tool_output()
+             if "\n" in subject:
+                 lines = subject.splitlines()
+                 max_length = max(len(line) for line in lines)
+@@ -932,7 +931,6 @@ class InputOutput:
+         self.ring_bell()
+ 
+         if subject:
+-            self.tool_output()
+             self.tool_output(subject, bold=True)
+ 
+         style = self._get_style()
