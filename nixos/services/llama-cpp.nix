@@ -41,7 +41,8 @@
     extraFlags = [
       "--models-dir" "/var/lib/llama"
       "--models-preset" "/var/lib/llama/config.ini"
-      "--models-max" "2"
+      "--models-max" "3"
+      #"--models-max" "1"
       "-ngl" "999"
       "--no-mmap"
       "--jinja"
