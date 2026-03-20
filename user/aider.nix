@@ -57,6 +57,7 @@ let
     "qwen3.5-coder-dense" = mkQwen;
     "qwen3.5-coder-sparse-quick" = mkQwenQuick;
     "qwen3.5-coder-dense-quick" = mkQwenQuick;
+    "qwen3.5-coder-dense-blitz" = mkQwenQuick;
   };
 
   modelSettings = builtins.toJSON (
@@ -84,7 +85,7 @@ in
     settings = {
       model = "qwen3.5-coder-sparse";
       editor-model = "qwen3.5-coder-sparse-quick";
-      weak-model = "qwen3.5-coder-sparse-quick";
+      weak-model = "qwen3.5-coder-dense-blitz";
       architect = true;
       alias = builtins.attrValues (
         builtins.mapAttrs (n: mk: (mk n).alias) models
