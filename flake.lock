@@ -520,16 +520,15 @@
     },
     "nixos-hardware": {
       "locked": {
-        "lastModified": 1773487405,
-        "narHash": "sha256-zrGB/7iqC+5YSn07p5fYkEZVmF/kX5El/nQ5P0Prksw=",
-        "owner": "t184256",
+        "lastModified": 1773533765,
+        "narHash": "sha256-qonGfS2lzCgCl59Zl63jF6dIRRpvW3AJooBGMaXjHiY=",
+        "owner": "NixOS",
         "repo": "nixos-hardware",
-        "rev": "2661c93c1687f1fb89b8f729371961d62bbc16bb",
+        "rev": "f8e82243fd601afb9f59ad230958bd073795cbfe",
         "type": "github"
       },
       "original": {
-        "owner": "t184256",
-        "ref": "onenetbook4-newer-kernels",
+        "owner": "NixOS",
         "repo": "nixos-hardware",
         "type": "github"
       }
