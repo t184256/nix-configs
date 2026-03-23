@@ -3,8 +3,9 @@
 {
   services.llama-cpp = {
     enable = true;
-    package = pkgs.llama-cpp-vulkan;
-    #package = pkgs.llama-cpp-rocm;
+    package = pkgs.ik-llama-cpp-vulkan;
+    #package = pkgs.ik-llama-cpp-rocm;
+    #package = pkgs.llama-cpp-vulkan;
     #package = pkgs.llama-cpp.override {
     #  rocmSupport = true;
     #  rocmGpuTargets = [ "gfx1151" ];
