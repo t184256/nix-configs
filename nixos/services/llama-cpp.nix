@@ -4,11 +4,10 @@
   services.llama-cpp = {
     enable = true;
     package = pkgs.llama-cpp-vulkan;
-    #package = pkgs.llama-cpp-rocm;
     #package = pkgs.llama-cpp.override {
     #  rocmSupport = true;
     #  rocmGpuTargets = [ "gfx1151" ];
-    #};  # faster on long contexts, but hangs on loading larger models?
+    #};  # what's better really depends on the model / ctx
     #package = (pkgs.llama-cpp.override {
     #  rocmSupport = true;
     #  rocmGpuTargets = [ "gfx1151" ];
