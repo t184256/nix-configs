@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ pkgs, inputs, lib, ... }:
 
 {
   networking.hostName = "grapefruit";
@@ -49,15 +49,15 @@
     amdgpu_top
     radeontop
     #(vllm.override {
-    #  torch = python312Packages.torch.override {
-    #    cudaSupport = false;
-    #    rocmSupport = true;
-    #    vulkanSupport = true;
-    #  };
-    #  #torch = python312Packages.torchWithRocm;
-    #  cudaSupport = false;
+    #  #torch = python312Packages.torch.override {
+    #  #  #cudaSupport = false;
+    #  #  rocmSupport = true;
+    #  #  vulkanSupport = true;
+    #  #};
+    #  ##torch = python312Packages.torchWithRocm;
+    #  ##cudaSupport = false;
     #  rocmSupport = true;
-    #  gpuTargets = [ "gfx1151" ];
+    #  #gpuTargets = [ "gfx1151" ];
     #})
   ];
 
@@ -109,6 +109,7 @@
         ".local/share/password-store"
         ".localai"
         ".mozilla"
+        ".steam" ".local/share/Steam" ".games"
       ];
     };
   };
@@ -140,4 +141,14 @@
   system.role.virtualizer.storageLocation = "storage";
 
   networking.firewall.allowedTCPPorts = [ 8000 ];  # slopfest
+
+  programs.steam = {
+    enable = true;
+    extraCompatPackages = with pkgs; [ proton-ge-bin ];
+  };
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+    "steam"
+    "steam-unwrapped"
+  ];
+  programs.xwayland.enable = true;
 }
