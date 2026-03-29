@@ -206,25 +206,25 @@ in
         };
       };
 
-      neotest = {
-        enable = (withLang "python") || (withLang "rust");
-        adapters.rust.enable = withLang "rust";
-        settings = {
-          status.virtual_text = true;
-          icons = {
-            failed = "○";
-            final_child_indent = " ";
-            final_child_prefix = "╰";
-            non_collapsible = "─";
-            passed = "◉";
-            running = "◐";
-            running_animated = [ "◐" "◓" "◑" "◒" ];
-            skipped = "○";
-            unknown = "○";
-            watching = "○";
-          };
-        };
-      };
+      #neotest = {
+      #  enable = (withLang "python") || (withLang "rust");
+      #  adapters.rust.enable = withLang "rust";
+      #  settings = {
+      #    status.virtual_text = true;
+      #    icons = {
+      #      failed = "○";
+      #      final_child_indent = " ";
+      #      final_child_prefix = "╰";
+      #      non_collapsible = "─";
+      #      passed = "◉";
+      #      running = "◐";
+      #      running_animated = [ "◐" "◓" "◑" "◒" ];
+      #      skipped = "○";
+      #      unknown = "○";
+      #      watching = "○";
+      #    };
+      #  };
+      #};
 
       none-ls = {
         enable = true;
@@ -293,38 +293,38 @@ in
         )
       end
     '';
-    autoCmd = [
-      {
-        event = [ "BufReadPost" ];
-        pattern = [ "*.rs" ];
-        callback.__raw = ''
-          function()
-              local delayed_neotest = function()
-                if_direnv_allowed(function()
-                  require('neotest').run.run(vim.uv.cwd())
-                end)
-              end
-              -- 700ms, no repeating
-              if vim.b.neotest_deferred == nil then
-                local timer = vim.loop.new_timer()
-                timer:start(700, 0, vim.schedule_wrap(delayed_neotest))
-                vim.b.neotest_deferred = true
-              end
-          end
-        '';
-      }
-      {
-        event = [ "BufWritePost" ];
-        pattern = [ "*.rs" ];
-        callback.__raw = ''
-          function()
-            if_direnv_allowed(function()
-              require('neotest').run.run(vim.uv.cwd())
-            end)
-          end
-        '';
-      }
-    ];
+    #autoCmd = [
+    #  {
+    #    event = [ "BufReadPost" ];
+    #    pattern = [ "*.rs" ];
+    #    callback.__raw = ''
+    #      function()
+    #          local delayed_neotest = function()
+    #            if_direnv_allowed(function()
+    #              require('neotest').run.run(vim.uv.cwd())
+    #            end)
+    #          end
+    #          -- 700ms, no repeating
+    #          if vim.b.neotest_deferred == nil then
+    #            local timer = vim.loop.new_timer()
+    #            timer:start(700, 0, vim.schedule_wrap(delayed_neotest))
+    #            vim.b.neotest_deferred = true
+    #          end
+    #      end
+    #    '';
+    #  }
+    #  {
+    #    event = [ "BufWritePost" ];
+    #    pattern = [ "*.rs" ];
+    #    callback.__raw = ''
+    #      function()
+    #        if_direnv_allowed(function()
+    #          require('neotest').run.run(vim.uv.cwd())
+    #        end)
+    #      end
+    #    '';
+    #  }
+    #];
   };
 
   xdg.configFile."clangd/config.yaml" = {
