@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 
 let
   ctx128k = 131072;
@@ -101,7 +101,7 @@ in
   nixpkgs.overlays = [ (import ../overlays/aider) ];
 
   programs.aider-chat = {
-    enable = true;
+    enable = lib.mkDefault false;
     package = null;
     settings = {
       model = "qwen3.5-sparse";
@@ -132,7 +132,7 @@ in
     };
   };
 
-  home.packages = [
+  home.packages = lib.mkIf config.programs.aider-chat.enable [
     (pkgs.symlinkJoin {
       name = "aider";
       paths = [ aiderPkg ];
