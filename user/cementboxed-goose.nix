@@ -6,8 +6,8 @@ let
 
   cementbox-src = pkgs.fetchgit {
     url = "https://github.com/t184256/cementbox";
-    rev = "6c0e81ec10242449d9b5fc875b238897c029ae00";
-    hash = "sha256-P01xz2uFcl12yxXGw+ug1jhYwN+cIf5cekrRVHDt0FU=";
+    rev = "ac3649304ade2ac68039c816e75499e40377848e";
+    hash = "sha256-+8Hy5KpDa7Eb2+s9WRzePtv2MgQxIWUAFm6L/nuV0wg=";
   };
 
   sftp-server-closure = pkgs.closureInfo { rootPaths = [ pkgs.openssh ]; };
@@ -49,7 +49,8 @@ let
       fi
     fi
 
-    FINAL_SSH_EXTRA_OPTS=-t \
+    CEMENTBOX_FINAL_BWRAP_PREFIX='trap "" INT; exec' \
+    CEMENTBOX_FINAL_SSH_EXTRA_OPTS=-t \
       exec ${cementbox} \
         --rw-share "$(pwd)" "/home/${VM_USERNAME}/workspace" \
         "''${EXTRA_WORKTREE[@]}" \
