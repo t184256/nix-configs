@@ -45,6 +45,9 @@ let
       extraConfig = ''
         auth_request /custom-auth;
         proxy_read_timeout 1800s;
+        proxy_buffering off;
+        proxy_request_buffering off;
+        client_max_body_size 0;
       '';
     };
     locations."/custom-auth" = {
