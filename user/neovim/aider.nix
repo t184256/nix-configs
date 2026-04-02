@@ -7,7 +7,10 @@
     extraPlugins = with pkgs.vimPlugins; [ aider-nvim ];
 
     extraConfigLua = ''
-      local function read_secret(path) return vim.fn.readfile(path)[1] or "" end
+      local function read_secret(path)
+        local ok, lines = pcall(vim.fn.readfile, path)
+        return ok and lines[1] or ""
+      end
 
       vim.env.HOSTED_VLLM_API_KEY = read_secret("/mnt/secrets/llm")
       vim.env.HOSTED_VLLM_API_BASE = "https://llm.slop.unboiled.info/v1"
