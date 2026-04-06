@@ -59,7 +59,7 @@ in
         relaysEnabled = true;
         localAnnounceEnabled = lib.mkDefault false;
         listenAddresses = [
-          "quic://:22000"
+          #"quic://:22000"  # syncthing#10611
           "tcp://:22000"
           "dynamic+http://127.0.0.1:22927/relays"
         ];
