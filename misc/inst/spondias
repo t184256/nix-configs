@@ -8,9 +8,9 @@ IP=$1
 : "${REMOTE_USER:=root}"
 hostname=spondias
 
-if ! command -v dasel >/dev/null; then
-  dasel=$(nix build --print-out-paths --no-link 'nixpkgs#dasel') || exit $?
-  PATH=$PATH:$dasel/bin
+if ! command -v taplo >/dev/null; then
+  taplo=$(nix build --print-out-paths --no-link 'nixpkgs#taplo') || exit $?
+  PATH=$PATH:$taplo/bin
 fi
 
 # TODO: what's the environment we're usually reinstalling from?
@@ -62,7 +62,7 @@ nix run 'nixpkgs#nixos-anywhere' -- \
   "$REMOTE_USER@$IP"
 
 sed -i "/^$IP /d" ~/.ssh/known_hosts
-pubkey="$(dasel -f misc/pubkeys/sshd.toml "$hostname" -w -)"
+pubkey="$(taplo get -f misc/pubkeys/sshd.toml "$hostname")"
 echo "$IP $pubkey" >> ~/.ssh/known_hosts
 
 # the promised fix-up

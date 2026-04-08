@@ -9,9 +9,9 @@ PORT=${2:-2222}
 : "${REMOTE_USER:=root}"
 hostname=plum
 
-if ! command -v dasel >/dev/null; then
-  dasel=$(nix build --print-out-paths --no-link 'nixpkgs#dasel') || exit $?
-  PATH=$PATH:$dasel/bin
+if ! command -v taplo >/dev/null; then
+  taplo=$(nix build --print-out-paths --no-link 'nixpkgs#taplo') || exit $?
+  PATH=$PATH:$taplo/bin
 fi
 
 ssh -p "$PORT" "$REMOTE_USER@$IP" "
@@ -53,7 +53,7 @@ nix run 'nixpkgs#nixos-anywhere' -- \
   "$REMOTE_USER@$IP"
 
 sed -i "/^\[$IP\]:$PORT /d" ~/.ssh/known_hosts
-pubkey="$(dasel -f misc/pubkeys/sshd.toml "$hostname" -w -)"
+pubkey="$(taplo get -f misc/pubkeys/sshd.toml "$hostname")"
 echo "[$IP]:$PORT $pubkey" >> ~/.ssh/known_hosts
 
 # the promised fix-up
