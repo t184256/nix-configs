@@ -1,5 +1,11 @@
 { pkgs, ... }:
 
+let
+  # TODO: fancier toml, with names and IPs, possibly? and a custom module
+  tangToml = builtins.fromTOML (builtins.readFile ../../misc/pubkeys/tang.toml);
+  tangThpQuince = tangToml.quince;
+in
+
 {
   disko.devices = {
     disk = {
@@ -29,7 +35,8 @@
                 postMountHook = ''
                   tmpdir=$(mktemp -d)
                   mount -o subvol=/secrets /dev/mapper/$name "$tmpdir"
-                  ${pkgs.clevis}/bin/clevis encrypt tang '{"url":"http://192.168.98.1:1449"}' \
+                  ${pkgs.clevis}/bin/clevis encrypt tang \
+                    '{"url":"http://192.168.98.1:1449","thp":"${tangThpQuince}"}' \
                     < /tmp/root.luks > "$tmpdir/clevis"
                   umount "$tmpdir"
                   rmdir "$tmpdir"
