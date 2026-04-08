@@ -15,6 +15,7 @@
     ../../nixos/services/microsocks.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/syncthing.nix
+    ../../nixos/services/tang.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
