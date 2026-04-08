@@ -29,6 +29,9 @@
   home-manager.users.monk.home.stateVersion = "25.11";
   system.stateVersion = "25.11";
 
+  systemd.sleep.settings.Sleep.AllowSuspend = false;
+  services.displayManager.gdm.autoSuspend = false;
+
   system.role.desktop.enable = true;
   system.role.physical.enable = true;
 

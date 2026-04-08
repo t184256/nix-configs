@@ -136,6 +136,7 @@
   };
 
   systemd.sleep.settings.Sleep.AllowSuspend = false;
+  services.displayManager.gdm.autoSuspend = false;
 
   system.role.virtualizer.enable = true;
   system.role.virtualizer.storageLocation = "storage";
