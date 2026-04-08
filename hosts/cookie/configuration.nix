@@ -10,7 +10,6 @@
   hardware.enableRedistributableFirmware = true;
 
   networking.hostName = "cookie";
-  networking.wireless.enable = false;
   networking.networkmanager.enable = true;
 
   environment.systemPackages = with pkgs; [
