@@ -35,12 +35,11 @@ misc/secrets inject-to-dir "$hostname" "$injdir/mnt/secrets"
 [[ -e "$injdir/mnt/secrets/network-manager" ]]
 [[ -e "$injdir/mnt/secrets/sshd/ed25519" ]]
 grep -qF 'OPENSSH PRIVATE KEY' "$injdir/mnt/secrets/sshd/ed25519"
-find "$injdir/mnt/secrets" -type d -exec chmod 500 {} \;
-# will be fixed up to 400 later or on latter secrets injections
 # clevis JWE is written to /mnt/secrets/clevis by disko postMountHook
-
 dd if=/dev/urandom bs=64 count=1 status=none \
   > "$injdir/mnt/secrets/root.luks"
+find "$injdir/mnt/secrets" -type d -exec chmod 500 {} \;
+# will be fixed up to 400 later or on latter secrets injections
 
 mkdir "$injdir/etc"
 scp -q -P "$PORT" "$REMOTE_USER@$IP:/etc/machine-id" "$injdir/etc/machine-id"
