@@ -7,11 +7,12 @@
     ipAddressAllow = [ "any" ];
   };
   systemd.services."tangd@".serviceConfig = {
-    ExecStart = lib.mkForce "${pkgs.tang}/libexec/tangd /mnt/storage/secrets/tang";
-    DynamicUser = lib.mkForce false;
-    PrivateUsers = lib.mkForce false;
-    User = lib.mkForce "root";
+    ExecStart = lib.mkForce "${pkgs.tang}/libexec/tangd %d";
     StateDirectory = lib.mkForce "";
+    LoadCredential = [
+      "sig.jwk:/mnt/storage/secrets/tang/sig.jwk"
+      "exc.jwk:/mnt/storage/secrets/tang/exc.jwk"
+    ];
   };
   systemd.sockets.tangd = {
     requires = [ "mnt-storage.mount" ];
