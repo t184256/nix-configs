@@ -28,11 +28,11 @@
 
   boot.initrd.systemd.enable = true;
   boot.initrd.systemd.network.enable = true;
-  boot.initrd.clevis = {
-    enable = true;
-    useTang = true;
-    devices.root.secretFile = "/mnt/secrets/clevis";
-  };
+  #boot.initrd.clevis = {
+  #  enable = true;
+  #  useTang = true;
+  #  devices.root.secretFile = "/mnt/secrets/clevis";
+  #};
 
   home-manager.users.monk.home.stateVersion = "25.11";
   system.stateVersion = "25.11";
