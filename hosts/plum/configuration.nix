@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, lib, ... }:
 
 {
   networking.hostName = "plum";
@@ -11,9 +11,17 @@
     ./hardware.nix
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
+    ../../nixos/services/ik-llama-cpp.nix
+    ./bench-models.nix
+    ./nvidia-settings.nix
+    ./clevis-highlevel.nix
   ];
 
-  hardware.nvidia.open = false;  # open module unreliable on Ampere (RTX 3090)?
+  nixpkgs.config.allowUnfreePredicate = pkg:
+    lib.hasPrefix "nvidia" (lib.getName pkg) ||
+    lib.hasPrefix "cuda" pkg.name;
+
+  hardware.nvidia.open = true;
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

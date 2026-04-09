@@ -24,7 +24,8 @@ in {
     services = {
       xserver = {
         enable = true;
-        videoDrivers = [ "modesetting" ];
+        # lower priority than mkDefault = 1000
+        videoDrivers = lib.mkOverride 1001 [ "modesetting" ];
       };
       desktopManager.gnome.enable = true;
       displayManager = {
