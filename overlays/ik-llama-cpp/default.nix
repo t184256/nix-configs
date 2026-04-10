@@ -22,7 +22,10 @@ in
     version = "0-unstable";
     inherit src;
 
-    patches = [ ../patches/ik-llama-cpp-n-depth.patch ];
+    patches = [
+      ./ik-llama-cpp-n-depth.patch
+      ./20970.patch
+    ];
 
     nativeBuildInputs = [
       prev.cmake

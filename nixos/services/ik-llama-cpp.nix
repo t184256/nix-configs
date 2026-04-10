@@ -14,14 +14,18 @@ let
           + " --model ${pkgs.qwen35-35b-a3b-iq4xs}"
           + " --cache-type-k q8_0 --cache-type-v q8_0"
           + " --cache-ram 4096"
-          + " --ctx-size 262144";
+          + " --ctx-size 262144"
+          + " --ctx-checkpoints-interval 8192" # 32*8192=256k coverage
+          + " --top-k 20 --presence-penalty 1.5";
       };
       "qwen35-27b" = {
         cmd = base
           + " --model ${pkgs.qwen35-27b-iq4xs}"
           + " --cache-type-k q8_0 --cache-type-v q8_0"
           + " --cache-ram 4096"
-          + " --ctx-size 196608";
+          + " --ctx-size 196608"
+          + " --ctx-checkpoints-interval 6144" # 32*6144=196k coverage
+          + " --top-k 20";
       };
     };
   };
