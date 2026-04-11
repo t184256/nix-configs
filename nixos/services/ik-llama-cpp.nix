@@ -9,7 +9,7 @@ let
   configFile = (pkgs.formats.yaml { }).generate "llama-swap.yaml" {
     healthCheckTimeout = 120;
     models = {
-      "qwen35-35b-a3b" = {
+      "qwen3.5-35b-a3b" = {
         cmd = base
           + " --model ${pkgs.qwen35-35b-a3b-iq4xs}"
           + " --cache-type-k q8_0 --cache-type-v q8_0"
@@ -18,7 +18,7 @@ let
           + " --ctx-checkpoints-interval 8192" # 32*8192=256k coverage
           + " --top-k 20 --presence-penalty 1.5";
       };
-      "qwen35-27b" = {
+      "qwen3.5-27b" = {
         cmd = base
           + " --model ${pkgs.qwen35-27b-iq4xs}"
           + " --cache-type-k q8_0 --cache-type-v q8_0"

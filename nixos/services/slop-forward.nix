@@ -61,13 +61,102 @@ let
   };
 in
 {
+  services.litellm = {
+    enable = true;
+    host = "127.0.0.1";
+    port = 11110;
+    settings =
+      let
+        plum  = "http://192.168.99.53:11111";
+        grape = "http://192.168.99.52:11111";
+        qwen35Think = {
+          temperature = 0.6;
+          top_p = 0.95;
+          extra_body = {
+            top_k = 20;
+            chat_template_kwargs.enable_thinking = true;
+          };
+        };
+        qwen35Nothink = {
+          temperature = 0.7;
+          top_p = 0.8;
+          presence_penalty = 1.5;
+          extra_body = {
+            top_k = 20;
+            chat_template_kwargs.enable_thinking = false;
+          };
+        };
+        # hosts: primary first, fallbacks after
+        models = {
+          "qwen3.5-35b-a3b".hosts = [ grape plum ];
+          "qwen3.5-27b".hosts = [ plum grape ];
+          "qwen3.5-122b-a10b".hosts = [ grape ];
+          "qwen3.5-0.8b".hosts = [ grape ];
+        };
+        aliases = {
+          "qwen3.5-35b-a3b-think" =
+            { model = "qwen3.5-35b-a3b"; params = qwen35Think; };
+          "qwen3.5-35b-a3b-nothink" =
+            { model = "qwen3.5-35b-a3b"; params = qwen35Nothink; };
+          "qwen3.5-27b-think" =
+            { model = "qwen3.5-27b"; params = qwen35Think; };
+          "qwen3.5-27b-nothink" =
+            { model = "qwen3.5-27b"; params = qwen35Nothink; };
+          "qwen3.5-122b-a10b-think" =
+            { model = "qwen3.5-122b-a10b"; params = qwen35Think; };
+          "qwen3.5-122b-a10b-nothink" =
+            { model = "qwen3.5-122b-a10b"; params = qwen35Nothink; };
+          "qwen3.5-0.8b-think" =
+            { model = "qwen3.5-0.8b"; params = qwen35Think; };
+          "qwen3.5-0.8b-nothink" =
+            { model = "qwen3.5-0.8b"; params = qwen35Nothink; };
+        };
+        grapefruitCatchall = {
+          model_name = "*";
+          litellm_params = {
+            model = "custom_openai/*";
+            api_base = grape;
+            api_key = "dummy";
+          };
+        };
+        mkModel = clientName: api_base: backendName: extra: {
+          model_name = clientName;
+          litellm_params = {
+            model = "custom_openai/${backendName}";
+            inherit api_base;
+            api_key = "dummy";
+          } // extra;
+        };
+        mkEntries = clientName: { model, params }:
+          let hosts = models.${model}.hosts; in
+            [ (mkModel clientName (builtins.head hosts) model params) ]
+            ++ map
+              (h: mkModel "fb-${clientName}" h model params)
+              (builtins.tail hosts);
+        mkFallback = clientName: { model, ... }:
+          let hosts = models.${model}.hosts; in
+          if builtins.length hosts < 2 then []
+          else [ { "${clientName}" = [ "fb-${clientName}" ]; } ];
+      in {
+        model_list = builtins.concatLists (builtins.attrValues
+          (builtins.mapAttrs mkEntries aliases))
+          ++ [ grapefruitCatchall ];
+        litellm_settings.fallbacks = builtins.concatLists (builtins.attrValues
+          (builtins.mapAttrs mkFallback aliases));
+      };
+  };
+
   services.nginx = {
     virtualHosts = {
-      "whisper.slop.unboiled.info" = mkForward "http://192.168.99.52:11112";
-      "llm.slop.unboiled.info" = mkForward "http://192.168.99.52:11111";
-      "goose.slop.unboiled.info" = mkForward "http://192.168.99.52:8000";
+      "llm.slop.unboiled.info" =
+        mkForward "http://127.0.0.1:11110";
+      "whisper.slop.unboiled.info" =
+        mkForward "http://192.168.99.52:11112";
+      "goose.slop.unboiled.info" =
+        mkForward "http://192.168.99.52:8000";
     };
   };
+
   systemd.sockets.custom-auth = {
     wantedBy = [ "sockets.target" ];
     socketConfig.ListenStream = "/run/custom-auth.sock";
