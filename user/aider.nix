@@ -2,6 +2,7 @@
 
 let
   ctx128k = 131072;
+  ctx196k = 196608;
   ctx256k = 262144;
 
   consumptionW = 100; # Electricity-based cost model, assuming 100W consumption
@@ -61,6 +62,9 @@ let
     };
   } ctx256k;
   # https://unsloth.ai/docs/models/qwen3.5 (instruct:general)
+  # plum/27b — sampling params injected by LiteLLM, don't override here
+  mkQwen35Plum = mkModel {} ctx196k;
+
   mkQwenQuick = mkModel {
     accepts_settings = [ "thinking" ];
     use_temperature = 0.7;
@@ -79,6 +83,8 @@ let
     "qwen3.5-sparse-quick" = mkQwenQuick;
     "qwen3.5-dense-quick" = mkQwenQuick;
     "qwen3.5-dense-blitz" = mkQwenQuick;
+    "qwen3.5-27b-think"   = mkQwen35Plum;
+    "qwen3.5-27b-nothink" = mkQwen35Plum;
   };
 
   modelSettings = builtins.toJSON (
@@ -104,9 +110,9 @@ in
     enable = lib.mkDefault false;
     package = null;
     settings = {
-      model = "qwen3.5-sparse";
-      editor-model = "qwen3.5-sparse-quick";
-      weak-model = "qwen3.5-dense-blitz";
+      model = "qwen3.5-27b-think";
+      editor-model = "qwen3.5-27b-nothink";
+      weak-model = "qwen3.5-27b-nothink";
       architect = true;
       alias = builtins.attrValues (
         builtins.mapAttrs (n: mk: (mk n).alias) models
