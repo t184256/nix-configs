@@ -72,6 +72,7 @@ in
         qwen35Think = {
           temperature = 0.6;
           top_p = 0.95;
+          presence_penalty = 1.5;
           extra_body = {
             top_k = 20;
             chat_template_kwargs.enable_thinking = true;
@@ -90,26 +91,36 @@ in
         models = {
           "qwen3.5-35b-a3b".hosts = [ grape plum ];
           "qwen3.5-27b".hosts = [ plum grape ];
-          "qwen3.5-122b-a10b".hosts = [ grape ];
+
           "qwen3.5-0.8b".hosts = [ grape ];
+          "qwen3.5-122b-a10b".hosts = [ grape ];
+
+          "sweep-v2-7b".hosts = [ grape ];
+          "sweep-1.5b".hosts = [ grape ];
+          "sweep-0.5b".hosts = [ grape ];
         };
         aliases = {
-          "qwen3.5-35b-a3b-think" =
-            { model = "qwen3.5-35b-a3b"; params = qwen35Think; };
-          "qwen3.5-35b-a3b-nothink" =
-            { model = "qwen3.5-35b-a3b"; params = qwen35Nothink; };
-          "qwen3.5-27b-think" =
-            { model = "qwen3.5-27b"; params = qwen35Think; };
-          "qwen3.5-27b-nothink" =
-            { model = "qwen3.5-27b"; params = qwen35Nothink; };
-          "qwen3.5-122b-a10b-think" =
-            { model = "qwen3.5-122b-a10b"; params = qwen35Think; };
-          "qwen3.5-122b-a10b-nothink" =
-            { model = "qwen3.5-122b-a10b"; params = qwen35Nothink; };
           "qwen3.5-0.8b-think" =
             { model = "qwen3.5-0.8b"; params = qwen35Think; };
           "qwen3.5-0.8b-nothink" =
             { model = "qwen3.5-0.8b"; params = qwen35Nothink; };
+          "qwen3.5-27b-think" =
+            { model = "qwen3.5-27b"; params = qwen35Think; };
+          "qwen3.5-27b-nothink" =
+            { model = "qwen3.5-27b"; params = qwen35Nothink; };
+          "qwen3.5-35b-a3b-think" =
+            { model = "qwen3.5-35b-a3b"; params = qwen35Think; };
+          "qwen3.5-35b-a3b-nothink" =
+            { model = "qwen3.5-35b-a3b"; params = qwen35Nothink; };
+          "qwen3.5-122b-a10b-think" =
+            { model = "qwen3.5-122b-a10b"; params = qwen35Think; };
+          "qwen3.5-122b-a10b-nothink" =
+            { model = "qwen3.5-122b-a10b"; params = qwen35Nothink; };
+
+          sweep.model = "sweep-v2-7b";
+          sweep-v2-7b.model = "sweep-v2-7b";
+          "sweep-1.5b".model = "sweep-1.5b";
+          "sweep-0.5b".model = "sweep-0.5b";
         };
         grapefruitCatchall = {
           model_name = "*";
@@ -127,15 +138,14 @@ in
             api_key = "dummy";
           } // extra;
         };
-        mkEntries = clientName: { model, params }:
-          let hosts = models.${model}.hosts; in
+        mkEntries = clientName: { model, params ? {} }:
+          let inherit (models.${model}) hosts; in
             [ (mkModel clientName (builtins.head hosts) model params) ]
             ++ map
               (h: mkModel "fb-${clientName}" h model params)
               (builtins.tail hosts);
         mkFallback = clientName: { model, ... }:
-          let hosts = models.${model}.hosts; in
-          if builtins.length hosts < 2 then []
+          if builtins.length models.${model}.hosts < 2 then []
           else [ { "${clientName}" = [ "fb-${clientName}" ]; } ];
       in {
         model_list = builtins.concatLists (builtins.attrValues

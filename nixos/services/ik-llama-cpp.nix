@@ -2,9 +2,12 @@
 
 let
   server = "${pkgs.ik-llama-cpp}/bin/llama-server";
+  # nothink/instruct defaults; router overrides per-request for think models
   base = server
     + " --host 127.0.0.1 --port " + "$" + "{PORT}"
-    + " --jinja -ngl 999";  #--run-time-repack";
+    + " --jinja -ngl 999"
+    + " --temp 0.7 --top-p 0.8 --top-k 20 --min-p 0.0 --presence-penalty 1.5";
+    #--run-time-repack
 
   configFile = (pkgs.formats.yaml { }).generate "llama-swap.yaml" {
     healthCheckTimeout = 120;
@@ -15,8 +18,7 @@ let
           + " --cache-type-k q8_0 --cache-type-v q8_0"
           + " --cache-ram 4096"
           + " --ctx-size 262144"
-          + " --ctx-checkpoints-interval 8192" # 32*8192=256k coverage
-          + " --top-k 20 --presence-penalty 1.5";
+          + " --ctx-checkpoints-interval 8192"; # 32*8192=256k coverage
       };
       "qwen3.5-27b" = {
         cmd = base
@@ -24,8 +26,7 @@ let
           + " --cache-type-k q8_0 --cache-type-v q8_0"
           + " --cache-ram 4096"
           + " --ctx-size 196608"
-          + " --ctx-checkpoints-interval 6144" # 32*6144=196k coverage
-          + " --top-k 20";
+          + " --ctx-checkpoints-interval 6144"; # 32*6144=196k coverage
       };
     };
   };

@@ -1,5 +1,62 @@
 { pkgs, lib, config, utils, ... }:
 
+let
+  # nothink/instruct params; router overrides per-request for think models
+  # can't do reasoning off, kwargs are then unable to override it
+  qwen35NoThinkAttrs = ''
+    ctx-size = 262144
+    temp = 0.7
+    top-p = 0.8
+    top-k = 20
+    min-p = 0.0
+    presence-penalty = 1.5
+    chat-template-kwargs = {"enable_thinking": false}
+  '';
+
+  # greedy, raw completion (no chat template)
+  sweepAttrs = ''
+    temp = 0
+  '';
+
+  generatedConfig = pkgs.writeText "llama-preset-generated.ini" ''
+    [*]
+    mmap = off
+    flash-attn = on
+
+    [qwen3.5-0.8b]
+    model = ${pkgs.qwen35-08b-q4kxl}
+    ${qwen35NoThinkAttrs}
+    [qwen3.5-27b]
+    model = ${pkgs.qwen35-27b-q4kxl}
+    ${qwen35NoThinkAttrs}
+    [qwen3.5-35b-a3b]
+    model = ${pkgs.qwen35-35b-a3b-mxfp4}
+    ${qwen35NoThinkAttrs}
+    [qwen3.5-122b-a10b]
+    model = ${pkgs.qwen35-122b-a10b-mxfp4}/Qwen3.5-122B-A10B-MXFP4_MOE-00001-of-00003.gguf
+    ${qwen35NoThinkAttrs}
+    [sweep-v2-7b]
+    model = ${pkgs.sweep-v2-7b}
+    ctx-size = 32768
+    ${sweepAttrs}
+    [sweep-1.5b]
+    model = ${pkgs.sweep-1_5b}
+    ctx-size = 8192
+    ${sweepAttrs}
+    [sweep-0.5b]
+    model = ${pkgs.sweep-0_5b}
+    ctx-size = 8192
+    ${sweepAttrs}
+  '';
+
+  effectiveConfig = "/var/lib/llama/.effective.config.ini";
+  localConfig = "/var/lib/llama/config.ini";
+
+  mergeScript = pkgs.writeShellScript "llama-merge-config" ''
+    cat ${generatedConfig} > ${effectiveConfig}
+    [[ -f ${localConfig} ]] && cat ${localConfig} >> ${effectiveConfig}
+  '';
+in
 {
   services.llama-cpp = {
     enable = true;
@@ -39,8 +96,8 @@
     model = "/-unused-";
     extraFlags = [
       "--models-dir" "/var/lib/llama"
-      "--models-preset" "/var/lib/llama/config.ini"
-      "--models-max" "3"
+      "--models-preset" effectiveConfig
+      "--models-max" "2"
       #"--models-max" "1"
       "-ngl" "999"
       "--no-mmap"
@@ -48,7 +105,19 @@
       "--offline"
     ];
   };
+  users.groups.llama-cpp = { };
+  users.users.llama-cpp = {
+    isSystemUser = true;
+    group = "llama-cpp";
+    extraGroups = [ "video" "render" ];
+  };
+
   systemd.services.llama-cpp.serviceConfig = {
+    ExecStartPre = [ mergeScript ];
+    ReadWritePaths = [ "/var/lib/llama" ];
+    DynamicUser = lib.mkForce false;
+    User = "llama-cpp";
+    Group = "llama-cpp";
     # persist shader cache
     Environment = [ "XDG_CACHE_HOME=/var/lib/llama/.cache" ];
     # omit `-m <model>`
@@ -62,6 +131,10 @@
   };
 
   environment.persistence."/mnt/persist".directories = [
-    { directory = "/var/lib/llama"; }
+    {
+      directory = "/var/lib/llama";
+      user = "llama-cpp";
+      group = "llama-cpp";
+    }
   ];
 }

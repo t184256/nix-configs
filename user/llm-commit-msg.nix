@@ -6,7 +6,7 @@ let
     exec ${llm-commit-msg-upstream}/bin/llm-commit-msg generate \
       --api-endpoint "https://llm.slop.unboiled.info" \
       --api-token-file /mnt/secrets/llm \
-      --model qwen3.5-dense-blitz \
+      --model qwen3.5-08b-nothink \
       "$@"
   '';
 in
