@@ -2,22 +2,27 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "8429";
-  overrides-fresh = _: {
+  newerVer = "8744";
+  overrides-fresh = old: {
     name = "llama-cpp-${newerVer}";
     version = newerVer;
     src = prev.fetchFromGitHub {
       owner = "ggml-org";
       repo = "llama.cpp";
       tag = "b${newerVer}";
-      hash = "sha256-yrE+8h7RxRttMyBs3dlJQ+NEnO65ZIsl/CArnjdOfFU=";
+      hash = "sha256-xLsJ8FjDzneyXlGXuGF5RV4xo3VHkMjNRGVPxS5Ihf0=";
       leaveDotGit = true;
       postFetch = ''
         git -C "$out" rev-parse --short HEAD > $out/COMMIT
         find "$out" -name .git -print0 | xargs -0 rm -rf
       '';
     };
-    npmDepsHash = "sha256-DxgUDVr+kwtW55C4b89Pl+j3u2ILmACcQOvOBjKWAKQ=";
+    npmDepsHash = "sha256-eeftjKt0FuS0Dybez+Iz9VTVMA4/oQVh+3VoIqvhVMw=";
+    # add stub tools/server/public/index.html.gz to pacify upstream patchPhase
+    prePatch = (old.prePatch or "") + ''
+      mkdir -p tools/server/public
+      touch tools/server/public/index.html.gz
+    '';
   };
   llama-cpp =
     if prev.lib.versionAtLeast prev.llama-cpp.version newerVer
