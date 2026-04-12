@@ -1,0 +1,20 @@
+--- a/packages/coding-agent/src/modes/interactive/components/user-message.ts
++++ b/packages/coding-agent/src/modes/interactive/components/user-message.ts
+@@ -11,7 +11,6 @@
+ export class UserMessageComponent extends Container {
+ 	constructor(text: string, markdownTheme: MarkdownTheme = getMarkdownTheme()) {
+ 		super();
+-		this.addChild(new Spacer(1));
+ 		this.addChild(
+ 			new Markdown(text, 1, 1, markdownTheme, {
+ 				bgColor: (text: string) => theme.bg("userMessageBg", text),
+--- a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
++++ b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
+@@ -65,7 +65,6 @@
+ 		);
+ 
+ 		if (hasVisibleContent) {
+-			this.contentContainer.addChild(new Spacer(1));
+ 		}
+ 
+ 		// Render content in order
