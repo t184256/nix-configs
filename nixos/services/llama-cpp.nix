@@ -1,8 +1,6 @@
 { pkgs, lib, config, utils, ... }:
 
 let
-  # nothink/instruct params; router overrides per-request for think models
-  # can't do reasoning off, kwargs are then unable to override it
   qwen35NoThinkAttrs = ''
     ctx-size = 262144
     temp = 0.7

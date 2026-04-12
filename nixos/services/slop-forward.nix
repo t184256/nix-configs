@@ -67,7 +67,7 @@ in
     port = 11110;
     settings =
       let
-        plum  = "http://192.168.99.53:11111";
+        plum  = "http://192.168.99.53:11111/v1";
         grape = "http://192.168.99.52:11111";
         qwen35Think = {
           temperature = 0.6;
