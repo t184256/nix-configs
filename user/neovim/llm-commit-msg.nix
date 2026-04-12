@@ -1,7 +1,8 @@
 { pkgs, config, inputs, ... }:
 
 let
-  llm-commit-msg-pkgs = inputs.llm-commit-msg.packages.${pkgs.system};
+  llm-commit-msg-pkgs =
+    inputs.llm-commit-msg.packages.${pkgs.stdenv.hostPlatform.system};
 in
 {
   imports = [ ../config/neovim.nix ];

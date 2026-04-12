@@ -27,7 +27,11 @@
     neededForBoot = true;
   };
 
-  fileSystems."/nix" = { device = "/mnt/persist/nix"; options = [ "bind" ]; };
+  fileSystems."/nix" = {
+    device = "/mnt/persist/nix";
+    fsType = "none";
+    options = [ "bind" ];
+  };
 
   fileSystems."/boot" = {
     device = "/dev/disk/by-partlabel/LOQUAT_BOOT";
@@ -40,6 +44,7 @@
 
   fileSystems."/mnt/storage" = {
     device = "/mnt/persist";
+    fsType = "none";
     options = [ "bind" ];
   };
 

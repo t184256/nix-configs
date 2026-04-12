@@ -14,5 +14,9 @@
     fsType = "ext4";
     neededForBoot = true;
   };
-  fileSystems."/nix" = { device = "/mnt/persist/nix"; options = [ "bind" ]; };
+  fileSystems."/nix" = {
+    device = "/mnt/persist/nix";
+    fsType = "none";
+    options = [ "bind" ];
+  };
 }

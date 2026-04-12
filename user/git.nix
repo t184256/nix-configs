@@ -36,6 +36,7 @@ in
 {
   programs.git = {
     enable = true;
+    signing.format = "openpgp";
     settings = {
       user.name = "Alexander Sosedkin";
       user.email = config.identity.email;
