@@ -68,7 +68,7 @@ in
     settings =
       let
         plum  = "http://192.168.99.53:11111/v1";
-        grape = "http://192.168.99.52:11111";
+        grapefruit = "http://192.168.99.52:11111";
         qwen35Think = {
           temperature = 0.6;
           top_p = 0.95;
@@ -89,15 +89,15 @@ in
         };
         # hosts: primary first, fallbacks after
         models = {
-          "qwen3.5-35b-a3b".hosts = [ grape plum ];
-          "qwen3.5-27b".hosts = [ plum grape ];
+          "qwen3.5-35b-a3b".hosts = [ plum grapefruit ];
+          "qwen3.5-27b".hosts = [ plum grapefruit ];
 
-          "qwen3.5-0.8b".hosts = [ grape ];
-          "qwen3.5-122b-a10b".hosts = [ grape ];
+          "qwen3.5-0.8b".hosts = [ grapefruit ];
+          "qwen3.5-122b-a10b".hosts = [ grapefruit ];
 
-          "sweep-v2-7b".hosts = [ grape ];
-          "sweep-1.5b".hosts = [ grape ];
-          "sweep-0.5b".hosts = [ grape ];
+          "sweep-v2-7b".hosts = [ grapefruit ];
+          "sweep-1.5b".hosts = [ grapefruit ];
+          "sweep-0.5b".hosts = [ grapefruit ];
         };
         aliases = {
           "qwen3.5-0.8b-think" =
@@ -126,7 +126,7 @@ in
           model_name = "*";
           litellm_params = {
             model = "custom_openai/*";
-            api_base = grape;
+            api_base = grapefruit;
             api_key = "dummy";
           };
         };
