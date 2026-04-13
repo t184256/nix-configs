@@ -23,7 +23,7 @@ in {
         openai = openai-slim;
       }).overrideAttrs (old: {
         patches = (old.patches or []) ++ [
-          ./litellm/cancel-on-disconnect.patch
+          ./litellm/14295-cancel-on-disconnect.patch
         ];
         propagatedBuildInputs =
           (prev.lib.filter (d: !(prev.lib.elem d.pname unneeded))

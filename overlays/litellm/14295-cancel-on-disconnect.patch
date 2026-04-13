@@ -1,0 +1,75 @@
+From eycjur <eycjur@gmail.com> Sat Sep 06 08:56:29 2025
+From: eycjur <eycjur@gmail.com>
+Date: Sat, 6 Sep 2025 08:56:29 +0900
+Subject: [PATCH] cancel upstream on client disconnect
+
+https://github.com/BerriAI/litellm/pull/14295
+Reverted from main due to CI flakiness; applied locally.
+
+--- a/litellm/constants.py	2026-04-13 12:07:35.125369863 +0000
++++ b/litellm/constants.py	2026-04-13 12:07:58.162000000 +0000
+@@ -1539,3 +1539,8 @@
+ MAX_COMPETITOR_NAMES = int(os.getenv("MAX_COMPETITOR_NAMES", 100))
+ COMPETITOR_LLM_TEMPERATURE = float(os.getenv("COMPETITOR_LLM_TEMPERATURE", 0.3))
+ DEFAULT_COMPETITOR_DISCOVERY_MODEL = "gpt-4o-mini"
++
++# How long to wait for a client to disconnect before giving up on cancellation.
++DEFAULT_CLIENT_DISCONNECT_CHECK_TIMEOUT_SECONDS = int(
++    os.getenv("LITELLM_CLIENT_DISCONNECT_CHECK_TIMEOUT", 600)
++)
+--- a/litellm/proxy/common_request_processing.py	2026-04-13 12:07:35.354158418 +0000
++++ b/litellm/proxy/common_request_processing.py	2026-04-13 12:07:58.163613805 +0000
+@@ -25,6 +25,7 @@
+ from litellm._uuid import uuid
+ from litellm.constants import (
+     DD_TRACER_STREAMING_CHUNK_YIELD_RESOURCE,
++    DEFAULT_CLIENT_DISCONNECT_CHECK_TIMEOUT_SECONDS,
+     DEFAULT_MAX_RECURSE_DEPTH,
+     LITELLM_DETAILED_TIMING,
+     MAX_PAYLOAD_SIZE_FOR_DEBUG_LOG,
+@@ -411,6 +412,26 @@
+     return False
+
+
++async def _check_request_disconnection(
++    request: Request, llm_api_call_task: "asyncio.Future[Any]"
++) -> None:
++    """
++    Polls for an http.disconnect message and cancels the LLM task when
++    found.  Gives up after DEFAULT_CLIENT_DISCONNECT_CHECK_TIMEOUT_SECONDS
++    to avoid accumulating idle loops on long-lived connections.
++    """
++    start_time = time.time()
++    while (
++        time.time() - start_time
++        < DEFAULT_CLIENT_DISCONNECT_CHECK_TIMEOUT_SECONDS
++    ):
++        await asyncio.sleep(1)
++        message = await request.receive()
++        if message.get("type") == "http.disconnect":
++            llm_api_call_task.cancel()
++            return
++
++
+ class ProxyBaseLLMRequestProcessing:
+     def __init__(self, data: dict):
+         self.data = data
+@@ -950,7 +971,17 @@
+             *tasks
+         )  # run the moderation check in parallel to the actual llm api call
+
+-        responses = await llm_responses
++        disconnect_task = asyncio.create_task(
++            _check_request_disconnection(request, llm_responses)
++        )
++        try:
++            responses = await llm_responses
++            disconnect_task.cancel()
++        except asyncio.CancelledError:
++            raise HTTPException(
++                status_code=499,
++                detail="Client disconnected the request",
++            )
+
+         response = responses[1]
+
