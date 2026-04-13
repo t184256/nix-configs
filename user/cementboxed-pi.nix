@@ -56,7 +56,7 @@ let
         "''${EXTRA_WORKTREE[@]}" \
         --chdir "/home/${VM_USERNAME}/workspace" \
         ${VM_USERNAME}@${VM_HOSTNAME} \
-        pi "$@"
+        /home/${VM_USERNAME}/.pi/run "$@"
   '';
 in
 {
