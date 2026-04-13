@@ -7,7 +7,8 @@ let
     + " --host 127.0.0.1 --port " + "$" + "{PORT}"
     + " --jinja -ngl 999 "
     + "--chat-template-kwargs {\\\"enable_thinking\\\":false}"
-    + " --temp 0.7 --top-p 0.8 --top-k 20 --min-p 0.0 --presence-penalty 1.5";
+    + " --temp 0.7 --top-p 0.8 --top-k 20 --min-p 0.0 --presence-penalty 1.5"
+    + " --parallel 1";
     #--run-time-repack
 
   configFile = (pkgs.formats.yaml { }).generate "llama-swap.yaml" {

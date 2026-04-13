@@ -97,6 +97,7 @@ in
       "--models-preset" effectiveConfig
       "--models-max" "2"
       #"--models-max" "1"
+      "--parallel" "1"
       "-ngl" "999"
       "--no-mmap"
       "--jinja"
