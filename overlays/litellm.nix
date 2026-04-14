@@ -24,6 +24,7 @@ in {
       }).overrideAttrs (old: {
         patches = (old.patches or []) ++ [
           ./litellm/14295-cancel-on-disconnect.patch
+          ./litellm/custom-openai-extra-body.patch
         ];
         propagatedBuildInputs =
           (prev.lib.filter (d: !(prev.lib.elem d.pname unneeded))

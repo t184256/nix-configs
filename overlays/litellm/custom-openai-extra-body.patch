@@ -1,0 +1,9 @@
+--- a/litellm/constants.py
++++ b/litellm/constants.py
+@@ -729,6 +729,7 @@
+ openai_compatible_providers: List = [
+     "anyscale",
+     "groq",
++    "custom_openai",
+     "nvidia_nim",
+     "cerebras",
