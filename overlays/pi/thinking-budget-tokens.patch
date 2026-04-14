@@ -1,0 +1,42 @@
+--- a/packages/ai/src/types.ts
++++ b/packages/ai/src/types.ts
+@@ -112,6 +112,7 @@
+ 	reasoning?: ThinkingLevel;
+ 	/** Custom token budgets for thinking levels (token-based providers only) */
+ 	thinkingBudgets?: ThinkingBudgets;
++	thinkingBudgetTokens?: number;
+ }
+
+ // Generic StreamFunction with typed options.
+--- a/packages/ai/src/providers/openai-completions.ts
++++ b/packages/ai/src/providers/openai-completions.ts
+@@ -55,6 +55,7 @@
+ export interface OpenAICompletionsOptions extends StreamOptions {
+ 	toolChoice?: "auto" | "none" | "required" | { type: "function"; function: { name: string } };
+ 	reasoningEffort?: "minimal" | "low" | "medium" | "high" | "xhigh";
++	thinkingBudgetTokens?: number;
+ }
+
+ export const streamOpenAICompletions: StreamFunction<"openai-completions", OpenAICompletionsOptions> = (
+@@ -316,11 +317,13 @@
+ 	const base = buildBaseOptions(model, options, apiKey);
+ 	const reasoningEffort = supportsXhigh(model) ? options?.reasoning : clampReasoning(options?.reasoning);
+ 	const toolChoice = (options as OpenAICompletionsOptions | undefined)?.toolChoice;
++	const thinkingBudgetTokens = options?.thinkingBudgetTokens;
+
+ 	return streamOpenAICompletions(model, context, {
+ 		...base,
+ 		reasoningEffort,
+ 		toolChoice,
++		thinkingBudgetTokens,
+ 	} satisfies OpenAICompletionsOptions);
+ };
+
+@@ -413,6 +416,7 @@
+ 		(params as any).enable_thinking = !!options?.reasoningEffort;
+ 	} else if (compat.thinkingFormat === "qwen-chat-template" && model.reasoning) {
+ 		(params as any).chat_template_kwargs = { enable_thinking: !!options?.reasoningEffort };
++		if (options?.thinkingBudgetTokens !== undefined) (params as any).thinking_budget_tokens = options.thinkingBudgetTokens;
+ 	} else if (compat.thinkingFormat === "openrouter" && model.reasoning) {
+ 		// OpenRouter normalizes reasoning across providers via a nested reasoning object.
+ 		const openRouterParams = params as typeof params & { reasoning?: { effort?: string } };
