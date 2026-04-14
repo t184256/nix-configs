@@ -25,7 +25,7 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2025122801; serial number
+                                 2026041401; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
@@ -89,7 +89,7 @@ let
     _xmpp-client._tcp 86400 IN SRV 5 0 5222 unboiled.info.
     _xmpp-server._tcp 86400 IN SRV 5 0 5269 unboiled.info.
 
-    @               IN TXT   "v=spf1 a:unboiled.info -all"
+    @               IN TXT   "v=spf1 mx -all"
     _dmarc          IN TXT   "v=DMARC1;p=reject;rua=mailto:postmaster@unboiled.info;ruf=mailto:postmaster@unboiled.info;fo=1"
     _domainkey      IN TXT   "o=-"
     mail._domainkey IN TXT   "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0Yc6v7MqWEVYJf/SWl+v5+NaggiKUnCD8Zf7gHowlDVrfi0j3miKunSQuct8WJYGSJTMZmWYCvIDv7Axye58Pdj83HqoLxEDzAky0VKyvpgtTpSh4HKJm0uElB1AnHgxOEZEwA1MPiceLohfY+FBI6cYi4j+99JymxWW1eEnqIQIDAQAB"
