@@ -36,7 +36,17 @@ let
     if prev.lib.versionAtLeast prev.llama-cpp-rocm.version newerVer
     then prev.llama-cpp-rocm
     else prev.llama-cpp-rocm.overrideAttrs overrides-fresh;
+
+  llama-cpp-rocm-gfx1151 = llama-cpp-rocm.overrideAttrs (oa: {
+    name = "llama-cpp-rocm-gfx1151-${newerVer}";
+    version = newerVer;
+    patches = (oa.patches or []) ++ [
+      # https://github.com/ggml-org/llama.cpp/pull/21344 slightly boosts PP,
+      # and lowers TG, which I'm OK with for the slow-mo use case
+      ./21344-gfx1151-optimization.patch
+    ];
+  });
 in
 {
-  inherit llama-cpp llama-cpp-vulkan llama-cpp-rocm;
+  inherit llama-cpp llama-cpp-vulkan llama-cpp-rocm llama-cpp-rocm-gfx1151;
 }
