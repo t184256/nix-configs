@@ -1,0 +1,16 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -160,4 +160,12 @@ if(VLLM_GPU_LANG STREQUAL "CUDA")
+   cuda_archs_loose_intersection(CUDA_ARCHS
+     "${CUDA_SUPPORTED_ARCHS}" "${CUDA_ARCHS}")
+   message(STATUS "CUDA supported target architectures: ${CUDA_ARCHS}")
++  # Allow restricting to specific archs (e.g. single-GPU builds) without
++  # rebuilding torch. torch's TorchConfig.cmake injects all-arch gencode
++  # flags into CMAKE_CUDA_FLAGS before clear_cuda_arches() runs, so env
++  # vars like TORCH_CUDA_ARCH_LIST have no effect. Override CUDA_ARCHS here.
++  if(DEFINED ENV{VLLM_CUDA_ARCHS_OVERRIDE})
++    set(CUDA_ARCHS $ENV{VLLM_CUDA_ARCHS_OVERRIDE})
++    message(STATUS "CUDA architectures overridden: ${CUDA_ARCHS}")
++  endif()
+ else()

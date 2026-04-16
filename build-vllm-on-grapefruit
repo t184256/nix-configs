@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Build vllm for plum on grapefruit and push the result to plum.
+# Run from the repo root.
+#
+# Steps:
+#   1. evaluate the vllm .drv from plum's NixOS config
+#   2. copy the .drv closure + already-realised input paths to grapefruit
+#   3. build ^out on grapefruit (with CUDA substituters for the rest)
+#   4. copy the result back to local store
+#   5. copy the result to plum's store
+
+set -euo pipefail
+
+GRAPEFRUIT=monk@192.168.99.52
+PLUM=monk@192.168.99.53
+
+CUDA_SUBSTITUTERS="https://cache.nixos-cuda.org"
+CUDA_KEYS="cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="
+
+# 1. Evaluate the vllm drv from plum's service definition
+echo "==> evaluating drv..."
+script_drv=$(nix path-info --derivation \
+  .#nixosConfigurations.plum.config.systemd.services.vllm.serviceConfig.ExecStart)
+vllm_drv=$(nix derivation show "$script_drv" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+drvs = [k for drv in d.values() for k in drv.get('inputDrvs', {}) if 'vllm' in k]
+print(drvs[0])
+")
+echo "    $vllm_drv"
+
+# 2. Copy the .drv closure to grapefruit, plus any input store paths we already
+#    have locally (sources, patches, etc.) so grapefruit doesn't re-fetch them.
+echo "==> copying drv closure to grapefruit..."
+nix copy --derivation --to "ssh-ng://$GRAPEFRUIT" "$vllm_drv"
+
+echo "==> copying locally-available input paths to grapefruit..."
+# Collect inputSrcs + realized inputDrv outputs from the vllm drv itself
+# (direct inputs only — no recursive walk into the full toolchain).
+mapfile -t input_paths < <(nix derivation show "$vllm_drv" | python3 -c "
+import sys, json, subprocess, os
+d = json.load(sys.stdin)
+candidates = set()
+for drv in d.values():
+    candidates.update(drv.get('inputSrcs', []))
+    for dep_drv, info in drv.get('inputDrvs', {}).items():
+        for out in info.get('outputs', ['out']):
+            # derive the realised output path from the drv
+            r = subprocess.run(
+                ['nix', 'path-info', f'{dep_drv}^{out}'],
+                capture_output=True, text=True)
+            if r.returncode == 0:
+                candidates.add(r.stdout.strip())
+for p in sorted(candidates):
+    if p and os.path.exists(p):
+        print(p)
+")
+if (( ${#input_paths[@]} )); then
+  nix copy --to "ssh-ng://$GRAPEFRUIT" "${input_paths[@]}"
+fi
+
+# 3. Build on grapefruit
+echo "==> building on grapefruit..."
+# Pass the command as a single double-quoted string so the local shell expands
+# the variables, while the inner single quotes protect spaces on the remote.
+ssh "$GRAPEFRUIT" "nix build -L --cores 32 \
+  '${vllm_drv}^out' \
+  --option extra-substituters '${CUDA_SUBSTITUTERS}' \
+  --option extra-trusted-public-keys '${CUDA_KEYS}'"
+
+# 4. Copy the result back to local store
+echo "==> pulling result to local store..."
+nix copy --no-check-sigs -s --from "ssh-ng://$GRAPEFRUIT" "${vllm_drv}^out"
+
+# 5. Push to plum
+echo "==> pushing result to plum..."
+nix copy --no-check-sigs -s --to "ssh-ng://$PLUM" "${vllm_drv}^out"
+
+echo "==> done. activate on plum with: nixos-rebuild switch"

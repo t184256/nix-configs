@@ -1,0 +1,81 @@
+I struggle to fit 9B, let alone 27B
+next step for single-GPU 27B could be cyankiwi INT8-INT4 at 17.7 GiB
+  + vision guard patch to vllm's qwen3_5.py
+DFlash starts strong, but then the speed falls off a cliff
+Apparently there's no way to make the draft model use sliding window in vllm,
+similar to sglang's --speculative-dflash-draft-window-size
+
+# QuantTrio/Qwen3.5-9B-AWQ
+
+## 9B AWQ plain
+  waiting for server.................................................... ready
+    target      pp      ttft    pp t/s    decode t/s    gen
+  --------  ------  --------  --------  ------------  -----
+       256     240    0.069s     3503         81.3    128
+      8192    7296    1.625s     4491         78.8    128
+     16384   14578    3.454s     4220         76.7    128
+     32768   29141    7.392s     3942         73.0    128
+     65536   58268   17.265s     3375         67.1    128
+    131072  116522   42.345s     2752         58.4    128
+    196608  174777   75.968s     2301         51.7    128
+    256000  227569  113.543s     2004         46.8    128
+
+## 9B AWQ + DFlash (15 token)
+    target      pp      ttft    pp t/s    decode t/s    gen
+  --------  ------  --------  --------  ------------  -----
+       256     240    0.091s     2631        203.3    128
+      8192    7296    1.660s     4395        148.2    128
+     16384   14578    3.490s     4177        123.2    128
+     32768   29141    7.505s     3883         70.8    128
+     65536   58268   17.337s     3361         35.7    128
+
+## 9B AWQ + DFlash (5 token)
+  waiting for server................................................... ready
+    target      pp      ttft    pp t/s    decode t/s    gen
+  --------  ------  --------  --------  ------------  -----
+       256     240    0.093s     2572        192.3    128
+      8192    7296    1.699s     4293        127.6    128
+     16384   14578    3.639s     4006        109.0    128
+     32768   29141    7.828s     3723         66.1    128
+     65536   58268   17.483s     3333         34.1    128
+
+...
+Engine 000: Avg prompt throughput: 5826.6 tokens/s, Avg generation throughput: 2.1 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 52.1%, Prefix cache hit rate: 0.0%
+SpecDecoding metrics: Mean acceptance length: 2.86, Accepted throughput: 1.30 tokens/s, Drafted throughput: 3.50 tokens/s, Accepted: 13 tokens, Drafted: 35 tokens, Per-position acceptance rate: 0.714, 0.571, 0.286, 0.143, 0.143, Avg Draft acceptance rate: 37.1%
+Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 10.7 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 27.8%, Prefix cache hit rate: 0.0%
+SpecDecoding metrics: Mean acceptance length: 2.30, Accepted throughput: 6.10 tokens/s, Drafted throughput: 23.50 tokens/s, Accepted: 61 tokens, Drafted: 235 tokens, Per-position acceptance rate: 0.745, 0.277, 0.170, 0.085, 0.021, Avg Draft acceptance rate: 26.0%
+Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 51.3%, Prefix cache hit rate: 0.0%
+Engine 000: Avg prompt throughput: 5826.8 tokens/s, Avg generation throughput: 12.8 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 24.7%, Prefix cache hit rate: 0.0%
+SpecDecoding metrics: Mean acceptance length: 2.54, Accepted throughput: 3.85 tokens/s, Drafted throughput: 12.50 tokens/s, Accepted: 77 tokens, Drafted: 250 tokens, Per-position acceptance rate: 0.720, 0.380, 0.220, 0.140, 0.080, Avg Draft acceptance rate: 30.8%
+Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 51.3%, Prefix cache hit rate: 0.0%
+Engine 000: Avg prompt throughput: 5826.4 tokens/s, Avg generation throughput: 12.8 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 21.2%, Prefix cache hit rate: 0.0%
+SpecDecoding metrics: Mean acceptance length: 2.42, Accepted throughput: 3.75 tokens/s, Drafted throughput: 13.25 tokens/s, Accepted: 75 tokens, Drafted: 265 tokens, Per-position acceptance rate: 0.660, 0.434, 0.189, 0.094, 0.038, Avg Draft acceptance rate: 28.3%
+Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 47.7%, Prefix cache hit rate: 0.0%
+Engine 000: Avg prompt throughput: 5826.6 tokens/s, Avg generation throughput: 12.8 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 18.1%, Prefix cache hit rate: 0.0%
+SpecDecoding metrics: Mean acceptance length: 2.61, Accepted throughput: 3.95 tokens/s, Drafted throughput: 12.25 tokens/s, Accepted: 79 tokens, Drafted: 245 tokens, Per-position acceptance rate: 0.694, 0.449, 0.265, 0.143, 0.061, Avg Draft acceptance rate: 32.2%
+Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 44.6%, Prefix cache hit rate: 0.0%
+
+## 9B AWQ + DFlash (3 token)
+    target      pp      ttft    pp t/s    decode t/s    gen
+  --------  ------  --------  --------  ------------  -----
+       256     240    0.089s     2700        163.3    128
+      8192    7295    1.648s     4428        110.8    128
+     16384   14578    3.477s     4193         88.6    128
+     32768   29141    7.447s     3913         58.8    128
+     65536   58268   17.200s     3388         30.6    128
+
+SpecDecoding metrics: Mean acceptance length: 2.73, Accepted throughput: 16.30 tokens/s, Drafted throughput: 28.20 tokens/s, Accepted: 163 tokens, Drafted: 282 tokens, Per-position acceptance rate: 0.777, 0.543, 0.415, Avg Draft acceptance rate: 57.8%
+Engine 000: Avg prompt throughput: 2914.2 tokens/s, Avg generation throughput: 12.8 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 21.8%, Prefix cache hit rate: 0.0%
+SpecDecoding metrics: Mean acceptance length: 2.76, Accepted throughput: 8.10 tokens/s, Drafted throughput: 13.80 tokens/s, Accepted: 81 tokens, Drafted: 138 tokens, Per-position acceptance rate: 0.826, 0.522, 0.413, Avg Draft acceptance rate: 58.7%
+Engine 000: Avg prompt throughput: 2914.0 tokens/s, Avg generation throughput: 12.8 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 21.8%, Prefix cache hit rate: 0.0%
+SpecDecoding metrics: Mean acceptance length: 2.63, Accepted throughput: 8.00 tokens/s, Drafted throughput: 14.70 tokens/s, Accepted: 80 tokens, Drafted: 147 tokens, Per-position acceptance rate: 0.755, 0.531, 0.347, Avg Draft acceptance rate: 54.4%
+Engine 000: Avg prompt throughput: 2914.0 tokens/s, Avg generation throughput: 12.8 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 21.8%, Prefix cache hit rate: 0.0%
+SpecDecoding metrics: Mean acceptance length: 2.63, Accepted throughput: 8.00 tokens/s, Drafted throughput: 14.70 tokens/s, Accepted: 80 tokens, Drafted: 147 tokens, Per-position acceptance rate: 0.796, 0.510, 0.327, Avg Draft acceptance rate: 54.4%
+Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 51.1%, Prefix cache hit rate: 0.0%
+Engine 000: Avg prompt throughput: 5826.4 tokens/s, Avg generation throughput: 12.8 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 18.4%, Prefix cache hit rate: 0.0%
+SpecDecoding metrics: Mean acceptance length: 2.19, Accepted throughput: 3.50 tokens/s, Drafted throughput: 8.85 tokens/s, Accepted: 70 tokens, Drafted: 177 tokens, Per-position acceptance rate: 0.610, 0.373, 0.203, Avg Draft acceptance rate: 39.5%
+Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 47.7%, Prefix cache hit rate: 0.0%
+Engine 000: Avg prompt throughput: 5826.1 tokens/s, Avg generation throughput: 12.8 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 14.5%, Prefix cache hit rate: 0.0%
+SpecDecoding metrics: Mean acceptance length: 2.19, Accepted throughput: 3.50 tokens/s, Drafted throughput: 8.85 tokens/s, Accepted: 70 tokens, Drafted: 177 tokens, Per-position acceptance rate: 0.610, 0.373, 0.203, Avg Draft acceptance rate: 39.5%
+Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 43.8%, Prefix cache hit rate: 0.0%
+

@@ -1,0 +1,15 @@
+diff --git a/vllm/v1/spec_decode/eagle.py b/vllm/v1/spec_decode/eagle.py
+--- a/vllm/v1/spec_decode/eagle.py
++++ b/vllm/v1/spec_decode/eagle.py
+@@ -431,8 +431,11 @@
+                     DFlashQwen3ForCausalLM,
+                 ),
+             )
++            # Cast to model dtype before combine_hidden_states.
++            # Hybrid models (e.g. Qwen3.5 GDN layers on SM86) may produce
++            # float32 aux hidden states; fc expects model dtype.
+             target_hidden_states = self.model.combine_hidden_states(
+-                target_hidden_states
++                target_hidden_states.to(self.dtype)
+             )
+             assert target_hidden_states.shape[-1] == self.hidden_size

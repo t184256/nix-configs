@@ -11,10 +11,12 @@
     ./hardware.nix
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
-    ../../nixos/services/ik-llama-cpp.nix
+    #../../nixos/services/ik-llama-cpp.nix
     ./bench-models.nix
+    ./bench-vllm.nix
     ./nvidia-settings.nix
     ./clevis-highlevel.nix
+    ../../nixos/services/vllm.nix
   ];
 
   nixpkgs.config.allowUnfreePredicate = pkg:

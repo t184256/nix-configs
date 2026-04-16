@@ -1,0 +1,18 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -267,6 +267,7 @@
+             CUDA_ARCHS "${FA3_ARCHS}")
+     endif()
+ 
++    if(FA3_ARCHS OR NOT VLLM_GPU_LANG STREQUAL "CUDA")
+     define_gpu_extension_target(
+         _vllm_fa3_C
+         DESTINATION vllm_flash_attn
+@@ -306,6 +307,7 @@
+         CUTE_SM90_EXTENDED_MMA_SHAPES_ENABLED
+         CUTLASS_ENABLE_GDC_FOR_SM90
+     )
++    endif() # FA3_ARCHS or non-CUDA: skip FA3 target for SM86-only builds
+ elseif(${CMAKE_CUDA_COMPILER_VERSION} VERSION_LESS 12.0)
+     message(STATUS "FA3 is disabled because CUDA version is not 12.0 or later.")
+ endif ()
