@@ -56,6 +56,10 @@ _:
       listen-address = "192.168.98.1";
       server = [];  # no upstream DNS servers needed
       dhcp-authoritative = true;
+      dhcp-host = [
+        "c8:53:09:19:d3:6c,192.168.98.2"
+        "34:5a:60:bd:7e:5f,192.168.98.3"
+      ];
       dhcp-option = [
         "option:router"  # no default route, must be ignored anyway
         "option:classless-static-route,192.168.98.0/24,192.168.98.1"  # !
@@ -73,7 +77,7 @@ _:
   };
   networking.firewall.allowedTCPPorts = [
     443 4433
-    2222
+    2222 2223
     47984 47989 47990 48010
   ];
   services.xinetd.enable = true;
@@ -96,6 +100,7 @@ _:
     internalInterfaces = [ "enp1s0" ];
     forwardPorts = [
      { proto = "tcp"; sourcePort = 2222; destination = "192.168.98.2:22"; }
+     { proto = "tcp"; sourcePort = 2223; destination = "192.168.98.3:22"; }
      { proto = "tcp"; sourcePort = 47984; destination = "192.168.98.2:47984"; }
      { proto = "tcp"; sourcePort = 47989; destination = "192.168.98.2:47989"; }
      { proto = "tcp"; sourcePort = 47990; destination = "192.168.98.2:47990"; }
