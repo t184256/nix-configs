@@ -69,7 +69,10 @@ _:
       ];
       dhcp-range = "192.168.98.2,192.168.98.2,255.255.255.0,10m";
       dhcp-broadcast = true;
-      address = "/meshcentral.unboiled.info./192.168.98.1";
+      address = [
+        "/meshcentral.unboiled.info./192.168.98.1"
+        "/tang.unboiled.info./192.168.98.1"
+      ];
       log-queries = true;
       log-debug = true;
       log-dhcp = true;
@@ -77,6 +80,7 @@ _:
   };
   networking.firewall.allowedTCPPorts = [
     443 4433
+    1449
     2222 2223
     47984 47989 47990 48010
   ];
@@ -91,6 +95,11 @@ _:
       name = "amt-fw"; unlisted = true; port = 4433;
       server = "/usr/bin/env";  # must be something executable
       extraConfig = "redirect = 192.168.99.2 4433";
+    }
+    {
+      name = "tang-fw"; unlisted = true; port = 1449;
+      server = "/usr/bin/env";  # must be something executable
+      extraConfig = "redirect = 192.168.99.2 1449";
     }
   ];
   networking.nat = {
