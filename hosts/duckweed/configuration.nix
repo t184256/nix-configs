@@ -11,7 +11,7 @@
     #../../nixos/services/ipfs/gateway.nix
     #../../nixos/services/ipfs/micro.nix
     #../../nixos/services/ipfs/node.nix
-    ../../nixos/services/jitsi.nix
+    #../../nixos/services/jitsi.nix
     ../../nixos/services/meshcentral.nix
     ../../nixos/services/microsocks.nix
     ../../nixos/services/nebula
