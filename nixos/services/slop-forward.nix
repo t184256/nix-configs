@@ -87,9 +87,12 @@ in
             chat_template_kwargs.enable_thinking = false;
           };
         };
+        qwen36Think = qwen35Think;
+        qwen36Nothink = qwen35Nothink;
         # hosts: primary first, fallbacks after
         models = {
           "qwen3.5-35b-a3b".hosts = [ plum grapefruit ];
+          "qwen3.6-35b-a3b".hosts = [ grapefruit ];
           "qwen3.5-27b".hosts = [ plum grapefruit ];
 
           "qwen3.5-0.8b".hosts = [ grapefruit ];
@@ -108,6 +111,10 @@ in
             { model = "qwen3.5-27b"; params = qwen35Think; };
           "qwen3.5-27b-nothink" =
             { model = "qwen3.5-27b"; params = qwen35Nothink; };
+          "qwen3.6-35b-a3b-think" =
+            { model = "qwen3.6-35b-a3b"; params = qwen36Think; };
+          "qwen3.6-35b-a3b-nothink" =
+            { model = "qwen3.6-35b-a3b"; params = qwen36Nothink; };
           "qwen3.5-35b-a3b-think" =
             { model = "qwen3.5-35b-a3b"; params = qwen35Think; };
           "qwen3.5-35b-a3b-nothink" =

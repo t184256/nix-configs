@@ -30,6 +30,9 @@ let
     [qwen3.5-35b-a3b]
     model = ${pkgs.qwen35-35b-a3b-mxfp4}
     ${qwen35NoThinkAttrs}
+    [qwen3.6-35b-a3b]
+    model = ${pkgs.qwen36-35b-a3b-mxfp4}
+    ${qwen35NoThinkAttrs}
     [qwen3.5-122b-a10b]
     model = ${pkgs.qwen35-122b-a10b-mxfp4}/Qwen3.5-122B-A10B-MXFP4_MOE-00001-of-00003.gguf
     ${qwen35NoThinkAttrs}

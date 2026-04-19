@@ -68,6 +68,11 @@ in
     name = "Qwen3.5-35B-A3B-MXFP4_MOE.gguf";
     hash = "sha256-DxNaWRWQMPRxBHerxvmSLS8TVSyFv/c23qrvcQI813A=";
   };
+  qwen36-35b-a3b-mxfp4 = fetchHF {
+    repo = "unsloth/Qwen3.6-35B-A3B-GGUF";
+    name = "Qwen3.6-35B-A3B-MXFP4_MOE.gguf";
+    hash = "sha256-L90gmXxNiO4l9w9QDGH4uZk3jZKrBV+dRQ/HDWFxWNM=";
+  };
   # 122B is sharded; llama.cpp takes path to first shard
   qwen35-122b-a10b-mxfp4 = fetchHFSharded (rec {
     pname = "qwen35-122b-a10b-mxfp4";
