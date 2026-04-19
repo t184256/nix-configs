@@ -3,12 +3,18 @@ final: prev:
 let
   # usage: `nix-hf-hash unsloth/Qwen3.5-0.8B-GGUF Qwen3.5-0.8B-UD-Q4_K_XL.gguf`
   nix-hf-hash = prev.writers.writePython3Bin "nix-hf-hash" { } ''
-    import base64, binascii, http.client, sys
+    import base64, binascii, hashlib, http.client, sys, urllib.request
     repo, filename = sys.argv[1], sys.argv[2]
+    url = f"https://huggingface.co/{repo}/resolve/main/{filename}"
     conn = http.client.HTTPSConnection("huggingface.co")
     conn.request("HEAD", f"/{repo}/resolve/main/{filename}")
-    etag = conn.getresponse().getheader("x-linked-etag").strip('"')
-    print(f"sha256-{base64.b64encode(binascii.unhexlify(etag)).decode()}")
+    etag = (conn.getresponse().getheader("x-linked-etag") or "").strip('"')
+    if len(etag) == 64:  # LFS: ETag is SHA-256
+        h = base64.b64encode(binascii.unhexlify(etag)).decode()
+    else:  # non-LFS: ETag is SHA-1; download and hash
+        with urllib.request.urlopen(url) as resp:
+            h = base64.b64encode(hashlib.sha256(resp.read()).digest()).decode()
+    print(f"sha256-{h}")
   '';
 
   # path defaults to name; set explicitly when the file lives in a subdir
