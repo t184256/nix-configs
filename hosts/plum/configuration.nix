@@ -13,11 +13,13 @@
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/ik-llama-cpp.nix
     ./bench-models.nix
+    ./bench-sglang.nix
     ./clevis-highlevel.nix
     ./cooling/nvidia-settings.nix
     ./cooling/fancontrol.nix
     ./cooling/measurement/calibrate-fancontroller.nix
     ./cooling/temps.nix
+    ../../nixos/services/sglang.nix
   ];
 
   nixpkgs.config.allowUnfreePredicate = pkg:

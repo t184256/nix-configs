@@ -34,6 +34,13 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
+    sglang-dev.url = "github:t184256/sglang-dev";
+    # nixpkgs pinned by the flox sglang-dev sm86 variant files — has the
+    # torch 2.9.1 commit where c10_cuda_check_implementation takes int (not
+    # unsigned int); the sgl_kernel 0.3.21 PyPI wheel was compiled against it.
+    nixpkgs-sglang.url = "github:NixOS/nixpkgs/0182a361324364ae3f436a63005877674cf45efb";
+    nixpkgs-sglang.flake = false;
+
     impermanence.url = "github:nix-community/impermanence";
 
     disko.url = "github:nix-community/disko";

@@ -1,0 +1,44 @@
+diff --git a/python/sglang/srt/distributed/device_communicators/pynccl.py b/python/sglang/srt/distributed/device_communicators/pynccl.py
+index eccbc87..589f7af 100644
+--- a/python/sglang/srt/distributed/device_communicators/pynccl.py
++++ b/python/sglang/srt/distributed/device_communicators/pynccl.py
+@@ -57,6 +57,16 @@ class PyNcclCommunicator:
+ 
+         self.group = group
+ 
++        # Normalize and store device before any early returns so self.device is
++        # always set. change_state(enable=True) may re-enable a communicator
++        # that went through an early return, and all_reduce asserts self.device.
++        if isinstance(device, int):
++            device = torch.device(f"cuda:{device}")
++        elif isinstance(device, str):
++            device = torch.device(device)
++        assert isinstance(device, torch.device)
++        self.device = device
++
+         # if world_size == 1, no need to create communicator
+         if self.world_size == 1:
+             self.available = False
+@@ -95,13 +105,6 @@ class PyNcclCommunicator:
+                 self.unique_id.internal[i] = byte
+         else:
+             self.unique_id = group.broadcast_obj(self.unique_id, src=0)
+-        if isinstance(device, int):
+-            device = torch.device(f"cuda:{device}")
+-        elif isinstance(device, str):
+-            device = torch.device(device)
+-        # now `device` is a `torch.device` object
+-        assert isinstance(device, torch.device)
+-        self.device = device
+         # nccl communicator and stream will use this device
+         # `torch.cuda.device` is a context manager that changes the
+         # current cuda device to the specified one
+@@ -376,7 +379,7 @@ class PyNcclCommunicator:
+             enable = self.available
+ 
+         old_disable = self.disabled
+-        self.disabled = not enable
++        self.disabled = not enable or not self.available
+         try:
+             yield
+         finally:

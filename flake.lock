@@ -596,6 +596,23 @@
         "type": "github"
       }
     },
+    "nixpkgs-sglang": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1771369470,
+        "narHash": "sha256-0NBlEBKkN3lufyvFegY4TYv5mCNHbi5OmBDrzihbBMQ=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "0182a361324364ae3f436a63005877674cf45efb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "0182a361324364ae3f436a63005877674cf45efb",
+        "type": "github"
+      }
+    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1776025714,
@@ -607,6 +624,22 @@
       },
       "original": {
         "owner": "NixOS",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1773646010,
+        "narHash": "sha256-iYrs97hS7p5u4lQzuNWzuALGIOdkPXvjz7bviiBjUu8=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "5b2c2d84341b2afb5647081c1386a80d7a8d8605",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -721,9 +754,11 @@
         "nixos-generators": "nixos-generators",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
+        "nixpkgs-sglang": "nixpkgs-sglang",
         "nixvim": "nixvim",
         "nmd": "nmd",
         "pre-commit-hooks": "pre-commit-hooks",
+        "sglang-dev": "sglang-dev",
         "simple-nixos-mailserver": "simple-nixos-mailserver",
         "yousable": "yousable"
       }
@@ -741,6 +776,24 @@
       "original": {
         "owner": "andreymatin",
         "repo": "scss-reset",
+        "type": "github"
+      }
+    },
+    "sglang-dev": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1776679298,
+        "narHash": "sha256-AX0W2agXRlQ3hOcY1z98F27w73IXRGA7cj7N+QJKNUk=",
+        "owner": "t184256",
+        "repo": "sglang-dev",
+        "rev": "251d44eaa3adaf51e5aaaab2e275de5684712f0f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "t184256",
+        "repo": "sglang-dev",
         "type": "github"
       }
     },
