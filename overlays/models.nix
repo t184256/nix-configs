@@ -41,10 +41,10 @@ in
   inherit nix-hf-hash;
 
   # plum
-  qwen35-35b-a3b-iq4xs = fetchHF {
-    repo = "unsloth/Qwen3.5-35B-A3B-GGUF";
-    name = "Qwen3.5-35B-A3B-UD-IQ4_XS.gguf";
-    hash = "sha256-dF3vCHyew00SqU65sx61LbqVizbe9RC36Pby5r8b4SM=";
+  qwen36-35b-a3b-iq4xs = fetchHF {
+    repo = "unsloth/Qwen3.6-35B-A3B-GGUF";
+    name = "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf";
+    hash = "sha256-ZJ11CFB7hGOHMsT1LCTIsVhDxtyi8/95OuB8FKZ+u7M=";
   };
   qwen35-27b-iq4xs = fetchHF {
     repo = "unsloth/Qwen3.5-27B-GGUF";
