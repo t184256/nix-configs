@@ -58,6 +58,16 @@ in
     name = "Qwen3.5-0.8B-UD-Q4_K_XL.gguf";
     hash = "sha256-MXfr1nr+RDg3TaGeaQvBuYdW9+D+qSQOG+QEM2FWp7U=";
   };
+  qwen35-2b-q4kxl = fetchHF {
+    repo = "unsloth/Qwen3.5-2B-GGUF";
+    name = "Qwen3.5-2B-UD-Q4_K_XL.gguf";
+    hash = "sha256-CvlhZephW+o5oEEY1j8LbTWQiuqFDuSlGqYVHYUbizU=";
+  };
+  qwen35-4b-q4kxl = fetchHF {
+    repo = "unsloth/Qwen3.5-4B-GGUF";
+    name = "Qwen3.5-4B-UD-Q4_K_XL.gguf";
+    hash = "sha256-slLFYQpCyoLSD+KhKBPp0Gnu2JKSkH4mx4PusLyWG8c=";
+  };
   qwen35-27b-q4kxl = fetchHF {
     repo = "unsloth/Qwen3.5-27B-GGUF";
     name = "Qwen3.5-27B-UD-Q4_K_XL.gguf";
