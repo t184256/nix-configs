@@ -23,6 +23,17 @@ let
     url = "https://huggingface.co/${repo}/resolve/main/${path}";
   };
 
+  # fetch a multi-file HF model directory (config, tokenizer, safetensors, …)
+  fetchHFModel = { pname, repo, files }:
+    let
+      fetchedFiles = map (f: fetchHF { inherit repo; inherit (f) name hash; }) files;
+      symlinkFiles = prev.lib.concatMapStringsSep "\n"
+        (f: "ln -s ${f} $out/${f.name}") fetchedFiles;
+    in prev.runCommand pname { } ''
+      mkdir -p $out
+      ${symlinkFiles}
+    '';
+
   # {nn} in templates is replaced by the 1-based shard index, 2-digit padded
   fetchHFSharded =
     { pname, repo, nameTemplate, pathTemplate ? nameTemplate, shards }:
@@ -101,6 +112,58 @@ in
       "sha256-49DFOiNvZiiSiRj/PbgGq0ELKzN9XgQQdvV9kpbOR/U="
     ];
   });
+
+  # plum — sglang/vllm AWQ serving (QuantTrio/Qwen3.5-9B-AWQ, 5 safetensors shards)
+  qwen35-9b-awq = fetchHFModel {
+    pname = "qwen35-9b-awq";
+    repo = "QuantTrio/Qwen3.5-9B-AWQ";
+    files = [
+      { name = "config.json";
+        hash = "sha256-6CJPkjqQmP2Sn/CdUN8kYmqZDJBcks2ijYPFwlHM6dU="; }
+      { name = "generation_config.json";
+        hash = "sha256-1frLpM57Uqd8CdKXNoLGUUkrlkGOk+16ovvIzZTFUBo="; }
+      { name = "model.safetensors.index.json";
+        hash = "sha256-tvV+zxNxQHeMBLXeBdjd7jYtgpjm7rHzoFHpkKqJWu8="; }
+      { name = "model-00001-of-00005.safetensors";
+        hash = "sha256-+B4S58pVXd5W+cgWxiCHGGqzXNXi74cxXj/e/5dV7EQ="; }
+      { name = "model-00002-of-00005.safetensors";
+        hash = "sha256-M0HH3VPJBAQmHJHguq9gLzUjlHdieuuqERYO8+HJ+hM="; }
+      { name = "model-00003-of-00005.safetensors";
+        hash = "sha256-U0vg6ndewsG6lF4ajR5wypMxgGa+pwZpALevYqRAIJM="; }
+      { name = "model-00004-of-00005.safetensors";
+        hash = "sha256-Xhecdw6TYV7zZ4mMcbUcbADPkf6/TNYjXVv8Jbw6ZKg="; }
+      { name = "model-00005-of-00005.safetensors";
+        hash = "sha256-mW5g4xU58NcQjg0d07gs5HbM76mgdG9fyylwfPwUxN0="; }
+      { name = "tokenizer.json";
+        hash = "sha256-X55NSQGpK5l+RjwfRgVQiLbMpcphplItG59kxLuBy0I="; }
+      { name = "tokenizer_config.json";
+        hash = "sha256-MWIw1qgJcB9NteqPj8hivDpvMinJN8F05nT/PKCmSsg="; }
+      { name = "merges.txt";
+        hash = "sha256-qdNW173x70lJ4+dI6VuOEK2dTi6Djt3Digp7a5TR240="; }
+      { name = "vocab.json";
+        hash = "sha256-zpm0yymD0RiAbOCot3ejWwk+IAClA+veJYUyhMnfoAM="; }
+      { name = "chat_template.jinja";
+        hash = "sha256-pK7or88uBxGULPhIiZvmYBb40UqIn/nt4HvKCZwo9xU="; }
+      { name = "preprocessor_config.json";
+        hash = "sha256-JyJUUKycZSmHLuGST8sJYv9WNINPgXBA9EQRgRb05RY="; }
+      { name = "video_preprocessor_config.json";
+        hash = "sha256-d2ivJ8H6+pzJARwdwgBn4D+JFeA7Y1BFUOEdUGaYbRM="; }
+    ];
+  };
+
+  # plum — sglang DFlash draft model for Qwen3.5-9B-AWQ
+  qwen35-9b-dflash-draft = fetchHFModel {
+    pname = "qwen35-9b-dflash-draft";
+    repo = "z-lab/Qwen3.5-9B-DFlash";
+    files = [
+      { name = "config.json";
+        hash = "sha256-C9ld/KskR/eAm4aBIsTjM8McT2Sc9e3WrIzFKsMdT+I="; }
+      { name = "dflash.py";
+        hash = "sha256-gNWCaPiDmiLK1CUWzJXRJ7efyhlNJe56jMTWELyPVg4="; }
+      { name = "model.safetensors";
+        hash = "sha256-iXnsI0qp8TDqThoSgyb1P/t/yZQKdnFNEO9HGqg+xcM="; }
+    ];
+  };
 
   sweep-v2-7b = fetchHF {
     repo = "henrik3/sweep-next-edit-v2-7B-GGUF";
