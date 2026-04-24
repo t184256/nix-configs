@@ -1,7 +1,6 @@
 { pkgs, config, lib, ... }:
 
 let
-  ctx128k = 131072;
   ctx196k = 196608;
   ctx256k = 262144;
 
@@ -10,13 +9,9 @@ let
   tpsCost = tps: consumptionW * USDperWs / tps; # 100W * 5e-8 USD/Ws
 
   tps32k = {  # benchmarked at 32k context
-    "qwen3.5-sparse-quick" = { input_tps = 450; output_tps = 42; };
-    "qwen3.5-sparse" = { input_tps = 180; output_tps = 18; };
-    "qwen3.5-dense" = { input_tps = 85; output_tps = 9; };
-    "qwen3.5-dense-quick" = { input_tps = 260; output_tps = 28; };
-    "qwen3.5-dense-blitz" = { input_tps = 3000; output_tps = 133; };
-    "gpt-oss:20b" = { input_tps = 450; output_tps = 41; };
-    "gpt-oss:120b" = { input_tps = 280; output_tps = 29; };
+    "qwen3.6-35b-a3b" = { input_tps = 3000; output_tps = 100; };  # plum
+    "qwen3.5-27b" = { input_tps = 1100; output_tps = 30; };  # plum
+    "qwen3.5-122b-a10b" = { input_tps = 280; output_tps = 29; };  # grapefruit
   };
 
   mkModel = extra: ctx: name:
@@ -45,46 +40,17 @@ let
       } // costAttrs;
     };
 
-  mkGptOss = mkModel { accepts_settings = [ "reasoning_effort" ]; } ctx128k;
-  # https://unsloth.ai/docs/models/nemotron-3/nemotron-3-super (tool calling)
-  mkNemotron = mkModel {
-    use_temperature = 0.6;
-    extra_params = {
-      top_p = 0.95; min_p = 0.01;
-    };
-  } ctx128k;
-  # https://unsloth.ai/docs/models/qwen3.5 (thinking:general)
-  mkQwen = mkModel {
-    accepts_settings = [ "thinking" ];
-    use_temperature = 1.0;
-    extra_params = {
-      top_p = 0.95; top_k = 20; min_p = 0.0; presence_penalty = 1.5;
-    };
-  } ctx256k;
-  # https://unsloth.ai/docs/models/qwen3.5 (instruct:general)
-  # plum/27b — sampling params injected by LiteLLM, don't override here
-  mkQwen35Plum = mkModel {} ctx196k;
-
-  mkQwenQuick = mkModel {
-    accepts_settings = [ "thinking" ];
-    use_temperature = 0.7;
-    extra_params = {
-      top_p = 0.8; top_k = 20; min_p = 0.0; presence_penalty = 1.5;
-      extra_body.chat_template_kwargs.enable_thinking = false;
-    };
-  } ctx256k;
+  # sampling params injected by LiteLLM, don't override here
+  mkQwenPlum = mkModel {} ctx196k;
+  mkQwenGrapefruit = mkModel {} ctx256k;
 
   models = {
-    "gpt-oss:120b" = mkGptOss;
-    "gpt-oss:20b" = mkGptOss;
-    "nemotron-super" = mkNemotron;
-    "qwen3.5-sparse" = mkQwen;
-    "qwen3.5-dense" = mkQwen;
-    "qwen3.5-sparse-quick" = mkQwenQuick;
-    "qwen3.5-dense-quick" = mkQwenQuick;
-    "qwen3.5-dense-blitz" = mkQwenQuick;
-    "qwen3.5-27b-think"   = mkQwen35Plum;
-    "qwen3.5-27b-nothink" = mkQwen35Plum;
+    "qwen3.6-35b-a3b-nothink" = mkQwenPlum;
+    "qwen3.6-35b-a3b-think" = mkQwenPlum;
+    "qwen3.5-27b-nothink" = mkQwenPlum;
+    "qwen3.5-27b-think" = mkQwenPlum;
+    "qwen3.5-122b-a10b-nothink" = mkQwenGrapefruit;
+    "qwen3.5-122b-a10b-think" = mkQwenGrapefruit;
   };
 
   modelSettings = builtins.toJSON (
@@ -113,6 +79,9 @@ in
       model = "qwen3.5-27b-think";
       editor-model = "qwen3.5-27b-nothink";
       weak-model = "qwen3.5-27b-nothink";
+      #model = "qwen3.5-122b-a10b-think";
+      #editor-model = "qwen3.6-35b-a3b-nothink";
+      #weak-model = "qwen3.6-35b-a3b-nothink";
       architect = true;
       alias = builtins.attrValues (
         builtins.mapAttrs (n: mk: (mk n).alias) models
