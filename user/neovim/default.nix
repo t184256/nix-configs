@@ -10,6 +10,7 @@ in
     ../config/language-support.nix
     ../config/neovim.nix
     ./aider.nix
+    ./cursortab.nix
     ./classic-plugins.nix
     ./colorcolumn.nix
     ./colorscheme.nix
@@ -28,7 +29,6 @@ in
     ./oil.nix
     ./selection.nix
     ./smart-langmap.nix
-    ./tabby.nix
     ./title.nix
     ./treesitter.nix
     ./vimagit.nix
