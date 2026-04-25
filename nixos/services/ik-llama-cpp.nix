@@ -16,7 +16,7 @@ let
     models = {
       "qwen3.6-35b-a3b" = {
         cmd = base
-          + " --model ${pkgs.qwen36-35b-a3b-iq4xs}"
+          + " --model ${pkgs.qwen36-35b-a3b-q4km}"
           + " --cache-type-k q8_0 --cache-type-v q8_0"
           + " --cache-ram 4096"
           + " --ctx-size 262144"
@@ -24,7 +24,7 @@ let
       };
       "qwen3.6-27b" = {
         cmd = base
-          + " --model ${pkgs.qwen36-27b-iq4xs}"
+          + " --model ${pkgs.qwen36-27b-q4km}"
           + " --cache-type-k q8_0 --cache-type-v q8_0"
           + " --cache-ram 4096"
           + " --ctx-size 196608"

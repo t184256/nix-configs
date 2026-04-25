@@ -52,15 +52,15 @@ in
   inherit nix-hf-hash;
 
   # plum
-  qwen36-35b-a3b-iq4xs = fetchHF {
+  qwen36-35b-a3b-q4km = fetchHF {
     repo = "unsloth/Qwen3.6-35B-A3B-GGUF";
-    name = "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf";
-    hash = "sha256-ZJ11CFB7hGOHMsT1LCTIsVhDxtyi8/95OuB8FKZ+u7M=";
+    name = "Qwen3.6-35B-A3B-UD-Q4_K_M.gguf";
+    hash = "sha256-rA4sEYngVfqjbv82FYDnnFvW+Odr/7TOVH8WfVPjGmE=";
   };
-  qwen36-27b-iq4xs = fetchHF {
+  qwen36-27b-q4km = fetchHF {
     repo = "unsloth/Qwen3.6-27B-GGUF";
-    name = "Qwen3.6-27B-IQ4_XS.gguf";
-    hash = "sha256-ijNldZ3BsztSxOfZHVpn1e4UGOhAiqVBlvBKmNpT5dw=";
+    name = "Qwen3.6-27B-Q4_K_M.gguf";
+    hash = "sha256-XtYNCvRlCoVLF1W9OS+a70hyZD3CWiVLxoBD+mODkqA=";
   };
 
   # grapefruit

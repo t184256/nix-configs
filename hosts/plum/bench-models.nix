@@ -5,8 +5,8 @@ let
     set -euo pipefail
 
     bench="${pkgs.ik-llama-cpp}/bin/llama-bench"
-    moe_iq4xs="${pkgs.qwen36-35b-a3b-iq4xs}"
-    dense_iq4xs="${pkgs.qwen36-27b-iq4xs}"
+    moe_q4km="${pkgs.qwen36-35b-a3b-q4km}"
+    dense_q4km="${pkgs.qwen36-27b-q4km}"
 
     export LD_LIBRARY_PATH=/run/opengl-driver/lib
 
@@ -57,11 +57,11 @@ let
       done
     }
 
-    # ---------- 35B-A3B IQ4_XS ----------
-    run_model "35B-A3B IQ4_XS" "$moe_iq4xs" 262144
+    # ---------- 35B-A3B Q4_K_M ----------
+    run_model "35B-A3B Q4_K_M" "$moe_q4km" 262144
 
-    # ---------- 27B IQ4_XS ----------
-    run_model "27B IQ4_XS" "$dense_iq4xs" 262144
+    # ---------- 27B Q4_K_M ----------
+    run_model "27B Q4_K_M" "$dense_q4km" 262144
   '';
 in
 
