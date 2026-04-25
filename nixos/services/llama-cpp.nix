@@ -2,7 +2,7 @@
 
 let
   qwen35NoThinkAttrs = ''
-    ctx-size = 262144
+    ctx-size = 196608
     temp = 0.7
     top-p = 0.8
     top-k = 20

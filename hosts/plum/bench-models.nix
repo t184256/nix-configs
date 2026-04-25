@@ -58,10 +58,12 @@ let
     }
 
     # ---------- 35B-A3B Q4_K_M ----------
-    run_model "35B-A3B Q4_K_M" "$moe_q4km" 262144
+    run_model "35B-A3B Q4_K_M" "$moe_q4km" 196608 \
+      --cache-type-k q8_0 --cache-type-v q8_0
 
     # ---------- 27B Q4_K_M ----------
-    run_model "27B Q4_K_M" "$dense_q4km" 262144
+    run_model "27B Q4_K_M" "$dense_q4km" 196608 \
+      --cache-type-k q8_0 --cache-type-v q8_0
   '';
 in
 

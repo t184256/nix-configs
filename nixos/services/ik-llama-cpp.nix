@@ -19,8 +19,8 @@ let
           + " --model ${pkgs.qwen36-35b-a3b-q4km}"
           + " --cache-type-k q8_0 --cache-type-v q8_0"
           + " --cache-ram 4096"
-          + " --ctx-size 262144"
-          + " --ctx-checkpoints-interval 8192"; # 32*8192=256k coverage
+          + " --ctx-size 196608"
+          + " --ctx-checkpoints-interval 6144"; # 32*6144=196k coverage
       };
       "qwen3.6-27b" = {
         cmd = base
