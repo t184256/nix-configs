@@ -3,7 +3,12 @@ final: prev:
 let
   # usage: `nix-hf-hash unsloth/Qwen3.5-0.8B-GGUF Qwen3.5-0.8B-UD-Q4_K_XL.gguf`
   nix-hf-hash = prev.writers.writePython3Bin "nix-hf-hash" { } ''
-    import base64, binascii, hashlib, http.client, sys, urllib.request
+    import base64
+    import binascii
+    import hashlib
+    import http.client
+    import sys
+    import urllib.request
     repo, filename = sys.argv[1], sys.argv[2]
     url = f"https://huggingface.co/{repo}/resolve/main/{filename}"
     conn = http.client.HTTPSConnection("huggingface.co")
