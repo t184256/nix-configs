@@ -3,8 +3,8 @@ final: prev:
 let
   cpuArch = "znver4";  # Ryzen 7600 / Zen 4
   gpuArch = "86";  # RTX 3090 / Ampere SM 8.6
-  rev = "fac404509cf3a015305e1e256ca284de036109d3";
-  hash = "sha256-FEibfX8j3rfeIgdMCUMXc43kdT5j30GZ8Qk7Ionxdv8=";
+  rev = "3a945af45d45936341a45bbf7deda56776a4af26";
+  hash = "sha256-jyQGJj33bc+OeUARWgu718kbjJ8/xDwsHTyek9ITjAA=";
 
   src = prev.fetchFromGitHub {
     owner = "ikawrakow";
@@ -24,7 +24,6 @@ in
 
     patches = [
       ./ik-llama-cpp-n-depth.patch
-      ./20970.patch
     ];
 
     nativeBuildInputs = [
