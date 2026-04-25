@@ -38,7 +38,7 @@
   programs.password-store = {
     enable = true;
     package = pkgs.pass-wayland;
-    settings.PASSWORD_STORE_DIR = "$XDG_DATA_HOME/password-store";
+    #settings.PASSWORD_STORE_DIR = "$XDG_DATA_HOME/password-store";
   };
 
   neovim.fat = true;

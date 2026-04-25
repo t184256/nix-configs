@@ -4,8 +4,8 @@
   imports = [ config/no-graphics.nix ];
 
   programs.password-store.enable = true;
-  programs.password-store.settings.PASSWORD_STORE_DIR =
-    "$XDG_DATA_HOME/password-store";
+  #programs.password-store.settings.PASSWORD_STORE_DIR =
+  #  "$XDG_DATA_HOME/password-store";
   programs.password-store.package = if config.system.noGraphics
     then pkgs.pass.override { x11Support = false; }
     else pkgs.pass-wayland;
