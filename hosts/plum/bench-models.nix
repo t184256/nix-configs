@@ -6,7 +6,7 @@ let
 
     bench="${pkgs.ik-llama-cpp}/bin/llama-bench"
     moe_iq4xs="${pkgs.qwen36-35b-a3b-iq4xs}"
-    dense_iq4xs="${pkgs.qwen35-27b-iq4xs}"
+    dense_iq4xs="${pkgs.qwen36-27b-iq4xs}"
 
     export LD_LIBRARY_PATH=/run/opengl-driver/lib
 

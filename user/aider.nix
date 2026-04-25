@@ -10,7 +10,7 @@ let
 
   tps32k = {  # benchmarked at 32k context
     "qwen3.6-35b-a3b" = { input_tps = 3000; output_tps = 100; };  # plum
-    "qwen3.5-27b" = { input_tps = 1100; output_tps = 30; };  # plum
+    "qwen3.6-27b" = { input_tps = 1100; output_tps = 30; };  # plum
     "qwen3.5-122b-a10b" = { input_tps = 280; output_tps = 29; };  # grapefruit
   };
 
@@ -47,8 +47,8 @@ let
   models = {
     "qwen3.6-35b-a3b-nothink" = mkQwenPlum;
     "qwen3.6-35b-a3b-think" = mkQwenPlum;
-    "qwen3.5-27b-nothink" = mkQwenPlum;
-    "qwen3.5-27b-think" = mkQwenPlum;
+    "qwen3.6-27b-nothink" = mkQwenPlum;
+    "qwen3.6-27b-think" = mkQwenPlum;
     "qwen3.5-122b-a10b-nothink" = mkQwenGrapefruit;
     "qwen3.5-122b-a10b-think" = mkQwenGrapefruit;
   };
@@ -76,9 +76,9 @@ in
     enable = lib.mkDefault false;
     package = null;
     settings = {
-      model = "qwen3.5-27b-think";
-      editor-model = "qwen3.5-27b-nothink";
-      weak-model = "qwen3.5-27b-nothink";
+      model = "qwen3.6-27b-think";
+      editor-model = "qwen3.6-27b-nothink";
+      weak-model = "qwen3.6-27b-nothink";
       #model = "qwen3.5-122b-a10b-think";
       #editor-model = "qwen3.6-35b-a3b-nothink";
       #weak-model = "qwen3.6-35b-a3b-nothink";

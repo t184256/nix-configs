@@ -22,9 +22,9 @@ let
           + " --ctx-size 262144"
           + " --ctx-checkpoints-interval 8192"; # 32*8192=256k coverage
       };
-      "qwen3.5-27b" = {
+      "qwen3.6-27b" = {
         cmd = base
-          + " --model ${pkgs.qwen35-27b-iq4xs}"
+          + " --model ${pkgs.qwen36-27b-iq4xs}"
           + " --cache-type-k q8_0 --cache-type-v q8_0"
           + " --cache-ram 4096"
           + " --ctx-size 196608"

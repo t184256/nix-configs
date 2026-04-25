@@ -52,10 +52,10 @@ in
     name = "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf";
     hash = "sha256-ZJ11CFB7hGOHMsT1LCTIsVhDxtyi8/95OuB8FKZ+u7M=";
   };
-  qwen35-27b-iq4xs = fetchHF {
-    repo = "unsloth/Qwen3.5-27B-GGUF";
-    name = "Qwen3.5-27B-IQ4_XS.gguf";
-    hash = "sha256-+4KchEkbMM2odbc2binOPkzt4ZtA2vW4JAA5Nr/E27s=";
+  qwen36-27b-iq4xs = fetchHF {
+    repo = "unsloth/Qwen3.6-27B-GGUF";
+    name = "Qwen3.6-27B-IQ4_XS.gguf";
+    hash = "sha256-ijNldZ3BsztSxOfZHVpn1e4UGOhAiqVBlvBKmNpT5dw=";
   };
 
   # grapefruit
@@ -74,10 +74,10 @@ in
     name = "Qwen3.5-4B-UD-Q4_K_XL.gguf";
     hash = "sha256-slLFYQpCyoLSD+KhKBPp0Gnu2JKSkH4mx4PusLyWG8c=";
   };
-  qwen35-27b-q4kxl = fetchHF {
-    repo = "unsloth/Qwen3.5-27B-GGUF";
-    name = "Qwen3.5-27B-UD-Q4_K_XL.gguf";
-    hash = "sha256-E8tiKDRImK+lDZY8Aq4NmRriUJTuqIN9uNDkUukcWIg=";
+  qwen36-27b-q4kxl = fetchHF {
+    repo = "unsloth/Qwen3.6-27B-GGUF";
+    name = "Qwen3.6-27B-UD-Q4_K_XL.gguf";
+    hash = "sha256-/2lB3tUls06xWUlnYsKd0Oxucdwxt01X512HGgPuwlk=";
   };
   qwen35-35b-a3b-mxfp4 = fetchHF {
     repo = "unsloth/Qwen3.5-35B-A3B-GGUF";

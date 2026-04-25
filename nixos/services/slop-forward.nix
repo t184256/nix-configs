@@ -93,14 +93,14 @@ in
         models = {
           "qwen3.6-35b-a3b".hosts = [ plum grapefruit ];
           "qwen3.5-35b-a3b".hosts = [ grapefruit ];
-          "qwen3.5-27b".hosts = [ plum grapefruit ];
+          "qwen3.6-27b".hosts = [ plum grapefruit ];
 
           "qwen3.5-0.8b".hosts = [ grapefruit ];
           "qwen3.5-122b-a10b".hosts = [ grapefruit ];
 
-          "qwen3.5-27b-drafted".hosts = [ grapefruit ];
-          "qwen3.5-27b-drafted2".hosts = [ grapefruit ];
-          "qwen3.5-27b-drafted4".hosts = [ grapefruit ];
+          "qwen3.6-27b-drafted".hosts = [ grapefruit ];
+          "qwen3.6-27b-drafted2".hosts = [ grapefruit ];
+          "qwen3.6-27b-drafted4".hosts = [ grapefruit ];
           "qwen3.5-35b-a3b-drafted".hosts = [ grapefruit ];
           "qwen3.5-122b-a10b-drafted".hosts = [ grapefruit ];
           "qwen3.6-35b-a3b-drafted".hosts = [ grapefruit ];
@@ -114,10 +114,10 @@ in
             { model = "qwen3.5-0.8b"; params = qwen35Think; };
           "qwen3.5-0.8b-nothink" =
             { model = "qwen3.5-0.8b"; params = qwen35Nothink; };
-          "qwen3.5-27b-think" =
-            { model = "qwen3.5-27b"; params = qwen35Think; };
-          "qwen3.5-27b-nothink" =
-            { model = "qwen3.5-27b"; params = qwen35Nothink; };
+          "qwen3.6-27b-think" =
+            { model = "qwen3.6-27b"; params = qwen36Think; };
+          "qwen3.6-27b-nothink" =
+            { model = "qwen3.6-27b"; params = qwen36Nothink; };
           "qwen3.6-35b-a3b-think" =
             { model = "qwen3.6-35b-a3b"; params = qwen36Think; };
           "qwen3.6-35b-a3b-nothink" =
@@ -131,18 +131,18 @@ in
           "qwen3.5-122b-a10b-nothink" =
             { model = "qwen3.5-122b-a10b"; params = qwen35Nothink; };
 
-          "qwen3.5-27b-drafted-think" =
-            { model = "qwen3.5-27b-drafted"; params = qwen35Think; };
-          "qwen3.5-27b-drafted-nothink" =
-            { model = "qwen3.5-27b-drafted"; params = qwen35Nothink; };
-          "qwen3.5-27b-drafted2-think" =
-            { model = "qwen3.5-27b-drafted2"; params = qwen35Think; };
-          "qwen3.5-27b-drafted2-nothink" =
-            { model = "qwen3.5-27b-drafted2"; params = qwen35Nothink; };
-          "qwen3.5-27b-drafted4-think" =
-            { model = "qwen3.5-27b-drafted4"; params = qwen35Think; };
-          "qwen3.5-27b-drafted4-nothink" =
-            { model = "qwen3.5-27b-drafted4"; params = qwen35Nothink; };
+          "qwen3.6-27b-drafted-think" =
+            { model = "qwen3.6-27b-drafted"; params = qwen36Think; };
+          "qwen3.6-27b-drafted-nothink" =
+            { model = "qwen3.6-27b-drafted"; params = qwen36Nothink; };
+          "qwen3.6-27b-drafted2-think" =
+            { model = "qwen3.6-27b-drafted2"; params = qwen36Think; };
+          "qwen3.6-27b-drafted2-nothink" =
+            { model = "qwen3.6-27b-drafted2"; params = qwen36Nothink; };
+          "qwen3.6-27b-drafted4-think" =
+            { model = "qwen3.6-27b-drafted4"; params = qwen36Think; };
+          "qwen3.6-27b-drafted4-nothink" =
+            { model = "qwen3.6-27b-drafted4"; params = qwen36Nothink; };
           "qwen3.5-35b-a3b-drafted-think" =
             { model = "qwen3.5-35b-a3b-drafted"; params = qwen35Think; };
           "qwen3.5-35b-a3b-drafted-nothink" =
