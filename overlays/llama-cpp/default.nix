@@ -2,7 +2,7 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "8849";
+  newerVer = "8927";
   overrides-fresh = old: {
     name = "llama-cpp-${newerVer}";
     version = newerVer;
@@ -10,7 +10,7 @@ let
       owner = "ggml-org";
       repo = "llama.cpp";
       tag = "b${newerVer}";
-      hash = "sha256-SLiDrPcloriGIORvkuzUHCUpdr2Mt1Cm5NUQLZrXU8w=";
+      hash = "sha256-ZGdSNN2KSUuQeDwZZ+/2aMqvslj6REz32D8uijKAAuU=";
       leaveDotGit = true;
       postFetch = ''
         git -C "$out" rev-parse --short HEAD > $out/COMMIT
