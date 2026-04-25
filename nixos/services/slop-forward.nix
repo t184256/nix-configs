@@ -175,6 +175,9 @@ in
             model = "custom_openai/${backendName}";
             inherit api_base;
             api_key = "dummy";
+            extra_body = {
+              thinking_budget_tokens = 16384;
+            } // (extra.extra_body or {});
           } // extra;
         };
         mkEntries = clientName: { model, params ? {} }:
@@ -190,8 +193,15 @@ in
         model_list = builtins.concatLists (builtins.attrValues
           (builtins.mapAttrs mkEntries aliases))
           ++ [ grapefruitCatchall ];
-        litellm_settings.fallbacks = builtins.concatLists (builtins.attrValues
-          (builtins.mapAttrs mkFallback aliases));
+        litellm_settings = {
+          fallbacks = builtins.concatLists (builtins.attrValues
+            (builtins.mapAttrs mkFallback aliases));
+          default_model_settings = {
+            extra_body = {
+              thinking_budget_tokens = 16384;
+            };
+          };
+        };
       };
   };
 
