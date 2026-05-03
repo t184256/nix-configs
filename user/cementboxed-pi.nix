@@ -19,6 +19,7 @@ let
       sed 's|.*|--ro-bind & &|' ${sftp-server-closure}/store-paths | tr '\n' ' '
     )
     substituteInPlace $out \
+      --replace-fail '/bin/bash' '${pkgs.bash}/bin/bash' \
       --replace-fail '/usr/libexec/openssh/sftp-server' \
         '${pkgs.openssh}/libexec/sftp-server' \
       --replace-fail \
@@ -60,5 +61,5 @@ let
   '';
 in
 {
-  home.packages = [ cementboxed-pi ];
+  home.packages = [ cementboxed-pi pkgs.socat pkgs.bubblewrap ];
 }
