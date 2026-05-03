@@ -70,6 +70,7 @@
   home-manager.users.monk.home.packages = with pkgs; [
     alacritty freerdp openvpn
   ];
+  home-manager.users.monk.programs.aider-chat.enable = true;
 
   services.openssh.enable = true;
 
