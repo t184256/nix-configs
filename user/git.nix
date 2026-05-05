@@ -114,5 +114,20 @@ in
       exec ${git-t}/bin/git-t --ancestry-path "$@"
     '')
     git-wclone
+    (pkgs.writeShellScriptBin "git-meld-series" ''
+      set -Eeuo pipefail; shopt -s inherit_errexit
+
+      tmpdir=$(mktemp -d)
+      trap 'chmod -R u+w "$tmpdir"; rm -rf "$tmpdir"' EXIT INT TERM HUP
+
+      name1="''${1//\/:}.patch"
+      name2="''${2//\/:}.patch"
+      git format-patch --stdout "$1" > "$tmpdir/$name1"
+      chmod -w "$tmpdir/$name1"
+      git format-patch --stdout "$2" > "$tmpdir/$name2"
+      chmod -w "$tmpdir/$name2"
+
+      exec meld "$tmpdir/$name1" "$tmpdir/$name2"
+    '')
   ];
 }
