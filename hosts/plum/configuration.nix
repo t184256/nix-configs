@@ -15,6 +15,8 @@
     ./bench-models.nix
     ./nvidia-settings.nix
     ./clevis-highlevel.nix
+    ./fancontrol.nix
+    ./temps.nix
   ];
 
   nixpkgs.config.allowUnfreePredicate = pkg:

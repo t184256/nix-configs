@@ -1,4 +1,4 @@
-{ lib, modulesPath, ... }:
+{ lib, config, modulesPath, ... }:
 
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
@@ -12,8 +12,9 @@
       "usbhid"
       "xhci_pci"
     ];
-    kernelModules = [ "kvm-amd" ];
-    extraModulePackages = [ ];
+    kernelModules = [ "kvm-amd" "nct6687" ];
+    extraModulePackages = with config.boot.kernelPackages; [ nct6687d ];
+    extraModprobeConfig = "options nct6687 msi_fan_brute_force=1";
   };
 
   fileSystems."/mnt/persist".neededForBoot = true;

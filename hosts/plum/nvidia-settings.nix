@@ -12,7 +12,7 @@
       RemainAfterExit = true;
       ExecStart = pkgs.writeShellScript "nvidia-power-settings" ''
         ${config.hardware.nvidia.package.bin}/bin/nvidia-smi -pl 380
-        ${config.hardware.nvidia.package.bin}/bin/nvidia-smi -gtt 75
+        ${config.hardware.nvidia.package.bin}/bin/nvidia-smi -gtt 65
       '';
     };
   };
