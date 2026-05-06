@@ -49,7 +49,7 @@ in
       (cmakeBool "LLAMA_BUILD_EXAMPLES" true)
       #(cmakeBool "LLAMA_BUILD_SERVER" true)
       (cmakeBool "GGML_NATIVE" false)
-      (cmakeBool "GGML_NCCL" false)  # single GPU for now
+      (cmakeBool "GGML_NCCL" true)
       (cmakeFeature "CMAKE_C_FLAGS" "-march=${cpuArch}")
       (cmakeFeature "CMAKE_CXX_FLAGS" "-march=${cpuArch}")
     ];
