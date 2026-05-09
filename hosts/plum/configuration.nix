@@ -13,10 +13,11 @@
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/ik-llama-cpp.nix
     ./bench-models.nix
-    ./nvidia-settings.nix
     ./clevis-highlevel.nix
-    ./fancontrol.nix
-    ./temps.nix
+    ./cooling/nvidia-settings.nix
+    ./cooling/fancontrol.nix
+    ./cooling/measurement/calibrate-fancontroller.nix
+    ./cooling/temps.nix
   ];
 
   nixpkgs.config.allowUnfreePredicate = pkg:
@@ -38,6 +39,12 @@
 
   home-manager.users.monk.home.stateVersion = "25.11";
   system.stateVersion = "25.11";
+
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    pulse.enable = true;
+  };
 
   systemd.sleep.settings.Sleep.AllowSuspend = false;
   services.displayManager.gdm.autoSuspend = false;

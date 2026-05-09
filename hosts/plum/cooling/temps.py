@@ -4,28 +4,18 @@ import time
 import psutil
 import sensors
 import pynvml
-
-RESET = '\033[0m'
+from common import RESET, _lerp, _fg, pwm_to_db_rel, pct_to_db_rel, find_hwmon
 
 
 VRAM_GB = 24
-MAX_RPM = {
-    'CPU Fan':        2000,  # approx
-    'System Fan #1':  2423,
-    'System Fan #2':  1186,
-    'System Fan #4':  1693,
-    'System Fan #5':  1775,
-    'System Fan #6':  2423,
+FANS = {  # name: (max_rpm, profile, pwm_n)
+    'CPU Fan':       (2000, 'cpu0',  1),
+    'System Fan #1': (2423, 'case3', 3),
+    'System Fan #2': (1186, 'case4', 4),
+    'System Fan #4': (1693, 'case6', 6),
+    'System Fan #5': (1775, 'case7', 7),
+    'System Fan #6': (2423, 'case8', 8),
 }
-
-
-def _lerp(a, b, t):
-    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
-
-
-def _fg(rgb):
-    r, g, b = rgb
-    return f'\033[38;2;{r};{g};{b}m'
 
 
 def temp_color(t, t_min=45, t_max=80):
@@ -50,6 +40,18 @@ def frac_color(frac):
     return f'\033[38;2;{v};{v};{v}m'
 
 
+def fan_color(db_rel):
+    if db_rel < 1:
+        return frac_color(db_rel)              # 20% grey → white
+    if db_rel < 2:
+        return _fg(_lerp((255, 255, 255), (255, 220, 0), db_rel - 1))
+    if db_rel < 3:
+        return _fg(_lerp((255, 220, 0), (255, 120, 0), db_rel - 2))
+    if db_rel < 4:
+        return _fg(_lerp((255, 120, 0), (255, 0, 0), db_rel - 3))
+    return _fg((255, 0, 0))
+
+
 def fan_arrows_vert(rpm, rpm_max, width=11):
     frac = rpm / rpm_max
     for threshold, spacing in [(0.75, 1), (0.50, 2), (0.25, 3), (0.10, 5)]:
@@ -71,13 +73,20 @@ def fan_arrow_hor(rpm, rpm_max):
         return '←'
     return ':'
 
+
+def fan_db(sensor_name):
+    _, profile, pwm_n = FANS[sensor_name]
+    pwm = int((nct_hwmon / f'pwm{pwm_n}').read_text())
+    return pwm_to_db_rel(profile, pwm)
+
+
 def fan(fans, name, vert=True, width=11):
-    top_rpm, top_max = int(fans[name]), int(MAX_RPM[name])
+    top_rpm, top_max = int(fans[name]), FANS[name][0]
     if vert:
         arrows = fan_arrows_vert(top_rpm, top_max, width=width)
     else:
         arrows = fan_arrow_hor(top_rpm, top_max)
-    text = f'{frac_color(top_rpm / top_max)}{top_rpm:4d} RPM{RESET}'
+    text = f'{fan_color(fan_db(name))}{top_rpm:4d} RPM{RESET}'
     return arrows, text
 
 
@@ -92,15 +101,16 @@ def chip_data(chip):
     return data
 
 
-def gpu(h):
+def gpu(h, profile_name):
     r = int(pynvml.nvmlDeviceGetMemoryInfo(h).used // 1024**3)
     r = f'{frac_color(r / VRAM_GB)}{r:3d}G{RESET}'
     u = int(pynvml.nvmlDeviceGetUtilizationRates(h).gpu)
     u = f'{frac_color(u / 100)}{u:3d}%{RESET}'
     t = int(pynvml.nvmlDeviceGetTemperature(h, pynvml.NVML_TEMPERATURE_GPU))
     t = f'{temp_color(t)}{t:3d}°{RESET}'
-    f = int(pynvml.nvmlDeviceGetFanSpeed(h))
-    f = f'{frac_color(f / 100)}{f:3d}%{RESET}'
+    f_pct = int(pynvml.nvmlDeviceGetFanSpeed(h))
+    db_rel = pct_to_db_rel(profile_name, f_pct)
+    f = f'{fan_color(db_rel)}{f_pct:3d}%{RESET}'
     w_max = pynvml.nvmlDeviceGetPowerManagementLimit(h)
     w = pynvml.nvmlDeviceGetPowerUsage(h)
     w = f'{frac_color(w / w_max)}{int(w / 1000):3d}W{RESET}'
@@ -116,18 +126,18 @@ def get_lines(nct, gpu0, gpu1):
     cp = int(psutil.cpu_percent())
     cp = f'{frac_color(cp / 100)}{cp:3d}%{RESET}'
 
-    top_fans, top_tx = fan(sensors_data, 'System Fan #2', vert=True)
-    bot_f, bot_tx = fan(sensors_data, 'System Fan #4', vert=True, width=7)
+    top_fans, top_tx = fan(sensors_data, 'System Fan #1')
+    bot_f, bot_tx = fan(sensors_data, 'System Fan #4', width=7)
     tf, tf_txt = fan(sensors_data, 'System Fan #5', vert=False)
     bf, bf_txt = fan(sensors_data, 'System Fan #6', vert=False)
     bk, bk_txt = fan(sensors_data, 'System Fan #2', vert=False)
     tf = f' {tf}'
     bf = f' {bf}'
     bk = f' {bk}  '
-    _, cpu_tx = fan(sensors_data, 'CPU Fan', vert=True)
+    _, cpu_tx = fan(sensors_data, 'CPU Fan')
 
-    r0, u0, t0, f0, w0 = gpu(gpu0)
-    r1, u1, t1, f1, w1 = gpu(gpu1)
+    r0, u0, t0, f0, w0 = gpu(gpu0, 'gpu0')
+    r1, u1, t1, f1, w1 = gpu(gpu1, 'gpu1')
 
     return [
         f'          ┌──{ top_fans}─{ top_fans}──┐',
@@ -150,6 +160,7 @@ pynvml.nvmlInit()
 try:
     nct = next(c for c in sensors.get_detected_chips()
                if 'nct6687' in str(c))
+    nct_hwmon = find_hwmon('nct6687')
     gpu0 = pynvml.nvmlDeviceGetHandleByIndex(0)
     gpu1 = pynvml.nvmlDeviceGetHandleByIndex(1)
     once = '-1' in sys.argv

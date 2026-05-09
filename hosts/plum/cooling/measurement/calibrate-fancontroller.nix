@@ -5,9 +5,11 @@
 
   systemd.services.calibrate-fancontroller = {
     description = "Fan control daemon for calibration";
-    conflicts   = [ "gpu-fancontrol.service" ];
+    conflicts   = [ "fancontrol.service" ];
     serviceConfig = {
-      ExecStart = "${pkgs.python3.withPackages (ps: [ ])}/bin/python3 ${./fanctl_daemon.py}";
+      ExecStart =
+        "${pkgs.python3.withPackages (ps: [ ps.nvidia-ml-py ])}"
+        + "/bin/python3 ${./calibrate-fancontroller.py}";
       Restart   = "no";
     };
   };

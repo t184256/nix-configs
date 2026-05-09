@@ -9,7 +9,7 @@ import sounddevice as sd
 
 PORT        = 9271
 BLOCK_SIZE  = 4096
-WINDOW_SECS = 2.0
+WINDOW_SECS = 10.0
 
 buf      = deque()
 buf_lock = threading.Lock()
@@ -36,6 +36,8 @@ def audio_thread(device):
             buf.append(indata[:, 0].copy())
             while len(buf) > window_blocks:
                 buf.popleft()
+        db = current_db()
+        print(f'\r{db:8.2f} dB', end='', flush=True)
 
     with sd.InputStream(samplerate=sample_rate, blocksize=BLOCK_SIZE,
                         channels=1, callback=callback, device=device):
@@ -45,12 +47,12 @@ def audio_thread(device):
 class Handler(socketserver.StreamRequestHandler):
     def handle(self):
         db = current_db()
-        self.wfile.write((json.dumps({'db': db}) + '\n').encode())
+        self.wfile.write((json.dumps({'db': float(db)}) + '\n').encode())
 
 
 if len(sys.argv) < 2:
     print(sd.query_devices())
-    print("Usage: loudness_daemon.py <device_index>")
+    print("Usage: calibrate-fanlistener <device_index>")
     sys.exit(1)
 
 device = int(sys.argv[1])
