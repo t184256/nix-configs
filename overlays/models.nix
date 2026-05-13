@@ -71,16 +71,6 @@ in
   inherit nix-hf-hash;
 
   # plum
-  qwen36-35b-a3b-q4km = fetchHF {
-    repo = "unsloth/Qwen3.6-35B-A3B-GGUF";
-    name = "Qwen3.6-35B-A3B-UD-Q4_K_M.gguf";
-    hash = "sha256-rA4sEYngVfqjbv82FYDnnFvW+Odr/7TOVH8WfVPjGmE=";
-  };
-  qwen36-27b-q4km = fetchHF {
-    repo = "unsloth/Qwen3.6-27B-GGUF";
-    name = "Qwen3.6-27B-Q4_K_M.gguf";
-    hash = "sha256-XtYNCvRlCoVLF1W9OS+a70hyZD3CWiVLxoBD+mODkqA=";
-  };
   qwen36-27b-awq = fetchHFModel {
     pname = "qwen36-27b-awq";
     repo = "QuantTrio/Qwen3.6-27B-AWQ";
@@ -148,25 +138,6 @@ in
       hash = "sha256-4MBQs0eY0ycooWTSw/FoF0b/hcEZRXAbAgW2VOLx/b4=";
     }} $out/model.safetensors
   '';
-
-  qwen35-27b-q4km = fetchHF {
-    repo = "unsloth/Qwen3.5-27B-GGUF";
-    name = "Qwen3.5-27B-Q4_K_M.gguf";
-    hash = "sha256-hLX38RIVbWODagGmncPxGmumOxCiO4ynp++vUtWi2AY=";
-  };
-
-  qwen35-27b-dflash-draft = fetchHFModel {
-    pname = "qwen35-27b-dflash-draft";
-    repo = "z-lab/Qwen3.5-27B-DFlash";
-    files = [
-      { path = "config.json";
-        hash = "sha256-LMBCA8kXkKHEEyTpeULb4knZkWU47l1+xIfys1Jmi3M="; }
-      { path = "dflash.py";
-        hash = "sha256-gNWCaPiDmiLK1CUWzJXRJ7efyhlNJe56jMTWELyPVg4="; }
-      { path = "model.safetensors";
-        hash = "sha256-HkTK4x69oZQNpWMYwSlQnfRooaZQio+BagPgxchmG3c="; }
-    ];
-  };
 
   qwen35-9b-dflash-draft = fetchHFModel {
     pname = "qwen35-9b-dflash-draft";
