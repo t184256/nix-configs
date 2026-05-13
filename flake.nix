@@ -208,6 +208,14 @@
     };
 
     packages.x86_64-linux = {
+      lucebox-dflash =
+        let pkgsCuda = import nixpkgs {
+          system = "x86_64-linux";
+          config = { cudaSupport = true; allowUnfree = true; };
+          overlays = [ (import ./overlays/lucebox.nix) ];
+        };
+        in pkgsCuda.lucebox-dflash;
+
       cookie = (nixpkgs.lib.nixosSystem {
         #pkgs = import nixpkgs {};
         pkgs = import nixpkgs { system = "x86_64-linux"; };

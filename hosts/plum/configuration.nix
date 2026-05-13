@@ -11,8 +11,10 @@
     ./hardware.nix
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
-    ../../nixos/services/ik-llama-cpp.nix
+    #../../nixos/services/ik-llama-cpp.nix
     ./bench-models.nix
+    ../../nixos/services/lucebox.nix
+    ./bench-lucebox.nix
     ./clevis-highlevel.nix
     ./cooling/nvidia-settings.nix
     ./cooling/fancontrol.nix
