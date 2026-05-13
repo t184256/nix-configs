@@ -1,0 +1,28 @@
+--- a/cmake/external_projects/vllm_flash_attn.cmake
++++ b/cmake/external_projects/vllm_flash_attn.cmake
+@@ -57,6 +57,25 @@
+ FetchContent_MakeAvailable(vllm-flash-attn)
+ message(STATUS "vllm-flash-attn is available at ${vllm-flash-attn_SOURCE_DIR}")
+ 
++# flash-attn's csrc/cutlass is a git submodule absent from the tarball.
++# Wire in nixpkgs cutlass (FETCHCONTENT_SOURCE_DIR_CUTLASS) so headers
++# are found at compile time regardless of FetchContent source resolution.
++if(DEFINED FETCHCONTENT_SOURCE_DIR_CUTLASS)
++  foreach(_fa_tgt _vllm_fa2_C _vllm_fa3_C)
++    if(TARGET ${_fa_tgt})
++      target_include_directories(${_fa_tgt} PRIVATE
++        ${FETCHCONTENT_SOURCE_DIR_CUTLASS}/include)
++    endif()
++  endforeach()
++endif()
++
++# When no SM90+ architectures are targeted, the patched flash-attn cmake
++# skips _vllm_fa3_C. Create a no-op placeholder so setup.py's
++# "cmake --build --target _vllm_fa3_C" succeeds without building anything.
++if(NOT TARGET _vllm_fa3_C)
++  add_custom_target(_vllm_fa3_C)
++endif()
++
+ # Restore the install prefix after FA's install rules
+ install(CODE "set(CMAKE_INSTALL_PREFIX \"\${OLD_CMAKE_INSTALL_PREFIX}\")" ALL_COMPONENTS)
+ install(CODE "set(CMAKE_INSTALL_LOCAL_ONLY TRUE)" ALL_COMPONENTS)
