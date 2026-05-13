@@ -67,7 +67,7 @@ in
     port = 11110;
     settings =
       let
-        plum  = "http://192.168.99.53:11111/v1";
+        plum = "http://192.168.99.53:11111/v1";
         grapefruit = "http://192.168.99.52:11111";
         qwen35Think = {
           temperature = 0.6;
@@ -91,11 +91,11 @@ in
         qwen36Nothink = qwen35Nothink;
         # hosts: primary first, fallbacks after
         models = {
-          "qwen3.6-35b-a3b".hosts = [ plum grapefruit ];
-          "qwen3.5-35b-a3b".hosts = [ grapefruit ];
           "qwen3.6-27b".hosts = [ plum grapefruit ];
 
           "qwen3.5-0.8b".hosts = [ grapefruit ];
+          "qwen3.6-35b-a3b".hosts = [ grapefruit ];
+          "qwen3.5-35b-a3b".hosts = [ grapefruit ];
           "qwen3.5-122b-a10b".hosts = [ grapefruit ];
 
           "qwen3.6-27b-drafted".hosts = [ grapefruit ];
@@ -175,10 +175,10 @@ in
             model = "custom_openai/${backendName}";
             inherit api_base;
             api_key = "dummy";
-            extra_body = {
-              thinking_budget_tokens = 16384;
-            } // (extra.extra_body or {});
-          } // extra;
+            extra_body =
+              { thinking_budget_tokens = 16384; }
+              // (extra.extra_body or {});
+          } // (builtins.removeAttrs extra [ "extra_body" ]);
         };
         mkEntries = clientName: { model, params ? {} }:
           let inherit (models.${model}) hosts; in
@@ -197,9 +197,7 @@ in
           fallbacks = builtins.concatLists (builtins.attrValues
             (builtins.mapAttrs mkFallback aliases));
           default_model_settings = {
-            extra_body = {
-              thinking_budget_tokens = 16384;
-            };
+            extra_body = { thinking_budget_tokens = 16384; };
           };
         };
       };

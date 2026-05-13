@@ -1,0 +1,33 @@
+diff --git a/vllm/v1/core/kv_cache_coordinator.py b/vllm/v1/core/kv_cache_coordinator.py
+index 65993e804..6cc25fc23 100644
+--- a/vllm/v1/core/kv_cache_coordinator.py
++++ b/vllm/v1/core/kv_cache_coordinator.py
+@@ -2,7 +2,7 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ from abc import ABC, abstractmethod
+ from collections.abc import Sequence
+-from math import lcm
++from math import gcd, lcm
+
+ from vllm.v1.core.block_pool import BlockPool
+ from vllm.v1.core.kv_cache_metrics import KVCacheMetricsCollector
+@@ -424,9 +424,18 @@ class HybridKVCacheCoordinator(KVCacheCoordinator):
+         # The actual block size usually equals hash_block_size, but in cases where
+         # different KV cache groups have different block sizes, the actual block size
+         # can be a multiple of hash_block_size.
++        # When resolve_kv_cache_block_sizes backs off to the scheduler LCM
++        # (mamba block_size diverges from cache_config.block_size), the LCM
++        # can exceed individual group block_sizes, breaking divisibility.
++        # Reduce to the GCD of all group block_sizes, which divides all of
++        # them by definition and gives the coarsest valid hash granularity.
++        all_bs = [g.kv_cache_spec.block_size
++                  for g in kv_cache_config.kv_cache_groups]
++        if hash_block_size > min(all_bs):
++            hash_block_size = gcd(*all_bs)
+         self.hash_block_size = hash_block_size
+         assert all(
+-            g.kv_cache_spec.block_size % hash_block_size == 0
++            g.kv_cache_spec.block_size % self.hash_block_size == 0
+             for g in kv_cache_config.kv_cache_groups
+         ), "block_size must be divisible by hash_block_size"
+         assert dcp_world_size == 1, "DCP not support hybrid attn now."
