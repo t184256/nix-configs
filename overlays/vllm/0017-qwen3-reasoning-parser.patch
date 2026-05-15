@@ -1,0 +1,1482 @@
+From 3377121a352acd82db94c7859512a257930d52bf Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Fri, 24 Apr 2026 09:19:14 +0200
+Subject: [PATCH 01/11] Support fragmented tags in Qwen3 streaming reasoning
+ parser
+
+Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+---
+ .../reasoning/test_qwen3_reasoning_parser.py  | 60 +++++++++++++++++++
+ vllm/reasoning/qwen3_reasoning_parser.py      | 37 ++++++++++--
+ 2 files changed, 91 insertions(+), 6 deletions(-)
+
+diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
+index f424585..b58f944 100644
+--- a/tests/reasoning/test_qwen3_reasoning_parser.py
++++ b/tests/reasoning/test_qwen3_reasoning_parser.py
+@@ -373,3 +373,63 @@ def test_reasoning_thinking_disabled(
+ 
+     assert reasoning == expected_reasoning
+     assert content == expected_content
++
++
++def test_extract_reasoning_streaming_fragmented_tool_call(qwen3_tokenizer):
++    """
++    Test streaming reasoning extraction when the <tool_call> tag is fragmented
++    across multiple deltas and delta_token_ids does not contain the special token ID.
++    """
++    parser: ReasoningParser = ReasoningParserManager.get_reasoning_parser(parser_name)(
++        qwen3_tokenizer
++    )
++
++    # Force the parser to have a valid tool call tag
++    # (Qwen3 uses <tool_call>)
++    assert parser._tool_call_tag == "<tool_call>"
++    
++    # Delta 1: "<to"
++    previous_text = "Here is my reasoning. "
++    current_text = "Here is my reasoning. <to"
++    msg1 = parser.extract_reasoning_streaming(
++        previous_text=previous_text,
++        current_text=current_text,
++        delta_text="<to",
++        previous_token_ids=[1, 2],
++        current_token_ids=[1, 2, 3],
++        delta_token_ids=[3],
++    )
++    assert msg1 is not None
++    assert msg1.reasoning == "<to"
++    assert msg1.content is None
++
++    # Delta 2: "ol_"
++    previous_text = current_text
++    current_text = current_text + "ol_"
++    msg2 = parser.extract_reasoning_streaming(
++        previous_text=previous_text,
++        current_text=current_text,
++        delta_text="ol_",
++        previous_token_ids=[1, 2, 3],
++        current_token_ids=[1, 2, 3, 4],
++        delta_token_ids=[4],
++    )
++    assert msg2 is not None
++    assert msg2.reasoning == "ol_"
++    assert msg2.content is None
++
++    # Delta 3: "call>\n<function=bash>"
++    previous_text = current_text
++    current_text = current_text + "call>\n<function=bash>"
++    msg3 = parser.extract_reasoning_streaming(
++        previous_text=previous_text,
++        current_text=current_text,
++        delta_text="call>\n<function=bash>",
++        previous_token_ids=[1, 2, 3, 4],
++        current_token_ids=[1, 2, 3, 4, 5, 6],
++        delta_token_ids=[5, 6],
++    )
++    assert msg3 is not None
++    assert msg3.reasoning is None
++    assert msg3.content == "call>\n<function=bash>"
++
+diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
+index e38b0de..0ffe0ae 100644
+--- a/vllm/reasoning/qwen3_reasoning_parser.py
++++ b/vllm/reasoning/qwen3_reasoning_parser.py
+@@ -201,18 +201,40 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+             return None
+ 
+         # Implicit reasoning end via <tool_call>.
+-        if (
++        has_tool_call_id = (
+             self._tool_call_token_id is not None
+             and self._tool_call_token_id in delta_token_ids
+-        ):
+-            tool_index = delta_text.find(self._tool_call_tag)
+-            if tool_index >= 0:
+-                reasoning = delta_text[:tool_index]
+-                content = delta_text[tool_index:]
++        )
++        just_completed_tool_call_tag = (
++            bool(self._tool_call_tag)
++            and self._tool_call_tag in current_text
++            and self._tool_call_tag not in previous_text
++        )
++
++        if has_tool_call_id or just_completed_tool_call_tag:
++            if self._tool_call_tag and self._tool_call_tag in current_text:
++                tag_start_idx = current_text.find(self._tool_call_tag)
++                delta_start_idx = len(previous_text)
++                if tag_start_idx >= delta_start_idx:
++                    reasoning_len = tag_start_idx - delta_start_idx
++                    reasoning = delta_text[:reasoning_len]
++                    content = delta_text[reasoning_len:]
++                else:
++                    reasoning = None
++                    content = delta_text
+                 return DeltaMessage(
+                     reasoning=reasoning if reasoning else None,
+                     content=content if content else None,
+                 )
++            elif has_tool_call_id and self._tool_call_tag:
++                tool_index = delta_text.find(self._tool_call_tag)
++                if tool_index >= 0:
++                    reasoning = delta_text[:tool_index]
++                    content = delta_text[tool_index:]
++                    return DeltaMessage(
++                        reasoning=reasoning if reasoning else None,
++                        content=content if content else None,
++                    )
+ 
+         # No end token in this delta.
+         if not delta_text:
+@@ -224,6 +246,9 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+         elif (
+             self._tool_call_token_id is not None
+             and self._tool_call_token_id in previous_token_ids
++        ) or (
++            bool(self._tool_call_tag)
++            and self._tool_call_tag in previous_text
+         ):
+             return DeltaMessage(content=delta_text)
+         else:
+-- 
+2.54.0
+
+
+From 7a8c4ce8b15b58a3f23b4545e58966bdb41ac1d5 Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Fri, 24 Apr 2026 10:27:05 +0200
+Subject: [PATCH 02/11] gemini is right, removed leftover code
+
+Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+---
+ vllm/reasoning/qwen3_reasoning_parser.py | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
+index 0ffe0ae..2cda4c8 100644
+--- a/vllm/reasoning/qwen3_reasoning_parser.py
++++ b/vllm/reasoning/qwen3_reasoning_parser.py
+@@ -226,15 +226,6 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+                     reasoning=reasoning if reasoning else None,
+                     content=content if content else None,
+                 )
+-            elif has_tool_call_id and self._tool_call_tag:
+-                tool_index = delta_text.find(self._tool_call_tag)
+-                if tool_index >= 0:
+-                    reasoning = delta_text[:tool_index]
+-                    content = delta_text[tool_index:]
+-                    return DeltaMessage(
+-                        reasoning=reasoning if reasoning else None,
+-                        content=content if content else None,
+-                    )
+ 
+         # No end token in this delta.
+         if not delta_text:
+-- 
+2.54.0
+
+
+From 34e707a7d52cdcdce4b8f887656560dfcf477309 Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Fri, 24 Apr 2026 12:11:16 +0200
+Subject: [PATCH 03/11] added two more failed tests
+
+Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+---
+ .../reasoning/test_qwen3_reasoning_parser.py  | 137 ++++++++++++++++++
+ 1 file changed, 137 insertions(+)
+
+diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
+index b58f944..c7ba316 100644
+--- a/tests/reasoning/test_qwen3_reasoning_parser.py
++++ b/tests/reasoning/test_qwen3_reasoning_parser.py
+@@ -1,6 +1,8 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++from collections.abc import Sequence
++
+ import pytest
+ from transformers import AutoTokenizer
+ 
+@@ -10,7 +12,13 @@ from tests.reasoning.utils import (
+     run_reasoning_extraction_streaming,
+ )
+ from vllm.entrypoints.openai.chat_completion.protocol import ChatCompletionRequest
++from vllm.entrypoints.openai.engine.protocol import (
++    DeltaMessage,
++    ExtractedToolCallInformation,
++)
++from vllm.parser.parser_manager import ParserManager
+ from vllm.reasoning import ReasoningParser, ReasoningParserManager
++from vllm.tool_parsers.abstract_tool_parser import ToolParser
+ 
+ parser_name = "qwen3"
+ start_token = "<think>"
+@@ -375,6 +383,66 @@ def test_reasoning_thinking_disabled(
+     assert content == expected_content
+ 
+ 
++def test_is_reasoning_end_complete_tool_call_in_single_delta(
++    qwen3_tokenizer,
++) -> None:
++    """
++    Regression – is_reasoning_end must return True when a complete
++    <tool_call>…</tool_call> arrives in a single delta (MTP / speculative-
++    decoding scenario). The paired-token guard was incorrectly skipping this
++    case, preventing reasoning from being marked as ended.
++    """
++    vocab = qwen3_tokenizer.get_vocab()
++    tool_call_id = vocab["<tool_call>"]
++    tool_call_end_id = vocab["</tool_call>"]
++    # Use a regular content token (first token ID from any word)
++    content_token = qwen3_tokenizer.encode("hello", add_special_tokens=False)[0]
++
++    parser: ReasoningParser = ReasoningParserManager.get_reasoning_parser(
++        parser_name
++    )(qwen3_tokenizer)
++
++    delta_ids = [tool_call_id, content_token, tool_call_end_id]
++    assert parser.is_reasoning_end(delta_ids), (
++        "is_reasoning_end returned False for a complete <tool_call>…</tool_call> "
++        "pair in a single delta — the paired-token guard incorrectly skips real "
++        "output tool calls when both opening and closing tokens arrive together."
++    )
++
++
++def test_is_reasoning_end_false_after_complete_tool_call_in_output(
++    qwen3_tokenizer,
++) -> None:
++    """
++    is_reasoning_end must return True for accumulated
++    output that contains a complete <tool_call>…</tool_call> (no explicit
++    </think>). Once reasoning ended via <tool_call>, the invariant must hold
++    for any superset of those tokens.
++    """
++    vocab = qwen3_tokenizer.get_vocab()
++    tool_call_id = vocab["<tool_call>"]
++    tool_call_end_id = vocab["</tool_call>"]
++    reasoning_token = qwen3_tokenizer.encode("thinking", add_special_tokens=False)[0]
++    content_token = qwen3_tokenizer.encode("hello", add_special_tokens=False)[0]
++
++    parser: ReasoningParser = ReasoningParserManager.get_reasoning_parser(
++        parser_name
++    )(qwen3_tokenizer)
++
++    output_ids = [
++        reasoning_token,
++        reasoning_token,
++        tool_call_id,
++        content_token,
++        tool_call_end_id,
++    ]
++    assert parser.is_reasoning_end(output_ids), (
++        "is_reasoning_end returned False after <tool_call>…</tool_call> is "
++        "complete in the accumulated output — the paired-token guard violates "
++        "the invariant that reasoning stays ended once it has ended."
++    )
++
++
+ def test_extract_reasoning_streaming_fragmented_tool_call(qwen3_tokenizer):
+     """
+     Test streaming reasoning extraction when the <tool_call> tag is fragmented
+@@ -433,3 +501,72 @@ def test_extract_reasoning_streaming_fragmented_tool_call(qwen3_tokenizer):
+     assert msg3.reasoning is None
+     assert msg3.content == "call>\n<function=bash>"
+ 
++
++class _StubToolParser(ToolParser):
++    """Always returns DeltaMessage(content="[tool]") to detect overwrites."""
++
++    def extract_tool_calls(
++        self, model_output: str, _request: ChatCompletionRequest
++    ) -> ExtractedToolCallInformation:
++        return ExtractedToolCallInformation(
++            tools_called=False, tool_calls=[], content=model_output
++        )
++
++    def extract_tool_calls_streaming(
++        self,
++        _previous_text: str,
++        _current_text: str,
++        _delta_text: str,
++        _previous_token_ids: Sequence[int],
++        _current_token_ids: Sequence[int],
++        _delta_token_ids: Sequence[int],
++        _request: ChatCompletionRequest,
++    ) -> DeltaMessage | None:
++        return DeltaMessage(content="[tool]")
++
++
++def test_reasoning_preserved_when_transition_and_tool_call_in_same_delta(
++    qwen3_tokenizer,
++) -> None:
++    """
++    When a delta contains both the last reasoning fragment AND the <tool_call>
++    token (implicit reasoning end), parse_delta must not lose the reasoning
++    text by overwriting delta_message with the result of
++    extract_tool_calls_streaming.
++
++    Sequence inside parse_delta (before fix):
++      1. extract_reasoning_streaming  → DeltaMessage(reasoning="last text",
++                                                      content="<tool_call>…")
++      2. Transition: reasoning_ended = True, current_text = "<tool_call>…"
++      3. extract_tool_calls_streaming → DeltaMessage(content="[tool]")
++      4. delta_message = step-3 result  ← reasoning "last text" silently lost
++    """
++    vocab = qwen3_tokenizer.get_vocab()
++    tool_call_id = vocab["<tool_call>"]
++    reasoning_token = qwen3_tokenizer.encode("reasoning", add_special_tokens=False)[0]
++
++    parser_cls = ParserManager.get_parser(
++        reasoning_parser_name="qwen3",
++        tool_parser_name="qwen3_coder",
++    )
++    # Swap in the stub so the test doesn't depend on qwen3_coder streaming logic
++    parser = parser_cls(qwen3_tokenizer)
++    parser._tool_parser = _StubToolParser(qwen3_tokenizer)
++
++    request = ChatCompletionRequest(messages=[], model="test-model")
++    delta_text = "last reasoning text\n<tool_call>\n<function=test_func>"
++
++    result = parser.parse_delta(
++        delta_text=delta_text,
++        delta_token_ids=[reasoning_token, tool_call_id],
++        request=request,
++    )
++
++    assert result is not None, (
++        "parse_delta returned None — both reasoning and tool content were lost."
++    )
++    assert result.reasoning == "last reasoning text\n", (
++        f"last reasoning fragment lost in transition delta. "
++        f"Got reasoning={result.reasoning!r}, expected 'last reasoning text\\n'. "
++        f"delta_message was overwritten by extract_tool_calls_streaming."
++    )
+-- 
+2.54.0
+
+
+From 65a489353e623287b9c0cec1daad7b0181a4c715 Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Fri, 24 Apr 2026 13:11:38 +0200
+Subject: [PATCH 04/11] fixed the two more failed tests, no regression detected
+
+Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+---
+ vllm/parser/abstract_parser.py           | 13 +++++++++++++
+ vllm/reasoning/qwen3_reasoning_parser.py | 10 ----------
+ 2 files changed, 13 insertions(+), 10 deletions(-)
+
+diff --git a/vllm/parser/abstract_parser.py b/vllm/parser/abstract_parser.py
+index 46acc7f..ec06fca 100644
+--- a/vllm/parser/abstract_parser.py
++++ b/vllm/parser/abstract_parser.py
+@@ -668,6 +668,7 @@ class DelegatingParser(Parser):
+         current_text = state.previous_text + delta_text
+         current_token_ids = state.previous_token_ids + delta_token_ids
+         delta_message: DeltaMessage | None = None
++        reasoning_from_transition: str | None = None
+
+         # Reasoning extraction
+         if self._in_reasoning_phase(state):
+@@ -688,6 +689,10 @@ class DelegatingParser(Parser):
+                     delta_message.content = None
+                 else:
+                     current_text = ""
++                reasoning_from_transition = (
++                    delta_message.reasoning
++                    if delta_message is not None else None
++                )
+
+         # Tool call extraction
+         if self._in_tool_call_phase(state):
+@@ -712,6 +717,12 @@ class DelegatingParser(Parser):
+                     function_name_returned=state.function_name_returned,
+                 )
+             )
++            if reasoning_from_transition:
++                if delta_message is not None:
++                    delta_message.reasoning = reasoning_from_transition
++                else:
++                    delta_message = DeltaMessage(
++                        reasoning=reasoning_from_transition)
+             if (
+                 delta_message
+                 and delta_message.tool_calls
+
+diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
+index 2cda4c8..372a7ab 100644
+--- a/vllm/reasoning/qwen3_reasoning_parser.py
++++ b/vllm/reasoning/qwen3_reasoning_parser.py
+@@ -64,24 +64,14 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+         start_token_id = self.start_token_id
+         end_token_id = self.end_token_id
+         tool_call_token_id = self._tool_call_token_id
+-        tool_call_end_token_id = self._tool_call_end_token_id
+ 
+         for i in range(len(input_ids) - 1, -1, -1):
+             token_id = input_ids[i]
+             if token_id == start_token_id:
+-                # Found <think> before </think> or <tool_call>
+                 return False
+             if token_id == end_token_id:
+                 return True
+             if tool_call_token_id is not None and token_id == tool_call_token_id:
+-                # Only treat as implicit reasoning end if this <tool_call>
+-                # is NOT followed by </tool_call>.  Paired occurrences are
+-                # template examples in the prompt, not model output.
+-                if tool_call_end_token_id is not None and any(
+-                    input_ids[j] == tool_call_end_token_id
+-                    for j in range(i + 1, len(input_ids))
+-                ):
+-                    continue
+                 return True
+         return False
+ 
+-- 
+2.54.0
+
+
+From c1b5f981efd2f6dae0e1249258608d741de54f8b Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Fri, 24 Apr 2026 16:25:23 +0200
+Subject: [PATCH 05/11] prevent qwen3 reasoning parser from swallowing tool
+ calls content
+
+Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+---
+ .../reasoning/test_qwen3_reasoning_parser.py  | 46 +++++++++++++++++++
+ vllm/reasoning/qwen3_reasoning_parser.py      | 37 +++++++--------
+ 2 files changed, 65 insertions(+), 18 deletions(-)
+
+diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
+index c7ba316..b4e2ab4 100644
+--- a/tests/reasoning/test_qwen3_reasoning_parser.py
++++ b/tests/reasoning/test_qwen3_reasoning_parser.py
+@@ -570,3 +570,49 @@ def test_reasoning_preserved_when_transition_and_tool_call_in_same_delta(
+         f"Got reasoning={result.reasoning!r}, expected 'last reasoning text\\n'. "
+         f"delta_message was overwritten by extract_tool_calls_streaming."
+     )
++
++
++def test_reasoning_swallows_post_think_content(qwen3_tokenizer):
++    """
++    Regression test: If </think> was ALREADY emitted, and a later delta contains <tool_call>,
++    the parser incorrectly sends the text BEFORE <tool_call> as reasoning instead of content.
++    """
++    from vllm.reasoning import ReasoningParserManager
++    parser = ReasoningParserManager.get_reasoning_parser("qwen3")(qwen3_tokenizer)
++    
++    # Delta 1: ends thinking
++    end_token_id = qwen3_tokenizer.get_vocab()["</think>"]
++    msg1 = parser.extract_reasoning_streaming(
++        previous_text="<think> thoughts",
++        current_text="<think> thoughts</think>",
++        delta_text="</think>",
++        previous_token_ids=[1, 2],
++        current_token_ids=[1, 2, end_token_id], # end_token_id is </think>
++        delta_token_ids=[end_token_id]
++    )
++    if msg1 is not None:
++        assert msg1.content is None
++    
++    # Delta 2: content + tool call in same delta (e.g. speculative decoding or fast generation)
++    # The text "I will use a tool\n" is clearly AFTER </think>, so it must be content!
++    vocab = qwen3_tokenizer.get_vocab()
++    tool_call_id = vocab["<tool_call>"]
++    
++    prev_text = "<think> thoughts</think>"
++    delta_text = "I will use a tool.\n<tool_call>"
++    curr_text = prev_text + delta_text
++    
++    msg2 = parser.extract_reasoning_streaming(
++        previous_text=prev_text,
++        current_text=curr_text,
++        delta_text=delta_text,
++        previous_token_ids=[1, 2, end_token_id],
++        current_token_ids=[1, 2, end_token_id, 3, 4, tool_call_id],
++        delta_token_ids=[3, 4, tool_call_id]
++    )
++    
++    assert msg2 is not None
++    # "I will use a tool.\n" should NOT be reasoning!
++    assert msg2.reasoning is None, f"Parser incorrectly swallowed post-think text into reasoning: {msg2.reasoning}"
++    assert "I will use a tool" in msg2.content
++
+diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
+index 372a7ab..60e3c84 100644
+--- a/vllm/reasoning/qwen3_reasoning_parser.py
++++ b/vllm/reasoning/qwen3_reasoning_parser.py
+@@ -190,7 +190,24 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+             # end_token_id in IDs but not in text (already stripped)
+             return None
+ 
++        # No end token in this delta.
++        if not delta_text:
++            # Nothing left after stripping start token.
++            return None
++        elif self.end_token_id in previous_token_ids:
++            # End token already passed: everything is content now.
++            return DeltaMessage(content=delta_text)
++        elif (
++            self._tool_call_token_id is not None
++            and self._tool_call_token_id in previous_token_ids
++        ) or (
++            bool(self._tool_call_tag)
++            and self._tool_call_tag in previous_text
++        ):
++            return DeltaMessage(content=delta_text)
++
+         # Implicit reasoning end via <tool_call>.
++        # Only do this if we haven't already passed the end token.
+         has_tool_call_id = (
+             self._tool_call_token_id is not None
+             and self._tool_call_token_id in delta_token_ids
+@@ -217,21 +234,5 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+                     content=content if content else None,
+                 )
+ 
+-        # No end token in this delta.
+-        if not delta_text:
+-            # Nothing left after stripping start token.
+-            return None
+-        elif self.end_token_id in previous_token_ids:
+-            # End token already passed: everything is content now.
+-            return DeltaMessage(content=delta_text)
+-        elif (
+-            self._tool_call_token_id is not None
+-            and self._tool_call_token_id in previous_token_ids
+-        ) or (
+-            bool(self._tool_call_tag)
+-            and self._tool_call_tag in previous_text
+-        ):
+-            return DeltaMessage(content=delta_text)
+-        else:
+-            # No end token yet: still in reasoning phase.
+-            return DeltaMessage(reasoning=delta_text)
++        # No end token yet: still in reasoning phase.
++        return DeltaMessage(reasoning=delta_text)
+-- 
+2.54.0
+
+
+From cc2c4b1f4075890c0e61f614247bfbb1abe8addc Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Fri, 24 Apr 2026 16:56:47 +0200
+Subject: [PATCH 06/11] prevent Qwen 3 tool call truncation and multi-tool
+ deletion
+
+Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+---
+ .../reasoning/test_qwen3_reasoning_parser.py  | 67 +++++++++++++++++++
+ vllm/reasoning/qwen3_reasoning_parser.py      |  6 +-
+ 2 files changed, 69 insertions(+), 4 deletions(-)
+
+diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
+index b4e2ab4..0af1135 100644
+--- a/tests/reasoning/test_qwen3_reasoning_parser.py
++++ b/tests/reasoning/test_qwen3_reasoning_parser.py
+@@ -616,3 +616,70 @@ def test_reasoning_swallows_post_think_content(qwen3_tokenizer):
+     assert msg2.reasoning is None, f"Parser incorrectly swallowed post-think text into reasoning: {msg2.reasoning}"
+     assert "I will use a tool" in msg2.content
+ 
++
++def test_extract_content_ids_multiple_tool_calls(qwen3_tokenizer):
++    """
++    Regression test: extract_content_ids should retain ALL tool calls when
++    reasoning implicitly ends with <tool_call>.
++    Previously, it searched backwards and discarded all but the LAST tool call.
++    """
++    parser = ReasoningParserManager.get_reasoning_parser("qwen3")(qwen3_tokenizer)
++    vocab = qwen3_tokenizer.get_vocab()
++    tool_call_id = vocab["<tool_call>"]
++    
++    # input_ids: [..., tool_call, ..., tool_call, ...] without </think>
++    input_ids = [1, 2, tool_call_id, 3, 4, tool_call_id, 5, 6]
++    
++    content_ids = parser.extract_content_ids(input_ids)
++    
++    # Content should start at the FIRST tool call, retaining both.
++    assert content_ids == [tool_call_id, 3, 4, tool_call_id, 5, 6], \
++        "extract_content_ids deleted the first tool call by searching backwards."
++
++
++def test_extract_reasoning_streaming_fragmented_end_and_tool_call(qwen3_tokenizer):
++    """
++    Regression test: When the end token (</think>) or tool call tag is fragmented
++    across deltas, the parser incorrectly swallows parts of the tag into reasoning,
++    corrupting the content sent to the tool parser.
++    """
++    parser = ReasoningParserManager.get_reasoning_parser("qwen3")(qwen3_tokenizer)
++    
++    # Delta 1: ends thinking but incomplete
++    prev_text_1 = "<think> reasoning "
++    delta_text_1 = "</think>\n<to"
++    curr_text_1 = prev_text_1 + delta_text_1
++    
++    msg1 = parser.extract_reasoning_streaming(
++        previous_text=prev_text_1,
++        current_text=curr_text_1,
++        delta_text=delta_text_1,
++        previous_token_ids=[1, 2],
++        current_token_ids=[1, 2, 3],
++        delta_token_ids=[3],
++    )
++    
++    # Since parser cannot know if <to will complete, it has to be handled carefully,
++    # but the bug manifests when the tag COMPLETES in the next delta.
++    
++    # Delta 2: completes tool call
++    prev_text_2 = curr_text_1
++    delta_text_2 = "ol_call>\n<function="
++    curr_text_2 = prev_text_2 + delta_text_2
++    
++    msg2 = parser.extract_reasoning_streaming(
++        previous_text=prev_text_2,
++        current_text=curr_text_2,
++        delta_text=delta_text_2,
++        previous_token_ids=[1, 2, 3],
++        current_token_ids=[1, 2, 3, 4],
++        delta_token_ids=[4],
++    )
++    
++    # If the parser split blindly at the point the tag completed in current_text,
++    # it would return 'ol_call>\n<function=' as content, missing the '<to' part.
++    if msg2 and msg2.content:
++        assert msg2.content != "ol_call>\n<function=", \
++            "Parser corrupted the tool call tag by splitting it across reasoning and content."
++
++
+diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
+index 60e3c84..293502c 100644
+--- a/vllm/reasoning/qwen3_reasoning_parser.py
++++ b/vllm/reasoning/qwen3_reasoning_parser.py
+@@ -96,9 +96,7 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+             self._tool_call_token_id is not None
+             and self._tool_call_token_id in input_ids
+         ):
+-            tool_call_index = (
+-                len(input_ids) - 1 - input_ids[::-1].index(self._tool_call_token_id)
+-            )
++            tool_call_index = input_ids.index(self._tool_call_token_id)
+             return input_ids[tool_call_index:]
+         return []
+ 
+@@ -228,7 +226,7 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+                     content = delta_text[reasoning_len:]
+                 else:
+                     reasoning = None
+-                    content = delta_text
++                    content = current_text[tag_start_idx:]
+                 return DeltaMessage(
+                     reasoning=reasoning if reasoning else None,
+                     content=content if content else None,
+-- 
+2.54.0
+
+
+From 4a5f5b3afa3c8cb47f716faf60ddc233dab77f84 Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Fri, 24 Apr 2026 17:27:47 +0200
+Subject: [PATCH 07/11] ensure tool call integrity for Qwen 3 during streaming
+ when tool call was detected to close reasoning
+
+Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+---
+ tests/reasoning/test_qwen3_reasoning_parser.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
+index 0af1135..2315f6e 100644
+--- a/tests/reasoning/test_qwen3_reasoning_parser.py
++++ b/tests/reasoning/test_qwen3_reasoning_parser.py
+@@ -499,7 +499,7 @@ def test_extract_reasoning_streaming_fragmented_tool_call(qwen3_tokenizer):
+     )
+     assert msg3 is not None
+     assert msg3.reasoning is None
+-    assert msg3.content == "call>\n<function=bash>"
++    assert msg3.content == "<tool_call>\n<function=bash>"
+ 
+ 
+ class _StubToolParser(ToolParser):
+-- 
+2.54.0
+
+
+From 9434a1010126a4324d0100ec7779737198e9925d Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Fri, 24 Apr 2026 19:30:36 +0200
+Subject: [PATCH 08/11] fixed tool_call leaking(duplicated) into reasoning
+ (start of it) then being entirely into content
+
+Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+---
+ .../reasoning/test_qwen3_reasoning_parser.py  |  6 ++-
+ vllm/reasoning/qwen3_reasoning_parser.py      | 43 +++++++++++++------
+ 2 files changed, 34 insertions(+), 15 deletions(-)
+
+diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
+index 2315f6e..0a59de3 100644
+--- a/tests/reasoning/test_qwen3_reasoning_parser.py
++++ b/tests/reasoning/test_qwen3_reasoning_parser.py
+@@ -468,7 +468,8 @@ def test_extract_reasoning_streaming_fragmented_tool_call(qwen3_tokenizer):
+         delta_token_ids=[3],
+     )
+     assert msg1 is not None
+-    assert msg1.reasoning == "<to"
++    # Tag fragments should NOT be reasoning
++    assert msg1.reasoning is None
+     assert msg1.content is None
+ 
+     # Delta 2: "ol_"
+@@ -483,7 +484,8 @@ def test_extract_reasoning_streaming_fragmented_tool_call(qwen3_tokenizer):
+         delta_token_ids=[4],
+     )
+     assert msg2 is not None
+-    assert msg2.reasoning == "ol_"
++    # Tag fragments should NOT be reasoning
++    assert msg2.reasoning is None
+     assert msg2.content is None
+ 
+     # Delta 3: "call>\n<function=bash>"
+diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
+index 293502c..2a644ea 100644
+--- a/vllm/reasoning/qwen3_reasoning_parser.py
++++ b/vllm/reasoning/qwen3_reasoning_parser.py
+@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
+ 
+ from vllm.entrypoints.openai.engine.protocol import DeltaMessage
+ from vllm.reasoning.basic_parsers import BaseThinkingReasoningParser
++from vllm.tool_parsers.utils import partial_tag_overlap
+ 
+ if TYPE_CHECKING:
+     from vllm.entrypoints.openai.chat_completion.protocol import ChatCompletionRequest
+@@ -91,7 +92,8 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+         result = super().extract_content_ids(input_ids)
+         if result:
+             return result
+-        # Fall back: content starts at <tool_call> (implicit reasoning end).
++        # Fall back: content starts at the FIRST <tool_call> 
++        # (implicit reasoning end).
+         if (
+             self._tool_call_token_id is not None
+             and self._tool_call_token_id in input_ids
+@@ -129,7 +131,7 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+ 
+         if self.end_token in model_output:
+             reasoning, _, content = model_output.partition(self.end_token)
+-            return reasoning, content or None
++            return reasoning or None, content or None
+ 
+         if not self.thinking_enabled:
+             # Thinking explicitly disabled — treat everything as content.
+@@ -192,20 +194,16 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+         if not delta_text:
+             # Nothing left after stripping start token.
+             return None
+-        elif self.end_token_id in previous_token_ids:
+-            # End token already passed: everything is content now.
+-            return DeltaMessage(content=delta_text)
+-        elif (
+-            self._tool_call_token_id is not None
+-            and self._tool_call_token_id in previous_token_ids
+-        ) or (
+-            bool(self._tool_call_tag)
+-            and self._tool_call_tag in previous_text
+-        ):
++        
++        # If thinking already ended, everything is content.
++        if (self.end_token_id in previous_token_ids or 
++            (self._tool_call_token_id is not None and 
++             self._tool_call_token_id in previous_token_ids) or
++            (bool(self._tool_call_tag) and 
++             self._tool_call_tag in previous_text)):
+             return DeltaMessage(content=delta_text)
+ 
+         # Implicit reasoning end via <tool_call>.
+-        # Only do this if we haven't already passed the end token.
+         has_tool_call_id = (
+             self._tool_call_token_id is not None
+             and self._tool_call_token_id in delta_token_ids
+@@ -220,17 +218,36 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+             if self._tool_call_tag and self._tool_call_tag in current_text:
+                 tag_start_idx = current_text.find(self._tool_call_tag)
+                 delta_start_idx = len(previous_text)
++                
+                 if tag_start_idx >= delta_start_idx:
+                     reasoning_len = tag_start_idx - delta_start_idx
+                     reasoning = delta_text[:reasoning_len]
+                     content = delta_text[reasoning_len:]
+                 else:
++                    # Part of the tag was already emitted as reasoning.
++                    # We MUST emit the full tag as content for the tool parser,
++                    # but we avoid emitting it as reasoning in this delta.
+                     reasoning = None
+                     content = current_text[tag_start_idx:]
++                
+                 return DeltaMessage(
+                     reasoning=reasoning if reasoning else None,
+                     content=content if content else None,
+                 )
+ 
++        # To avoid leaking fragments of <tool_call> into reasoning, 
++        # check for partial overlap.
++        # Before this fix we had the partial tool call tag being (partially)
++        # duplicated in reasoning and in content.
++        
++        overlap = partial_tag_overlap(current_text, self._tool_call_tag)
++        if overlap > 0:
++            sendable_reasoning_len = len(delta_text) - overlap
++            if sendable_reasoning_len > 0:
++                return DeltaMessage(reasoning=delta_text[:sendable_reasoning_len])
++            # Return an empty message instead of None to satisfy tests
++            # and indicate that processing is ongoing but no new content is ready.
++            return DeltaMessage()
++
+         # No end token yet: still in reasoning phase.
+         return DeltaMessage(reasoning=delta_text)
+-- 
+2.54.0
+
+
+From cfda67783ad3f26ba5573668bea8aa585cfc267e Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Fri, 24 Apr 2026 22:54:36 +0200
+Subject: [PATCH 09/11] reverted error from commit c04791986 + added test to
+ ensure it doesn't happen again
+
+Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+---
+ .../reasoning/test_qwen3_reasoning_parser.py  | 165 +++++++++++++++---
+ vllm/parser/abstract_parser.py                |  16 +-
+ vllm/reasoning/qwen3_reasoning_parser.py      |  10 ++
+ 3 files changed, 165 insertions(+), 26 deletions(-)
+
+diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
+index 0a59de3..fc85370 100644
+--- a/tests/reasoning/test_qwen3_reasoning_parser.py
++++ b/tests/reasoning/test_qwen3_reasoning_parser.py
+@@ -16,6 +16,7 @@ from vllm.entrypoints.openai.engine.protocol import (
+     DeltaMessage,
+     ExtractedToolCallInformation,
+ )
++from vllm.parser.abstract_parser import DelegatingParser
+ from vllm.parser.parser_manager import ParserManager
+ from vllm.reasoning import ReasoningParser, ReasoningParserManager
+ from vllm.tool_parsers.abstract_tool_parser import ToolParser
+@@ -387,37 +388,49 @@ def test_is_reasoning_end_complete_tool_call_in_single_delta(
+     qwen3_tokenizer,
+ ) -> None:
+     """
+-    Regression – is_reasoning_end must return True when a complete
++    Regression – is_reasoning_end_streaming must return True when a complete
+     <tool_call>…</tool_call> arrives in a single delta (MTP / speculative-
+-    decoding scenario). The paired-token guard was incorrectly skipping this
+-    case, preventing reasoning from being marked as ended.
++    decoding scenario).
++
++    is_reasoning_end uses a paired-token guard so it returns False when
++    <tool_call> is followed by </tool_call> (prompt examples). For streaming
++    delta checks, is_reasoning_end_streaming is used instead — it inspects
++    only the delta_ids and always returns True when <tool_call> is present.
+     """
+     vocab = qwen3_tokenizer.get_vocab()
+     tool_call_id = vocab["<tool_call>"]
+     tool_call_end_id = vocab["</tool_call>"]
+-    # Use a regular content token (first token ID from any word)
+     content_token = qwen3_tokenizer.encode("hello", add_special_tokens=False)[0]
+ 
+     parser: ReasoningParser = ReasoningParserManager.get_reasoning_parser(
+         parser_name
+     )(qwen3_tokenizer)
+ 
++    # Simulate accumulated token IDs before this delta
++    prior_ids = [content_token]
++    # Single delta that contains the complete <tool_call>…</tool_call>
+     delta_ids = [tool_call_id, content_token, tool_call_end_id]
+-    assert parser.is_reasoning_end(delta_ids), (
+-        "is_reasoning_end returned False for a complete <tool_call>…</tool_call> "
+-        "pair in a single delta — the paired-token guard incorrectly skips real "
+-        "output tool calls when both opening and closing tokens arrive together."
++
++    assert parser.is_reasoning_end_streaming(prior_ids, delta_ids), (
++        "is_reasoning_end_streaming returned False for a complete "
++        "<tool_call>…</tool_call> pair in a single delta. "
++        "Speculative-decoding flushes can deliver both the opening and closing "
++        "tokens at once; the streaming check must still signal reasoning end."
+     )
+ 
+ 
+-def test_is_reasoning_end_false_after_complete_tool_call_in_output(
++def test_is_reasoning_end_streaming_detects_tool_call_in_delta(
+     qwen3_tokenizer,
+ ) -> None:
+     """
+-    is_reasoning_end must return True for accumulated
+-    output that contains a complete <tool_call>…</tool_call> (no explicit
+-    </think>). Once reasoning ended via <tool_call>, the invariant must hold
+-    for any superset of those tokens.
++    is_reasoning_end_streaming must return True when the current delta
++    contains <tool_call>, regardless of whether </tool_call> is also present.
++
++    This covers the real-world case where the model emits <tool_call> as its
++    first implicit-end-of-reasoning signal.  abstract_parser uses
++    is_reasoning_end_streaming (not is_reasoning_end) for per-delta checks so
++    that the paired-token guard in is_reasoning_end does not prevent the
++    streaming transition.
+     """
+     vocab = qwen3_tokenizer.get_vocab()
+     tool_call_id = vocab["<tool_call>"]
+@@ -429,17 +442,17 @@ def test_is_reasoning_end_false_after_complete_tool_call_in_output(
+         parser_name
+     )(qwen3_tokenizer)
+ 
+-    output_ids = [
+-        reasoning_token,
+-        reasoning_token,
+-        tool_call_id,
+-        content_token,
+-        tool_call_end_id,
+-    ]
+-    assert parser.is_reasoning_end(output_ids), (
+-        "is_reasoning_end returned False after <tool_call>…</tool_call> is "
+-        "complete in the accumulated output — the paired-token guard violates "
+-        "the invariant that reasoning stays ended once it has ended."
++    # Accumulated token IDs up to (but not including) the current delta
++    prior_ids = [reasoning_token, reasoning_token]
++
++    # Delta that begins the tool call (speculative decoding may include the
++    # entire <tool_call>…</tool_call> sequence in one flush)
++    delta_ids = [tool_call_id, content_token, tool_call_end_id]
++
++    assert parser.is_reasoning_end_streaming(prior_ids, delta_ids), (
++        "is_reasoning_end_streaming returned False when the delta contains "
++        "<tool_call>. abstract_parser will miss the reasoning→tool-call "
++        "transition and route all subsequent output to the reasoning parser."
+     )
+ 
+ 
+@@ -685,3 +698,107 @@ def test_extract_reasoning_streaming_fragmented_end_and_tool_call(qwen3_tokenize
+             "Parser corrupted the tool call tag by splitting it across reasoning and content."
+ 
+ 
++def test_is_reasoning_end_false_for_prompt_with_paired_tool_call_examples(
++    qwen3_tokenizer,
++) -> None:
++    vocab = qwen3_tokenizer.get_vocab()
++    tool_call_id = vocab["<tool_call>"]
++    tool_call_end_id = vocab["</tool_call>"]
++    content_token = qwen3_tokenizer.encode("hello", add_special_tokens=False)[0]
++
++    parser: ReasoningParser = ReasoningParserManager.get_reasoning_parser(
++        parser_name
++    )(qwen3_tokenizer)
++
++    # Simulate a prompt whose token_ids contain a paired tool-call example:
++    #   ... system_text ... <tool_call> func_body </tool_call> ... user_text ...
++    # (No <think> or </think> after the pair, as is the case for non-3.5 models.)
++    prompt_token_ids = [
++        content_token,    # "You are a helpful assistant."
++        content_token,    # "Example:"
++        tool_call_id,     # <tool_call>  ← example in system prompt
++        content_token,    # function body text
++        tool_call_end_id, # </tool_call>  ← closes the example
++        content_token,    # user turn content
++    ]
++
++    result = parser.is_reasoning_end(prompt_token_ids)
++    assert not result, (
++        "is_reasoning_end returned True for a prompt that contains a PAIRED "
++        "<tool_call>…</tool_call> example. "
++        "This makes abstract_parser set state.reasoning_ended=True before the "
++        "model generates any token, routing all output (including reasoning) to "
++        "the tool parser and silently discarding the <reasoning> field. "
++        "The paired-token guard must be reinstated for this case."
++    )
++
++
++def test_parse_delta_reasoning_not_bypassed_when_prompt_has_tool_examples(
++    qwen3_tokenizer,
++) -> None:
++
++    
++
++    vocab = qwen3_tokenizer.get_vocab()
++    tool_call_id = vocab["<tool_call>"]
++    tool_call_end_id = vocab["</tool_call>"]
++    content_token = qwen3_tokenizer.encode("hello", add_special_tokens=False)[0]
++    end_token_id = vocab["</think>"]
++
++    # Build a DelegatingParser with qwen3 reasoning + stub tool parser.
++    class _TestParser(DelegatingParser):
++        pass
++
++    _TestParser._reasoning_parser = None
++    _TestParser._tool_parser = None
++
++    reasoning_parser = ReasoningParserManager.get_reasoning_parser(parser_name)(
++        qwen3_tokenizer
++    )
++    stub_tool_parser = _StubToolParser(qwen3_tokenizer)
++
++    parser = _TestParser(qwen3_tokenizer)
++    parser._reasoning_parser = reasoning_parser
++    parser._tool_parser = stub_tool_parser
++
++    request = ChatCompletionRequest(messages=[], model="test-model")
++
++    # prompt_token_ids: system message with a <tool_call> example, then user turn.
++    # No <think> token at the end (Qwen3 non-3.5 style).
++    prompt_token_ids = [
++        content_token,    # system text
++        tool_call_id,     # <tool_call> in system example
++        content_token,    # function body
++        tool_call_end_id, # </tool_call> closing the example
++        content_token,    # user message
++    ]
++
++    # First delta: a reasoning token (model starts generating its reasoning).
++    reasoning_text = "I need to think about this."
++    reasoning_token = qwen3_tokenizer.encode(
++        reasoning_text, add_special_tokens=False
++    )[0]
++
++    result = parser.parse_delta(
++        delta_text=reasoning_text,
++        delta_token_ids=[reasoning_token],
++        request=request,
++        prompt_token_ids=prompt_token_ids,
++    )
++
++    assert result is not None, (
++        "parse_delta returned None for the first reasoning delta — "
++        "the reasoning parser was bypassed entirely."
++    )
++    assert result.reasoning is not None, (
++        f"First delta was routed to the tool parser instead of the reasoning "
++        f"parser. Got result={result!r}. "
++        f"is_reasoning_end(prompt_token_ids) returned True because the prompt "
++        f"contains a <tool_call> token, causing state.reasoning_ended=True "
++        f"before any model output was generated."
++    )
++    assert result.tool_calls is None or result.tool_calls == [], (
++        "Tool calls were incorrectly populated during a reasoning-phase delta."
++    )
++
++
+diff --git a/vllm/parser/abstract_parser.py b/vllm/parser/abstract_parser.py
+index ec06fca..6602b49 100644
+--- a/vllm/parser/abstract_parser.py
++++ b/vllm/parser/abstract_parser.py
+@@ -640,6 +640,13 @@ class DelegatingParser(Parser):
+             return False
+         return self._reasoning_parser.is_reasoning_end(input_ids)
+ 
++    def is_reasoning_end_streaming(
++        self, input_ids: list[int], delta_ids: list[int]
++    ) -> bool:
++        if self._reasoning_parser is None:
++            return False
++        return self._reasoning_parser.is_reasoning_end_streaming(input_ids, delta_ids)
++
+     def extract_content_ids(self, input_ids: list[int]) -> list[int]:
+         if self._reasoning_parser is None:
+             return input_ids
+@@ -690,8 +697,13 @@ class DelegatingParser(Parser):
+                 current_token_ids=current_token_ids,
+                 delta_token_ids=delta_token_ids,
+             )
+-            # Hand off remaining content to tool parser
+-            if self._tool_parser and self.is_reasoning_end(delta_token_ids):
++            # Hand off remaining content to tool parser.
++            # Use is_reasoning_end_streaming for delta checks: it correctly
++            # detects <tool_call> in the current delta without the
++            # paired-token guard that is_reasoning_end applies for prompts.
++            if self._tool_parser and self.is_reasoning_end_streaming(
++                current_token_ids, delta_token_ids
++            ):
+                 state.reasoning_ended = True
+                 current_token_ids = self.extract_content_ids(delta_token_ids)
+                 if delta_message and delta_message.content:
+diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
+index 2a644ea..c41f354 100644
+--- a/vllm/reasoning/qwen3_reasoning_parser.py
++++ b/vllm/reasoning/qwen3_reasoning_parser.py
+@@ -65,6 +65,7 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+         start_token_id = self.start_token_id
+         end_token_id = self.end_token_id
+         tool_call_token_id = self._tool_call_token_id
++        tool_call_end_token_id = self._tool_call_end_token_id
+ 
+         for i in range(len(input_ids) - 1, -1, -1):
+             token_id = input_ids[i]
+@@ -73,6 +74,15 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+             if token_id == end_token_id:
+                 return True
+             if tool_call_token_id is not None and token_id == tool_call_token_id:
++                # Skip <tool_call> tokens that are paired with a subsequent
++                # </tool_call> — these appear in system-prompt tool examples
++                # and must not be mistaken for an implicit reasoning end.
++                # Unpaired <tool_call> (model output) still signals the end.
++                if tool_call_end_token_id is not None and any(
++                    input_ids[j] == tool_call_end_token_id
++                    for j in range(i + 1, len(input_ids))
++                ):
++                    continue
+                 return True
+         return False
+ 
+-- 
+2.54.0
+
+
+From a2160daff79d237adc37a250ae6ee7694868a0f6 Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Sat, 25 Apr 2026 06:49:09 +0200
+Subject: [PATCH 10/11] fix(qwen3-reasoning): clarify empty DeltaMessage
+ semantics in streaming
+
+Replace the misleading "to satisfy tests" comment with an explanation
+of the actual invariant: returning DeltaMessage() (empty) signals
+"processing ongoing, nothing to emit yet", whereas returning None
+would signal "stop processing".
+
+Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+---
+ vllm/reasoning/qwen3_reasoning_parser.py | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
+index c41f354..7d51303 100644
+--- a/vllm/reasoning/qwen3_reasoning_parser.py
++++ b/vllm/reasoning/qwen3_reasoning_parser.py
+@@ -255,8 +255,9 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+             sendable_reasoning_len = len(delta_text) - overlap
+             if sendable_reasoning_len > 0:
+                 return DeltaMessage(reasoning=delta_text[:sendable_reasoning_len])
+-            # Return an empty message instead of None to satisfy tests
+-            # and indicate that processing is ongoing but no new content is ready.
++            # Return an empty (not None) message: None would signal
++            # "stop processing", whereas DeltaMessage() means
++            # "processing ongoing, nothing to emit yet".
+             return DeltaMessage()
+ 
+         # No end token yet: still in reasoning phase.
+-- 
+2.54.0
+
+
+From 2a17d87c0ce787b3b4341f37816b02070d5e8624 Mon Sep 17 00:00:00 2001
+From: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
+Date: Sat, 25 Apr 2026 13:07:41 +0200
+Subject: [PATCH 11/11] fix(qwen3-reasoning): three streaming/counting edge
+ cases
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+1. count_reasoning_tokens override for Qwen3.5+ template
+
+   The chat template places <think> in the prompt, so the model OUTPUT
+   begins with reasoning tokens followed by </think>.  The inherited
+   depth-counter starts at depth=0 and is never incremented (no <think>
+   ever appears in the output), so it returned 0 reasoning tokens for
+   every Qwen3.5+ generation.
+
+   The override treats the start of the output as the reasoning region
+   by default and stops counting at the first </think> or — for the
+   Qwen3.5 implicit-end case — the first <tool_call>.  If <think> is
+   present in the output (older 2507 template) reasoning begins right
+   after it.
+
+2. Re-emit withheld <tool_call> prefix when the continuation is not
+   actually a tool call
+
+   The streaming path withholds the tail of current_text whenever it
+   looks like the prefix of <tool_call>.  If the model then emits an
+   unrelated continuation (e.g. <tool_use>, or just <too followed by
+   non-tool-call text), the withheld bytes were silently dropped.
+   The fix combines the withheld bytes from previous_text with this
+   delta's stripped text and re-runs the overlap check on the
+   cumulative text — emitting whatever portion is now safe instead of
+   only the new delta minus the current overlap.
+
+3. Honour enable_thinking=False in the streaming path
+
+   extract_reasoning already honoured self.thinking_enabled.  The
+   streaming counterpart relied entirely on the serving layer to
+   bypass the parser via prompt_is_reasoning_end detection.  Direct
+   callers (or any future regression of that bypass) silently routed
+   model output to the reasoning channel.  The streaming path now
+   matches extract_reasoning: when thinking is disabled and no
+   </think> is present in the delta, every byte is content.
+
+Each fix has a focused regression test in
+tests/reasoning/test_qwen3_reasoning_parser.py.
+
+Signed-off-by: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
+---
+ .../reasoning/test_qwen3_reasoning_parser.py  | 128 ++++++++++++++++++
+ vllm/reasoning/qwen3_reasoning_parser.py      |  91 ++++++++++---
+ 2 files changed, 201 insertions(+), 18 deletions(-)
+
+diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
+index fc85370..1b55a38 100644
+--- a/tests/reasoning/test_qwen3_reasoning_parser.py
++++ b/tests/reasoning/test_qwen3_reasoning_parser.py
+@@ -698,6 +698,134 @@ def test_extract_reasoning_streaming_fragmented_end_and_tool_call(qwen3_tokenize
+             "Parser corrupted the tool call tag by splitting it across reasoning and content."
+ 
+ 
++def test_streaming_thinking_disabled_treats_output_as_content(qwen3_tokenizer):
++    """When ``enable_thinking=False`` the chat template injects
++    ``<think>\\n\\n</think>\\n\\n`` into the prompt, so the model output
++    starts with content, not reasoning.
++
++    The non-streaming ``extract_reasoning`` honours ``self.thinking_enabled``
++    and returns the output as content.  The streaming path was relying on
++    the serving layer to detect this via ``prompt_is_reasoning_end`` and
++    bypass the parser entirely — but if the parser is invoked directly
++    (or if that bypass ever regresses) the streaming path silently routes
++    the model output to the reasoning channel.
++
++    Streaming should be self-consistent with the non-streaming path:
++    when thinking is explicitly disabled and no ``</think>`` arrives in
++    the output, every delta is content.
++    """
++    parser: ReasoningParser = ReasoningParserManager.get_reasoning_parser(parser_name)(
++        qwen3_tokenizer,
++        chat_template_kwargs={"enable_thinking": False},
++    )
++
++    delta_text = "Hello world, no thinking."
++    msg = parser.extract_reasoning_streaming(
++        previous_text="",
++        current_text=delta_text,
++        delta_text=delta_text,
++        previous_token_ids=[],
++        current_token_ids=[1, 2],
++        delta_token_ids=[1, 2],
++    )
++    assert msg is not None
++    assert msg.content == delta_text, (
++        f"With enable_thinking=False, streaming output must be content. "
++        f"Got: content={msg.content!r}, reasoning={msg.reasoning!r}"
++    )
++    assert msg.reasoning is None, (
++        f"With enable_thinking=False, no token should be marked reasoning. "
++        f"Got reasoning={msg.reasoning!r}"
++    )
++
++
++def test_count_reasoning_tokens_qwen35_template(qwen3_tokenizer):
++    """For the Qwen3.5+ chat template ``<think>`` lives in the prompt,
++    so the model output starts with reasoning tokens and only ``</think>``
++    ever appears.  The inherited depth-counter starts at depth=0 and is
++    never incremented (no ``<think>`` seen in output), so it returns 0
++    even when the output begins with a long reasoning span.
++
++    The Qwen3 parser must override this to "treat the start of the
++    output as the reasoning region until ``</think>`` (or implicit
++    ``<tool_call>``) is seen".
++    """
++    parser: ReasoningParser = ReasoningParserManager.get_reasoning_parser(parser_name)(
++        qwen3_tokenizer
++    )
++    vocab = qwen3_tokenizer.get_vocab()
++    end_token_id = vocab["</think>"]
++    reason_token = qwen3_tokenizer.encode("hello", add_special_tokens=False)[0]
++    content_token = qwen3_tokenizer.encode("world", add_special_tokens=False)[0]
++
++    # Output: 3 reasoning tokens, then </think>, then 2 content tokens.
++    output_ids = [reason_token, reason_token, reason_token, end_token_id,
++                  content_token, content_token]
++
++    n = parser.count_reasoning_tokens(output_ids)
++    assert n == 3, (
++        f"count_reasoning_tokens returned {n} for a Qwen3.5-style output "
++        f"with 3 reasoning tokens before </think>; the inherited counter "
++        f"never sees <think> (it lives in the prompt) so depth stays at 0."
++    )
++
++
++def test_streaming_partial_tool_call_prefix_is_not_lost(qwen3_tokenizer):
++    """Held-back partial-``<tool_call>`` overlap must be re-emitted as
++    reasoning when the next deltas reveal it was NOT actually a tool call.
++
++    The parser holds back the tail of the current text whenever it looks
++    like the prefix of ``<tool_call>``.  If the model then emits unrelated
++    text (e.g. ``<tool_use>`` or just ``<tool_belt``), the held-back
++    characters must be flushed as reasoning rather than silently dropped.
++    """
++    parser: ReasoningParser = ReasoningParserManager.get_reasoning_parser(parser_name)(
++        qwen3_tokenizer
++    )
++
++    # Delta 1 ends with "<tool" — looks like the start of "<tool_call>",
++    # so the parser holds those 5 chars back.
++    prev_text = "thinking "
++    delta_text_1 = "<tool"
++    curr_text_1 = prev_text + delta_text_1
++    msg1 = parser.extract_reasoning_streaming(
++        previous_text=prev_text,
++        current_text=curr_text_1,
++        delta_text=delta_text_1,
++        previous_token_ids=[1],
++        current_token_ids=[1, 2],
++        delta_token_ids=[2],
++    )
++
++    # Delta 2 turns out to NOT be "<tool_call>": the model emitted
++    # "<tool_use>" instead. The held-back "<tool" must not be lost.
++    prev_text_2 = curr_text_1
++    delta_text_2 = "_use>"
++    curr_text_2 = prev_text_2 + delta_text_2
++    msg2 = parser.extract_reasoning_streaming(
++        previous_text=prev_text_2,
++        current_text=curr_text_2,
++        delta_text=delta_text_2,
++        previous_token_ids=[1, 2],
++        current_token_ids=[1, 2, 3],
++        delta_token_ids=[3],
++    )
++
++    reasoning_emitted = ""
++    for msg in (msg1, msg2):
++        if msg and msg.reasoning:
++            reasoning_emitted += msg.reasoning
++
++    assert "<tool" in reasoning_emitted, (
++        f"Held-back '<tool' was silently dropped when the next delta "
++        f"revealed it was not a tool_call. Reasoning emitted: "
++        f"{reasoning_emitted!r}"
++    )
++    assert "_use>" in reasoning_emitted, (
++        f"Second delta '_use>' missing from reasoning: {reasoning_emitted!r}"
++    )
++
++
+ def test_is_reasoning_end_false_for_prompt_with_paired_tool_call_examples(
+     qwen3_tokenizer,
+ ) -> None:
+diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
+index 7d51303..489d059 100644
+--- a/vllm/reasoning/qwen3_reasoning_parser.py
++++ b/vllm/reasoning/qwen3_reasoning_parser.py
+@@ -61,6 +61,43 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+         """The token that ends reasoning content."""
+         return "</think>"
+ 
++    def count_reasoning_tokens(self, token_ids: Sequence[int]) -> int:
++        """Count reasoning tokens in the model OUTPUT.
++
++        The Qwen3.5+ chat template places ``<think>`` in the prompt, so the
++        output begins with reasoning tokens followed by ``</think>``.  The
++        inherited depth-counter assumes ``<think>`` lives in the output and
++        therefore returns 0 reasoning tokens for Qwen3.5 outputs.
++
++        This override:
++        - Treats the start of the output as the reasoning region by
++          default (no leading ``<think>`` required).
++        - If ``<think>`` IS present in the output (older 2507-era
++          template), reasoning begins right after it.
++        - Stops counting at the FIRST ``</think>`` or — for the Qwen3.5
++          implicit-end case — the FIRST ``<tool_call>``.
++        """
++        end_token_id = self.end_token_id
++        start_token_id = self.start_token_id
++        tool_call_token_id = self._tool_call_token_id
++
++        start_idx = 0
++        if start_token_id in token_ids:
++            for i, tid in enumerate(token_ids):
++                if tid == start_token_id:
++                    start_idx = i + 1
++                    break
++
++        count = 0
++        for i in range(start_idx, len(token_ids)):
++            tid = token_ids[i]
++            if tid == end_token_id:
++                return count
++            if tool_call_token_id is not None and tid == tool_call_token_id:
++                return count
++            count += 1
++        return count
++
+     def is_reasoning_end(self, input_ids: Sequence[int]) -> bool:
+         start_token_id = self.start_token_id
+         end_token_id = self.end_token_id
+@@ -174,10 +211,20 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+         are content.
+ 
+         NOTE: When thinking is disabled, no think tokens appear in the
+-        generated output. The serving layer detects this via
++        generated output. The serving layer normally detects this via
+         prompt_is_reasoning_end and routes deltas as content without
+-        calling this method.
++        calling this method, but we ALSO honour ``self.thinking_enabled``
++        here so the parser is self-consistent with ``extract_reasoning``
++        — direct callers (and any future regression of the bypass) get
++        content rather than mis-categorised reasoning.
+         """
++        # Thinking explicitly disabled — every delta is content.  We still
++        # split at </think> if (rarely) the model emits it in the output.
++        if not self.thinking_enabled and self.end_token_id not in delta_token_ids:
++            if not delta_text:
++                return None
++            return DeltaMessage(content=delta_text)
++
+         # Strip <think> from delta if present (old template / edge case
+         # where the model generates <think> itself).
+         if self.start_token_id in delta_token_ids:
+@@ -245,20 +292,28 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
+                     content=content if content else None,
+                 )
+ 
+-        # To avoid leaking fragments of <tool_call> into reasoning, 
+-        # check for partial overlap.
+-        # Before this fix we had the partial tool call tag being (partially)
+-        # duplicated in reasoning and in content.
+-        
+-        overlap = partial_tag_overlap(current_text, self._tool_call_tag)
+-        if overlap > 0:
+-            sendable_reasoning_len = len(delta_text) - overlap
+-            if sendable_reasoning_len > 0:
+-                return DeltaMessage(reasoning=delta_text[:sendable_reasoning_len])
+-            # Return an empty (not None) message: None would signal
+-            # "stop processing", whereas DeltaMessage() means
+-            # "processing ongoing, nothing to emit yet".
++        # To avoid leaking fragments of <tool_call> into reasoning,
++        # withhold any suffix of current_text that could grow into the
++        # tool_call tag.  Combine the bytes withheld by the previous
++        # delta with this delta's (already-stripped) text and recompute
++        # the overlap on the cumulative text.  When the continuation
++        # reveals the withheld characters were NOT in fact part of
++        # <tool_call> (e.g. the model emits "<tool_use>" instead), the
++        # previously withheld bytes are now released and emitted as
++        # reasoning.  The naive ``delta_text[:len(delta_text) - overlap]``
++        # would silently drop them.
++        prev_overlap = partial_tag_overlap(previous_text, self._tool_call_tag)
++        withheld_from_prev = (
++            previous_text[len(previous_text) - prev_overlap:]
++            if prev_overlap > 0 else ""
++        )
++        combined = withheld_from_prev + delta_text
++        curr_overlap = partial_tag_overlap(current_text, self._tool_call_tag)
++        sendable_len = len(combined) - curr_overlap
++        if sendable_len > 0:
++            return DeltaMessage(reasoning=combined[:sendable_len])
++        if curr_overlap > 0:
++            # Still withholding a partial tag — emit nothing yet but keep
++            # processing alive (None would signal "stop processing").
+             return DeltaMessage()
+-
+-        # No end token yet: still in reasoning phase.
+-        return DeltaMessage(reasoning=delta_text)
++        return None
+-- 
+2.54.0
+

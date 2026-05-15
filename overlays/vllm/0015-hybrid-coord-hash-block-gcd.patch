@@ -1,5 +1,14 @@
+From d530972d15dec0d13aefb08158e7746065179e85 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 14 May 2026 11:26:30 +0000
+Subject: [PATCH] 0015-hybrid-coord-hash-block-gcd
+
+---
+ vllm/v1/core/kv_cache_coordinator.py | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
 diff --git a/vllm/v1/core/kv_cache_coordinator.py b/vllm/v1/core/kv_cache_coordinator.py
-index 65993e804..6cc25fc23 100644
+index b5332ea..35de7cc 100644
 --- a/vllm/v1/core/kv_cache_coordinator.py
 +++ b/vllm/v1/core/kv_cache_coordinator.py
 @@ -2,7 +2,7 @@
@@ -8,7 +17,7 @@ index 65993e804..6cc25fc23 100644
  from collections.abc import Sequence
 -from math import lcm
 +from math import gcd, lcm
-
+ 
  from vllm.v1.core.block_pool import BlockPool
  from vllm.v1.core.kv_cache_metrics import KVCacheMetricsCollector
 @@ -424,9 +424,18 @@ class HybridKVCacheCoordinator(KVCacheCoordinator):
@@ -31,3 +40,6 @@ index 65993e804..6cc25fc23 100644
              for g in kv_cache_config.kv_cache_groups
          ), "block_size must be divisible by hash_block_size"
          assert dcp_world_size == 1, "DCP not support hybrid attn now."
+-- 
+2.54.0
+

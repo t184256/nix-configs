@@ -65,6 +65,7 @@ in
     enable = true;
     host = "127.0.0.1";
     port = 11110;
+    #environment.LITELLM_LOG = "DEBUG";
     settings =
       let
         plum = "http://192.168.99.53:11111/v1";
@@ -76,6 +77,7 @@ in
           extra_body = {
             top_k = 20;
             chat_template_kwargs.enable_thinking = true;
+            chat_template_kwargs.preserve_thinking = true;
           };
         };
         qwen35Nothink = {

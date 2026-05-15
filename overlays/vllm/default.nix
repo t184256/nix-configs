@@ -1,6 +1,6 @@
 final: prev:
 
-# override nixpkgs vllm (0.16.0) with a trunk commit (2026-05-10) that
+# override nixpkgs vllm (0.16.0) with a trunk commit (2026-05-14) that
 # has dflash.
 #
 # external cmake deps (CUDA only):
@@ -59,12 +59,12 @@ let
   overriddenVllm = (prev.python3Packages.vllm.override {
     inherit mistral-common flashinfer;
   }).overrideAttrs (oa: {
-    version = "0-unstable-2026-05-10";
+    version = "0-unstable-2026-05-14";
     src = prev.fetchFromGitHub {
       owner = "vllm-project";
       repo = "vllm";
-      rev = "5cba6839e6cb8ede0c81947557b76617468d0d61";
-      hash = "sha256-b394oOuvvWgPHOYLfHhB93GByfmPnkfJUY/prMy8Spk=";
+      rev = "9946c38b7fda2eecd349166a8c68ba410e33afd5";
+      hash = "sha256-QpQ2GgJ79dImTK7O+Pr1FZVvDqGRm34oe2MaO0cG3NE=";
     };
     patches =
       (prev.lib.filter
@@ -77,17 +77,26 @@ let
            ./0008-cuda-arch-override.patch
            # wire nix-provided cutlass into flash-attn CMake targets
            ./0009-flash-attn-cutlass-include.patch
-           # SM86 GDN layers emit float32; cast before combine_hidden_states
-           ./0011-dflash-cast-hidden-states-dtype.patch
            # PR #39995: FlashInfer DFlash fp8, per-layer headdim, SWA
            ./0012-dflash-swa.patch
+           # SM86 GDN layers emit float32; cast before combine_hidden_states
+           ./0013-dflash-cast-hidden-states-dtype.patch
            # MambaSpec: page_size_padded not derived from block_size
-           ./0013-mamba-fp8-page-unify.patch
-           # VL model: input_ids=None breaks AOT shape guards; substitute zeros
-           # (incomplete)
-           ./0014-zero-modality-limits.patch
+           ./0014-mamba-fp8-page-unify.patch
            # hybrid prefix-cache: GCD not raw LCM for hash_block_size
            ./0015-hybrid-coord-hash-block-gcd.patch
+           # PR #40371: prompt_progress SSE events during prefill
+           ./0016-prompt-progress-api.patch
+           # PR #40783: Qwen3 reasoning parser fragmented <think> tag fixes
+           ./0017-qwen3-reasoning-parser.patch
+           # PR #40861: Qwen3Coder tool parser streaming fixes
+           ./0018-qwen3-coder-tool-parser.patch
+           # vllm:prefill_tokens_computed in-progress counter
+           ./0019-prefill-tps-metric.patch
+           # PR #39456: vllm:num_requests_prefilling/decoding gauges
+           ./0020-prefill-decoding-req-gauges.patch
+           # presence_penalty/frequency_penalty in generation_config defaults
+           ./0021-generation-config-presence-penalty.patch
          ];
     # triton-kernels: bump to v3.6.0; nixpkgs ships 3.5.0.
     env =
@@ -102,7 +111,7 @@ let
       (oa.env or { }) // {
         TRITON_KERNELS_SRC_DIR =
           "${triton-kernels}/python/triton_kernels/triton_kernels";
-        SETUPTOOLS_SCM_PRETEND_VERSION = "0.19.0.dev20260510";
+        SETUPTOOLS_SCM_PRETEND_VERSION = "0.19.0.dev20260514";
       };
     # TORCH_CUDA_ARCH_LIST must be set in preBuild, not env:
     # CUDA setup hooks from cudaPackages run after env is initialised and

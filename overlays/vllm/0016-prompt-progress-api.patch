@@ -1,0 +1,269 @@
+From f405b9b74bb1a5a4d4dc443854970e3976eb8c48 Mon Sep 17 00:00:00 2001
+From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Date: Thu, 14 May 2026 11:26:47 +0000
+Subject: [PATCH] PR #40371: prompt_progress SSE events during prefill
+
+Adds return_progress option to OpenAI-compatible streaming endpoints.
+When set, the server emits prompt_progress chunks during chunked prefill
+with {total, cache, processed, time_ms} fields.
+
+Co-authored-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
+Co-authored-by: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
+---
+ .../openai/chat_completion/protocol.py        |  2 ++
+ .../openai/chat_completion/serving.py         | 21 +++++++++++++++
+ .../entrypoints/openai/completion/protocol.py |  2 ++
+ vllm/entrypoints/openai/completion/serving.py | 26 +++++++++++++++++++
+ vllm/outputs.py                               |  2 ++
+ vllm/v1/core/sched/scheduler.py               |  3 +++
+ vllm/v1/engine/__init__.py                    |  1 +
+ vllm/v1/engine/output_processor.py            | 10 +++++--
+ vllm/v1/metrics/stats.py                      |  7 ++---
+ 9 files changed, 69 insertions(+), 5 deletions(-)
+
+diff --git a/vllm/entrypoints/openai/chat_completion/protocol.py b/vllm/entrypoints/openai/chat_completion/protocol.py
+index cf843f6..35dd71c 100644
+--- a/vllm/entrypoints/openai/chat_completion/protocol.py
++++ b/vllm/entrypoints/openai/chat_completion/protocol.py
+@@ -131,6 +131,7 @@ class ChatCompletionStreamResponse(OpenAIBaseModel):
+     created: int = Field(default_factory=lambda: int(time.time()))
+     model: str
+     choices: list[ChatCompletionResponseStreamChoice]
++    prompt_progress: dict[str, int] | None = None
+     usage: UsageInfo | None = Field(default=None)
+     # Set only on the final chunk of a stream to mirror non-streaming responses
+     # without the per-chunk serialization overhead.
+@@ -192,6 +193,7 @@ class ChatCompletionRequest(OpenAIBaseModel):
+     stop: str | list[str] | None = []
+     stream: bool | None = False
+     stream_options: StreamOptions | None = None
++    return_progress: bool | None = False
+     temperature: float | None = None
+     top_p: float | None = None
+     tools: list[ChatCompletionToolsParam] | None = None
+diff --git a/vllm/entrypoints/openai/chat_completion/serving.py b/vllm/entrypoints/openai/chat_completion/serving.py
+index 29a0249..3536c0b 100644
+--- a/vllm/entrypoints/openai/chat_completion/serving.py
++++ b/vllm/entrypoints/openai/chat_completion/serving.py
+@@ -499,6 +499,27 @@ class OpenAIServingChat(OpenAIServing):
+                     if res.encoder_prompt_token_ids is not None:
+                         num_prompt_tokens += len(res.encoder_prompt_token_ids)
+ 
++                if getattr(request, "return_progress", False) and getattr(res, "num_computed_tokens", None) is not None and not res.outputs[0].token_ids:
++                    now = time.time()
++                    start_time = res.metrics.arrival_time if res.metrics and hasattr(res.metrics, "arrival_time") else created_time
++                    time_ms = int((now - start_time) * 1000)
++                    
++                    progress_chunk = ChatCompletionStreamResponse(
++                        id=request_id,
++                        object=chunk_object_type,
++                        created=created_time,
++                        choices=[],
++                        model=model_name,
++                        prompt_progress={
++                            "total": num_prompt_tokens,
++                            "cache": res.num_cached_tokens or 0,
++                            "processed": res.num_computed_tokens,
++                            "time_ms": time_ms
++                        }
++                    )
++                    data = progress_chunk.model_dump_json(exclude_unset=True)
++                    yield f"data: {data}\n\n"
++
+                 # We need to do it here, because if there are exceptions in
+                 # the result_generator, it needs to be sent as the FIRST
+                 # response (by the try...catch).
+diff --git a/vllm/entrypoints/openai/completion/protocol.py b/vllm/entrypoints/openai/completion/protocol.py
+index 831e5d9..d4c1397 100644
+--- a/vllm/entrypoints/openai/completion/protocol.py
++++ b/vllm/entrypoints/openai/completion/protocol.py
+@@ -61,6 +61,7 @@ class CompletionRequest(OpenAIBaseModel):
+     stop: str | list[str] | None = []
+     stream: bool | None = False
+     stream_options: StreamOptions | None = None
++    return_progress: bool | None = False
+     suffix: str | None = None
+     temperature: float | None = None
+     top_p: float | None = None
+@@ -512,6 +513,7 @@ class CompletionResponseStreamChoice(OpenAIBaseModel):
+     # prompt tokens is put into choice to align with CompletionResponseChoice
+     prompt_token_ids: list[int] | None = None
+     token_ids: list[int] | None = None
++    prompt_progress: dict[str, int] | None = None
+ 
+ 
+ class CompletionStreamResponse(OpenAIBaseModel):
+diff --git a/vllm/entrypoints/openai/completion/serving.py b/vllm/entrypoints/openai/completion/serving.py
+index bfe9fb2..8154ee7 100644
+--- a/vllm/entrypoints/openai/completion/serving.py
++++ b/vllm/entrypoints/openai/completion/serving.py
+@@ -303,6 +303,32 @@ class OpenAIServingCompletion(OpenAIServing):
+                 prompt_token_ids = res.prompt_token_ids
+                 prompt_logprobs = res.prompt_logprobs
+ 
++                num_prompt_tokens[prompt_idx] = (
++                    len(prompt_token_ids) if prompt_token_ids else 0
++                )
++                if res.encoder_prompt_token_ids is not None:
++                    num_prompt_tokens[prompt_idx] += len(res.encoder_prompt_token_ids)
++
++                if getattr(request, "return_progress", False) and getattr(res, "num_computed_tokens", None) is not None and not res.outputs[0].token_ids:
++                    now = time.time()
++                    start_time = res.metrics.arrival_time if res.metrics and hasattr(res.metrics, "arrival_time") else created_time
++                    time_ms = int((now - start_time) * 1000)
++                    
++                    progress_chunk = CompletionStreamResponse(
++                        id=request_id,
++                        created=created_time,
++                        model=model_name,
++                        choices=[],
++                        prompt_progress={
++                            "total": num_prompt_tokens[prompt_idx],
++                            "cache": res.num_cached_tokens or 0,
++                            "processed": res.num_computed_tokens,
++                            "time_ms": time_ms
++                        }
++                    )
++                    data = progress_chunk.model_dump_json(exclude_unset=True)
++                    yield f"data: {data}\n\n"
++
+                 if first_iteration:
+                     num_cached_tokens = res.num_cached_tokens
+                     first_iteration = False
+diff --git a/vllm/outputs.py b/vllm/outputs.py
+index 2c71d2a..5ae1afa 100644
+--- a/vllm/outputs.py
++++ b/vllm/outputs.py
+@@ -119,6 +119,7 @@ class RequestOutput:
+         encoder_prompt: str | None = None,
+         encoder_prompt_token_ids: list[int] | None = None,
+         num_cached_tokens: int | None = None,
++        num_computed_tokens: int | None = None,
+         *,
+         kv_transfer_params: dict[str, Any] | None = None,
+         # Forward compatibility, code that uses args added in new release can
+@@ -140,6 +141,7 @@ class RequestOutput:
+         self.encoder_prompt = encoder_prompt
+         self.encoder_prompt_token_ids = encoder_prompt_token_ids
+         self.num_cached_tokens = num_cached_tokens
++        self.num_computed_tokens = num_computed_tokens
+         self.kv_transfer_params = kv_transfer_params
+ 
+     def add(self, next_output: "RequestOutput", aggregate: bool) -> None:
+diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
+index ecb8b2f..ece1c43 100644
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1450,6 +1450,8 @@ class Scheduler(SchedulerInterface):
+                 or pooler_output is not None
+                 or kv_transfer_params
+                 or stopped
++                or request.is_prefill_chunk
++                or request.num_computed_tokens < request.num_tokens
+             ):
+                 # Add EngineCoreOutput for this Request.
+                 outputs[request.client_index].append(
+@@ -1467,6 +1469,7 @@ class Scheduler(SchedulerInterface):
+                         trace_headers=request.trace_headers,
+                         routed_experts=routed_experts,
+                         num_nans_in_logits=request.num_nans_in_logits,
++                        num_computed_tokens=request.num_computed_tokens,
+                     )
+                 )
+             else:
+diff --git a/vllm/v1/engine/__init__.py b/vllm/v1/engine/__init__.py
+index f6c8005..f65a403 100644
+--- a/vllm/v1/engine/__init__.py
++++ b/vllm/v1/engine/__init__.py
+@@ -186,6 +186,7 @@ class EngineCoreOutput(
+     trace_headers: Mapping[str, str] | None = None
+ 
+     prefill_stats: PrefillStats | None = None
++    num_computed_tokens: int | None = None
+ 
+     routed_experts: np.ndarray | None = None
+     # The number of NaNs in logits.
+diff --git a/vllm/v1/engine/output_processor.py b/vllm/v1/engine/output_processor.py
+index 1ae89ae..af5aae8 100644
+--- a/vllm/v1/engine/output_processor.py
++++ b/vllm/v1/engine/output_processor.py
+@@ -274,6 +274,7 @@ class RequestState:
+         stop_reason: int | str | None,
+         kv_transfer_params: dict[str, Any] | None = None,
+         routed_experts: np.ndarray | None = None,
++        num_computed_tokens: int | None = None,
+     ) -> RequestOutput | PoolingRequestOutput | None:
+         finished = finish_reason is not None
+         final_only = self.output_kind == RequestOutputKind.FINAL_ONLY
+@@ -312,6 +313,7 @@ class RequestState:
+                 external_req_id,
+                 [self._new_pooling_output(pooling_output)],
+                 finished,
++                num_computed_tokens=num_computed_tokens,
+             )
+ 
+         output = self._new_completion_output(
+@@ -327,7 +329,7 @@ class RequestState:
+             external_req_id = self.parent_req.external_req_id
+ 
+         return self._new_request_output(
+-            external_req_id, outputs, finished, kv_transfer_params
++            external_req_id, outputs, finished, kv_transfer_params, num_computed_tokens
+         )
+ 
+     def _new_request_output(
+@@ -336,6 +338,7 @@ class RequestState:
+         outputs: list[CompletionOutput] | list[PoolingOutput],
+         finished: bool,
+         kv_transfer_params: dict[str, Any] | None = None,
++        num_computed_tokens: int | None = None,
+     ) -> RequestOutput | PoolingRequestOutput:
+         # If prompt embeds were used, put placeholder prompt token ids
+         prompt_token_ids = self.prompt_token_ids
+@@ -370,6 +373,7 @@ class RequestState:
+             finished=finished,
+             kv_transfer_params=kv_transfer_params,
+             num_cached_tokens=self.num_cached_tokens,
++            num_computed_tokens=num_computed_tokens,
+             metrics=self.stats,
+         )
+ 
+@@ -623,7 +627,8 @@ class OutputProcessor:
+                     req_state.num_cached_tokens = (
+                         engine_core_output.prefill_stats.num_cached_tokens
+                     )
+-                req_state.is_prefilling = False
++                if len(new_token_ids) > 0 or finish_reason is not None:
++                    req_state.is_prefilling = False
+ 
+             if pooling_output is None:
+                 assert req_state.detokenizer is not None
+@@ -648,6 +653,7 @@ class OutputProcessor:
+                 stop_reason,
+                 kv_transfer_params,
+                 routed_experts,
++                engine_core_output.num_computed_tokens,
+             ):
+                 if req_state.streaming_input:
+                     request_output.finished = False
+diff --git a/vllm/v1/metrics/stats.py b/vllm/v1/metrics/stats.py
+index a7a5fb7..f30abac 100644
+--- a/vllm/v1/metrics/stats.py
++++ b/vllm/v1/metrics/stats.py
+@@ -366,9 +366,10 @@ class IterationStats:
+             if output.prefill_stats is not None:
+                 self.prompt_token_stats.update_from_output(output.prefill_stats)
+ 
+-            first_token_latency = self._time_since(req_stats.arrival_time)
+-            self.time_to_first_tokens_iter.append(first_token_latency)
+-            req_stats.first_token_latency = first_token_latency
++            if len(output.new_token_ids) > 0 or output.finish_reason is not None:
++                first_token_latency = self._time_since(req_stats.arrival_time)
++                self.time_to_first_tokens_iter.append(first_token_latency)
++                req_stats.first_token_latency = first_token_latency
+ 
+         req_stats.num_generation_tokens += num_new_generation_tokens
+ 
+-- 
+2.54.0
+

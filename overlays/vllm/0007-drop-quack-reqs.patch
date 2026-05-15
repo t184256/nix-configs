@@ -1,11 +1,27 @@
+From 016a573104f782a4f2a121ae4f42abbcd2e3d508 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 14 May 2026 11:25:51 +0000
+Subject: [PATCH] drop quack-kernels and nvidia-cutlass-dsl (not in
+
+---
+ requirements/cuda.txt | 4 ----
+ 1 file changed, 4 deletions(-)
+
 diff --git a/requirements/cuda.txt b/requirements/cuda.txt
+index 43b26e2..814fb5d 100644
 --- a/requirements/cuda.txt
 +++ b/requirements/cuda.txt
-@@ -17,7 +17,3 @@
-
+@@ -20,9 +20,5 @@ nvidia-cudnn-frontend>=1.13.0,<1.19.0
  # Required for faster safetensors model loading
  fastsafetensors >= 0.2.2
--
+ 
 -# QuACK and Cutlass DSL for FA4 (cute-DSL implementation)
--nvidia-cutlass-dsl>=4.4.2
+-nvidia-cutlass-dsl[cu13]==4.5.0
 -quack-kernels>=0.3.3
+-
+ # Tokenspeed_MLA for faster mla with spec decode
+ tokenspeed-mla==0.1.2
+\ No newline at end of file
+-- 
+2.54.0
+

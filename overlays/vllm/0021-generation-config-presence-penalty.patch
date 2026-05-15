@@ -1,0 +1,28 @@
+From 6d6c5c625b20f76af8a9a2928a967efbba15c058 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <asosedkin@redhat.com>
+Date: Fri, 15 May 2026 16:39:23 +0000
+Subject: [PATCH] config: add presence_penalty/frequency_penalty to
+ generation_config available_params
+
+Allows setting OpenAI-style penalty defaults via --generation-config,
+symmetrically with temperature/top_p/top_k already supported.
+---
+ vllm/config/model.py | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/vllm/config/model.py b/vllm/config/model.py
+index 1aeb21e..5a7a0f7 100644
+--- a/vllm/config/model.py
++++ b/vllm/config/model.py
+@@ -1432,6 +1432,8 @@ class ModelConfig:
+ 
+         available_params = [
+             "repetition_penalty",
++            "presence_penalty",
++            "frequency_penalty",
+             "temperature",
+             "top_k",
+             "top_p",
+-- 
+2.54.0
+

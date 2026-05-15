@@ -1,7 +1,17 @@
+From 58d3b0403587a9c281562de5c66ec6659361261f Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 14 May 2026 11:26:30 +0000
+Subject: [PATCH] 0011-dflash-cast-hidden-states-dtype
+
+---
+ vllm/v1/spec_decode/llm_base_proposer.py | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
 diff --git a/vllm/v1/spec_decode/llm_base_proposer.py b/vllm/v1/spec_decode/llm_base_proposer.py
+index 55e62d8..afea90b 100644
 --- a/vllm/v1/spec_decode/llm_base_proposer.py
 +++ b/vllm/v1/spec_decode/llm_base_proposer.py
-@@ -419,8 +419,11 @@
+@@ -461,8 +461,11 @@ class SpecDecodeBaseProposer:
                      DFlashQwen3ForCausalLM,
                  ),
              )
@@ -13,3 +23,7 @@ diff --git a/vllm/v1/spec_decode/llm_base_proposer.py b/vllm/v1/spec_decode/llm_
 +                target_hidden_states.to(self.dtype)
              )
              assert target_hidden_states.shape[-1] == self.hidden_size
+ 
+-- 
+2.54.0
+

@@ -1,7 +1,17 @@
+From f79571e6ff3bf10cf5d9a9ba442200b226b925f2 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 14 May 2026 11:25:51 +0000
+Subject: [PATCH] 0008-cuda-arch-override
+
+---
+ CMakeLists.txt | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
 diff --git a/CMakeLists.txt b/CMakeLists.txt
+index cf57541..857a560 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -160,4 +160,12 @@ if(VLLM_GPU_LANG STREQUAL "CUDA")
+@@ -185,6 +185,14 @@ if(VLLM_GPU_LANG STREQUAL "CUDA")
    cuda_archs_loose_intersection(CUDA_ARCHS
      "${CUDA_SUPPORTED_ARCHS}" "${CUDA_ARCHS}")
    message(STATUS "CUDA supported target architectures: ${CUDA_ARCHS}")
@@ -14,3 +24,8 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
 +    message(STATUS "CUDA architectures overridden: ${CUDA_ARCHS}")
 +  endif()
  else()
+   #
+   # For other GPU targets override the GPU architectures detected by cmake/torch
+-- 
+2.54.0
+

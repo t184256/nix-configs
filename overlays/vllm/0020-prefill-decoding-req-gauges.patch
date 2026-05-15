@@ -1,0 +1,122 @@
+From 7b922582c6d24886aa82d330bcd4b9b84bd46ce5 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <asosedkin@redhat.com>
+Date: Fri, 15 May 2026 13:42:08 +0000
+Subject: [PATCH] metrics: add vllm:num_requests_prefilling/decoding gauges
+
+Port of PR #39456 rebased on our patch stack.
+Adds two Prometheus gauges tracking how many running requests are
+currently in prefill vs decode phase, derived from num_computed_tokens
+vs num_prompt_tokens in the scheduler.
+---
+ .../serve/instrumentator/test_metrics.py      |  2 ++
+ vllm/v1/core/sched/scheduler.py               |  6 ++++
+ vllm/v1/metrics/loggers.py                    | 32 +++++++++++++++++++
+ vllm/v1/metrics/stats.py                      |  2 ++
+ 4 files changed, 42 insertions(+)
+
+diff --git a/tests/entrypoints/serve/instrumentator/test_metrics.py b/tests/entrypoints/serve/instrumentator/test_metrics.py
+index 9095f80..93528b4 100644
+--- a/tests/entrypoints/serve/instrumentator/test_metrics.py
++++ b/tests/entrypoints/serve/instrumentator/test_metrics.py
+@@ -182,6 +182,8 @@ async def test_metrics_counts(
+ EXPECTED_METRICS_V1 = [
+     "vllm:num_requests_running",
+     "vllm:num_requests_waiting",
++    "vllm:num_requests_prefilling",
++    "vllm:num_requests_decoding",
+     "vllm:num_requests_waiting_by_reason",
+     "vllm:kv_cache_usage_perc",
+     "vllm:prefix_cache_queries",
+diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
+index ece1c43..8e3065e 100644
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1954,9 +1954,15 @@ class Scheduler(SchedulerInterface):
+         connector_stats_payload = (
+             kv_connector_stats.data if kv_connector_stats else None
+         )
++        num_prefilling_reqs = sum(
++            1 for req in self.running
++            if req.num_computed_tokens < req.num_prompt_tokens
++        )
+         return SchedulerStats(
+             num_running_reqs=len(self.running),
+             num_waiting_reqs=len(self.waiting),
++            num_prefilling_reqs=num_prefilling_reqs,
++            num_decoding_reqs=len(self.running) - num_prefilling_reqs,
+             num_skipped_waiting_reqs=len(self.skipped_waiting),
+             kv_cache_usage=self.kv_cache_manager.usage,
+             prefix_cache_stats=prefix_cache_stats,
+diff --git a/vllm/v1/metrics/loggers.py b/vllm/v1/metrics/loggers.py
+index 14559e6..62dcc5f 100644
+--- a/vllm/v1/metrics/loggers.py
++++ b/vllm/v1/metrics/loggers.py
+@@ -340,6 +340,12 @@ class AggregatedLoggingStatLogger(LoggingStatLogger, AggregateStatLoggerBase):
+             self.last_scheduler_stats.num_running_reqs += (
+                 last_scheduler_stats.num_running_reqs
+             )
++            self.last_scheduler_stats.num_prefilling_reqs += (
++                last_scheduler_stats.num_prefilling_reqs
++            )
++            self.last_scheduler_stats.num_decoding_reqs += (
++                last_scheduler_stats.num_decoding_reqs
++            )
+             self.last_scheduler_stats.num_skipped_waiting_reqs += (
+                 last_scheduler_stats.num_skipped_waiting_reqs
+             )
+@@ -468,6 +474,26 @@ class PrometheusStatLogger(AggregateStatLoggerBase):
+             gauge_scheduler_waiting, per_engine_labelvalues
+         )
+ 
++        gauge_scheduler_prefilling = self._gauge_cls(
++            name="vllm:num_requests_prefilling",
++            documentation="Number of requests currently in prefill phase.",
++            multiprocess_mode="mostrecent",
++            labelnames=labelnames,
++        )
++        self.gauge_scheduler_prefilling = create_metric_per_engine(
++            gauge_scheduler_prefilling, per_engine_labelvalues
++        )
++
++        gauge_scheduler_decoding = self._gauge_cls(
++            name="vllm:num_requests_decoding",
++            documentation="Number of requests currently in decode phase.",
++            multiprocess_mode="mostrecent",
++            labelnames=labelnames,
++        )
++        self.gauge_scheduler_decoding = create_metric_per_engine(
++            gauge_scheduler_decoding, per_engine_labelvalues
++        )
++
+         gauge_waiting_by_reason = self._gauge_cls(
+             name="vllm:num_requests_waiting_by_reason",
+             documentation=(
+@@ -1082,6 +1108,12 @@ class PrometheusStatLogger(AggregateStatLoggerBase):
+                 + scheduler_stats.num_skipped_waiting_reqs
+             )
+             self.gauge_scheduler_waiting[engine_idx].set(total_waiting)
++            self.gauge_scheduler_prefilling[engine_idx].set(
++                scheduler_stats.num_prefilling_reqs
++            )
++            self.gauge_scheduler_decoding[engine_idx].set(
++                scheduler_stats.num_decoding_reqs
++            )
+             self.gauge_waiting_by_reason[WAITING_REASON_CAPACITY][engine_idx].set(
+                 scheduler_stats.num_waiting_reqs
+             )
+diff --git a/vllm/v1/metrics/stats.py b/vllm/v1/metrics/stats.py
+index 3dc246c..688ace4 100644
+--- a/vllm/v1/metrics/stats.py
++++ b/vllm/v1/metrics/stats.py
+@@ -174,6 +174,8 @@ class SchedulerStats:
+     num_running_reqs: int = 0
+ 
+     num_waiting_reqs: int = 0  # length of the "waiting" request queue
++    num_prefilling_reqs: int = 0
++    num_decoding_reqs: int = 0
+     num_skipped_waiting_reqs: int = 0  # length of the "skipped waiting" queue
+ 
+     # These are used for internal DP load-balancing.
+-- 
+2.54.0
+

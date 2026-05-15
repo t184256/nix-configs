@@ -1,0 +1,86 @@
+From 603092e26da9ff5e069b873c8987088677748b0e Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 14 May 2026 16:46:24 +0000
+Subject: [PATCH] metrics: add vllm:prefill_tokens_computed counter
+
+Tracks prefill tokens computed per scheduler step, not just at
+completion. Analogous to vllm:generation_tokens_total for decode.
+
+Uses num_computed_tokens from EngineCoreOutput (PR #40371). A
+per-request delta (last_computed_tokens in RequestStateStats) converts
+the cumulative field into a per-step increment so the counter grows
+continuously during long chunked-prefill steps rather than only at the
+end.
+---
+ vllm/v1/metrics/loggers.py | 13 +++++++++++++
+ vllm/v1/metrics/stats.py   |  9 +++++++++
+ 2 files changed, 22 insertions(+)
+
+diff --git a/vllm/v1/metrics/loggers.py b/vllm/v1/metrics/loggers.py
+index 6855efd..14559e6 100644
+--- a/vllm/v1/metrics/loggers.py
++++ b/vllm/v1/metrics/loggers.py
+@@ -668,6 +668,16 @@ class PrometheusStatLogger(AggregateStatLoggerBase):
+             counter_generation_tokens, per_engine_labelvalues
+         )
+ 
++        counter_prefill_tokens_computed = self._counter_cls(
++            name="vllm:prefill_tokens_computed",
++            documentation="Number of prefill tokens computed (updated per "
++                          "chunked-prefill step, not just at completion).",
++            labelnames=labelnames,
++        )
++        self.counter_prefill_tokens_computed = create_metric_per_engine(
++            counter_prefill_tokens_computed, per_engine_labelvalues
++        )
++
+         self.counter_request_success: dict[FinishReason, dict[int, Counter]] = {}
+         counter_request_success_base = self._counter_cls(
+             name="vllm:request_success",
+@@ -1160,6 +1170,9 @@ class PrometheusStatLogger(AggregateStatLoggerBase):
+         self.counter_generation_tokens[engine_idx].inc(
+             iteration_stats.num_generation_tokens
+         )
++        self.counter_prefill_tokens_computed[engine_idx].inc(
++            iteration_stats.num_prefill_chunk_tokens
++        )
+         self.histogram_iteration_tokens[engine_idx].observe(
+             iteration_stats.num_prompt_tokens + iteration_stats.num_generation_tokens
+         )
+diff --git a/vllm/v1/metrics/stats.py b/vllm/v1/metrics/stats.py
+index f30abac..3dc246c 100644
+--- a/vllm/v1/metrics/stats.py
++++ b/vllm/v1/metrics/stats.py
+@@ -219,6 +219,10 @@ class RequestStateStats:
+     # Track if this request is corrupted (NaNs in logits)
+     is_corrupted: bool = False
+ 
++    # num_computed_tokens from the last EngineCoreOutput for this request;
++    # used to compute per-step deltas for the prefill TPS counter.
++    last_computed_tokens: int = 0
++
+ 
+ @dataclass
+ class FinishedRequestStats:
+@@ -328,6 +332,7 @@ class IterationStats:
+     def __init__(self):
+         self.iteration_timestamp = time.time()
+         self.num_generation_tokens = 0
++        self.num_prefill_chunk_tokens = 0
+         self.prompt_token_stats = PromptTokenStats()
+         self.num_preempted_reqs = 0
+         self.finished_requests: list[FinishedRequestStats] = []
+@@ -362,6 +367,10 @@ class IterationStats:
+         num_new_generation_tokens = len(output.new_token_ids)
+ 
+         self.num_generation_tokens += num_new_generation_tokens
++        if output.num_computed_tokens is not None and is_prefilling:
++            delta = output.num_computed_tokens - req_stats.last_computed_tokens
++            self.num_prefill_chunk_tokens += max(0, delta)
++            req_stats.last_computed_tokens = output.num_computed_tokens
+         if is_prefilling:
+             if output.prefill_stats is not None:
+                 self.prompt_token_stats.update_from_output(output.prefill_stats)
+-- 
+2.54.0
+

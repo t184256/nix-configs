@@ -1,6 +1,17 @@
+From 60b2b21e6b4c84579d631bc63a9a1ec9567013be Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 14 May 2026 11:25:51 +0000
+Subject: [PATCH] 0009-flash-attn-cutlass-include
+
+---
+ cmake/external_projects/vllm_flash_attn.cmake | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/cmake/external_projects/vllm_flash_attn.cmake b/cmake/external_projects/vllm_flash_attn.cmake
+index b38917a..f88de66 100644
 --- a/cmake/external_projects/vllm_flash_attn.cmake
 +++ b/cmake/external_projects/vllm_flash_attn.cmake
-@@ -57,6 +57,25 @@
+@@ -57,6 +57,25 @@ install(CODE "set(CMAKE_INSTALL_PREFIX \"\${CMAKE_INSTALL_PREFIX}/vllm/\")" ALL_
  FetchContent_MakeAvailable(vllm-flash-attn)
  message(STATUS "vllm-flash-attn is available at ${vllm-flash-attn_SOURCE_DIR}")
  
@@ -26,3 +37,6 @@
  # Restore the install prefix after FA's install rules
  install(CODE "set(CMAKE_INSTALL_PREFIX \"\${OLD_CMAKE_INSTALL_PREFIX}\")" ALL_COMPONENTS)
  install(CODE "set(CMAKE_INSTALL_LOCAL_ONLY TRUE)" ALL_COMPONENTS)
+-- 
+2.54.0
+

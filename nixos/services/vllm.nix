@@ -16,6 +16,13 @@ let
 
   model = pkgs.qwen36-27b-awq;
   draft = pkgs.qwen36-27b-dflash-draft;
+  # Nothink defaults (server default is enable_thinking=false).
+  # Applies to bare requests only, users should override it.
+  generationConfig = pkgs.writeTextDir "generation_config.json"
+    (builtins.toJSON {
+      temperature = 0.7; top_p = 0.8; top_k = 20; presence_penalty = 1.5;
+      eos_token_id = [ 248046 248044 ];  # <|im_end|> <|endoftext|>
+    });
   maxModelLen = 262144;
   maxNumSeqs = 4;
   numSpecTokens = 15;  # z-lab recommends 15 for 27B-DFlash
@@ -51,10 +58,12 @@ let
     "SAFETENSORS_FAST_GPU=1"
     "CUDA_DEVICE_ORDER=PCI_BUS_ID"
     "OMP_NUM_THREADS=4"  # a rather random number for concurrency <=2
+    #"VLLM_ENFORCE_STRICT_TOOL_CALLING=1"
   ];
 
   script = pkgs.writeShellScript "vllm" ''
     exec ${vllm}/bin/vllm serve ${model} \
+      --generation-config ${generationConfig} \
       --kv-cache-dtype fp8 \
       --quantization awq_marlin \
       --limit-mm-per-prompt '{"image": 1, "video": 0}' \
@@ -69,10 +78,12 @@ let
       --default-chat-template-kwargs '{"enable_thinking": false}' \
       --async-scheduling \
       --enable-auto-tool-choice --tool-call-parser qwen3_coder \
-      --served-model-name qwen3.6-27b \
+      --disable-access-log-for-endpoints /metrics \
+      --served-model-name qwen3.6-27b qwen3.6-27b-think qwen3.6-27b-nothink \
       --host 192.168.99.53 --port 11111
   '';
   # Eats a bit of extra VRAM we don't have: --performance-mode interactivity
+  # Frees up a bit of it: --compilation-config.max_cudagraph_capture_size=64
   # dflash: Maximum concurrency for 262,144 tokens per request: 1.17x
   # without dflash it is more like 2x that
 in
