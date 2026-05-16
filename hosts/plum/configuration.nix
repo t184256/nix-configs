@@ -54,4 +54,6 @@
 
   system.role.virtualizer.enable = true;
   system.role.virtualizer.storageLocation = "persist";
+
+  networking.firewall.allowedTCPPorts = [ 8787 ];  # slopfest pi bridge
 }

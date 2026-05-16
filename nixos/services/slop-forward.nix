@@ -213,6 +213,21 @@ in
         mkForward "http://192.168.99.52:11112";
       "goose.slop.unboiled.info" =
         mkForward "http://192.168.99.52:8000";
+      # pi.slop.unboiled.info — no auth, websockets needed
+      "pi.slop.unboiled.info" = {
+        enableACME = true;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://192.168.99.53:8787";
+          proxyWebsockets = true;
+          extraConfig = ''
+            proxy_read_timeout 1800s;
+            proxy_buffering off;
+            proxy_request_buffering off;
+            client_max_body_size 0;
+          '';
+        };
+      };
     };
   };
 
