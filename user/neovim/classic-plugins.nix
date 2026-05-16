@@ -17,9 +17,6 @@
       vim-undofile-warn   # undofile enabled + warning on overundoing
       vim-gnupg  # transparent editing of .gpg files
 
-      # gv and its dependencies
-      gv-vim vim-rhubarb fugitive-gitlab-vim  # and vim-fugutive
-
       # those that need some configuration
       vim-better-whitespace  # trailing whitespace highlighting
     ];

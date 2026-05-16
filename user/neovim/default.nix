@@ -22,7 +22,6 @@ in
     ./indent-guides.nix
     ./languages.nix
     ./llm-commit-msg.nix
-    ./mark-radar.nix
     ./neogit.nix
     ./noice.nix
     ./nvim-ufo.nix
