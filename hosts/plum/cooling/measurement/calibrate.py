@@ -8,12 +8,12 @@ import time
 
 FANCTL_HOST   = '192.168.99.53'
 FANCTL_PORT   = 9272
-LOUDNESS_HOST = '192.168.99.42'
+LOUDNESS_HOST = '192.168.99.53'
 LOUDNESS_PORT = 9271
 
 K             = 20    # steps  (produces K+1 speed points)
-N             = 20    # measurements per step
-MEASURE_GAP   = 10.0  # seconds between measurements
+N             = 200   # measurements per step
+MEASURE_GAP   = 1.0   # seconds between measurements
 SPINUP_SECS   = 60.0  # seconds to wait after setting fan speed
 RESTORE_SECS  = 30.0  # seconds to restore (all fans to auto) between steps
 
@@ -60,10 +60,11 @@ def fanctl(cmd):
 
 
 def measure_db():
-    s = socket.create_connection((LOUDNESS_HOST, LOUDNESS_PORT), timeout=5)
-    db = json.loads(s.recv(1024))['db']
-    s.close()
-    return db
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.settimeout(5)
+        s.sendto(b'?', (LOUDNESS_HOST, LOUDNESS_PORT))
+        data, _ = s.recvfrom(256)
+        return json.loads(data)['db']
 
 
 def restore():

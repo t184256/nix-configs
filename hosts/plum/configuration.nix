@@ -17,6 +17,7 @@
     ./cooling/nvidia-settings.nix
     ./cooling/fancontrol.nix
     ./cooling/measurement/calibrate-fancontroller.nix
+    ./cooling/measurement/calibrate-fanlistener.nix
     ./cooling/temps.nix
   ];
 

@@ -33,7 +33,6 @@
     ../../user/tmux.nix
     ../../user/xdg.nix
     ../../user/xonsh
-    ../plum/cooling/measurement/calibrate-fanlistener.nix
   ];
 
   programs.password-store = {

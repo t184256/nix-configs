@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 import json
 import socketserver
+import time
 import sys
 import threading
 from collections import deque
 import numpy as np
 import sounddevice as sd
 
-PORT        = 9271
-BLOCK_SIZE  = 4096
-WINDOW_SECS = 10.0
+PORT = 9271
+BLOCK_SIZE = 4096
+WINDOW_SECS = 1.0
 
-buf      = deque()
+buf = deque()
 buf_lock = threading.Lock()
+_min_buf = deque()  # (minute_bucket, avg_db); no lock — UDPServer is single-threaded
+LOOKBACK_HOURS = 24
 
 
 def rms_to_db(rms):
@@ -44,10 +47,25 @@ def audio_thread(device):
         threading.Event().wait()
 
 
-class Handler(socketserver.StreamRequestHandler):
+class Handler(socketserver.BaseRequestHandler):
     def handle(self):
+        now = time.monotonic()
         db = current_db()
-        self.wfile.write((json.dumps({'db': float(db)}) + '\n').encode())
+        if db is not None:
+            bucket = int(now // 60)
+            if _min_buf and _min_buf[-1][0] == bucket:
+                # running average for the current minute bucket
+                old_avg, old_n = _min_buf[-1][1], _min_buf[-1][2]
+                _min_buf[-1] = (bucket, (old_avg * old_n + db) / (old_n + 1), old_n + 1)
+            else:
+                _min_buf.append((bucket, db, 1))
+            while _min_buf and bucket - _min_buf[0][0] > LOOKBACK_HOURS * 60:
+                _min_buf.popleft()
+        base = min((v for _, v, _ in _min_buf), default=db)
+        response = (
+            json.dumps({'db': float(db), 'base': float(base)}) + '\n'
+        ).encode()
+        self.request[1].sendto(response, self.client_address)
 
 
 if len(sys.argv) < 2:
@@ -55,9 +73,12 @@ if len(sys.argv) < 2:
     print("Usage: calibrate-fanlistener <device_index>")
     sys.exit(1)
 
-device = int(sys.argv[1])
+try:
+    device = int(sys.argv[1])
+except ValueError:
+    device = sys.argv[1]
 threading.Thread(target=audio_thread, args=(device,), daemon=True).start()
 
-with socketserver.TCPServer(('', PORT), Handler) as server:
+with socketserver.UDPServer(('', PORT), Handler) as server:
     print(f"Loudness daemon listening on port {PORT}")
     server.serve_forever()
