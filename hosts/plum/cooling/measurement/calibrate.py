@@ -11,11 +11,13 @@ FANCTL_PORT   = 9272
 LOUDNESS_HOST = '192.168.99.53'
 LOUDNESS_PORT = 9271
 
-K             = 20    # steps  (produces K+1 speed points)
-N             = 200   # measurements per step
-MEASURE_GAP   = 1.0   # seconds between measurements
-SPINUP_SECS   = 60.0  # seconds to wait after setting fan speed
-RESTORE_SECS  = 30.0  # seconds to restore (all fans to auto) between steps
+K               = 20    # steps  (produces K+1 speed points)
+N               = 200   # measurements per step
+MEASURE_GAP_SEC = 1.0   # seconds between measurements
+SPINUP_SEC      = 30.0  # seconds to wait after setting fan speed high
+SPINDOWN_SEC    = 40.0  # seconds to wait after stalling the fans
+INTERSPEED_SEC  = 10.0  # seconds to wait after changing fans speed a bit
+DELTA_SILENCE   = 0.1   # dB to stop going lower
 
 SPEEDS = [round(100 * i / K) for i in range(K + 1)]
 
@@ -62,7 +64,7 @@ def fanctl(cmd):
 
 def measure_db():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-        s.settimeout(5)
+        s.settimeout(15)
         s.sendto(b'?', (LOUDNESS_HOST, LOUDNESS_PORT))
         data, _ = s.recvfrom(256)
         return json.loads(data)['db']
@@ -106,38 +108,50 @@ def sleep_countdown(secs, label):
     print()
 
 
+def measure_median():
+    measurements = []
+    for i in range(N):
+        db = measure_db()
+        measurements.append(db)
+        if i % 10 == 0:
+            print(' ', end='', flush=True)
+        end = '\n' if (i % 10 == 9 or i == N - 1) else ' '
+        print(f'{db:.2f}', end=end, flush=True)
+        if i < N - 1:
+            time.sleep(MEASURE_GAP_SEC)
+    return round(statistics.median(measurements), 2)
+
+
 all_results = {}
 for name, own_gpu_fans, own_pwm_fans in TARGETS:
-    results = {}
-    for pct in SPEEDS:
+    results = []
+
+    print(f'--- silence before testing f{name} ---')
+    stall_except([], [])
+    sleep_countdown(SPINDOWN_SEC, f'{name} @ stall')
+    silence = measure_median()
+    print(f' silence: {silence:.2f} dB')
+    threshold = silence + DELTA_SILENCE
+
+    for i, pct in enumerate(SPEEDS[::-1]):
         print(f'--- {name} @ {pct}% ---')
         stall_except(own_gpu_fans, own_pwm_fans)
         set_speed(pct, own_gpu_fans, own_pwm_fans)
-        sleep_countdown(SPINUP_SECS, f'spin-up {name}@{pct}%')
+        sleep_countdown(INTERSPEED_SEC if i else SPINUP_SEC,
+                        f'spin-up {name}@{pct}%')
 
-        measurements = []
-        for i in range(N):
-            db = measure_db()
-            measurements.append(db)
-            if i % 10 == 0:
-                print(' ', end='', flush=True)
-            end = '\n' if (i % 10 == 9 or i == N - 1) else ' '
-            print(f'{db:.2f}', end=end, flush=True)
-            if i < N - 1:
-                time.sleep(MEASURE_GAP)
-        med = statistics.median(measurements)
-        results[pct] = med
+        med = measure_median()
         print(f' median: {med:.2f} dB')
-        restore()
-        sleep_countdown(RESTORE_SECS, f'cooldown after {name}@{pct}%')
+        results.append(med)
+        if med <= threshold:
+            print(f'enough for {name}')
+            break
 
-    all_results[name] = results
-
-    dbs = [round(results[pct], 2) for pct in SPEEDS]
-    print(f'{name!r}: {dbs},')
+    pad = min(silence, med)
+    all_results[name] = [pad] * (len(SPEEDS) - len(results)) + results[::-1]
+    print(f'{name!r}: {all_results[name]},')
 
 print('\nPROFILES = {')
 for name, *_ in TARGETS:
-    dbs = [round(all_results[name][pct], 2) for pct in SPEEDS]
-    print(f'    {name!r}: {dbs},')
+    print(f'    {name!r}: {all_results[name]},')
 print('}')
