@@ -22,9 +22,10 @@ VLLM_PP_BURST_WINDOW = 5.0  # seconds; burst-aware PP TPS history
 DB_MIN, DB_OVER = 0, 5
 FANS = {  # name: (max_rpm, profile, pwm_n)
     'CPU Fan':       (2000, 'cpu0',  1),
+    'Pump Fan':      (2423, 'case2', 2),
     'System Fan #1': (2423, 'case3', 3),
     'System Fan #2': (1186, 'case4', 4),
-    'System Fan #4': (1693, 'case6', 6),
+    'System Fan #3': (1693, 'case5', 5),
     'System Fan #5': (1775, 'case7', 7),
     'System Fan #6': (2423, 'case8', 8),
 }
@@ -318,12 +319,14 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness):
     cp = int(psutil.cpu_percent())
     cp = f'{gw_color(cp / 100)}{cp:3d}%{RESET}'
 
-    top_fans, top_tx = fan(sensors_data, 'System Fan #1')
-    bot_f, bot_tx = fan(sensors_data, 'System Fan #4', width=7)
-    tf, tf_txt = fan(sensors_data, 'System Fan #5', vert=False)
+    top_fans, top_tx = fan(sensors_data, 'Pump Fan')
+    bot_f, bot_tx = fan(sensors_data, 'System Fan #3', width=7)
+    tf, tf_txt = fan(sensors_data, 'System Fan #1', vert=False)
+    mf, mf_txt = fan(sensors_data, 'System Fan #5', vert=False)
     bf, bf_txt = fan(sensors_data, 'System Fan #6', vert=False)
     bk, bk_txt = fan(sensors_data, 'System Fan #2', vert=False)
     tf = f' {tf}'
+    mf = f' {mf}'
     bf = f' {bf}'
     bk, bk_ = f' {bk}', f' {bk}   '
     _, cpu_tx = fan(sensors_data, 'CPU Fan')
@@ -377,12 +380,12 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness):
         f'          │     ┌────────┐           {tf} {tf_txt}',
         f'         {bk_}  │{cp}{ct}│ {cpu_tx}  {tf}',
         f' {bk_txt}{bk_}  └────────┘            │',
-        f'         {bk}{pp_col}{st}            {bf}',
-        f'          │┌{top_fill}──────────────┐{bf}',
-        f'          ││{r0} {u0}{t0} {f0} {w0} │{bf}',
-        f'          │├{kv_fill}───────────────┤ │ {bf_txt}',
+        f'         {bk}{pp_col}{st}            {mf}',
+        f'          │┌{top_fill}──────────────┐{mf} {mf_txt}',
+        f'          ││{r0} {u0}{t0} {f0} {w0} │{mf}',
+        f'          │├{kv_fill}───────────────┤ │',
         f'          ││{r1} {u1}{t1} {f1} {w1} │{bf}',
-        f'          │└{bot_fill}──────────────┘{bf}',
+        f'          │└{bot_fill}──────────────┘{bf} {bf_txt}',
         f'          │{_vllm1}{vllm2} {bot_tx}  {bf}',
         f'          └─────────────────{bot_f}───┘',
     ]

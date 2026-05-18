@@ -7,7 +7,7 @@
 # acoustic_profile.PROFILES with linear interpolation.
 # Fan PWM is linear from TEMP_MIN at 0 to cap PWM at TEMP_MAX,
 # extending linearly beyond TEMP_MAX (thermal need overrides acoustics).
-# Exhaust lag: case3 <= 0.95*case8 PWM, case4 <= 0.95*case7 PWM.
+# Exhaust lag: case2 <= 0.95*case8 PWM, case4 <= 0.95*case7 PWM.
 
 import signal
 import time
@@ -15,8 +15,8 @@ import pynvml
 from acoustic_profile import PROFILES
 from common import profile_db, K, find_hwmon
 
-EXHAUST   = [3, 4]    # top SYS_FAN1, rear SYS_FAN2
-INTAKE    = [6, 7, 8] # bottom SYS_FAN4, top-front SYS_FAN5, mid SYS_FAN6
+EXHAUST   = [2, 4]    # top SYS_PUMP1, rear SYS_FAN2
+INTAKE    = [3, 5, 7, 8] # front-top SYS_FAN1, bottom SYS_FAN3, front-mid SYS_FAN5, front-bottom SYS_FAN6
 TEMP_MIN  = 30        # °C: below this, case fans are off
 TEMP_MAX  = 80        # °C: case fans hit their acoustic cap at this temp
 LOG_EVERY = 10        # seconds between log lines
@@ -110,22 +110,25 @@ try:
         def cap(name):
             return int(budget_cap_pct(PROFILES[name], budget) * 255 / 100)
 
-        cap6 = cap('case6')
+        cap3 = cap('case3')
+        cap5 = cap('case5')
         cap7 = cap('case7')
         cap8 = cap('case8')
-        cap3 = min(cap('case3'), int(0.95 * cap8))
+        cap2 = min(cap('case2'), int(0.95 * cap8))
         cap4 = min(cap('case4'), int(0.95 * cap7))
 
-        pwm6 = temp_to_pwm(temp, cap6)
+        pwm3 = temp_to_pwm(temp, cap3)
+        pwm5 = temp_to_pwm(temp, cap5)
         pwm7 = temp_to_pwm(temp, cap7)
         pwm8 = temp_to_pwm(temp, cap8)
-        pwm3 = temp_to_pwm(temp, cap3)
+        pwm2 = temp_to_pwm(temp, cap2)
         pwm4 = temp_to_pwm(temp, cap4)
 
-        pwm_write([6], pwm6)
+        pwm_write([3], pwm3)
+        pwm_write([5], pwm5)
         pwm_write([7], pwm7)
         pwm_write([8], pwm8)
-        pwm_write([3], pwm3)
+        pwm_write([2], pwm2)
         pwm_write([4], pwm4)
 
         now = time.monotonic()
@@ -140,7 +143,8 @@ try:
             )
             print(
                 ', '.join(log_fan(n, pwm, cap_) for n, pwm, cap_ in [
-                    ('case6', pwm6, cap6),
+                    ('case3', pwm3, cap3),
+                    ('case5', pwm5, cap5),
                     ('case7', pwm7, cap7),
                     ('case8', pwm8, cap8),
                 ]),
@@ -148,7 +152,7 @@ try:
             )
             print(
                 ', '.join(log_fan(n, pwm, cap_) for n, pwm, cap_ in [
-                    ('case3', pwm3, cap3),
+                    ('case2', pwm2, cap2),
                     ('case4', pwm4, cap4),
                 ]),
                 flush=True,

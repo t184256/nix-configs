@@ -7,7 +7,7 @@ import pynvml
 
 PORT = 9272
 
-ALL_FANS = [1, 3, 4, 6, 7, 8]  # cpu: 1  exhaust: 3,4  intake: 6,7,8
+ALL_FANS = [1, 2, 3, 4, 5, 7, 8]  # cpu: 1  exhaust: 2,4  intake: 3,5,7,8
 
 
 def find_hwmon(name):

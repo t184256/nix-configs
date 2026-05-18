@@ -20,18 +20,19 @@ RESTORE_SECS  = 30.0  # seconds to restore (all fans to auto) between steps
 SPEEDS = [round(100 * i / K) for i in range(K + 1)]
 
 ALL_GPU_FANS  = [(0, 0), (0, 1), (1, 0), (1, 1)]
-ALL_PWM_FANS  = [1, 3, 4, 6, 7, 8]  # 1=cpu0, rest=case fans
-PWM_FAN_NAMES = {1: 'cpu0', 3: 'case3', 4: 'case4',
-                 6: 'case6', 7: 'case7', 8: 'case8'}
+ALL_PWM_FANS  = [1, 2, 3, 4, 5, 7, 8]  # 1=cpu0, rest=case fans
+PWM_FAN_NAMES = {1: 'cpu0', 2: 'case2', 3: 'case3', 4: 'case4',
+                 5: 'case5', 7: 'case7', 8: 'case8'}
 
 # Each target: name, own gpu fans [(gpu,fan),...], own pwm fans [n,...]
 ALL_TARGETS = [
     ('gpu0',  [(0, 0), (0, 1)], []),
     ('gpu1',  [(1, 0), (1, 1)], []),
     ('cpu0',  [], [1]),
+    ('case2', [], [2]),
     ('case3', [], [3]),
     ('case4', [], [4]),
-    ('case6', [], [6]),
+    ('case5', [], [5]),
     ('case7', [], [7]),
     ('case8', [], [8]),
 ]
