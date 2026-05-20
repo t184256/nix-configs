@@ -21,13 +21,13 @@ VLLM_DELTA_WINDOW = 0.3  # seconds of history for TPS / ACC window
 VLLM_PP_BURST_WINDOW = 5.0  # seconds; burst-aware PP TPS history
 DB_MIN, DB_OVER = 0, 5
 FANS = {  # name: (max_rpm, profile, pwm_n)
-    'CPU Fan':       (2000, 'cpu0',  1),
-    'Pump Fan':      (2423, 'case2', 2),
+    'CPU Fan':       (2010, 'cpu0',  1),
+    'Pump Fan':      (2400, 'case2', 2),
     'System Fan #1': (2423, 'case3', 3),
-    'System Fan #2': (1186, 'case4', 4),
-    'System Fan #3': (1693, 'case5', 5),
-    'System Fan #5': (1775, 'case7', 7),
-    'System Fan #6': (2423, 'case8', 8),
+    'System Fan #2': (3030, 'case4', 4),
+    'System Fan #3': (3000, 'case5', 5),
+    'System Fan #5': (2370, 'case7', 7),
+    'System Fan #6': (2365, 'case8', 8),
 }
 
 
