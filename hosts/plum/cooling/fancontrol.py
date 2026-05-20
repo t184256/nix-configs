@@ -21,6 +21,7 @@ INTAKE = [3, 5, 7, 8]  # front-top SYS_FAN1, bottom SYS_FAN3,
 TEMP_MIN  = 30  # °C: below this, case fans are off
 TEMP_MAX  = 80  # °C: case fans hit their acoustic cap at this temp
 LOG_EVERY = 10  # seconds between log lines
+DB_OFFSET = .5  # run this many dB quieter than the estimated noise
 
 
 def budget_cap_pct(profile, budget_db):
@@ -106,7 +107,7 @@ try:
         g0_db   = profile_db(PROFILES['gpu0'], g0_pct)
         g1_db   = profile_db(PROFILES['gpu1'], g1_pct)
         cpu_db  = profile_db(PROFILES['cpu0'], cpu_pct)
-        budget  = max(cpu_db, g0_db, g1_db)
+        budget  = max(cpu_db, g0_db, g1_db) - DB_OFFSET
 
         def cap(name):
             return int(budget_cap_pct(PROFILES[name], budget) * 255 / 100)
