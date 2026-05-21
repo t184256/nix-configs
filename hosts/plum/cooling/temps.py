@@ -357,6 +357,8 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness):
         if n_dec > 1:
             dc = _fg((255, 0, 0)) if n_dec > 2 else _fg((255, 220, 0))
             bot_fill = f'─↓{dc}{n_dec}{RESET}↓──────'
+        elif n_dec == 1:
+            bot_fill = '─↓─↓──────'
         else:
             bot_fill = '──────────'
         _vllm1 = (f'{gw_color(tg_tps/VLLM_TG_TPS_MAX)}'
