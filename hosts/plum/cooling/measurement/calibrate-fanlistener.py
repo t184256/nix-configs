@@ -4,68 +4,44 @@ import socketserver
 import time
 import sys
 import threading
-from collections import deque
 import numpy as np
 import sounddevice as sd
 
 PORT = 9271
 BLOCK_SIZE = 4096
-WINDOW_SECS = 1.0
-
-buf = deque()
-buf_lock = threading.Lock()
-_min_buf = deque()  # (minute_bucket, avg_db); no lock — UDPServer is single-threaded
 LOOKBACK_HOURS = 24
+LOOKBACK_MINUTES = LOOKBACK_HOURS * 60
 
 
-def rms_to_db(rms):
-    return 20 * np.log10(rms) if rms > 0 else -np.inf
+def rms_to_db(data):
+    rms = np.sqrt(np.mean(data ** 2))
+    return float(20 * np.log10(rms)) if rms > 0 else None
 
 
-def current_db():
-    with buf_lock:
-        if not buf:
-            return None
-        data = np.concatenate(list(buf))
-    return rms_to_db(np.sqrt(np.mean(data ** 2)))
+class MinutesTracker:
+    def __init__(self):
+        self.minutes = []
+        self.base = None
+        self.cur_sum = 0.0
+        self.cur_count = 0
 
+    def add(self, db):
+        self.cur_sum += db
+        self.cur_count += 1
+        if self.cur_count < 60:
+            return
 
-def audio_thread(device):
-    sample_rate   = int(sd.query_devices(device)['default_samplerate'])
-    window_blocks = int(WINDOW_SECS * sample_rate / BLOCK_SIZE)
+        cur_avg = self.cur_sum / self.cur_count
+        self.cur_sum = self.cur_count = 0
 
-    def callback(indata, frames, time, status):
-        with buf_lock:
-            buf.append(indata[:, 0].copy())
-            while len(buf) > window_blocks:
-                buf.popleft()
-        db = current_db()
-        print(f'\r{db:8.2f} dB', end='', flush=True)
+        if len(self.minutes) >= LOOKBACK_MINUTES:
+            evicted = self.minutes.pop(0)
+            if evicted <= self.base:
+                self.base = min(self.minutes, default=None)
 
-    with sd.InputStream(samplerate=sample_rate, blocksize=BLOCK_SIZE,
-                        channels=1, callback=callback, device=device):
-        threading.Event().wait()
-
-
-class Handler(socketserver.BaseRequestHandler):
-    def handle(self):
-        now = time.monotonic()
-        db = current_db()
-        if db is not None:
-            bucket = int(now // 60)
-            if _min_buf and _min_buf[-1][0] == bucket:
-                # running average for the current minute bucket
-                old_avg, old_n = _min_buf[-1][1], _min_buf[-1][2]
-                _min_buf[-1] = (bucket, (old_avg * old_n + db) / (old_n + 1), old_n + 1)
-            else:
-                _min_buf.append((bucket, db, 1))
-            while _min_buf and bucket - _min_buf[0][0] > LOOKBACK_HOURS * 60:
-                _min_buf.popleft()
-        base = min((v for _, v, _ in _min_buf), default=db)
-        response = (
-            json.dumps({'db': float(db), 'base': float(base)}) + '\n'
-        ).encode()
-        self.request[1].sendto(response, self.client_address)
+        self.minutes.append(cur_avg)
+        if self.base is None or cur_avg < self.base:
+            self.base = cur_avg
 
 
 if len(sys.argv) < 2:
@@ -77,6 +53,51 @@ try:
     device = int(sys.argv[1])
 except ValueError:
     device = sys.argv[1]
+
+sample_rate = int(sd.query_devices(device)['default_samplerate'])
+SECOND = sample_rate
+buf = np.zeros(2 * SECOND + BLOCK_SIZE)
+buf_len = 0
+latest_db = None
+tracker = MinutesTracker()
+lock = threading.Lock()
+
+
+def audio_callback(indata, frames, _, status):
+    global buf_len, latest_db
+    with lock:
+        buf[buf_len:buf_len+BLOCK_SIZE] = indata[:, 0]
+        buf_len += BLOCK_SIZE
+        if buf_len >= 2 * SECOND:  # slice off the oldest second
+            old_db = rms_to_db(buf[:SECOND])
+            if old_db is not None:
+                tracker.add(old_db)
+            buf[:buf_len - SECOND] = buf[SECOND:buf_len]
+            buf_len -= SECOND
+
+        if buf_len >= SECOND:  # calculate the current value
+            latest_db = rms_to_db(buf[buf_len-SECOND:buf_len])
+            if latest_db is not None:
+                print(f'\r{latest_db:8.2f} dB', end='', flush=True)
+
+
+def audio_thread(device):
+    with sd.InputStream(samplerate=sample_rate, blocksize=BLOCK_SIZE,
+                        channels=1, callback=audio_callback, device=device):
+        threading.Event().wait()
+
+
+class Handler(socketserver.BaseRequestHandler):
+    def handle(self):
+        with lock:
+            db = latest_db
+            base = tracker.base
+        if db is None or base is None:
+            return
+        response = json.dumps({'db': db, 'base': base}).encode() + b'\n'
+        self.server.socket.sendto(response, self.client_address)
+
+
 threading.Thread(target=audio_thread, args=(device,), daemon=True).start()
 
 with socketserver.UDPServer(('', PORT), Handler) as server:
