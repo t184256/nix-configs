@@ -242,7 +242,7 @@ def db_color(db):
 
 
 def fan_color(db_rel):
-    return gwyor_color(db_rel / 4)
+    return gwyor_color(db_rel / 2)
 
 
 def fan_arrows_vert(rpm, rpm_max, width=11):
