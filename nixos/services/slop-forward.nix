@@ -112,6 +112,11 @@ in
           "sweep-0.5b".hosts = [ grapefruit ];
         };
         aliases = {
+          "default" = { model = "qwen3.6-27b"; params = qwen36Think; };
+          "default-think" = { model = "qwen3.6-27b"; params = qwen36Think; };
+          "default-nothink" =
+            { model = "qwen3.6-27b"; params = qwen36Nothink; };
+
           "qwen3.5-0.8b-think" =
             { model = "qwen3.5-0.8b"; params = qwen35Think; };
           "qwen3.5-0.8b-nothink" =
