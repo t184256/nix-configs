@@ -89,12 +89,13 @@ def audio_thread(device):
 
 class Handler(socketserver.BaseRequestHandler):
     def handle(self):
+        while latest_db is None or tracker.base is None:
+            time.sleep(0.1)
         with lock:
-            db = latest_db
-            base = tracker.base
-        if db is None or base is None:
-            return
-        response = json.dumps({'db': db, 'base': base}).encode() + b'\n'
+            response = json.dumps({
+                'db': latest_db,
+                'base': tracker.base
+            }).encode() + b'\n'
         self.server.socket.sendto(response, self.client_address)
 
 
