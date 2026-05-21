@@ -1,6 +1,26 @@
 { pkgs, ... }:
 
-# TODO: update with full numbers
+# Dual NVLinked RTX 3090 QuantTrio/Qwen3.6-27B-AWQ:
+# --- thinking=True ---
+# target      pp      ttft   pp tps   decode tps    gen
+#    256     272    0.169s     1612        180.0    128
+#   8192    8201    3.669s     2235        168.5    128
+#  16384   16384    8.042s     2037        165.5    128
+#  32768   32750   18.535s     1767        150.9    128
+#  65536   65481   41.510s     1577        144.5    128
+# 131072  130944   99.989s     1310        126.8    128
+# 196608  196406  180.079s     1091        112.9    128
+# 262144  261676  276.090s      948        100.2    128
+# --- thinking=False ---
+# target      pp      ttft   pp tps   decode tps    gen
+#    256     274    0.168s     1631         97.7    128
+#   8192    8203    4.085s     2008         93.0    128
+#  16384   16386    8.456s     1938         88.8    128
+#  32768   32752   18.244s     1795         88.6    128
+#  65536   65483   41.257s     1587         78.8    128
+# 131072  130946   99.729s     1313         63.1    128
+# 196608  196408  179.764s     1093         56.8    128
+# 262144  261678  276.766s      945         50.5    128
 
 # Dual no-NVLink RTX 3090 QuantTrio/Qwen3.6-27B-AWQ:
 # --- thinking=True ---
@@ -34,6 +54,7 @@
       from openai import OpenAI
 
       URL = 'http://192.168.99.53:11111/v1'
+      MAX_MODEL_LEN = 262144
       PROMPT_LENS = [256, 8192, 16384, 32768, 65536, 131072, 196608, 262144]
       GEN_TOKENS = 128
       RUNS = 5
@@ -55,7 +76,8 @@
               ttfts, tpss = [], []
               for run in range(RUNS):
                   prefix = f'[approx={approx} run #{run}] '
-                  prompt = prefix + BASE[:approx * 27 // 5 - len(prefix)]
+                  tgt = min(approx, MAX_MODEL_LEN - GEN_TOKENS - 64)
+                  prompt = prefix + BASE[:tgt * 26 // 5 - len(prefix)]
                   t0 = time.perf_counter()
                   ttft = None
                   with client.chat.completions.create(

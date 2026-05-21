@@ -72,6 +72,7 @@ let
       --max-num-batched-tokens ${toString maxNumBatchedTokens} \
       --max-model-len ${toString maxModelLen} \
       --tensor-parallel-size 2 \
+      --disable-custom-all-reduce \
       --gpu-memory-utilization 0.95 \
       --enable-prefix-caching \
       --reasoning-parser qwen3 \
@@ -86,6 +87,7 @@ let
   # Frees up a bit of it: --compilation-config.max_cudagraph_capture_size=64
   # dflash: Maximum concurrency for 262,144 tokens per request: 1.17x
   # without dflash it is more like 2x that
+  # illegal memory access in custom_all_reduce.cuh: --disable-custom-all-reduce
 in
 
 {
