@@ -116,8 +116,10 @@ try:
         cap5 = cap('case5')
         cap7 = cap('case7')
         cap8 = cap('case8')
-        cap2 = min(cap('case2'), int(0.95 * cap8))
-        cap4 = min(cap('case4'), int(0.95 * cap7))
+        # 2 top exhausts are capped by matching front-bottom/front-mid intakes
+        cap2 = min(cap('case2'), int(0.95 * (cap7 + cap8) / 2))
+        # single rear exhaust is "capped" by matching front-top/bottom intakes
+        cap4 = min(cap('case4'), int(0.95 * (cap3 + cap7)))
 
         pwm3 = temp_to_pwm(temp, cap3)
         pwm5 = temp_to_pwm(temp, cap5)
