@@ -1,6 +1,6 @@
 { inputs, pkgs, ... }:
 
-# Qwen3.6-27B AWQ + DFlash speculative decoding on plum with dual RTX 3090
+# Qwen3.6-27B AutoRound INT4 + DFlash speculative decoding on plum with dual RTX 3090
 # To disable DFlash: drop --speculative-config,
 # set --max-num-batched-tokens 2048, drop two dflash-only VLLM_* env vars
 
@@ -14,7 +14,7 @@ let
   vllm = pkgsCuda.vllm;
   cudatoolkit = pkgsCuda.cudaPackages.cudatoolkit;
 
-  model = pkgs.qwen36-27b-awq;
+  model = pkgs.qwen36-27b-autoround;
   draft = pkgs.qwen36-27b-dflash-draft;
   # Nothink defaults (server default is enable_thinking=false).
   # Applies to bare requests only, users should override it.
@@ -25,7 +25,7 @@ let
     });
   maxModelLen = 262144;
   maxNumSeqs = 4;
-  numSpecTokens = 15;  # z-lab recommends 15 for 27B-DFlash
+  numSpecTokens = 7;
   # vllm reserves maxNumSeqs * (numSpecTokens - 1) draft slots inside the batch;
   # add them on top of the 2048 base so max_num_scheduled_tokens stays 2048.
   # without dflash: just use 2048 directly.
@@ -54,19 +54,32 @@ let
     # dflash only: default 394 MiB workspace OOMs at first inference (lazy alloc
     # outside profiling window); BatchDFlashPrefillWrapper creates two per group
     "VLLM_FLASHINFER_WORKSPACE_BUFFER_SIZE=${toString (64 * 1024 * 1024)}"
-    "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True"
+    # expandable_segments crashes on some NVLink setups (cuMemMap path) but
+    # helps defragment reserved-but-unallocated memory during graph capture
+    "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:512"
+    "NCCL_P2P_LEVEL=NVL"  # pin NCCL P2P to NVLink, not PCIe
+    #"NCCL_CUMEM_ENABLE=0"  # avoids cuMem unified-memory path in NCCL
     "SAFETENSORS_FAST_GPU=1"
     "CUDA_DEVICE_ORDER=PCI_BUS_ID"
     "OMP_NUM_THREADS=4"  # a rather random number for concurrency <=2
     #"VLLM_ENFORCE_STRICT_TOOL_CALLING=1"
   ];
 
+  # Fixes empty <think></think> spam, </thinking> hallucination, unclosed
+  # think before tool call, no-user-query crash, developer role, etc.
+  froggericTemplate = pkgs.fetchurl {
+    url = "https://huggingface.co/froggeric/Qwen-Fixed-Chat-Templates"
+        + "/resolve/c31fd393e531dbacd92b6deb99a2037cc949f950"
+        + "/chat_template.jinja";
+    hash = "sha256-Rkmz+j2z/aTVEXPtT/AXX95+zou8651ZXQTYYgIMl0Y=";
+  };
+
   script = pkgs.writeShellScript "vllm" ''
     exec ${vllm}/bin/vllm serve ${model} \
       --generation-config ${generationConfig} \
       --kv-cache-dtype fp8 \
-      --quantization awq_marlin \
-      --limit-mm-per-prompt '{"image": 1, "video": 0}' \
+      --quantization auto_round \
+      --language-model-only \
       --speculative-config '${specConfig}' \
       --max-num-seqs ${toString maxNumSeqs} \
       --max-num-batched-tokens ${toString maxNumBatchedTokens} \
@@ -75,17 +88,22 @@ let
       --disable-custom-all-reduce \
       --gpu-memory-utilization 0.95 \
       --enable-prefix-caching \
+      --enable-chunked-prefill \
       --reasoning-parser qwen3 \
+      --chat-template ${froggericTemplate} \
       --default-chat-template-kwargs '{"enable_thinking": false}' \
+      --compilation-config '{"cudagraph_capture_sizes": [1,2,4,8,16,24,32]}' \
       --async-scheduling \
       --enable-auto-tool-choice --tool-call-parser qwen3_coder \
       --disable-access-log-for-endpoints /metrics \
       --served-model-name qwen3.6-27b qwen3.6-27b-think qwen3.6-27b-nothink \
       --host 192.168.99.53 --port 11111
   '';
-  # Eats a bit of extra VRAM we don't have: --performance-mode interactivity
+  # --language-model-only frees up VRAM
+  # --limit-mm-per-prompt '{"image": 1, "video": 0}' is lighter alternative
+  # 1,2,4,8,16,24,32 is tuned for numSpecTokens=7
   # Frees up a bit of it: --compilation-config.max_cudagraph_capture_size=64
-  # dflash: Maximum concurrency for 262,144 tokens per request: 1.17x
+  # dflash: Maximum concurrency for 262,144 tokens per request: 1.52x
   # without dflash it is more like 2x that
   # illegal memory access in custom_all_reduce.cuh: --disable-custom-all-reduce
 in
@@ -99,7 +117,7 @@ in
   ];
 
   systemd.services.vllm = {
-    description = "vllm: Qwen3.6-27B AWQ + DFlash";
+    description = "vllm: Qwen3.6-27B AutoRound + DFlash";
     wantedBy = [ "multi-user.target" ];
     after = [ "multi-user.target" ];
     # for flashinfer JIT

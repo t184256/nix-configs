@@ -122,6 +122,53 @@ in
     ];
   };
 
+  qwen36-27b-autoround = fetchHFModel {
+    pname = "qwen36-27b-autoround";
+    repo = "Lorbus/Qwen3.6-27B-int4-AutoRound";
+    files = [
+      { path = "chat_template.jinja";
+        hash = "sha256-6E8yoj/donaJ+GiqShpWIfQRM+UaSNfz78vqKDlXQlk="; }
+      { path = "config.json";
+        hash = "sha256-Kt4p4UATIo46MkpOq0WNhqXY3oEruscyejClNUAVZgA="; }
+      { path = "generation_config.json";
+        hash = "sha256-JS4O/uPe0ydwSRJhbzSToifNw560urUvyuHOs+1dyJA="; }
+      { path = "model.safetensors.index.json";
+        hash = "sha256-s2d6toCclPoVDxpL19e/7T1HVZeCWrhzxPvd3X8Q8Ow="; }
+      { path = "model_extra_tensors.safetensors";
+        hash = "sha256-qoWdkYTwShT2M2hdjWXeQrErghDD/vCfgMLRkMMRRI4="; }
+      { path = "preprocessor_config.json";
+        hash = "sha256-OhWd/smXihhqcroIXgrWoFDzlo2LNkIY170T9ciTgfI="; }
+      { path = "processor_config.json";
+        hash = "sha256-2J70nOnNN/v1EBWOE8HvBj2ShkEcHskEmTLb4EhxQ7E="; }
+      { path = "quantization_config.json";
+        hash = "sha256-+durX7VP7kyoK44VCaEltpGnvQDqfzkXRBkrt93Bg6o="; }
+      { path = "tokenizer.json";
+        hash = "sha256-h6eDDWP89DvyQcPFJC6W5i3T/cKSJMom/tjqMz23LeQ="; }
+      { path = "tokenizer_config.json";
+        hash = "sha256-pPUsIQOmhcPZ8wIrOVQkb7q4ZavXCaxp2Lipj3lYBWQ="; }
+      { path = "model-00001-of-00010.safetensors";
+        hash = "sha256-nX72F7FT+9IZtgsLu/iAPS3ImePx8WAjVRc/dvtbjtE="; }
+      { path = "model-00002-of-00010.safetensors";
+        hash = "sha256-9OQFxcSInY4qhUl098JgGq7iD+94Z2A+Z/Xhv7gPN18="; }
+      { path = "model-00003-of-00010.safetensors";
+        hash = "sha256-rqU3L6S7P95SUvj3T8BTtB5Uzhd4pjukqnVEalf8AGI="; }
+      { path = "model-00004-of-00010.safetensors";
+        hash = "sha256-buV7hrfAYJ75VGXfc9F2li0S3UNRZweFTjPiDa5kTSY="; }
+      { path = "model-00005-of-00010.safetensors";
+        hash = "sha256-DBiXsudFM7xLI9G8d31aB8hdA4545HEN8ZMuEkCcb80="; }
+      { path = "model-00006-of-00010.safetensors";
+        hash = "sha256-0C8W2iXMrp9MxcEiE53Z/cUtcrSmwJGg9q8HfNmoYIA="; }
+      { path = "model-00007-of-00010.safetensors";
+        hash = "sha256-DPLLcqhIn6L+52fTGXCV+Foo9XLPkCxVP78MAmvp1O4="; }
+      { path = "model-00008-of-00010.safetensors";
+        hash = "sha256-UjUZ1/pgJTKWsinSSGBg1+XEV+JKQiw/0a5OjCKH69g="; }
+      { path = "model-00009-of-00010.safetensors";
+        hash = "sha256-5yOB04u/B9+RqmZx2HTuCwCrVAcMU5NLow6TZSk8k2U="; }
+      { path = "model-00010-of-00010.safetensors";
+        hash = "sha256-q+17CmAbWDdCeymeRPqtitDsZL3OFtohR3Nu7/S7hqk="; }
+    ];
+  };
+
   # No dflash.py (unlike 9B draft); uses built-in vllm qwen3_dflash
   # support natively.
   # Mirrored from gated z-lab/Qwen3.6-27B-DFlash.
