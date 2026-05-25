@@ -86,7 +86,7 @@ let
       --max-model-len ${toString maxModelLen} \
       --tensor-parallel-size 2 \
       --disable-custom-all-reduce \
-      --gpu-memory-utilization 0.95 \
+      --gpu-memory-utilization 0.92 \
       --enable-prefix-caching \
       --enable-chunked-prefill \
       --reasoning-parser qwen3 \
@@ -103,7 +103,7 @@ let
   # --limit-mm-per-prompt '{"image": 1, "video": 0}' is lighter alternative
   # 1,2,4,8,16,24,32 is tuned for numSpecTokens=7
   # Frees up a bit of it: --compilation-config.max_cudagraph_capture_size=64
-  # dflash: Maximum concurrency for 262,144 tokens per request: 1.52x
+  # dflash: Maximum concurrency for 262,144 tokens per request: 1.56x
   # without dflash it is more like 2x that
   # illegal memory access in custom_all_reduce.cuh: --disable-custom-all-reduce
 in
