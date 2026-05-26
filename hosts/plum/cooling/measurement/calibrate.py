@@ -12,19 +12,19 @@ LOUDNESS_HOST = '192.168.99.53'
 LOUDNESS_PORT = 9271
 
 K               = 20    # steps  (produces K+1 speed points)
-N               = 200   # measurements per step
-MEASURE_GAP_SEC = 1.0   # seconds between measurements
-SPINUP_SEC      = 30.0  # seconds to wait after setting fan speed high
-SPINDOWN_SEC    = 40.0  # seconds to wait after stalling the fans
-INTERSPEED_SEC  = 10.0  # seconds to wait after changing fans speed a bit
+N               = 100   # measurements per step
+MEASURE_GAP_SEC = 2.0   # seconds between measurements
+SPINUP_SEC      = 60.0  # seconds to wait after setting fan speed high
+SPINDOWN_SEC    = 60.0  # seconds to wait after stalling the fans
+INTERSPEED_SEC  = 15.0  # seconds to wait after changing fans speed a bit
 DELTA_SILENCE   = 0.1   # dB to stop going lower
 
 SPEEDS = [round(100 * i / K) for i in range(K + 1)]
 
 ALL_GPU_FANS  = [(0, 0), (0, 1), (1, 0), (1, 1)]
-ALL_PWM_FANS  = [1, 2, 3, 4, 5, 7, 8]  # 1=cpu0, rest=case fans
+ALL_PWM_FANS  = [1, 2, 3, 4, 5, 6, 7, 8]  # 1=cpu0, rest=case fans
 PWM_FAN_NAMES = {1: 'cpu0', 2: 'case2', 3: 'case3', 4: 'case4',
-                 5: 'case5', 7: 'case7', 8: 'case8'}
+                 5: 'case5', 6: 'case6', 7: 'case7', 8: 'case8'}
 
 # Each target: name, own gpu fans [(gpu,fan),...], own pwm fans [n,...]
 ALL_TARGETS = [
@@ -35,6 +35,7 @@ ALL_TARGETS = [
     ('case3', [], [3]),
     ('case4', [], [4]),
     ('case5', [], [5]),
+    ('case6', [], [6]),
     ('case7', [], [7]),
     ('case8', [], [8]),
 ]
@@ -67,7 +68,7 @@ def measure_db():
         s.settimeout(15)
         s.sendto(b'?', (LOUDNESS_HOST, LOUDNESS_PORT))
         data, _ = s.recvfrom(256)
-        return json.loads(data)['db']
+        return json.loads(data)['db_avg']
 
 
 def restore():

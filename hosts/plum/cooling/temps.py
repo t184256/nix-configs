@@ -19,13 +19,14 @@ VLLM_PP_TPS_MAX = 400  # computed-prefill peak (cache-heavy workload)
 VLLM_TG_TPS_MAX = 120  # decode peak (DFlash thinking mode)
 VLLM_DELTA_WINDOW = 0.3  # seconds of history for TPS / ACC window
 VLLM_PP_BURST_WINDOW = 5.0  # seconds; burst-aware PP TPS history
-DB_MIN, DB_OVER = 0, 5
+DB_OVER = 20
 FANS = {  # name: (max_rpm, profile, pwm_n)
     'CPU Fan':       (2010, 'cpu0',  1),
     'Pump Fan':      (2400, 'case2', 2),
     'System Fan #1': (2423, 'case3', 3),
     'System Fan #2': (3030, 'case4', 4),
     'System Fan #3': (3000, 'case5', 5),
+    'System Fan #4': (2100, 'case6', 6),
     'System Fan #5': (2370, 'case7', 7),
     'System Fan #6': (2365, 'case8', 8),
 }
@@ -48,8 +49,8 @@ class LoudnessMonitor:
                                     FANLISTENER_PORT))
                     data, _ = s.recvfrom(256)
                     parsed = json.loads(data)
-                    base = parsed.get('base', parsed['db'])
-                    db = parsed['db'] - base
+                    base = parsed.get('base', parsed['db_ema'])
+                    db = parsed['db_ema'] - base
             except Exception:
                 pass
             with self._lock:
@@ -238,11 +239,11 @@ def gwyor_color(frac):
 
 
 def db_color(db):
-    return gwyor_color((db - DB_MIN) / (DB_OVER - DB_MIN))
+    return gwyor_color(db / DB_OVER)
 
 
 def fan_color(db_rel):
-    return gwyor_color(db_rel / 2)
+    return gwyor_color(db_rel / DB_OVER)
 
 
 def fan_arrows_vert(rpm, rpm_max, width=11):
@@ -301,12 +302,31 @@ def gpu(h, profile_name):
     u = f'{gw_color(u / 100)}{u:3d}%{RESET}'
     t = int(pynvml.nvmlDeviceGetTemperature(h, pynvml.NVML_TEMPERATURE_GPU))
     t = f'{temp_color(t)}{t:3d}°{RESET}'
-    f_pct = int(pynvml.nvmlDeviceGetFanSpeed(h))
+    num_fans = pynvml.nvmlDeviceGetNumFans(h)
+    speeds = [pynvml.nvmlDeviceGetFanSpeed_v2(h, i) for i in range(num_fans)]
+    f_pct = int(sum(speeds) / num_fans)
     db_rel = pct_to_db_rel(profile_name, f_pct)
     f = f'{fan_color(db_rel)}{f_pct:3d}%{RESET}'
     w_max = pynvml.nvmlDeviceGetPowerManagementLimit(h)
     w = pynvml.nvmlDeviceGetPowerUsage(h)
-    w = f'{gw_color(w / w_max)}{int(w / 1000):3d}W{RESET}'
+    reasons = pynvml.nvmlDeviceGetCurrentClocksThrottleReasons(h)
+    sw_slowdown = bool(reasons &
+                       pynvml.nvmlClocksThrottleReasonSwThermalSlowdown)
+    power_cap = bool(reasons &
+                     pynvml.nvmlClocksThrottleReasonSwPowerCap)
+    other_throttle = bool(reasons &
+                          ~pynvml.nvmlClocksThrottleReasonSwThermalSlowdown &
+                          ~pynvml.nvmlClocksThrottleReasonSwPowerCap &
+                          ~pynvml.nvmlClocksThrottleReasonGpuIdle)
+    if sw_slowdown:
+        w_col = _fg((255, 0, 0))
+    elif power_cap:
+        w_col = _fg((255, 220, 0))
+    elif other_throttle:
+        w_col = _fg((160, 0, 255))
+    else:
+        w_col = gw_color(w / w_max)
+    w = f'{w_col}{int(w / 1000):3d}W{RESET}'
     return r, u, t, f, w
 
 
@@ -319,17 +339,20 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness):
     cp = int(psutil.cpu_percent())
     cp = f'{gw_color(cp / 100)}{cp:3d}%{RESET}'
 
+    cpu_fans, cpu_tx = fan(sensors_data, 'CPU Fan', vert=False)
+    cpu_line = f'{cpu_fans}{cp}{ct}{cpu_fans}'
     top_fans, top_tx = fan(sensors_data, 'Pump Fan')
     bot_f, bot_tx = fan(sensors_data, 'System Fan #3', width=7)
     tf, tf_txt = fan(sensors_data, 'System Fan #1', vert=False)
     mf, mf_txt = fan(sensors_data, 'System Fan #5', vert=False)
     bf, bf_txt = fan(sensors_data, 'System Fan #6', vert=False)
-    bk, bk_txt = fan(sensors_data, 'System Fan #2', vert=False)
+    tr, tr_txt = fan(sensors_data, 'System Fan #2', vert=False)
+    br, _ = fan(sensors_data, 'System Fan #6', vert=False)
     tf = f' {tf}'
     mf = f' {mf}'
     bf = f' {bf}'
-    bk, bk_ = f' {bk}', f' {bk}   '
-    _, cpu_tx = fan(sensors_data, 'CPU Fan')
+    tr, tr_ = f' {tr}', f' {tr}   '
+    br = f'   {br}'
 
     r0, u0, t0, f0, w0 = gpu(gpu0, 'gpu0')
     r1, u1, t1, f1, w1 = gpu(gpu1, 'gpu1')
@@ -377,16 +400,16 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness):
     base_str = (f'{gw_color(0)}{_base:6.1f} dB{RESET} '
                 if _base is not None else '          ')
     return [
-        f'{db_str}┌──{ top_fans}─{ top_fans}──┐',
+        f'{  db_str}┌──{ top_fans}─{ top_fans}──┐',
         f'{base_str}│                {top_tx}  {tf}',
         f'          │     ┌────────┐           {tf} {tf_txt}',
-        f'         {bk_}  │{cp}{ct}│ {cpu_tx}  {tf}',
-        f' {bk_txt}{bk_}  └────────┘            │',
-        f'         {bk}{pp_col}{st}            {mf}',
+        f'         {tr_}  {cpu_line} {cpu_tx}  {tf}',
+        f' {tr_txt}{tr_}  └────────┘            │',
+        f'         {tr}{pp_col}{st}            {mf}',
         f'          │┌{top_fill}──────────────┐{mf} {mf_txt}',
-        f'          ││{r0} {u0}{t0} {f0} {w0} │{mf}',
-        f'          │├{kv_fill}───────────────┤ │',
-        f'          ││{r1} {u1}{t1} {f1} {w1} │{bf}',
+        f'       {br}│{r0} {u0}{t0} {f0} {w0} │{mf}',
+        f'       {br}├{kv_fill}───────────────┤ │',
+        f'       {br}│{r1} {u1}{t1} {f1} {w1} │{bf}',
         f'          │└{bot_fill}──────────────┘{bf} {bf_txt}',
         f'          │{_vllm1}{vllm2} {bot_tx}  {bf}',
         f'          └─────────────────{bot_f}───┘',

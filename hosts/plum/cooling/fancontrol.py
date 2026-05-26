@@ -15,13 +15,13 @@ import pynvml
 from acoustic_profile import PROFILES
 from common import profile_db, K, find_hwmon
 
-EXHAUST = [2, 4]  # top SYS_PUMP1, rear SYS_FAN2
+EXHAUST = [2, 4, 6]  # top SYS_PUMP1, rear-top SYS_FAN2, rear-bottom SYS_FAN4
 INTAKE = [3, 5, 7, 8]  # front-top SYS_FAN1, bottom SYS_FAN3,
                        # front-mid SYS_FAN5, front-bottom SYS_FAN6
 TEMP_MIN  = 40  # °C: below this, case fans are off
 TEMP_MAX  = 85  # °C: case fans hit their acoustic cap at this temp
 LOG_EVERY = 10  # seconds between log lines
-DB_OFFSET = 1  # run case fans this many dB quieter than the estimated noise
+DB_OFFSET = 0.2  # run case fans this many dB quieter than the estimated noise
 
 
 def budget_cap_pct(profile, budget_db):
@@ -82,6 +82,8 @@ def restore(sig=None, frame=None):
     gpu_fan_auto(gpu0)
     gpu_fan_auto(gpu1)
     pwm_write([1] + EXHAUST + INTAKE, 99, enable=True)
+    pwm_write([2], 0, enable=True)  # too loud on auto
+    pwm_write([2], 0)  # stall them
     pynvml.nvmlShutdown()
 
 
@@ -114,6 +116,7 @@ try:
 
         cap3 = cap('case3')
         cap5 = cap('case5')
+        cap6 = cap('case6')
         cap7 = cap('case7')
         cap8 = cap('case8')
         # 2 top exhausts are capped by matching front-bottom/front-mid intakes
@@ -123,6 +126,7 @@ try:
 
         pwm3 = temp_to_pwm(temp, cap3)
         pwm5 = temp_to_pwm(temp, cap5)
+        pwm6 = temp_to_pwm(temp, cap6)
         pwm7 = temp_to_pwm(temp, cap7)
         pwm8 = temp_to_pwm(temp, cap8)
         pwm2 = temp_to_pwm(temp, cap2)
@@ -130,6 +134,7 @@ try:
 
         pwm_write([3], pwm3)
         pwm_write([5], pwm5)
+        pwm_write([6], pwm6)
         pwm_write([7], pwm7)
         pwm_write([8], pwm8)
         pwm_write([2], pwm2)
@@ -145,20 +150,22 @@ try:
                 f'noise budget: {budget:.2f}dB',
                 flush=True,
             )
+            pwms = {2: pwm2, 3: pwm3, 4: pwm4, 5: pwm5,
+                    6: pwm6, 7: pwm7, 8: pwm8}
+            caps = {2: cap2, 3: cap3, 4: cap4, 5: cap5,
+                    6: cap6, 7: cap7, 8: cap8}
             print(
-                ', '.join(log_fan(n, pwm, cap_) for n, pwm, cap_ in [
-                    ('case3', pwm3, cap3),
-                    ('case5', pwm5, cap5),
-                    ('case7', pwm7, cap7),
-                    ('case8', pwm8, cap8),
-                ]),
+                'intake:  ' + ', '.join(
+                    log_fan(f'case{n}', pwms[n], caps[n])
+                    for n in INTAKE
+                ),
                 flush=True,
             )
             print(
-                ', '.join(log_fan(n, pwm, cap_) for n, pwm, cap_ in [
-                    ('case2', pwm2, cap2),
-                    ('case4', pwm4, cap4),
-                ]),
+                'exhaust: ' + ', '.join(
+                    log_fan(f'case{n}', pwms[n], caps[n])
+                    for n in EXHAUST
+                ),
                 flush=True,
             )
 

@@ -11,8 +11,8 @@
       Type = "oneshot";
       RemainAfterExit = true;
       ExecStart = pkgs.writeShellScript "nvidia-power-settings" ''
-        ${config.hardware.nvidia.package.bin}/bin/nvidia-smi -pl 380
-        ${config.hardware.nvidia.package.bin}/bin/nvidia-smi -gtt 65
+        ${config.hardware.nvidia.package.bin}/bin/nvidia-smi -pl 250
+        ${config.hardware.nvidia.package.bin}/bin/nvidia-smi -gtt 80
       '';
     };
   };
