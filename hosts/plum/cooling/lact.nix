@@ -63,82 +63,42 @@ in
           power_cap: 250.0
           min_core_clock: ${toString core_clock_min}
           max_core_clock: ${toString core_clock_max}
+          gpu_clock_offsets:
+            0: ${toString asus_clock_offset}
           mem_clock_offsets:
             0: 0  # keep constant at 9501 MHz, do not overclock
           fan_control_enabled: true
           fan_control_settings:
             mode: curve
-            temperature_key: unused
+            temperature_key: junction
+            interval_ms: 500
+            change_threshold: 2
+            auto_threshold: 48
+            curve:
+              60: 0.45  # awkwardly starts/stalls audibly with 0.3-0.4
+              70: 0.7
+              80: 1.0
+        "10DE:2204-1462:3884-0000:01:00.0":  # MSI
+          power_cap: 250.0
+          min_core_clock: ${toString core_clock_min}
+          max_core_clock: ${toString core_clock_max}
+          gpu_clock_offsets:
+            0: ${toString msi_clock_offset}
+          mem_clock_offsets:
+            0: 0  # keep constant at 9501 MHz, do not overclock
+          fan_control_enabled: true
+          fan_control_settings:
+            mode: curve
+            temperature_key: junction
             interval_ms: 500
             spindown_delay_ms: 10000
             change_threshold: 2
             auto_threshold: 48
             curve:
-              50: 0.45  # awkwardly starts/stalls audibly with 0.3-0.4
-              60: 0.6
-              70: 1.0
-        "10DE:2204-1462:3884-0000:01:00.0":  # MSI
-          power_cap: 250.0
-          min_core_clock: ${toString core_clock_min}
-          max_core_clock: ${toString core_clock_max}
-          mem_clock_offsets:
-            0: 0  # keep constant at 9501 MHz, do not overclock
-          fan_control_enabled: true
-          fan_control_settings:
-            mode: curve
-            temperature_key: unused
-            interval_ms: 500
-            spindown_delay_ms: 10000
-            change_threshold: 2
-            auto_threshold: 38
-            curve:
-              50: 0.3
-              60: 0.5
-              70: 0.6
-              80: 1.0
-      profiles:
-        under:
-          gpus:
-            "10DE:2204-1043:87AF-0000:11:00.0":  # ASUS
-              power_cap: 250.0
-              min_core_clock: ${toString core_clock_min}
-              max_core_clock: ${toString core_clock_max}
-              gpu_clock_offsets:
-                0: ${toString asus_clock_offset}
-              mem_clock_offsets:
-                0: 0  # keep constant at 9501 MHz, do not overclock
-              fan_control_enabled: true
-              fan_control_settings:
-                mode: curve
-                temperature_key: junction
-                interval_ms: 500
-                change_threshold: 2
-                auto_threshold: 48
-                curve:
-                  60: 0.45  # awkwardly starts/stalls audibly with 0.3-0.4
-                  70: 0.7
-                  80: 1.0
-            "10DE:2204-1462:3884-0000:01:00.0":  # MSI
-              power_cap: 250.0
-              min_core_clock: ${toString core_clock_min}
-              max_core_clock: ${toString core_clock_max}
-              gpu_clock_offsets:
-                0: ${toString msi_clock_offset}
-              mem_clock_offsets:
-                0: 0  # keep constant at 9501 MHz, do not overclock
-              fan_control_enabled: true
-              fan_control_settings:
-                mode: curve
-                temperature_key: junction
-                interval_ms: 500
-                spindown_delay_ms: 10000
-                change_threshold: 2
-                auto_threshold: 48
-                curve:
-                  60: 0.3
-                  70: 0.5
-                  80: 0.7
-                  90: 1.0
+              60: 0.3
+              70: 0.5
+              80: 0.7
+              90: 1.0
     '';
   };
 
