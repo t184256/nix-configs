@@ -1,7 +1,64 @@
+import ctypes
+import functools
 from pathlib import Path
 from acoustic_profile import PROFILES
+import pynvml
 
 RESET = '\033[0m'
+
+# Hotspot temperature via NvAPI (NVML doesn't expose it)
+# Function IDs and struct layout are taken from from LACT
+@functools.cache
+def _nvapi():
+    INIT  = 0x0150e828
+    ENUM  = 0xe5ac921f
+    BUS   = 0x1be0b8e5
+    THERM = 0x65fe3aad
+
+    class Thermals(ctypes.Structure):
+        _fields_ = [('version', ctypes.c_uint32),
+                    ('mask',    ctypes.c_int32),
+                    ('values',  ctypes.c_int32 * 40)]
+    TV = ctypes.sizeof(Thermals) | (2 << 16)
+
+    lib = ctypes.CDLL('/run/opengl-driver/lib/libnvidia-api.so.1')
+    qi  = lib.nvapi_QueryInterface
+    qi.restype, qi.argtypes = ctypes.c_void_p, [ctypes.c_uint32]
+
+    def fn(id, *t):
+        return ctypes.CFUNCTYPE(ctypes.c_int, *t)(qi(id))
+
+    fn(INIT)()
+
+    Arr = ctypes.c_void_p * 64
+    cnt, arr = ctypes.c_uint32(0), Arr()
+    fn(ENUM, ctypes.POINTER(Arr), ctypes.POINTER(ctypes.c_uint32))(
+        ctypes.byref(arr), ctypes.byref(cnt))
+
+    get_bus = fn(BUS,   ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32))
+    therm   = fn(THERM, ctypes.c_void_p, ctypes.POINTER(Thermals))
+
+    gpus = {}
+    for i in range(cnt.value):
+        h, bid = arr[i], ctypes.c_uint32(0)
+        get_bus(h, ctypes.byref(bid))
+        s = Thermals(version=TV, mask=1)
+        therm(h, ctypes.byref(s))
+        for bit in range(32):
+            s.mask = 1 << bit
+            if therm(h, ctypes.byref(s)) != 0:
+                s.mask -= 1
+                break
+        gpus[bid.value] = (h, s.mask)
+
+    def hotspot(bus):
+        h, mask = gpus[bus]
+        s = Thermals(version=TV, mask=mask)
+        therm(h, ctypes.byref(s))
+        v = s.values[9] // 256
+        return v if 0 < v < 255 else None
+
+    return hotspot
 
 
 def _lerp(a, b, t):
@@ -42,6 +99,20 @@ def color_db(db_rel):
     if db_rel <= 9:
         return _fg(_lerp((255, 120, 0), (255, 0, 0), (db_rel - 6) / 3))
     return _fg((255, 0, 0))
+
+
+def _pci_bus_number(h):
+    pci = pynvml.nvmlDeviceGetPciInfo(h)
+    raw = pci.busId
+    if isinstance(raw, bytes):
+        raw = raw.decode()
+    return int(raw.rstrip('\x00').split(':')[1], 16)
+
+
+def gpu_max_temp(h):
+    t  = pynvml.nvmlDeviceGetTemperature(h, pynvml.NVML_TEMPERATURE_GPU)
+    hs = _nvapi()(_pci_bus_number(h))
+    return max(t, hs) if hs is not None else t
 
 
 def find_hwmon(name):

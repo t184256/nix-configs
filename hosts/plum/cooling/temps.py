@@ -8,7 +8,7 @@ import time
 import psutil
 import sensors
 import pynvml
-from common import RESET, _lerp, _fg, pwm_to_db_rel, pct_to_db_rel, find_hwmon
+from common import RESET, _lerp, _fg, pwm_to_db_rel, pct_to_db_rel, find_hwmon, gpu_max_temp
 
 
 VRAM_GB = 24
@@ -300,7 +300,7 @@ def gpu(h, profile_name):
     r = f'{gw_color(r / VRAM_GB)}{r:3d}G{RESET}'
     u = int(pynvml.nvmlDeviceGetUtilizationRates(h).gpu)
     u = f'{gw_color(u / 100)}{u:3d}%{RESET}'
-    t = int(pynvml.nvmlDeviceGetTemperature(h, pynvml.NVML_TEMPERATURE_GPU))
+    t = gpu_max_temp(h)
     t = f'{temp_color(t)}{t:3d}°{RESET}'
     num_fans = pynvml.nvmlDeviceGetNumFans(h)
     speeds = [pynvml.nvmlDeviceGetFanSpeed_v2(h, i) for i in range(num_fans)]

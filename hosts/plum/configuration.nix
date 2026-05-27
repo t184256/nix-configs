@@ -14,7 +14,7 @@
     ../../nixos/services/vllm.nix
     ./bench-vllm.nix
     ./clevis-highlevel.nix
-    ./cooling/nvidia-settings.nix
+    ./cooling/lact.nix
     ./cooling/fancontrol.nix
     ./cooling/measurement/calibrate-fancontroller.nix
     ./cooling/fanlistener.nix

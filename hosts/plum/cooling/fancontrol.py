@@ -13,7 +13,7 @@ import signal
 import time
 import pynvml
 from acoustic_profile import PROFILES
-from common import profile_db, K, find_hwmon
+from common import profile_db, K, find_hwmon, gpu_max_temp
 
 EXHAUST = [2, 4, 6]  # top SYS_PUMP1, rear-top SYS_FAN2, rear-bottom SYS_FAN4
 INTAKE = [3, 5, 7, 8]  # front-top SYS_FAN1, bottom SYS_FAN3,
@@ -21,7 +21,7 @@ INTAKE = [3, 5, 7, 8]  # front-top SYS_FAN1, bottom SYS_FAN3,
 TEMP_MIN  = 40  # °C: below this, case fans are off
 TEMP_MAX  = 85  # °C: case fans hit their acoustic cap at this temp
 LOG_EVERY = 10  # seconds between log lines
-DB_OFFSET = 0.2  # run case fans this many dB quieter than the estimated noise
+DB_OFFSET = 2  # run case fans this many dB quieter than the estimated noise
 
 
 def budget_cap_pct(profile, budget_db):
@@ -52,11 +52,6 @@ def pwm_write(fans, value, enable=False):
         (hwmon / f'pwm{n}{key}').write_text(str(value))
 
 
-def gpu_fan_auto(h):
-    policy = pynvml.NVML_FAN_POLICY_TEMPERATURE_CONTINOUS_SW
-    for j in range(pynvml.nvmlDeviceGetNumFans(h)):
-        pynvml.nvmlDeviceSetFanControlPolicy(h, j, policy)
-
 
 def gpu_fan_pct(h):
     fans = range(pynvml.nvmlDeviceGetNumFans(h))
@@ -79,8 +74,6 @@ hwmon = find_hwmon('nct6687')
 
 
 def restore(sig=None, frame=None):
-    gpu_fan_auto(gpu0)
-    gpu_fan_auto(gpu1)
     pwm_write([1] + EXHAUST + INTAKE, 99, enable=True)
     pwm_write([2], 0, enable=True)  # too loud on auto
     pwm_write([2], 0)  # stall them
@@ -90,8 +83,6 @@ def restore(sig=None, frame=None):
 signal.signal(signal.SIGTERM, restore)
 signal.signal(signal.SIGINT, restore)
 
-gpu_fan_auto(gpu0)
-gpu_fan_auto(gpu1)
 pwm_write([1], 99, enable=True)
 pwm_write(EXHAUST + INTAKE, 1, enable=True)
 
@@ -99,9 +90,7 @@ last_log = 0.0
 
 try:
     while True:
-        t_sensor = pynvml.NVML_TEMPERATURE_GPU
-        temp = max(pynvml.nvmlDeviceGetTemperature(gpu0, t_sensor),
-                   pynvml.nvmlDeviceGetTemperature(gpu1, t_sensor))
+        temp = max(gpu_max_temp(gpu0), gpu_max_temp(gpu1))
 
         g0_pct  = gpu_fan_pct(gpu0)
         g1_pct  = gpu_fan_pct(gpu1)

@@ -5,7 +5,7 @@
 
   systemd.services.calibrate-fancontroller = {
     description = "Fan control daemon for calibration";
-    conflicts   = [ "fancontrol.service" ];
+    conflicts   = [ "fancontrol.service" "lactd.service" ];
     serviceConfig = {
       ExecStart =
         "${pkgs.python3.withPackages (ps: [ ps.nvidia-ml-py ])}"

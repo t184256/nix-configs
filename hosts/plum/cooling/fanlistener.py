@@ -42,15 +42,33 @@ class MinutesTracker:
             self.base = cur_avg
 
 
+def find_input_device(name):
+    while True:
+        try:
+            for i, dev in enumerate(sd.query_devices()):
+                if (name.lower() in dev['name'].lower()
+                        and dev['max_input_channels'] > 0):
+                    print(f'found device {i}: {dev["name"]}',
+                          flush=True)
+                    return i
+        except Exception:
+            pass
+        print(f'waiting for device: {name}', flush=True)
+        time.sleep(2)
+
+
 if len(sys.argv) < 2:
     print(sd.query_devices())
-    print("Usage: fanlistener <device_index>")
+    print("Usage: fanlistener <device_index|hw:X,Y|name>")
     sys.exit(1)
 
 try:
     device = int(sys.argv[1])
 except ValueError:
-    device = sys.argv[1]
+    if sys.argv[1].startswith('hw:'):
+        device = sys.argv[1]
+    else:
+        device = find_input_device(sys.argv[1])
 
 sample_rate = int(sd.query_devices(device)['default_samplerate'])
 SECOND = sample_rate

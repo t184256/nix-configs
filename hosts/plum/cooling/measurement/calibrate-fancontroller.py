@@ -41,10 +41,6 @@ def set_gpu_fan(gpu, fan_idx, pct):
 def restore():
     for n in ALL_FANS:
         (hwmon / f'pwm{n}_enable').write_text('99')
-    policy = pynvml.NVML_FAN_POLICY_TEMPERATURE_CONTINOUS_SW
-    for gpu in (gpu0, gpu1):
-        for i in range(pynvml.nvmlDeviceGetNumFans(gpu)):
-            pynvml.nvmlDeviceSetFanControlPolicy(gpu, i, policy)
 
 
 def handle_sigterm(sig, frame):
