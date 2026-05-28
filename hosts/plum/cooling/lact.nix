@@ -104,9 +104,7 @@ in
 
   environment.systemPackages = [
     (pkgs.writeShellScriptBin "lact-vf-table" ''
-      exec ${pkgs.python3}/bin/python3 ${./lact-vf-table.py} \
-        "10DE:2204-1043:87AF-0000:11:00.0" ASUS ${toString asus_clock_offset} \
-        "10DE:2204-1462:3884-0000:01:00.0" MSI ${toString msi_clock_offset}
+      exec ${pkgs.python3}/bin/python3 ${./lact-vf-table.py}
     '')
   ];
 }

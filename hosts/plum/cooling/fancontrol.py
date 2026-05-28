@@ -75,6 +75,13 @@ gpu1  = pynvml.nvmlDeviceGetHandleByIndex(1)
 hwmon = find_hwmon('nct6687')
 
 
+def cap(name, budget_usb, budget_analog):
+    """Cap using both budgets; the more restrictive one wins."""
+    c_usb = budget_cap_pct(PROFILES_USB[name], budget_usb)
+    c_ana = budget_cap_pct(PROFILES_ANALOG[name], budget_analog)
+    return int(min(c_usb, c_ana) * 255 / 100)
+
+
 def restore(sig=None, frame=None):
     pwm_write([1] + EXHAUST + INTAKE, 99, enable=True)
     pwm_write([2], 0, enable=True)  # too loud on auto
@@ -114,21 +121,17 @@ try:
             ) - DB_OFFSET
         )
 
-        def cap(name):
-            """Cap using both budgets; the more restrictive wins."""
-            c_usb = budget_cap_pct(PROFILES_USB[name], budget_usb)
-            c_ana = budget_cap_pct(PROFILES_ANALOG[name], budget_analog)
-            return int(min(c_usb, c_ana) * 255 / 100)
-
-        cap3 = cap('case3')
-        cap5 = cap('case5')
-        cap6 = cap('case6')
-        cap7 = cap('case7')
-        cap8 = cap('case8')
+        cap3 = cap('case3', budget_usb, budget_analog)
+        cap5 = cap('case5', budget_usb, budget_analog)
+        cap6 = cap('case6', budget_usb, budget_analog)
+        cap7 = cap('case7', budget_usb, budget_analog)
+        cap8 = cap('case8', budget_usb, budget_analog)
         # 2 top exhausts are capped by matching front-bottom/front-mid intakes
-        cap2 = min(cap('case2'), int(0.95 * (cap7 + cap8) / 2))
+        cap2 = min(cap('case2', budget_usb, budget_analog),
+                   int(0.95 * (cap7 + cap8) / 2))
         # single rear exhaust is "capped" by matching front-top/bottom intakes
-        cap4 = min(cap('case4'), int(0.95 * (cap3 + cap7)))
+        cap4 = min(cap('case4', budget_usb, budget_analog),
+                   int(0.95 * (cap3 + cap7)))
 
         pwm3 = temp_to_pwm(temp, cap3)
         pwm5 = temp_to_pwm(temp, cap5)

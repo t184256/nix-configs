@@ -14,7 +14,7 @@ in
   systemd.services.fancontrol = {
     description = "GPU temperature fan control";
     wantedBy = [ "multi-user.target" ];
-    after = [ "systemd-modules-load.service" ];
+    after = [ "systemd-modules-load.service" "nvidia-persistenced.service" ];
     serviceConfig = {
       ExecStart = "${py}/bin/python3 ${src}/fancontrol.py";
       Restart = "always";

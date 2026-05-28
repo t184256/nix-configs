@@ -7,7 +7,7 @@ import pynvml
 RESET = '\033[0m'
 
 # Hotspot temperature via NvAPI (NVML doesn't expose it)
-# Function IDs and struct layout are taken from from LACT
+# Function IDs and struct layout are taken from LACT
 @functools.cache
 def _nvapi():
     INIT  = 0x0150e828

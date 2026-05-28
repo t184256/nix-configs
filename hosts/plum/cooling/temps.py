@@ -349,7 +349,7 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness_usb, loudness_analog):
     mf, mf_txt = fan(sensors_data, 'System Fan #5', vert=False)
     bf, bf_txt = fan(sensors_data, 'System Fan #6', vert=False)
     tr, tr_txt = fan(sensors_data, 'System Fan #2', vert=False)
-    br, _ = fan(sensors_data, 'System Fan #6', vert=False)
+    br, _ = fan(sensors_data, 'System Fan #4', vert=False)
     tf = f' {tf}'
     mf = f' {mf}'
     bf = f' {bf}'
@@ -363,10 +363,8 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness_usb, loudness_analog):
     active = reqs > 0
 
     if active and reusing:
-        pp_col = f'{gw_color(0)}REUSE KV{RESET}  '
-        if True:
-            pp_tps = min(9999, int(pp_burst_tps))
-            pp_col = f' {gw_color(0)}{pp_tps:4d} KV{RESET}  '
+        pp_tps = min(9999, int(pp_burst_tps))
+        pp_col = f' {gw_color(0)}{pp_tps:4d} KV{RESET}  '
         top_fill = f'─{gw_color(0)}↓─↓{RESET}──────'
     elif active and tg_tps > 5:
         pp_col = '          '

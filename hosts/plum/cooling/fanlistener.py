@@ -13,7 +13,6 @@ BLOCK_SIZE = 4096
 LOOKBACK_HOURS = 24
 LOOKBACK_MINUTES = LOOKBACK_HOURS * 60
 EMA_TAU = 2.0
-BOOT_PERIOD = 10  # seconds before first base; 60s thereafter
 
 
 class MinutesTracker:
@@ -26,12 +25,19 @@ class MinutesTracker:
     def add(self, db):
         self.cur_power_sum += 10 ** (db / 10)
         self.cur_count += 1
-        period = BOOT_PERIOD if not self.minutes else 60
-        if self.cur_count < period:
+
+        if not self.minutes:
+            if self.base is None or db < self.base:
+                self.base = db  # a running minimum for the first minute
+
+        if self.cur_count != 60:
             return
 
         cur_avg = 10 * np.log10(self.cur_power_sum / self.cur_count)
         self.cur_power_sum = self.cur_count = 0
+
+        if not self.minutes: # first averaged minute replaces the min estimate
+            self.base = cur_avg
 
         if len(self.minutes) >= LOOKBACK_MINUTES:
             evicted = self.minutes.pop(0)
