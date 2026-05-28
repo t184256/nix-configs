@@ -14,7 +14,7 @@ in
         args = {
           "--api-endpoint", "https://llm.slop.unboiled.info",
           "--api-token-file", "/mnt/secrets/llm",
-          "--model", "qwen3.5-dense-blitz",
+          "--model", "default-nothink",
           "--show-off", "0.001",
         },
         --debug = true,
