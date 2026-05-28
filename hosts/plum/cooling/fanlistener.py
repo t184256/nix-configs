@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import socketserver
 import time
 import sys
@@ -7,7 +8,7 @@ import threading
 import numpy as np
 import sounddevice as sd
 
-PORT = 9271
+PORT = int(os.environ.get('PORT', '9271'))
 BLOCK_SIZE = 4096
 LOOKBACK_HOURS = 24
 LOOKBACK_MINUTES = LOOKBACK_HOURS * 60

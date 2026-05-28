@@ -9,7 +9,10 @@ import time
 FANCTL_HOST   = '192.168.99.53'
 FANCTL_PORT   = 9272
 LOUDNESS_HOST = '192.168.99.53'
-LOUDNESS_PORT = 9271
+MICS = [
+    ('usb',    9271),
+    ('analog', 9272),
+]
 
 K               = 20    # steps  (produces K+1 speed points)
 N               = 100   # measurements per step
@@ -63,12 +66,31 @@ def fanctl(cmd):
     return result
 
 
-def measure_db():
+def measure_db(port, retry=3):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-        s.settimeout(15)
-        s.sendto(b'?', (LOUDNESS_HOST, LOUDNESS_PORT))
-        data, _ = s.recvfrom(256)
+        s.settimeout(2)
+        s.sendto(b'?', (LOUDNESS_HOST, port))
+        try:
+            data, _ = s.recvfrom(256)
+        except TimeoutError:
+            if not retry:
+                raise
+            return measure_db(port, retry=retry-1)
         return json.loads(data)['db_avg']
+
+
+def measure_all_mics():
+    """Query all mics; return dict  label -> [N readings]."""
+    mic_measurements = {label: [] for label, _ in MICS}
+    for i in range(N):
+        for label, port in MICS:
+            db = measure_db(port)
+            mic_measurements[label].append(db)
+            print(f' {label}: {db:.2f}', end='', flush=True)
+        print()
+        if i < N - 1:
+            time.sleep(MEASURE_GAP_SEC)
+    return mic_measurements
 
 
 def restore():
@@ -109,50 +131,63 @@ def sleep_countdown(secs, label):
     print()
 
 
-def measure_median():
-    measurements = []
-    for i in range(N):
-        db = measure_db()
-        measurements.append(db)
-        if i % 10 == 0:
-            print(' ', end='', flush=True)
-        end = '\n' if (i % 10 == 9 or i == N - 1) else ' '
-        print(f'{db:.2f}', end=end, flush=True)
-        if i < N - 1:
-            time.sleep(MEASURE_GAP_SEC)
-    return round(statistics.median(measurements), 2)
+# Per-mic results:  all_results[label][target_name] = [K+1 dB values]
+all_results = {label: {} for label, _ in MICS}
 
-
-all_results = {}
 for name, own_gpu_fans, own_pwm_fans in TARGETS:
-    results = []
-
+    # --- silence baseline (all fans off) ---
     print(f'--- silence before testing f{name} ---')
     stall_except([], [])
     sleep_countdown(SPINDOWN_SEC, f'{name} @ stall')
-    silence = measure_median()
-    print(f' silence: {silence:.2f} dB')
-    threshold = silence + DELTA_SILENCE
+    mic_data = measure_all_mics()
+    silences = {}
+    for label, readings in mic_data.items():
+        sil = round(statistics.median(readings), 2)
+        silences[label] = sil
+        print(f' silence {label}: {sil:.2f} dB')
 
+    thresholds = {label: sil + DELTA_SILENCE
+                  for label, sil in silences.items()}
+
+    # --- sweep speeds from 100% down ---
+    done = {label: False for label, _ in MICS}
     for i, pct in enumerate(SPEEDS[::-1]):
+        if all(done.values()):
+            break
         print(f'--- {name} @ {pct}% ---')
         stall_except(own_gpu_fans, own_pwm_fans)
         set_speed(pct, own_gpu_fans, own_pwm_fans)
         sleep_countdown(INTERSPEED_SEC if i else SPINUP_SEC,
                         f'spin-up {name}@{pct}%')
 
-        med = measure_median()
-        print(f' median: {med:.2f} dB')
-        results.append(med)
-        if med <= threshold:
-            print(f'enough for {name}')
-            break
+        mic_data = measure_all_mics()
+        for label, readings in mic_data.items():
+            if done[label]:
+                continue
+            med = round(statistics.median(readings), 2)
+            print(f' median {label}: {med:.2f} dB')
+            all_results[label].setdefault(name, []).append(med)
+            if med <= thresholds[label]:
+                print(f'  enough for {name} ({label})')
+                done[label] = True
 
-    pad = min(silence, med)
-    all_results[name] = [pad] * (len(SPEEDS) - len(results)) + results[::-1]
-    print(f'{name!r}: {all_results[name]},')
+    # Pad each mic's profile so it has len(SPEEDS) entries
+    for label, _ in MICS:
+        results = all_results[label].get(name, [])
+        # Find floor: min of silence and last measured value for this mic
+        pad = min(silences[label], results[-1] if results else silences[label])
+        padded = [pad] * (len(SPEEDS) - len(results)) + results[::-1]
+        all_results[label][name] = padded
+        pad = ' ' * (6 - len(name))
+        vals = '[' + ', '.join(f'{v:.2f}' for v in padded) + ']'
+        print(f"    '{name}':{pad}{vals},  # [{label}]")
 
-print('\nPROFILES = {')
-for name, *_ in TARGETS:
-    print(f'    {name!r}: {all_results[name]},')
-print('}')
+# --- emit PROFILES_USB = {...} and PROFILES_ANALOG = {...} ---
+print()
+for label, _ in MICS:
+    var = f'PROFILES_{label.upper()}'
+    print(f'{var} = {{')
+    for name, *_ in TARGETS:
+        print(f'    {name!r}: {all_results[label][name]},')
+    print('}')
+    print()

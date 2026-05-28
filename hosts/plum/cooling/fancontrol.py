@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 
-# Fan control algorithm:
-# CPU/GPU fan speeds determine the "acoustic budget" (max dB, not sum).
-# (More sensitive mic could measure a full GPU fan loudness sum matrix.)
-# The budget caps each case fan's PWM via reverse lookup in
-# acoustic_profile.PROFILES with linear interpolation.
-# Fan PWM is linear from TEMP_MIN at 0 to cap PWM at TEMP_MAX,
+# Case fan control algorithm:
+# CPU/GPU fan speeds determine two "acoustic budgets" (one per mic, max dB).
+# Each budget caps case fan PWM via reverse lookup in its own acoustic profile.
+# The final cap is the minimum of both budgets' caps (more restrictive wins).
+# Case fan speed is linear from TEMP_MIN at 0 to cap at TEMP_MAX,
 # extending linearly beyond TEMP_MAX (thermal need overrides acoustics).
-# Exhaust lag: case2 <= 0.95*case8 PWM, case4 <= 0.95*case7 PWM.
+# Exhaust lag: case2 <= 0.95*(case7+case8)/2, case4 <= 0.95*(case3+case7).
 
 import signal
 import time
 import pynvml
-from acoustic_profile import PROFILES
+from acoustic_profile import PROFILES_USB, PROFILES_ANALOG
 from common import profile_db, K, find_hwmon, gpu_max_temp
 
 EXHAUST = [2, 4, 6]  # top SYS_PUMP1, rear-top SYS_FAN2, rear-bottom SYS_FAN4
 INTAKE = [3, 5, 7, 8]  # front-top SYS_FAN1, bottom SYS_FAN3,
                        # front-mid SYS_FAN5, front-bottom SYS_FAN6
 TEMP_MIN  = 40  # °C: below this, case fans are off
-TEMP_MAX  = 85  # °C: case fans hit their acoustic cap at this temp
+TEMP_MAX  = 90  # °C: case fans hit their acoustic cap at this temp
 LOG_EVERY = 10  # seconds between log lines
 DB_OFFSET = 2  # run case fans this many dB quieter than the estimated noise
 
@@ -60,11 +59,14 @@ def gpu_fan_pct(h):
 
 
 def log_fan(name, pwm, cap):
-    pct     = round(pwm * 100 / 255)
+    pct = round(pwm * 100 / 255)
     cap_pct = round(cap * 100 / 255)
-    db      = profile_db(PROFILES[name], pct)
-    cap_db  = profile_db(PROFILES[name], cap_pct)
-    return f'{name}: {pct}/{cap_pct}% {db:.2f}/{cap_db:.2f}dB'
+    db_usb = profile_db(PROFILES_USB[name], pct)
+    db_ana = profile_db(PROFILES_ANALOG[name], pct)
+    cap_db_usb = profile_db(PROFILES_USB[name], cap_pct)
+    cap_db_ana = profile_db(PROFILES_ANALOG[name], cap_pct)
+    return (f'{name}: {pct}/{cap_pct}% '
+            f'{db_usb:.1f},{db_ana:.1f}->{cap_db_usb:.1f},{cap_db_ana:.1f}dBA')
 
 
 pynvml.nvmlInit()
@@ -92,16 +94,31 @@ try:
     while True:
         temp = max(gpu_max_temp(gpu0), gpu_max_temp(gpu1))
 
-        g0_pct  = gpu_fan_pct(gpu0)
-        g1_pct  = gpu_fan_pct(gpu1)
+        g0_pct = gpu_fan_pct(gpu0)
+        g1_pct = gpu_fan_pct(gpu1)
         cpu_pct = int((hwmon / 'pwm1').read_text()) * 100 / 255
-        g0_db   = profile_db(PROFILES['gpu0'], g0_pct)
-        g1_db   = profile_db(PROFILES['gpu1'], g1_pct)
-        cpu_db  = profile_db(PROFILES['cpu0'], cpu_pct)
-        budget  = max(cpu_db, g0_db, g1_db) - DB_OFFSET
+
+        # Two independent budgets, one per microphone
+        budget_usb = (
+            max(
+                profile_db(PROFILES_USB['cpu0'], cpu_pct),
+                profile_db(PROFILES_USB['gpu0'], g0_pct),
+                profile_db(PROFILES_USB['gpu1'], g1_pct),
+            ) - DB_OFFSET
+        )
+        budget_analog = (
+            max(
+                profile_db(PROFILES_ANALOG['cpu0'], cpu_pct),
+                profile_db(PROFILES_ANALOG['gpu0'], g0_pct),
+                profile_db(PROFILES_ANALOG['gpu1'], g1_pct),
+            ) - DB_OFFSET
+        )
 
         def cap(name):
-            return int(budget_cap_pct(PROFILES[name], budget) * 255 / 100)
+            """Cap using both budgets; the more restrictive wins."""
+            c_usb = budget_cap_pct(PROFILES_USB[name], budget_usb)
+            c_ana = budget_cap_pct(PROFILES_ANALOG[name], budget_analog)
+            return int(min(c_usb, c_ana) * 255 / 100)
 
         cap3 = cap('case3')
         cap5 = cap('case5')
@@ -133,10 +150,10 @@ try:
         if now - last_log >= LOG_EVERY:
             last_log = now
             print(
-                f'cpu0: {cpu_pct:.0f}% {cpu_db:.2f}dB, '
-                f'gpu0: {g0_pct:.0f}% {g0_db:.2f}dB, '
-                f'gpu1: {g1_pct:.0f}% {g1_db:.2f}dB, '
-                f'noise budget: {budget:.2f}dB',
+                f'cpu0: {cpu_pct:.0f}%, '
+                f'gpu0: {g0_pct:.0f}%, '
+                f'gpu1: {g1_pct:.0f}%, '
+                f'budget usb={budget_usb:.2f}dB analog={budget_analog:.2f}dB',
                 flush=True,
             )
             pwms = {2: pwm2, 3: pwm3, 4: pwm4, 5: pwm5,
