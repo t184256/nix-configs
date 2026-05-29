@@ -24,6 +24,30 @@ final: prev:
 # was added in 1.11.0); overridden below.
 
 let
+  humming-kernels = prev.python3Packages.buildPythonPackage {
+    pname = "humming-kernels";
+    version = "0.1.2";
+    format = "wheel";
+    src = prev.fetchurl {
+      url = "https://files.pythonhosted.org/packages/6d/41/288bf756d921dbe98982eeb3ec4c20e7cb5224ea6dcb164f2df3d2f68a7f/humming_kernels-0.1.2-py3-none-any.whl";
+      hash = "sha256-90NLBCSUZEXvWtVoK8q/MJ2XchgY7VvcTG9h3jxrnS8=";
+    };
+    # torch/triton/numpy/safetensors/jinja2/tqdm are already provided by
+    # vllm's propagatedBuildInputs; strip them to avoid a second copy.
+    # nvidia-cuda-*: PyPI-wheel CUDA provisioning, replaced by NixOS cudaPackages.
+    pythonRemoveDeps = [
+      "torch" "triton" "numpy" "safetensors" "jinja2" "tqdm"
+      "nvidia-cuda-runtime-cu12" "nvidia-cuda-cccl-cu12"
+      "nvidia-cuda-nvcc-cu12" "nvidia-cuda-nvrtc-cu12"
+      "nvidia-cuda-runtime" "nvidia-cuda-cccl"
+      "nvidia-cuda-nvcc" "nvidia-cuda-nvrtc"
+    ];
+    propagatedBuildInputs = with prev.python3Packages; [
+      cuda-bindings filelock nvidia-ml-py packaging pyelftools tabulate
+    ];
+    doCheck = false;
+  };
+
   flashinfer = prev.python3Packages.flashinfer.overrideAttrs (oa: {
     version = "0.6.8.post1";
     src = prev.fetchFromGitHub {
@@ -59,12 +83,12 @@ let
   overriddenVllm = (prev.python3Packages.vllm.override {
     inherit mistral-common flashinfer;
   }).overrideAttrs (oa: {
-    version = "0-unstable-2026-05-14";
+    version = "0-unstable-2026-05-20";
     src = prev.fetchFromGitHub {
       owner = "vllm-project";
       repo = "vllm";
-      rev = "9946c38b7fda2eecd349166a8c68ba410e33afd5";
-      hash = "sha256-QpQ2GgJ79dImTK7O+Pr1FZVvDqGRm34oe2MaO0cG3NE=";
+      rev = "4f940896a32c9e2a0eba7f50d521bf5f6b4de458";
+      hash = "sha256-Xze3fHr+3HQetbWTw4zBzylcEJub/UMs5l4OIsQPqmI=";
     };
     patches =
       (prev.lib.filter
@@ -168,6 +192,8 @@ let
     nativeBuildInputs = prev.lib.filter
       (p: !(prev.lib.hasInfix "runtime-deps-check" (p.name or "")))
       oa.nativeBuildInputs;
+    propagatedBuildInputs = (oa.propagatedBuildInputs or [])
+      ++ [ humming-kernels ];
   });
 in
 

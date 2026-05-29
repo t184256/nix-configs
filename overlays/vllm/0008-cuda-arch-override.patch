@@ -1,4 +1,4 @@
-From f79571e6ff3bf10cf5d9a9ba442200b226b925f2 Mon Sep 17 00:00:00 2001
+From 5cf70a02e4dbfa8a03035ba021c341f4adb55132 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 14 May 2026 11:25:51 +0000
 Subject: [PATCH] 0008-cuda-arch-override
@@ -8,7 +8,7 @@ Subject: [PATCH] 0008-cuda-arch-override
  1 file changed, 8 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index cf57541..857a560 100644
+index 35171b473..6709692bf 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -185,6 +185,14 @@ if(VLLM_GPU_LANG STREQUAL "CUDA")

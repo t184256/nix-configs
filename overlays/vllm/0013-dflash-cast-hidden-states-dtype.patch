@@ -1,4 +1,4 @@
-From 58d3b0403587a9c281562de5c66ec6659361261f Mon Sep 17 00:00:00 2001
+From 2e02de4510d07a881577697a283a1ceab6a218bf Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 14 May 2026 11:26:30 +0000
 Subject: [PATCH] 0011-dflash-cast-hidden-states-dtype
@@ -8,7 +8,7 @@ Subject: [PATCH] 0011-dflash-cast-hidden-states-dtype
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/vllm/v1/spec_decode/llm_base_proposer.py b/vllm/v1/spec_decode/llm_base_proposer.py
-index 55e62d8..afea90b 100644
+index 87c27f0c6..879780573 100644
 --- a/vllm/v1/spec_decode/llm_base_proposer.py
 +++ b/vllm/v1/spec_decode/llm_base_proposer.py
 @@ -461,8 +461,11 @@ class SpecDecodeBaseProposer:

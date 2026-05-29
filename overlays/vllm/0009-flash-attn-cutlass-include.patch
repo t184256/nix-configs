@@ -1,4 +1,4 @@
-From 60b2b21e6b4c84579d631bc63a9a1ec9567013be Mon Sep 17 00:00:00 2001
+From 605ce94ba6aea5320b3e86a9acf3eacc3651e312 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 14 May 2026 11:25:51 +0000
 Subject: [PATCH] 0009-flash-attn-cutlass-include
@@ -8,7 +8,7 @@ Subject: [PATCH] 0009-flash-attn-cutlass-include
  1 file changed, 19 insertions(+)
 
 diff --git a/cmake/external_projects/vllm_flash_attn.cmake b/cmake/external_projects/vllm_flash_attn.cmake
-index b38917a..f88de66 100644
+index b38917a7b..f88de6688 100644
 --- a/cmake/external_projects/vllm_flash_attn.cmake
 +++ b/cmake/external_projects/vllm_flash_attn.cmake
 @@ -57,6 +57,25 @@ install(CODE "set(CMAKE_INSTALL_PREFIX \"\${CMAKE_INSTALL_PREFIX}/vllm/\")" ALL_

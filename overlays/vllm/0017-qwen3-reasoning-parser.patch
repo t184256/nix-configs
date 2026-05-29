@@ -1,4 +1,4 @@
-From 3377121a352acd82db94c7859512a257930d52bf Mon Sep 17 00:00:00 2001
+From 7eaa166dc9f4dc7c2ccdfb6961f285a5f9fef442 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 09:19:14 +0200
 Subject: [PATCH 01/11] Support fragmented tags in Qwen3 streaming reasoning
@@ -11,7 +11,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 91 insertions(+), 6 deletions(-)
 
 diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
-index f424585..b58f944 100644
+index f42458560..b58f94438 100644
 --- a/tests/reasoning/test_qwen3_reasoning_parser.py
 +++ b/tests/reasoning/test_qwen3_reasoning_parser.py
 @@ -373,3 +373,63 @@ def test_reasoning_thinking_disabled(
@@ -79,7 +79,7 @@ index f424585..b58f944 100644
 +    assert msg3.content == "call>\n<function=bash>"
 +
 diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
-index e38b0de..0ffe0ae 100644
+index e38b0de3d..0ffe0ae7c 100644
 --- a/vllm/reasoning/qwen3_reasoning_parser.py
 +++ b/vllm/reasoning/qwen3_reasoning_parser.py
 @@ -201,18 +201,40 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
@@ -143,7 +143,7 @@ index e38b0de..0ffe0ae 100644
 2.54.0
 
 
-From 7a8c4ce8b15b58a3f23b4545e58966bdb41ac1d5 Mon Sep 17 00:00:00 2001
+From eebaef5e0d99d7c1b0dd6328c4a60cef0580edcf Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 10:27:05 +0200
 Subject: [PATCH 02/11] gemini is right, removed leftover code
@@ -154,7 +154,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  1 file changed, 9 deletions(-)
 
 diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
-index 0ffe0ae..2cda4c8 100644
+index 0ffe0ae7c..2cda4c824 100644
 --- a/vllm/reasoning/qwen3_reasoning_parser.py
 +++ b/vllm/reasoning/qwen3_reasoning_parser.py
 @@ -226,15 +226,6 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
@@ -177,7 +177,7 @@ index 0ffe0ae..2cda4c8 100644
 2.54.0
 
 
-From 34e707a7d52cdcdce4b8f887656560dfcf477309 Mon Sep 17 00:00:00 2001
+From 90ca8d97eeb2e11982a4ebeeab5cdaf26f5c96a6 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 12:11:16 +0200
 Subject: [PATCH 03/11] added two more failed tests
@@ -188,7 +188,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  1 file changed, 137 insertions(+)
 
 diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
-index b58f944..c7ba316 100644
+index b58f94438..c7ba31643 100644
 --- a/tests/reasoning/test_qwen3_reasoning_parser.py
 +++ b/tests/reasoning/test_qwen3_reasoning_parser.py
 @@ -1,6 +1,8 @@
@@ -358,19 +358,19 @@ index b58f944..c7ba316 100644
 2.54.0
 
 
-From 65a489353e623287b9c0cec1daad7b0181a4c715 Mon Sep 17 00:00:00 2001
+From 3eae43e21f5519fef93061bc334da425191ac004 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 13:11:38 +0200
 Subject: [PATCH 04/11] fixed the two more failed tests, no regression detected
 
 Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 ---
- vllm/parser/abstract_parser.py           | 13 +++++++++++++
+ vllm/parser/abstract_parser.py           | 11 +++++++++++
  vllm/reasoning/qwen3_reasoning_parser.py | 10 ----------
- 2 files changed, 13 insertions(+), 10 deletions(-)
+ 2 files changed, 11 insertions(+), 10 deletions(-)
 
 diff --git a/vllm/parser/abstract_parser.py b/vllm/parser/abstract_parser.py
-index 46acc7f..ec06fca 100644
+index 46acc7fb1..be969c85e 100644
 --- a/vllm/parser/abstract_parser.py
 +++ b/vllm/parser/abstract_parser.py
 @@ -668,6 +668,7 @@ class DelegatingParser(Parser):
@@ -378,7 +378,7 @@ index 46acc7f..ec06fca 100644
          current_token_ids = state.previous_token_ids + delta_token_ids
          delta_message: DeltaMessage | None = None
 +        reasoning_from_transition: str | None = None
-
+ 
          # Reasoning extraction
          if self._in_reasoning_phase(state):
 @@ -688,6 +689,10 @@ class DelegatingParser(Parser):
@@ -389,7 +389,7 @@ index 46acc7f..ec06fca 100644
 +                    delta_message.reasoning
 +                    if delta_message is not None else None
 +                )
-
+ 
          # Tool call extraction
          if self._in_tool_call_phase(state):
 @@ -712,6 +717,12 @@ class DelegatingParser(Parser):
@@ -405,9 +405,8 @@ index 46acc7f..ec06fca 100644
              if (
                  delta_message
                  and delta_message.tool_calls
-
 diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
-index 2cda4c8..372a7ab 100644
+index 2cda4c824..372a7ab53 100644
 --- a/vllm/reasoning/qwen3_reasoning_parser.py
 +++ b/vllm/reasoning/qwen3_reasoning_parser.py
 @@ -64,24 +64,14 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
@@ -439,7 +438,7 @@ index 2cda4c8..372a7ab 100644
 2.54.0
 
 
-From c1b5f981efd2f6dae0e1249258608d741de54f8b Mon Sep 17 00:00:00 2001
+From 5900812cf6e2d1aa815db3758de1054130166e53 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 16:25:23 +0200
 Subject: [PATCH 05/11] prevent qwen3 reasoning parser from swallowing tool
@@ -452,7 +451,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 65 insertions(+), 18 deletions(-)
 
 diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
-index c7ba316..b4e2ab4 100644
+index c7ba31643..b4e2ab42f 100644
 --- a/tests/reasoning/test_qwen3_reasoning_parser.py
 +++ b/tests/reasoning/test_qwen3_reasoning_parser.py
 @@ -570,3 +570,49 @@ def test_reasoning_preserved_when_transition_and_tool_call_in_same_delta(
@@ -506,7 +505,7 @@ index c7ba316..b4e2ab4 100644
 +    assert "I will use a tool" in msg2.content
 +
 diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
-index 372a7ab..60e3c84 100644
+index 372a7ab53..60e3c847f 100644
 --- a/vllm/reasoning/qwen3_reasoning_parser.py
 +++ b/vllm/reasoning/qwen3_reasoning_parser.py
 @@ -190,7 +190,24 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
@@ -562,7 +561,7 @@ index 372a7ab..60e3c84 100644
 2.54.0
 
 
-From cc2c4b1f4075890c0e61f614247bfbb1abe8addc Mon Sep 17 00:00:00 2001
+From c5cdcd0e3063a671e90f1f0dfdca8002b1e0a5de Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 16:56:47 +0200
 Subject: [PATCH 06/11] prevent Qwen 3 tool call truncation and multi-tool
@@ -575,7 +574,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 69 insertions(+), 4 deletions(-)
 
 diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
-index b4e2ab4..0af1135 100644
+index b4e2ab42f..0af113516 100644
 --- a/tests/reasoning/test_qwen3_reasoning_parser.py
 +++ b/tests/reasoning/test_qwen3_reasoning_parser.py
 @@ -616,3 +616,70 @@ def test_reasoning_swallows_post_think_content(qwen3_tokenizer):
@@ -650,7 +649,7 @@ index b4e2ab4..0af1135 100644
 +
 +
 diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
-index 60e3c84..293502c 100644
+index 60e3c847f..293502c1a 100644
 --- a/vllm/reasoning/qwen3_reasoning_parser.py
 +++ b/vllm/reasoning/qwen3_reasoning_parser.py
 @@ -96,9 +96,7 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
@@ -677,7 +676,7 @@ index 60e3c84..293502c 100644
 2.54.0
 
 
-From 4a5f5b3afa3c8cb47f716faf60ddc233dab77f84 Mon Sep 17 00:00:00 2001
+From abaa2317bf05f6fe7fb1d653f96f87015aec7892 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 17:27:47 +0200
 Subject: [PATCH 07/11] ensure tool call integrity for Qwen 3 during streaming
@@ -689,7 +688,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
-index 0af1135..2315f6e 100644
+index 0af113516..2315f6eba 100644
 --- a/tests/reasoning/test_qwen3_reasoning_parser.py
 +++ b/tests/reasoning/test_qwen3_reasoning_parser.py
 @@ -499,7 +499,7 @@ def test_extract_reasoning_streaming_fragmented_tool_call(qwen3_tokenizer):
@@ -705,7 +704,7 @@ index 0af1135..2315f6e 100644
 2.54.0
 
 
-From 9434a1010126a4324d0100ec7779737198e9925d Mon Sep 17 00:00:00 2001
+From af8e5786a77c5377c871eb86eb9390a8979e0ce8 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 19:30:36 +0200
 Subject: [PATCH 08/11] fixed tool_call leaking(duplicated) into reasoning
@@ -718,7 +717,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 34 insertions(+), 15 deletions(-)
 
 diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
-index 2315f6e..0a59de3 100644
+index 2315f6eba..0a59de343 100644
 --- a/tests/reasoning/test_qwen3_reasoning_parser.py
 +++ b/tests/reasoning/test_qwen3_reasoning_parser.py
 @@ -468,7 +468,8 @@ def test_extract_reasoning_streaming_fragmented_tool_call(qwen3_tokenizer):
@@ -742,7 +741,7 @@ index 2315f6e..0a59de3 100644
  
      # Delta 3: "call>\n<function=bash>"
 diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
-index 293502c..2a644ea 100644
+index 293502c1a..2a644ea7a 100644
 --- a/vllm/reasoning/qwen3_reasoning_parser.py
 +++ b/vllm/reasoning/qwen3_reasoning_parser.py
 @@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
@@ -841,7 +840,7 @@ index 293502c..2a644ea 100644
 2.54.0
 
 
-From cfda67783ad3f26ba5573668bea8aa585cfc267e Mon Sep 17 00:00:00 2001
+From b1f58b3ba2ff4e4024c72c8f93d6cd84f2c8f54d Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 22:54:36 +0200
 Subject: [PATCH 09/11] reverted error from commit c04791986 + added test to
@@ -855,7 +854,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  3 files changed, 165 insertions(+), 26 deletions(-)
 
 diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
-index 0a59de3..fc85370 100644
+index 0a59de343..fc8537078 100644
 --- a/tests/reasoning/test_qwen3_reasoning_parser.py
 +++ b/tests/reasoning/test_qwen3_reasoning_parser.py
 @@ -16,6 +16,7 @@ from vllm.entrypoints.openai.engine.protocol import (
@@ -1067,10 +1066,10 @@ index 0a59de3..fc85370 100644
 +
 +
 diff --git a/vllm/parser/abstract_parser.py b/vllm/parser/abstract_parser.py
-index ec06fca..6602b49 100644
+index be969c85e..4c940eac8 100644
 --- a/vllm/parser/abstract_parser.py
 +++ b/vllm/parser/abstract_parser.py
-@@ -640,6 +640,13 @@ class DelegatingParser(Parser):
+@@ -634,6 +634,13 @@ class DelegatingParser(Parser):
              return False
          return self._reasoning_parser.is_reasoning_end(input_ids)
  
@@ -1084,7 +1083,7 @@ index ec06fca..6602b49 100644
      def extract_content_ids(self, input_ids: list[int]) -> list[int]:
          if self._reasoning_parser is None:
              return input_ids
-@@ -690,8 +697,13 @@ class DelegatingParser(Parser):
+@@ -680,8 +687,13 @@ class DelegatingParser(Parser):
                  current_token_ids=current_token_ids,
                  delta_token_ids=delta_token_ids,
              )
@@ -1101,7 +1100,7 @@ index ec06fca..6602b49 100644
                  current_token_ids = self.extract_content_ids(delta_token_ids)
                  if delta_message and delta_message.content:
 diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
-index 2a644ea..c41f354 100644
+index 2a644ea7a..c41f3541a 100644
 --- a/vllm/reasoning/qwen3_reasoning_parser.py
 +++ b/vllm/reasoning/qwen3_reasoning_parser.py
 @@ -65,6 +65,7 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
@@ -1132,7 +1131,7 @@ index 2a644ea..c41f354 100644
 2.54.0
 
 
-From a2160daff79d237adc37a250ae6ee7694868a0f6 Mon Sep 17 00:00:00 2001
+From 7046fb8c67f15036bba76ea48349fbe017fb911d Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Sat, 25 Apr 2026 06:49:09 +0200
 Subject: [PATCH 10/11] fix(qwen3-reasoning): clarify empty DeltaMessage
@@ -1149,7 +1148,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
-index c41f354..7d51303 100644
+index c41f3541a..7d513030c 100644
 --- a/vllm/reasoning/qwen3_reasoning_parser.py
 +++ b/vllm/reasoning/qwen3_reasoning_parser.py
 @@ -255,8 +255,9 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):
@@ -1168,7 +1167,7 @@ index c41f354..7d51303 100644
 2.54.0
 
 
-From 2a17d87c0ce787b3b4341f37816b02070d5e8624 Mon Sep 17 00:00:00 2001
+From 50b075f78e18b5538d0bb98b7b3a0751dd57276f Mon Sep 17 00:00:00 2001
 From: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
 Date: Sat, 25 Apr 2026 13:07:41 +0200
 Subject: [PATCH 11/11] fix(qwen3-reasoning): three streaming/counting edge
@@ -1223,7 +1222,7 @@ Signed-off-by: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
  2 files changed, 201 insertions(+), 18 deletions(-)
 
 diff --git a/tests/reasoning/test_qwen3_reasoning_parser.py b/tests/reasoning/test_qwen3_reasoning_parser.py
-index fc85370..1b55a38 100644
+index fc8537078..1b55a38b1 100644
 --- a/tests/reasoning/test_qwen3_reasoning_parser.py
 +++ b/tests/reasoning/test_qwen3_reasoning_parser.py
 @@ -698,6 +698,134 @@ def test_extract_reasoning_streaming_fragmented_end_and_tool_call(qwen3_tokenize
@@ -1362,7 +1361,7 @@ index fc85370..1b55a38 100644
      qwen3_tokenizer,
  ) -> None:
 diff --git a/vllm/reasoning/qwen3_reasoning_parser.py b/vllm/reasoning/qwen3_reasoning_parser.py
-index 7d51303..489d059 100644
+index 7d513030c..489d05934 100644
 --- a/vllm/reasoning/qwen3_reasoning_parser.py
 +++ b/vllm/reasoning/qwen3_reasoning_parser.py
 @@ -61,6 +61,43 @@ class Qwen3ReasoningParser(BaseThinkingReasoningParser):

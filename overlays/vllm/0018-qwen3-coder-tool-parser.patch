@@ -1,4 +1,4 @@
-From 2faec36ba66220f73005b068cf199734089bb5a8 Mon Sep 17 00:00:00 2001
+From cf18bed26fc75804006662cc94f60043a9b99709 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 09:42:11 +0200
 Subject: [PATCH 01/20] fix split tag detection in tool parser : qwen3_coder
@@ -11,7 +11,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 66 insertions(+), 8 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3coder_tool_parser.py b/tests/tool_parsers/test_qwen3coder_tool_parser.py
-index 26bbf1a..d80e750 100644
+index 26bbf1a04..d80e7501b 100644
 --- a/tests/tool_parsers/test_qwen3coder_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3coder_tool_parser.py
 @@ -1146,6 +1146,53 @@ def test_no_double_serialization_string_args(qwen3_tool_parser):
@@ -69,7 +69,7 @@ index 26bbf1a..d80e750 100644
                      },
                  },
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index 46aa8a4..7e8f5c5 100644
+index 46aa8a4ac..7e8f5c579 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -30,7 +30,7 @@ from vllm.tool_parsers.structural_tag_registry import (
@@ -140,7 +140,7 @@ index 46aa8a4..7e8f5c5 100644
 2.54.0
 
 
-From 81ee4c6369247371a28110c3e473d0c8dbcb58cf Mon Sep 17 00:00:00 2001
+From f0ffedbeb065f3050afd561b0d7bcde7f7907074 Mon Sep 17 00:00:00 2001
 From: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
 Date: Fri, 24 Apr 2026 10:01:13 +0200
 Subject: [PATCH 02/20] Update vllm/tool_parsers/qwen3coder_tool_parser.py
@@ -152,7 +152,7 @@ Signed-off-by: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index 7e8f5c5..802d9f8 100644
+index 7e8f5c579..802d9f8d2 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -117,6 +117,7 @@ class Qwen3CoderToolParser(ToolParser):
@@ -167,7 +167,7 @@ index 7e8f5c5..802d9f8 100644
 2.54.0
 
 
-From 1b2a0ae5c8b43af8a05adb0a18e75ca20c7e3b70 Mon Sep 17 00:00:00 2001
+From 59ac302f98e21a202a44bc8374b58f3277d0ae67 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 10:03:50 +0200
 Subject: [PATCH 03/20] Fix delayed text emission between tool calls in
@@ -180,7 +180,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 67 insertions(+), 6 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3xml_tool_parser.py b/tests/tool_parsers/test_qwen3xml_tool_parser.py
-index 1ea9a1d..8fc8165 100644
+index 1ea9a1d65..8fc816582 100644
 --- a/tests/tool_parsers/test_qwen3xml_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3xml_tool_parser.py
 @@ -8,7 +8,9 @@ from tests.tool_parsers.common_tests import (
@@ -259,7 +259,7 @@ index 1ea9a1d..8fc8165 100644
 +        
 +        assert found_early, "Free text between tool calls should be emitted as soon as the second tool call starts, not delayed."
 diff --git a/vllm/tool_parsers/qwen3xml_tool_parser.py b/vllm/tool_parsers/qwen3xml_tool_parser.py
-index 8ee10dc..b176cb5 100644
+index 8ee10dcbc..b176cb542 100644
 --- a/vllm/tool_parsers/qwen3xml_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3xml_tool_parser.py
 @@ -251,16 +251,15 @@ class StreamingXMLToolCallParser:
@@ -287,7 +287,7 @@ index 8ee10dc..b176cb5 100644
 2.54.0
 
 
-From 66424ba3ad23159c782be1d30f73b02888960f08 Mon Sep 17 00:00:00 2001
+From 4f1488a4b96d56ba658d944efe7abc835b72c24e Mon Sep 17 00:00:00 2001
 From: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
 Date: Fri, 24 Apr 2026 10:15:16 +0200
 Subject: [PATCH 04/20] Update vllm/tool_parsers/qwen3coder_tool_parser.py
@@ -299,7 +299,7 @@ Signed-off-by: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index 802d9f8..4a7b0c0 100644
+index 802d9f8d2..4a7b0c0e9 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -407,8 +407,8 @@ class Qwen3CoderToolParser(ToolParser):
@@ -317,7 +317,7 @@ index 802d9f8..4a7b0c0 100644
 2.54.0
 
 
-From 048a10a274cea86ab12ba1a79f05c06796d0dde7 Mon Sep 17 00:00:00 2001
+From c34ef39e59f5e87f7bfd844c2dfd2b029feb183b Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 10:22:34 +0200
 Subject: [PATCH 05/20] applied gemini suggestion
@@ -328,7 +328,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  1 file changed, 20 insertions(+), 5 deletions(-)
 
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index 4a7b0c0..c9aa11a 100644
+index 4a7b0c0e9..c9aa11a87 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -381,6 +381,22 @@ class Qwen3CoderToolParser(ToolParser):
@@ -374,7 +374,7 @@ index 4a7b0c0..c9aa11a 100644
 2.54.0
 
 
-From 9d82210b8ffd9ac834fbbb010b116f3fbb9619b2 Mon Sep 17 00:00:00 2001
+From db9dbef7ab31bc5d0a0dd9725542cc75c5260ef0 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 10:48:50 +0200
 Subject: [PATCH 06/20] gemini is right, don't get tokenizer using transformers
@@ -385,7 +385,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  1 file changed, 11 insertions(+), 10 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3xml_tool_parser.py b/tests/tool_parsers/test_qwen3xml_tool_parser.py
-index 8fc8165..9001e4d 100644
+index 8fc816582..9001e4d37 100644
 --- a/tests/tool_parsers/test_qwen3xml_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3xml_tool_parser.py
 @@ -10,7 +10,13 @@ from tests.tool_parsers.common_tests import (
@@ -444,7 +444,7 @@ index 8fc8165..9001e4d 100644
 2.54.0
 
 
-From 4b1193428104fc68fb07cf4b9c1f53bf1dfd9d97 Mon Sep 17 00:00:00 2001
+From 98c2575c6d3ccd6b718b3158bf66fb8d3ded6315 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 11:11:01 +0200
 Subject: [PATCH 07/20] gemini is right, ensure last content message is flushed
@@ -457,7 +457,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 48 insertions(+), 3 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3xml_tool_parser.py b/tests/tool_parsers/test_qwen3xml_tool_parser.py
-index 9001e4d..21095f8 100644
+index 9001e4d37..21095f8e8 100644
 --- a/tests/tool_parsers/test_qwen3xml_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3xml_tool_parser.py
 @@ -120,8 +120,12 @@ class TestQwen3xmlToolParser(ToolParserTests):
@@ -520,7 +520,7 @@ index 9001e4d..21095f8 100644
 +        
 +        assert "I hope this helps!" in all_content, "Free text after the last tool call should be emitted."
 diff --git a/vllm/tool_parsers/qwen3xml_tool_parser.py b/vllm/tool_parsers/qwen3xml_tool_parser.py
-index b176cb5..aae1b67 100644
+index b176cb542..aae1b670d 100644
 --- a/vllm/tool_parsers/qwen3xml_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3xml_tool_parser.py
 @@ -173,8 +173,8 @@ class StreamingXMLToolCallParser:
@@ -538,7 +538,7 @@ index b176cb5..aae1b67 100644
 2.54.0
 
 
-From 32f1703feb5e8d6d181914457f6bb4158e693394 Mon Sep 17 00:00:00 2001
+From 9878431e3de825cfe30edbb77cbc47e483d88a81 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 15:24:00 +0200
 Subject: [PATCH 08/20] fixed tests
@@ -549,7 +549,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  1 file changed, 6 insertions(+), 8 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3coder_tool_parser.py b/tests/tool_parsers/test_qwen3coder_tool_parser.py
-index d80e750..b963fd1 100644
+index d80e7501b..b963fd13f 100644
 --- a/tests/tool_parsers/test_qwen3coder_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3coder_tool_parser.py
 @@ -346,10 +346,9 @@ fahrenheit
@@ -584,7 +584,7 @@ index d80e750..b963fd1 100644
 2.54.0
 
 
-From c184918edf10896e2dac727adbfdcf706c95c28b Mon Sep 17 00:00:00 2001
+From 1e46e910923c6d82cab09132183c8bfbe255ff53 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 16:11:25 +0200
 Subject: [PATCH 09/20] Fixed edge case streamed tool call started in delta1
@@ -598,7 +598,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 138 insertions(+), 49 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3coder_tool_parser.py b/tests/tool_parsers/test_qwen3coder_tool_parser.py
-index b963fd1..b991789 100644
+index b963fd13f..b99178912 100644
 --- a/tests/tool_parsers/test_qwen3coder_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3coder_tool_parser.py
 @@ -1193,6 +1193,113 @@ def test_extract_tool_calls_streaming_split_tag(qwen3_tool_parser):
@@ -716,7 +716,7 @@ index b963fd1..b991789 100644
              },
          )
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index c9aa11a..784ece0 100644
+index c9aa11a87..784ece00f 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -412,6 +412,7 @@ class Qwen3CoderToolParser(ToolParser):
@@ -874,7 +874,7 @@ index c9aa11a..784ece0 100644
 2.54.0
 
 
-From dd6edbf3c024aa2f79210ea1b01ced0b533dbf9f Mon Sep 17 00:00:00 2001
+From 51ce36462d2babeee187ccd65cdaec6872869176 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 17:27:00 +0200
 Subject: [PATCH 10/20] fixed and re-enabled broken tests
@@ -886,7 +886,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 22 insertions(+), 28 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3xml_tool_parser.py b/tests/tool_parsers/test_qwen3xml_tool_parser.py
-index 21095f8..7291cef 100644
+index 21095f8e8..7291cef2a 100644
 --- a/tests/tool_parsers/test_qwen3xml_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3xml_tool_parser.py
 @@ -62,20 +62,6 @@ class TestQwen3xmlToolParser(ToolParserTests):
@@ -911,7 +911,7 @@ index 21095f8..7291cef 100644
          )
  
 diff --git a/vllm/tool_parsers/qwen3xml_tool_parser.py b/vllm/tool_parsers/qwen3xml_tool_parser.py
-index aae1b67..cc06fce 100644
+index aae1b670d..cc06fce32 100644
 --- a/vllm/tool_parsers/qwen3xml_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3xml_tool_parser.py
 @@ -56,6 +56,7 @@ class StreamingXMLToolCallParser:
@@ -1068,7 +1068,7 @@ index aae1b67..cc06fce 100644
 2.54.0
 
 
-From 5ea4aa7b8d424b7099f3355a435e860cbe135dfa Mon Sep 17 00:00:00 2001
+From 8e380dcd056b3c8b804bc3a614e1f0fa4f068049 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Fri, 24 Apr 2026 19:29:02 +0200
 Subject: [PATCH 11/20] Fix StreamingXMLToolCallParser: anyOf type detection
@@ -1081,7 +1081,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 219 insertions(+), 50 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3xml_tool_parser.py b/tests/tool_parsers/test_qwen3xml_tool_parser.py
-index 7291cef..4ae1961 100644
+index 7291cef2a..4ae1961bd 100644
 --- a/tests/tool_parsers/test_qwen3xml_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3xml_tool_parser.py
 @@ -1,6 +1,7 @@
@@ -1301,7 +1301,7 @@ index 7291cef..4ae1961 100644
 +    assert args0 == {"city": "Paris"}, f"First call args wrong: {args0!r}"
 +    assert args1 == {"city": "London"}, f"Second call args wrong: {args1!r}"
 diff --git a/vllm/tool_parsers/qwen3xml_tool_parser.py b/vllm/tool_parsers/qwen3xml_tool_parser.py
-index cc06fce..f22f302 100644
+index cc06fce32..f22f30288 100644
 --- a/vllm/tool_parsers/qwen3xml_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3xml_tool_parser.py
 @@ -113,58 +113,25 @@ class StreamingXMLToolCallParser:
@@ -1401,7 +1401,7 @@ index cc06fce..f22f302 100644
 2.54.0
 
 
-From b838350ebc1534fb7c1c8aa80986a323c50334e0 Mon Sep 17 00:00:00 2001
+From 75a46c2a68a4fe0cfb1427501ac616c3b54eda91 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Sat, 25 Apr 2026 05:58:34 +0200
 Subject: [PATCH 12/20] fix Qwen3 XML and Coder tool parser regressions on
@@ -1495,7 +1495,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
 
 diff --git a/tests/tool_parsers/test_qwen36_bugs.py b/tests/tool_parsers/test_qwen36_bugs.py
 new file mode 100644
-index 0000000..65671e9
+index 000000000..65671e9fa
 --- /dev/null
 +++ b/tests/tool_parsers/test_qwen36_bugs.py
 @@ -0,0 +1,189 @@
@@ -1689,7 +1689,7 @@ index 0000000..65671e9
 +    assert json.loads(tcs[0]["args"]) == {"city": "Paris"}
 +    assert json.loads(tcs[1]["args"]) == {"city": "London"}
 diff --git a/tests/tool_parsers/test_qwen3coder_tool_parser.py b/tests/tool_parsers/test_qwen3coder_tool_parser.py
-index b991789..fa66978 100644
+index b99178912..fa6697812 100644
 --- a/tests/tool_parsers/test_qwen3coder_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3coder_tool_parser.py
 @@ -25,7 +25,7 @@ from vllm.tool_parsers.qwen3coder_tool_parser import (
@@ -2112,7 +2112,7 @@ index b991789..fa66978 100644
      qwen3_tool_parser: Qwen3CoderToolParser,
      sample_tools: list[ChatCompletionToolsParam],
 diff --git a/tests/tool_parsers/test_qwen3xml_tool_parser.py b/tests/tool_parsers/test_qwen3xml_tool_parser.py
-index 4ae1961..03b2d87 100644
+index 4ae1961bd..03b2d879c 100644
 --- a/tests/tool_parsers/test_qwen3xml_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3xml_tool_parser.py
 @@ -357,3 +357,537 @@ def test_xml_streaming_parallel_tool_calls_preformed_chunks(qwen3_tokenizer):
@@ -2654,7 +2654,7 @@ index 4ae1961..03b2d87 100644
 +# ============================================================================
 +
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index 784ece0..cf74998 100644
+index 784ece00f..cf74998e9 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -123,10 +123,6 @@ class Qwen3CoderToolParser(ToolParser):
@@ -3261,7 +3261,7 @@ index 784ece0..cf74998 100644
          return content_message
  
 diff --git a/vllm/tool_parsers/qwen3xml_tool_parser.py b/vllm/tool_parsers/qwen3xml_tool_parser.py
-index f22f302..20b3613 100644
+index f22f30288..20b361320 100644
 --- a/vllm/tool_parsers/qwen3xml_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3xml_tool_parser.py
 @@ -53,6 +53,12 @@ class StreamingXMLToolCallParser:
@@ -3784,7 +3784,7 @@ index f22f302..20b3613 100644
 2.54.0
 
 
-From 62df9d67c8ffa5281d6c96041de0b861154661d6 Mon Sep 17 00:00:00 2001
+From 16e30d6c955f46e679fa7ac959bd516d1c6e4a81 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Sat, 25 Apr 2026 06:15:29 +0200
 Subject: [PATCH 13/20] test: factor shared Qwen3 XML/Coder regression tests
@@ -3847,7 +3847,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
 
 diff --git a/tests/tool_parsers/test_qwen36_bugs.py b/tests/tool_parsers/test_qwen36_bugs.py
 deleted file mode 100644
-index 65671e9..0000000
+index 65671e9fa..000000000
 --- a/tests/tool_parsers/test_qwen36_bugs.py
 +++ /dev/null
 @@ -1,189 +0,0 @@
@@ -4042,7 +4042,7 @@ index 65671e9..0000000
 -    assert json.loads(tcs[1]["args"]) == {"city": "London"}
 diff --git a/tests/tool_parsers/test_qwen3_xml_coder_shared.py b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 new file mode 100644
-index 0000000..76b71e5
+index 000000000..76b71e5ea
 --- /dev/null
 +++ b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 @@ -0,0 +1,606 @@
@@ -4653,7 +4653,7 @@ index 0000000..76b71e5
 +    assert args0 == {"city": "Paris"}
 +    assert args1 == {"city": "London"}
 diff --git a/tests/tool_parsers/test_qwen3coder_tool_parser.py b/tests/tool_parsers/test_qwen3coder_tool_parser.py
-index fa66978..13d997a 100644
+index fa6697812..13d997aba 100644
 --- a/tests/tool_parsers/test_qwen3coder_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3coder_tool_parser.py
 @@ -1061,45 +1061,6 @@ def test_none_tool_calls_filtered(qwen3_tool_parser):
@@ -5101,7 +5101,7 @@ index fa66978..13d997a 100644
  
  def test_get_vllm_registry_structural_tag_returns_structural_tag(
 diff --git a/tests/tool_parsers/test_qwen3xml_tool_parser.py b/tests/tool_parsers/test_qwen3xml_tool_parser.py
-index 03b2d87..f797721 100644
+index 03b2d879c..f7977218b 100644
 --- a/tests/tool_parsers/test_qwen3xml_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3xml_tool_parser.py
 @@ -172,93 +172,6 @@ class TestQwen3xmlToolParser(ToolParserTests):
@@ -5625,7 +5625,7 @@ index 03b2d87..f797721 100644
 2.54.0
 
 
-From 596ab6505b2cb75a928b44a2f68a82b687164d82 Mon Sep 17 00:00:00 2001
+From ee4e5c90b215729a2f4039bd2576218ef0509233 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Sat, 25 Apr 2026 06:33:29 +0200
 Subject: [PATCH 14/20] test: maximize shared coverage between Qwen3 XML and
@@ -5661,7 +5661,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  create mode 100644 tests/tool_parsers/test_qwen3coder_tool_parser.py.rej
 
 diff --git a/tests/tool_parsers/test_qwen3_xml_coder_shared.py b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
-index 76b71e5..b53e8a0 100644
+index 76b71e5ea..b53e8a067 100644
 --- a/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 +++ b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 @@ -1,7 +1,7 @@
@@ -6554,7 +6554,7 @@ index 76b71e5..b53e8a0 100644
      'char_deltas = [\n'
      '    "<tool_call>\\n",\n'
 diff --git a/tests/tool_parsers/test_qwen3coder_tool_parser.py b/tests/tool_parsers/test_qwen3coder_tool_parser.py
-index 13d997a..575ca45 100644
+index 13d997aba..575ca4570 100644
 --- a/tests/tool_parsers/test_qwen3coder_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3coder_tool_parser.py
 @@ -1122,10 +1122,9 @@ def test_extract_tool_calls_streaming_split_tag(qwen3_tool_parser):
@@ -6622,7 +6622,7 @@ index 13d997a..575ca45 100644
                      if tool_call.type:
 diff --git a/tests/tool_parsers/test_qwen3coder_tool_parser.py.rej b/tests/tool_parsers/test_qwen3coder_tool_parser.py.rej
 new file mode 100644
-index 0000000..59614f7
+index 000000000..59614f750
 --- /dev/null
 +++ b/tests/tool_parsers/test_qwen3coder_tool_parser.py.rej
 @@ -0,0 +1,1229 @@
@@ -7856,7 +7856,7 @@ index 0000000..59614f7
 ++            "multiple lines"
 ++        )
 diff --git a/tests/tool_parsers/test_qwen3xml_tool_parser.py b/tests/tool_parsers/test_qwen3xml_tool_parser.py
-index f797721..9b61b94 100644
+index f7977218b..9b61b942f 100644
 --- a/tests/tool_parsers/test_qwen3xml_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3xml_tool_parser.py
 @@ -9,13 +9,16 @@ from tests.tool_parsers.common_tests import (
@@ -7952,7 +7952,7 @@ index f797721..9b61b94 100644
 2.54.0
 
 
-From 2e0fe0281e503c31e1dcc12d2ca93399f39eed7b Mon Sep 17 00:00:00 2001
+From 3b8297d08108f458b45afbe0528119f595ff603c Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Sat, 25 Apr 2026 06:49:03 +0200
 Subject: [PATCH 15/20] refactor(qwen3coder): extract _advance_to_next_tool and
@@ -7972,7 +7972,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  1 file changed, 36 insertions(+), 56 deletions(-)
 
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index cf74998..1323a40 100644
+index cf74998e9..1323a4057 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -117,7 +117,6 @@ class Qwen3CoderToolParser(ToolParser):
@@ -8099,7 +8099,7 @@ index cf74998..1323a40 100644
 2.54.0
 
 
-From 5b86df3e3350db578e315942e6bf9bf24205b433 Mon Sep 17 00:00:00 2001
+From 1f3dcc3824d3456957ab9e9de7d12898a17b12cb Mon Sep 17 00:00:00 2001
 From: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
 Date: Sat, 25 Apr 2026 13:09:50 +0200
 Subject: [PATCH 16/20] fix(qwen3-tool-parsers): six MTP / spec-decode and
@@ -8215,7 +8215,7 @@ Signed-off-by: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
  5 files changed, 579 insertions(+), 37 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3_xml_coder_shared.py b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
-index b53e8a0..7f3302a 100644
+index b53e8a067..7f3302a6c 100644
 --- a/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 +++ b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 @@ -1449,3 +1449,114 @@ def test_two_tool_calls_in_one_streaming_chunk(qwen3_tokenizer, parser_cls):
@@ -8334,7 +8334,7 @@ index b53e8a0..7f3302a 100644
 +        f"Got content: {reconstructor.other_content!r}"
 +    )
 diff --git a/tests/tool_parsers/test_qwen3coder_tool_parser.py b/tests/tool_parsers/test_qwen3coder_tool_parser.py
-index 575ca45..44ca095 100644
+index 575ca4570..44ca09502 100644
 --- a/tests/tool_parsers/test_qwen3coder_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3coder_tool_parser.py
 @@ -1104,6 +1104,205 @@ def test_no_double_serialization_string_args(qwen3_tool_parser):
@@ -8544,7 +8544,7 @@ index 575ca45..44ca095 100644
      """
      This highlights the need to use current_text instead of delta_text.
 diff --git a/tests/tool_parsers/test_qwen3xml_tool_parser.py b/tests/tool_parsers/test_qwen3xml_tool_parser.py
-index 9b61b94..83aeffd 100644
+index 9b61b942f..83aeffdb2 100644
 --- a/tests/tool_parsers/test_qwen3xml_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3xml_tool_parser.py
 @@ -175,6 +175,102 @@ class TestQwen3xmlToolParser(ToolParserTests):
@@ -8651,7 +8651,7 @@ index 9b61b94..83aeffd 100644
      tools = [
          ChatCompletionToolsParam(
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index 1323a40..76c66de 100644
+index 1323a4057..76c66de1c 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -158,8 +158,12 @@ class Qwen3CoderToolParser(ToolParser):
@@ -8915,7 +8915,7 @@ index 1323a40..76c66de 100644
  
          return content_message
 diff --git a/vllm/tool_parsers/qwen3xml_tool_parser.py b/vllm/tool_parsers/qwen3xml_tool_parser.py
-index 20b3613..7de79a5 100644
+index 20b361320..7de79a540 100644
 --- a/vllm/tool_parsers/qwen3xml_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3xml_tool_parser.py
 @@ -407,6 +407,20 @@ class StreamingXMLToolCallParser:
@@ -8988,7 +8988,7 @@ index 20b3613..7de79a5 100644
 2.54.0
 
 
-From 3a69ed660cd74bdd0e75fa0ed5afe3a7e4011a11 Mon Sep 17 00:00:00 2001
+From 1e0c12ff16bb1ad76d08f276b1f049afe4d3a4f6 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Sat, 25 Apr 2026 14:36:06 +0200
 Subject: [PATCH 17/20] fix(qwen3-tool-parsers): handle every literal balise
@@ -9074,7 +9074,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  4 files changed, 683 insertions(+), 72 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3_xml_coder_shared.py b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
-index 7f3302a..72d8695 100644
+index 7f3302a6c..72d8695e1 100644
 --- a/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 +++ b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 @@ -1560,3 +1560,218 @@ def test_streaming_trailing_text_with_final_close_in_same_delta(
@@ -9297,7 +9297,7 @@ index 7f3302a..72d8695 100644
 +        f"content truncated/corrupted: {args.get('content')!r}"
 +    )
 diff --git a/tests/tool_parsers/test_qwen3coder_tool_parser.py b/tests/tool_parsers/test_qwen3coder_tool_parser.py
-index 44ca095..d9875f7 100644
+index 44ca09502..d9875f779 100644
 --- a/tests/tool_parsers/test_qwen3coder_tool_parser.py
 +++ b/tests/tool_parsers/test_qwen3coder_tool_parser.py
 @@ -279,6 +279,107 @@ rectangle
@@ -9409,7 +9409,7 @@ index 44ca095..d9875f7 100644
  </parameter>
  <parameter=precision>
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index 76c66de..e9fdab7 100644
+index 76c66de1c..e9fdab731 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -308,6 +308,79 @@ class Qwen3CoderToolParser(ToolParser):
@@ -9777,7 +9777,7 @@ index 76c66de..e9fdab7 100644
                  self.json_closed = True
  
 diff --git a/vllm/tool_parsers/qwen3xml_tool_parser.py b/vllm/tool_parsers/qwen3xml_tool_parser.py
-index 7de79a5..fb0db2e 100644
+index 7de79a540..fb0db2e74 100644
 --- a/vllm/tool_parsers/qwen3xml_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3xml_tool_parser.py
 @@ -86,6 +86,21 @@ class StreamingXMLToolCallParser:
@@ -10003,7 +10003,7 @@ index 7de79a5..fb0db2e 100644
 2.54.0
 
 
-From 8867ca41358dd5d84dab456f6f93e5ba8ba2ccf6 Mon Sep 17 00:00:00 2001
+From 71128ee68a420e9f3dab57a7b583b6249d7d025c Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Sat, 25 Apr 2026 16:58:56 +0200
 Subject: [PATCH 18/20] fix(qwen3-tool-parsers): out-of-schema literal nesting
@@ -10056,7 +10056,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  3 files changed, 235 insertions(+), 3 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3_xml_coder_shared.py b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
-index 72d8695..0cd2194 100644
+index 72d8695e1..0cd2194f5 100644
 --- a/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 +++ b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 @@ -1775,3 +1775,184 @@ def test_content_with_full_nested_tool_call_streaming(
@@ -10245,7 +10245,7 @@ index 72d8695..0cd2194 100644
 +# streaming, so production users still see the filtered result for
 +# completed tool calls.
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index e9fdab7..c985710 100644
+index e9fdab731..c98571078 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -495,8 +495,12 @@ class Qwen3CoderToolParser(ToolParser):
@@ -10315,7 +10315,7 @@ index e9fdab7..c985710 100644
          valid_param_names: set[str] | None = (
              set(param_config.keys()) if param_config else None
 diff --git a/vllm/tool_parsers/qwen3xml_tool_parser.py b/vllm/tool_parsers/qwen3xml_tool_parser.py
-index fb0db2e..d22d6a4 100644
+index fb0db2e74..d22d6a4ea 100644
 --- a/vllm/tool_parsers/qwen3xml_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3xml_tool_parser.py
 @@ -31,6 +31,19 @@ from vllm.tool_parsers.utils import find_tool_properties
@@ -10356,7 +10356,7 @@ index fb0db2e..d22d6a4 100644
 2.54.0
 
 
-From cbb9d8543d2d54491570a2b0c028fb59ef718122 Mon Sep 17 00:00:00 2001
+From b30372d148eff5134729985c61aefe258db242c3 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Sat, 25 Apr 2026 17:05:14 +0200
 Subject: [PATCH 19/20] fix(qwen3coder): preserve content around inline empty
@@ -10389,7 +10389,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  2 files changed, 95 insertions(+), 5 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3_xml_coder_shared.py b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
-index 0cd2194..0085af4 100644
+index 0cd2194f5..0085af49c 100644
 --- a/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 +++ b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 @@ -1956,3 +1956,61 @@ def test_jinja_template_phantom_tool_call_is_rejected_nonstreaming(
@@ -10455,7 +10455,7 @@ index 0cd2194..0085af4 100644
 +        f"{result.content!r}"
 +    )
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index c985710..2c2ad1a 100644
+index c98571078..2c2ad1a33 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -755,11 +755,43 @@ class Qwen3CoderToolParser(ToolParser):
@@ -10511,7 +10511,7 @@ index c985710..2c2ad1a 100644
 2.54.0
 
 
-From 2edda200dae5b0f86f87f0b929197dda6dddf401 Mon Sep 17 00:00:00 2001
+From fe7c33c6c4617f665a6ab6c895d37d7515fd57cc Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Sat, 25 Apr 2026 17:16:52 +0200
 Subject: [PATCH 20/20] fix(qwen3-tool-parsers): nullable string param converts
@@ -10551,7 +10551,7 @@ Signed-off-by: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.go
  3 files changed, 157 insertions(+), 2 deletions(-)
 
 diff --git a/tests/tool_parsers/test_qwen3_xml_coder_shared.py b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
-index 0085af4..0760249 100644
+index 0085af49c..07602499d 100644
 --- a/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 +++ b/tests/tool_parsers/test_qwen3_xml_coder_shared.py
 @@ -2014,3 +2014,56 @@ def test_inline_empty_tool_call_preserves_content_before_real_call(
@@ -10612,7 +10612,7 @@ index 0085af4..0760249 100644
 +            f"{type(args['optional']).__name__}: {args['optional']!r}"
 +        )
 diff --git a/vllm/tool_parsers/qwen3coder_tool_parser.py b/vllm/tool_parsers/qwen3coder_tool_parser.py
-index 2c2ad1a..3226de5 100644
+index 2c2ad1a33..3226de582 100644
 --- a/vllm/tool_parsers/qwen3coder_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3coder_tool_parser.py
 @@ -133,11 +133,20 @@ class Qwen3CoderToolParser(ToolParser):
@@ -10661,7 +10661,7 @@ index 2c2ad1a..3226de5 100644
          # the literal "null") rather than converting it to Python None.
          if param_type in ["string", "str", "text", "varchar", "char", "enum"]:
 diff --git a/vllm/tool_parsers/qwen3xml_tool_parser.py b/vllm/tool_parsers/qwen3xml_tool_parser.py
-index d22d6a4..302f9d5 100644
+index d22d6a4ea..302f9d551 100644
 --- a/vllm/tool_parsers/qwen3xml_tool_parser.py
 +++ b/vllm/tool_parsers/qwen3xml_tool_parser.py
 @@ -760,11 +760,24 @@ class StreamingXMLToolCallParser:

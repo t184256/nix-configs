@@ -1,4 +1,4 @@
-From f405b9b74bb1a5a4d4dc443854970e3976eb8c48 Mon Sep 17 00:00:00 2001
+From 6efdb5dbfb9ebfc372a8ec627a7e5f113d408c06 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Thu, 14 May 2026 11:26:47 +0000
 Subject: [PATCH] PR #40371: prompt_progress SSE events during prefill
@@ -17,12 +17,12 @@ Co-authored-by: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
  vllm/outputs.py                               |  2 ++
  vllm/v1/core/sched/scheduler.py               |  3 +++
  vllm/v1/engine/__init__.py                    |  1 +
- vllm/v1/engine/output_processor.py            | 10 +++++--
+ vllm/v1/engine/output_processor.py            | 12 +++++++--
  vllm/v1/metrics/stats.py                      |  7 ++---
- 9 files changed, 69 insertions(+), 5 deletions(-)
+ 9 files changed, 71 insertions(+), 5 deletions(-)
 
 diff --git a/vllm/entrypoints/openai/chat_completion/protocol.py b/vllm/entrypoints/openai/chat_completion/protocol.py
-index cf843f6..35dd71c 100644
+index cf843f6f1..35dd71cff 100644
 --- a/vllm/entrypoints/openai/chat_completion/protocol.py
 +++ b/vllm/entrypoints/openai/chat_completion/protocol.py
 @@ -131,6 +131,7 @@ class ChatCompletionStreamResponse(OpenAIBaseModel):
@@ -42,7 +42,7 @@ index cf843f6..35dd71c 100644
      top_p: float | None = None
      tools: list[ChatCompletionToolsParam] | None = None
 diff --git a/vllm/entrypoints/openai/chat_completion/serving.py b/vllm/entrypoints/openai/chat_completion/serving.py
-index 29a0249..3536c0b 100644
+index 29a0249f6..3536c0b00 100644
 --- a/vllm/entrypoints/openai/chat_completion/serving.py
 +++ b/vllm/entrypoints/openai/chat_completion/serving.py
 @@ -499,6 +499,27 @@ class OpenAIServingChat(OpenAIServing):
@@ -74,7 +74,7 @@ index 29a0249..3536c0b 100644
                  # the result_generator, it needs to be sent as the FIRST
                  # response (by the try...catch).
 diff --git a/vllm/entrypoints/openai/completion/protocol.py b/vllm/entrypoints/openai/completion/protocol.py
-index 831e5d9..d4c1397 100644
+index 831e5d910..d4c13970b 100644
 --- a/vllm/entrypoints/openai/completion/protocol.py
 +++ b/vllm/entrypoints/openai/completion/protocol.py
 @@ -61,6 +61,7 @@ class CompletionRequest(OpenAIBaseModel):
@@ -94,7 +94,7 @@ index 831e5d9..d4c1397 100644
  
  class CompletionStreamResponse(OpenAIBaseModel):
 diff --git a/vllm/entrypoints/openai/completion/serving.py b/vllm/entrypoints/openai/completion/serving.py
-index bfe9fb2..8154ee7 100644
+index bfe9fb226..8154ee7c5 100644
 --- a/vllm/entrypoints/openai/completion/serving.py
 +++ b/vllm/entrypoints/openai/completion/serving.py
 @@ -303,6 +303,32 @@ class OpenAIServingCompletion(OpenAIServing):
@@ -131,7 +131,7 @@ index bfe9fb2..8154ee7 100644
                      num_cached_tokens = res.num_cached_tokens
                      first_iteration = False
 diff --git a/vllm/outputs.py b/vllm/outputs.py
-index 2c71d2a..5ae1afa 100644
+index 2c71d2afb..5ae1afa86 100644
 --- a/vllm/outputs.py
 +++ b/vllm/outputs.py
 @@ -119,6 +119,7 @@ class RequestOutput:
@@ -151,10 +151,10 @@ index 2c71d2a..5ae1afa 100644
  
      def add(self, next_output: "RequestOutput", aggregate: bool) -> None:
 diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
-index ecb8b2f..ece1c43 100644
+index f89a6422c..328c660b7 100644
 --- a/vllm/v1/core/sched/scheduler.py
 +++ b/vllm/v1/core/sched/scheduler.py
-@@ -1450,6 +1450,8 @@ class Scheduler(SchedulerInterface):
+@@ -1504,6 +1504,8 @@ class Scheduler(SchedulerInterface):
                  or pooler_output is not None
                  or kv_transfer_params
                  or stopped
@@ -163,7 +163,7 @@ index ecb8b2f..ece1c43 100644
              ):
                  # Add EngineCoreOutput for this Request.
                  outputs[request.client_index].append(
-@@ -1467,6 +1469,7 @@ class Scheduler(SchedulerInterface):
+@@ -1521,6 +1523,7 @@ class Scheduler(SchedulerInterface):
                          trace_headers=request.trace_headers,
                          routed_experts=routed_experts,
                          num_nans_in_logits=request.num_nans_in_logits,
@@ -172,7 +172,7 @@ index ecb8b2f..ece1c43 100644
                  )
              else:
 diff --git a/vllm/v1/engine/__init__.py b/vllm/v1/engine/__init__.py
-index f6c8005..f65a403 100644
+index f6c80055b..f65a40317 100644
 --- a/vllm/v1/engine/__init__.py
 +++ b/vllm/v1/engine/__init__.py
 @@ -186,6 +186,7 @@ class EngineCoreOutput(
@@ -184,26 +184,27 @@ index f6c8005..f65a403 100644
      routed_experts: np.ndarray | None = None
      # The number of NaNs in logits.
 diff --git a/vllm/v1/engine/output_processor.py b/vllm/v1/engine/output_processor.py
-index 1ae89ae..af5aae8 100644
+index e1032cfd1..763248e2b 100644
 --- a/vllm/v1/engine/output_processor.py
 +++ b/vllm/v1/engine/output_processor.py
-@@ -274,6 +274,7 @@ class RequestState:
+@@ -276,6 +276,8 @@ class RequestState:
+         finish_reason: FinishReason | None,
          stop_reason: int | str | None,
          kv_transfer_params: dict[str, Any] | None = None,
-         routed_experts: np.ndarray | None = None,
++        routed_experts: np.ndarray | None = None,
 +        num_computed_tokens: int | None = None,
      ) -> RequestOutput | PoolingRequestOutput | None:
          finished = finish_reason is not None
          final_only = self.output_kind == RequestOutputKind.FINAL_ONLY
-@@ -312,6 +313,7 @@ class RequestState:
+@@ -314,6 +316,7 @@ class RequestState:
                  external_req_id,
                  [self._new_pooling_output(pooling_output)],
                  finished,
 +                num_computed_tokens=num_computed_tokens,
              )
  
-         output = self._new_completion_output(
-@@ -327,7 +329,7 @@ class RequestState:
+         output = self._new_completion_output(new_token_ids, finish_reason, stop_reason)
+@@ -327,7 +330,7 @@ class RequestState:
              external_req_id = self.parent_req.external_req_id
  
          return self._new_request_output(
@@ -212,7 +213,7 @@ index 1ae89ae..af5aae8 100644
          )
  
      def _new_request_output(
-@@ -336,6 +338,7 @@ class RequestState:
+@@ -336,6 +339,7 @@ class RequestState:
          outputs: list[CompletionOutput] | list[PoolingOutput],
          finished: bool,
          kv_transfer_params: dict[str, Any] | None = None,
@@ -220,7 +221,7 @@ index 1ae89ae..af5aae8 100644
      ) -> RequestOutput | PoolingRequestOutput:
          # If prompt embeds were used, put placeholder prompt token ids
          prompt_token_ids = self.prompt_token_ids
-@@ -370,6 +373,7 @@ class RequestState:
+@@ -370,6 +374,7 @@ class RequestState:
              finished=finished,
              kv_transfer_params=kv_transfer_params,
              num_cached_tokens=self.num_cached_tokens,
@@ -228,7 +229,7 @@ index 1ae89ae..af5aae8 100644
              metrics=self.stats,
          )
  
-@@ -623,7 +627,8 @@ class OutputProcessor:
+@@ -630,7 +635,8 @@ class OutputProcessor:
                      req_state.num_cached_tokens = (
                          engine_core_output.prefill_stats.num_cached_tokens
                      )
@@ -238,16 +239,17 @@ index 1ae89ae..af5aae8 100644
  
              if pooling_output is None:
                  assert req_state.detokenizer is not None
-@@ -648,6 +653,7 @@ class OutputProcessor:
+@@ -654,6 +660,8 @@ class OutputProcessor:
+                 finish_reason,
                  stop_reason,
                  kv_transfer_params,
-                 routed_experts,
++                engine_core_output.routed_experts,
 +                engine_core_output.num_computed_tokens,
              ):
                  if req_state.streaming_input:
                      request_output.finished = False
 diff --git a/vllm/v1/metrics/stats.py b/vllm/v1/metrics/stats.py
-index a7a5fb7..f30abac 100644
+index a7a5fb7a2..f30abace7 100644
 --- a/vllm/v1/metrics/stats.py
 +++ b/vllm/v1/metrics/stats.py
 @@ -366,9 +366,10 @@ class IterationStats:

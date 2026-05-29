@@ -1,4 +1,4 @@
-From d530972d15dec0d13aefb08158e7746065179e85 Mon Sep 17 00:00:00 2001
+From ee2ecc5700bed8f24a752d0d31d1b28ecdb2cb14 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 14 May 2026 11:26:30 +0000
 Subject: [PATCH] 0015-hybrid-coord-hash-block-gcd
@@ -8,7 +8,7 @@ Subject: [PATCH] 0015-hybrid-coord-hash-block-gcd
  1 file changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/vllm/v1/core/kv_cache_coordinator.py b/vllm/v1/core/kv_cache_coordinator.py
-index b5332ea..35de7cc 100644
+index c5e895374..16dd08ac1 100644
 --- a/vllm/v1/core/kv_cache_coordinator.py
 +++ b/vllm/v1/core/kv_cache_coordinator.py
 @@ -2,7 +2,7 @@
