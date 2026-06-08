@@ -4,7 +4,7 @@
 {
   mailserver = {
     enable = true;
-    stateVersion = 3;
+    stateVersion = 5;
     fqdn = "unboiled.info";
     domains = [ "unboiled.info" ];
     messageSizeLimit = 209715200;  # 200 MB
@@ -70,7 +70,6 @@
       user = "redis-rspamd"; group = "redis-rspamd";
     }
     { directory = "/var/lib/rspamd"; user = "rspamd"; group = "rspamd"; }
-    { directory = "/var/sieve"; user = "virtualMail"; group = "virtualMail"; }
     { directory = "/var/vmail"; user = "virtualMail"; group = "virtualMail"; }
   ];
 }

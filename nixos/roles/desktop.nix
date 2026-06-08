@@ -33,7 +33,6 @@ in {
           gdm = {
             enable = true;
             debug = true;
-            wayland = true;
           };
       };
       gnome = {
