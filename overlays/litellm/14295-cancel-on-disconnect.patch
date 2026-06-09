@@ -8,7 +8,7 @@ Reverted from main due to CI flakiness; applied locally.
 
 --- a/litellm/constants.py	2026-04-13 12:07:35.125369863 +0000
 +++ b/litellm/constants.py	2026-04-13 12:07:58.162000000 +0000
-@@ -1539,3 +1539,8 @@
+@@ -1687,6 +1687,11 @@
  MAX_COMPETITOR_NAMES = int(os.getenv("MAX_COMPETITOR_NAMES", 100))
  COMPETITOR_LLM_TEMPERATURE = float(os.getenv("COMPETITOR_LLM_TEMPERATURE", 0.3))
  DEFAULT_COMPETITOR_DISCOVERY_MODEL = "gpt-4o-mini"
@@ -17,6 +17,9 @@ Reverted from main due to CI flakiness; applied locally.
 +DEFAULT_CLIENT_DISCONNECT_CHECK_TIMEOUT_SECONDS = int(
 +    os.getenv("LITELLM_CLIENT_DISCONNECT_CHECK_TIMEOUT", 600)
 +)
+ 
+ # Advisor tool orchestration
+ # Providers that support advisor_20260301 natively (no LiteLLM orchestration needed).
 --- a/litellm/proxy/common_request_processing.py	2026-04-13 12:07:35.354158418 +0000
 +++ b/litellm/proxy/common_request_processing.py	2026-04-13 12:07:58.163613805 +0000
 @@ -25,6 +25,7 @@
@@ -27,7 +30,7 @@ Reverted from main due to CI flakiness; applied locally.
      DEFAULT_MAX_RECURSE_DEPTH,
      LITELLM_DETAILED_TIMING,
      MAX_PAYLOAD_SIZE_FOR_DEBUG_LOG,
-@@ -411,6 +412,26 @@
+@@ -535,6 +535,26 @@
      return False
 
 
@@ -54,7 +57,7 @@ Reverted from main due to CI flakiness; applied locally.
  class ProxyBaseLLMRequestProcessing:
      def __init__(self, data: dict):
          self.data = data
-@@ -950,7 +971,17 @@
+@@ -1190,7 +1211,17 @@
              *tasks
          )  # run the moderation check in parallel to the actual llm api call
 
