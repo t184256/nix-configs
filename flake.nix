@@ -6,6 +6,7 @@
 
     # for unification purposes only
     flake-utils.url = "github:numtide/flake-utils";
+    flake-utils.inputs.systems.follows = "systems";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat.url = "github:edolstra/flake-compat";
     gitignore.url = "github:hercules-ci/gitignore.nix";
@@ -32,10 +33,15 @@
     nix-on-droid.inputs.home-manager.follows = "home-manager";
     nix-on-droid.inputs.nmd.follows = "nmd";
     nix-on-droid.inputs.nix-formatter-pack.follows = "nix-formatter-pack";
+    nix-on-droid.inputs.nixpkgs-docs.follows = "nixpkgs";
+    nix-on-droid.inputs.nixpkgs-for-bootstrap.follows = "nixpkgs";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
 
     impermanence.url = "github:nix-community/impermanence";
+    impermanence.inputs.home-manager.follows = "home-manager";
+    impermanence.inputs.nixpkgs.follows = "nixpkgs";
 
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
@@ -44,6 +50,8 @@
       "gitlab:simple-nixos-mailserver/nixos-mailserver";
     simple-nixos-mailserver.inputs.flake-compat.follows = "flake-compat";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
+    simple-nixos-mailserver.inputs.git-hooks.follows = "git-hooks";
+    simple-nixos-mailserver.inputs.git-hooks.inputs.gitignore.follows = "gitignore";
 
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -51,6 +59,7 @@
     nixvim.url = "github:nix-community/nixvim";
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
     nixvim.inputs.flake-parts.follows = "flake-parts";
+    nixvim.inputs.systems.follows = "systems";
 
     nixgl.url = "github:guibou/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
@@ -102,6 +111,7 @@
       url = "github:t184256/autosync-voice";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
+      inputs.systems.follows = "systems";
     };
     llm-commit-msg = {
       url = "github:t184256/llm-commit-msg";
