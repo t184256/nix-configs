@@ -14,19 +14,20 @@
     ./gnome.nix
     ./email.nix
     ./keyboard-remap-cz.nix
-    ../../user/aider.nix
-    ../../user/cementboxed-pi.nix
-    ../../user/cementboxed-goose.nix
     ../../user/config/identity.nix
     ../../user/config/language-support.nix
+    ../../user/aider.nix
     ../../user/assorted-tools.nix
+    ../../user/cementboxed-goose.nix
+    ../../user/cementboxed-pi.nix
     ../../user/du.nix
     ../../user/entr.nix
     ../../user/eza.nix
     ../../user/fonts.nix
     ../../user/git.nix
-    ../../user/llm-commit-msg.nix
     ../../user/htop.nix
+    ../../user/jailed-pi.nix
+    ../../user/llm-commit-msg.nix
     ../../user/mosh.nix
     ../../user/neovim
     ../../user/terminal.nix

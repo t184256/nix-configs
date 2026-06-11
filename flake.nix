@@ -25,6 +25,7 @@
     nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
     nix-formatter-pack.inputs.nixpkgs.follows = "nixpkgs";
     nix-formatter-pack.inputs.nmd.follows = "nmd";
+    systems.url = "github:nix-systems/default";
 
     nix-on-droid.url = "github:t184256/nix-on-droid/testing";
     nix-on-droid.inputs.nixpkgs.follows = "nixpkgs";
@@ -62,6 +63,21 @@
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
 
+    jailed-agents = {
+      url = "github:andersonjoseph/jailed-agents";
+      inputs.flake-utils.follows = "flake-utils";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.llm-agents.inputs = {
+        blueprint.inputs.nixpkgs.follows = "nixpkgs";
+        blueprint.inputs.systems.follows = "systems";
+        bun2nix.inputs.nixpkgs.follows = "nixpkgs";
+        bun2nix.inputs.systems.follows = "systems";
+        flake-parts.follows = "flake-parts";
+        nixpkgs.follows = "nixpkgs";
+        systems.follows = "systems";
+      };
+    };
+
     alacritty-autoresizing = {
       url = "github:t184256/alacritty-autoresizing";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -92,7 +108,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
-
   };
 
   outputs = {
