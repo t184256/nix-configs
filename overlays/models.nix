@@ -286,6 +286,11 @@ in
     ];
   });
 
+  zeta_2_1 = fetchHF {
+    repo = "mradermacher/zeta-2.1-i1-GGUF";
+    name = "zeta-2.1.i1-Q4_K_M.gguf";
+    hash = "sha256-IW3bVyKkn5/0myGgUMTbPIAe9vNOS9FwLV20PjMlsHY=";
+  };
   sweep-v2-7b = fetchHF {
     repo = "henrik3/sweep-next-edit-v2-7B-GGUF";
     name = "q4_k_m.gguf";

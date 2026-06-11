@@ -24,6 +24,8 @@ let
       touch tools/server/public/index.html.gz
     '';
   };
+in
+rec {
   llama-cpp =
     if prev.lib.versionAtLeast prev.llama-cpp.version newerVer
     then prev.llama-cpp
@@ -45,7 +47,7 @@ let
       ./21344-gfx1151-optimization.patch
     ];
   });
-in
-{
-  inherit llama-cpp llama-cpp-vulkan llama-cpp-rocm llama-cpp-rocm-gfx1151;
+  llama-cpp-rocm-gfx1102 = llama-cpp-rocm.overrideAttrs (oa: {
+    name = "llama-cpp-rocm-gfx1102-${newerVer}";
+  });
 }

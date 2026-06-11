@@ -66,7 +66,7 @@ let
     model = ${pkgs.qwen36-35b-a3b-mxfp4}
     model-draft = ${pkgs.qwen35-08b-q4kxl}
     ${qwen35NoThinkAttrs}
-    [sweep-v2-7b]
+    [zeta-2.1]
     model = ${pkgs.sweep-v2-7b}
     ctx-size = 32768
     ${sweepAttrs}

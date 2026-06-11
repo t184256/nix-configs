@@ -12,6 +12,7 @@
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/vllm.nix
+    ../../nixos/services/llama-cpp-mini.nix
     ./bench-vllm.nix
     ./clevis-highlevel.nix
     ./cooling/lact.nix
