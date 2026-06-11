@@ -344,7 +344,7 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness_usb, loudness_analog):
     cpu_fans, cpu_tx = fan(sensors_data, 'CPU Fan', vert=False)
     cpu_line = f'{cpu_fans}{cp}{ct}{cpu_fans}'
     top_fans, top_tx = fan(sensors_data, 'Pump Fan')
-    bot_f, bot_tx = fan(sensors_data, 'System Fan #3', width=7)
+    bot_fan, bot_tx = fan(sensors_data, 'System Fan #3', width=9)
     tf, tf_txt = fan(sensors_data, 'System Fan #1', vert=False)
     mf, mf_txt = fan(sensors_data, 'System Fan #5', vert=False)
     bf, bf_txt = fan(sensors_data, 'System Fan #6', vert=False)
@@ -422,7 +422,7 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness_usb, loudness_analog):
         f'       {br}│{r1} {u1}{t1} {f1} {w1} │{bf}',
         f'          │└{bot_fill}──────────────┘{bf} {bf_txt}',
         f'{  db_ana}│{_vllm1}{vllm2} {bot_tx}  {bf}',
-        f'{base_ana}└─────────────────{bot_f}───┘',
+        f'{base_ana}└───────────────{bot_fan}───┘',
     ]
 
 
