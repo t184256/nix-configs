@@ -20,7 +20,7 @@ INTAKE = [3, 5, 7, 8]  # front-top SYS_FAN1, bottom SYS_FAN3,
 TEMP_MIN  = 40  # °C: below this, case fans are off
 TEMP_MAX  = 90  # °C: case fans hit their acoustic cap at this temp
 LOG_EVERY = 10  # seconds between log lines
-DB_OFFSET = 2  # run case fans this many dB quieter than the estimated noise
+DB_OFFSET = 1  # run case fans this many dB quieter than the estimated noise
 
 
 def budget_cap_pct(profile, budget_db):
