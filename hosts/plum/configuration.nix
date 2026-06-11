@@ -1,4 +1,4 @@
-{ inputs, lib, ... }:
+{ inputs, lib, pkgs, ... }:
 
 {
   networking.hostName = "plum";
@@ -65,4 +65,6 @@
   system.role.virtualizer.storageLocation = "persist";
 
   networking.firewall.allowedTCPPorts = [ 8787 ];  # slopfest pi bridge
+
+  environment.systemPackages = with pkgs; [ amdgpu_top ];
 }
