@@ -28,7 +28,10 @@
   # scripts.nix:1202 in nixpkgs compares pythonPackages != pkgs.pypy2Packages,
   # which forces pypy2Packages evaluation. sigh.
   nixpkgs.config.permittedInsecurePackages =
-    [ "pypy2.7-setuptools-44.0.0" "pypy2.7-pip-20.3.4" ];
+    [
+      "pypy2.7-setuptools-44.0.0"
+      "pypy2.7-pip-20.3.4"
+    ];
 
   hardware.nvidia.open = true;
 

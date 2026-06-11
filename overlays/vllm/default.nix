@@ -194,6 +194,7 @@ let
       oa.nativeBuildInputs;
     propagatedBuildInputs = (oa.propagatedBuildInputs or [])
       ++ [ humming-kernels ];
+    meta = { knownVulnerabilities = []; };
   });
 in
 
