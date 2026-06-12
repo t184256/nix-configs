@@ -86,8 +86,8 @@ let
     src = prev.fetchFromGitHub {
       owner = "vllm-project";
       repo = "vllm";
-      rev = "d97ba29fdcf2538359fac5c644c0f07e59bc1988";
-      hash = "sha256-rzYTbVRdPk8i3/oJ6YIa4kkSIH4uXZ8q9Zf3DQCMS6c=";
+      rev = "c7624bea5ebba1c688eb4c216bd4ede7a94f2a82";
+      hash = "sha256-Z2FDi+mUeafmNz613N46Llfgr+8PklPPhRvqwFSWiOc=";
     };
     patches =
       (prev.lib.filter
@@ -120,6 +120,8 @@ let
            ./0020-prefill-decoding-req-gauges.patch
            # presence_penalty/frequency_penalty in generation_config defaults
            ./0021-generation-config-presence-penalty.patch
+           # Disable Rust frontend - not needed for Nix builds
+           ./0022-disable-rust-frontend.patch
          ];
     # triton-kernels: bump to v3.6.0; nixpkgs ships 3.5.0.
     env =
@@ -135,6 +137,7 @@ let
         TRITON_KERNELS_SRC_DIR =
           "${triton-kernels}/python/triton_kernels/triton_kernels";
         SETUPTOOLS_SCM_PRETEND_VERSION = "0.19.0.dev20260514";
+        VLLM_REQUIRE_RUST_FRONTEND = "0";
       };
     # TORCH_CUDA_ARCH_LIST must be set in preBuild, not env:
     # CUDA setup hooks from cudaPackages run after env is initialised and
