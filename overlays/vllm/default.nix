@@ -87,8 +87,8 @@ let
     src = prev.fetchFromGitHub {
       owner = "vllm-project";
       repo = "vllm";
-      rev = "4f940896a32c9e2a0eba7f50d521bf5f6b4de458";
-      hash = "sha256-Xze3fHr+3HQetbWTw4zBzylcEJub/UMs5l4OIsQPqmI=";
+      rev = "6441cf4a44856f4eb4dce7d19a51fd69e1b423cf";
+      hash = "sha256-sRXTUZz4egMNe7m12B8iO/DG5gpRruq8/DpxB+1PgUU=";
     };
     patches =
       (prev.lib.filter
