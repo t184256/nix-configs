@@ -87,6 +87,18 @@ let
     cat ${generatedConfig} > ${effectiveConfig}
     [[ -f ${localConfig} ]] && cat ${localConfig} >> ${effectiveConfig}
   '';
+
+  extraFlags = [
+    "--models-dir" "/var/lib/llama"
+    "--models-preset" effectiveConfig
+    "--models-max" "2"
+    #"--models-max" "1"
+    "--parallel" "1"
+    "-ngl" "999"
+    "--no-mmap"
+    "--jinja"
+    "--offline"
+  ];
 in
 {
   services.llama-cpp = {
@@ -123,20 +135,10 @@ in
     #  ]);
     #});
     openFirewall = true;
-    host = "192.168.99.52";
-    port = 11111;
-    model = "/-unused-";
-    extraFlags = [
-      "--models-dir" "/var/lib/llama"
-      "--models-preset" effectiveConfig
-      "--models-max" "2"
-      #"--models-max" "1"
-      "--parallel" "1"
-      "-ngl" "999"
-      "--no-mmap"
-      "--jinja"
-      "--offline"
-    ];
+    settings = {
+      host = "192.168.99.52";
+      port = 11111;
+    };
   };
   users.groups.llama-cpp = { };
   users.users.llama-cpp = {
@@ -158,8 +160,8 @@ in
       let cfg = config.services.llama-cpp; in lib.mkForce [
           ""
           ("${cfg.package}/bin/llama-server --log-disable " +
-           "--host ${cfg.host} --port ${builtins.toString cfg.port} " +
-           "${utils.escapeSystemdExecArgs cfg.extraFlags}")
+           "--host ${cfg.settings.host} --port ${builtins.toString cfg.settings.port} " +
+           "${utils.escapeSystemdExecArgs extraFlags}")
         ];
   };
 
