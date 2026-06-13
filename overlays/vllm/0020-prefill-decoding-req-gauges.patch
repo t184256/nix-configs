@@ -1,4 +1,4 @@
-From ed8955fbf0519e7ae60c10803869ff335d5cb707 Mon Sep 17 00:00:00 2001
+From 4b6f2b8a578aa708607301a297e44a4117448a9d Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <asosedkin@redhat.com>
 Date: Fri, 15 May 2026 13:42:08 +0000
 Subject: [PATCH] metrics: add vllm:num_requests_prefilling/decoding gauges
@@ -28,10 +28,10 @@ index 9095f80e2..93528b488 100644
      "vllm:kv_cache_usage_perc",
      "vllm:prefix_cache_queries",
 diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
-index 328c660b7..c27277f48 100644
+index c647af8b6..4a1383b42 100644
 --- a/vllm/v1/core/sched/scheduler.py
 +++ b/vllm/v1/core/sched/scheduler.py
-@@ -1987,9 +1987,15 @@ class Scheduler(SchedulerInterface):
+@@ -1996,9 +1996,15 @@ class Scheduler(SchedulerInterface):
          connector_stats_payload = (
              kv_connector_stats.data if kv_connector_stats else None
          )

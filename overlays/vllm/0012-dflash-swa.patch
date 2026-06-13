@@ -1,4 +1,4 @@
-From 82dec733f5ea22ed5aebc70f12c0bb56999179ba Mon Sep 17 00:00:00 2001
+From 26b185ba5823bdfb6bca290aae5f63e739ad4fbd Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Thu, 16 Apr 2026 17:29:44 +0800
 Subject: [PATCH 1/9] dflash with flashinfer
@@ -8,7 +8,7 @@ Subject: [PATCH 1/9] dflash with flashinfer
  1 file changed, 25 insertions(+), 14 deletions(-)
 
 diff --git a/vllm/v1/attention/backends/flashinfer.py b/vllm/v1/attention/backends/flashinfer.py
-index 4abc014d1..27f53802c 100755
+index a81c5742c..e3634ede0 100755
 --- a/vllm/v1/attention/backends/flashinfer.py
 +++ b/vllm/v1/attention/backends/flashinfer.py
 @@ -70,11 +70,7 @@ from vllm.v1.attention.backends.utils import (
@@ -125,7 +125,7 @@ index 4abc014d1..27f53802c 100755
          if attn_metadata is None:
              # Profiling run.
              return output.fill_(0)
-@@ -1550,7 +1561,7 @@ class FlashInferImpl(AttentionImpl):
+@@ -1551,7 +1562,7 @@ class FlashInferImpl(AttentionImpl):
                          self.logits_soft_cap or 0.0
                      )
                      assert prefill_wrapper._sm_scale == self.scale
@@ -137,7 +137,8 @@ index 4abc014d1..27f53802c 100755
 -- 
 2.54.0
 
-From f8635f41ed309ba20fefb1ae987a75691651627b Mon Sep 17 00:00:00 2001
+
+From b46d71c333ccfddc7864f3950e2384c16a23538b Mon Sep 17 00:00:00 2001
 From: gq112 <guoqing66368@sangfor.com.cn>
 Date: Fri, 17 Apr 2026 17:33:19 +0800
 Subject: [PATCH 2/9] Update flashinfer.py
@@ -148,7 +149,7 @@ Signed-off-by: gq112 <guoqing66368@sangfor.com.cn>
  1 file changed, 17 insertions(+), 4 deletions(-)
 
 diff --git a/vllm/v1/attention/backends/flashinfer.py b/vllm/v1/attention/backends/flashinfer.py
-index 27f53802c..07de66aef 100755
+index e3634ede0..a29af111f 100755
 --- a/vllm/v1/attention/backends/flashinfer.py
 +++ b/vllm/v1/attention/backends/flashinfer.py
 @@ -344,7 +344,17 @@ class FlashInferBackend(AttentionBackend):
@@ -190,7 +191,8 @@ index 27f53802c..07de66aef 100755
 -- 
 2.54.0
 
-From 4ed07b10ca297ea9073e492de86dd1e7eb8d9296 Mon Sep 17 00:00:00 2001
+
+From 6a3db2299e4b83ff31ed54415ae800250f224dd1 Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Mon, 27 Apr 2026 09:12:43 +0800
 Subject: [PATCH 3/9] Apply local dflash flashinfer changes after rebase
@@ -269,7 +271,7 @@ index 5c01d652a..ad898df2a 100644
      """Test that IR op priority defaults are set correctly."""
      from vllm.config.kernel import IrOpPriorityConfig
 diff --git a/tests/v1/core/test_scheduler.py b/tests/v1/core/test_scheduler.py
-index 1c5e1ac4b..db4e40feb 100644
+index bcbac67a6..7da7069df 100644
 --- a/tests/v1/core/test_scheduler.py
 +++ b/tests/v1/core/test_scheduler.py
 @@ -1039,6 +1039,34 @@ def test_no_spec_tokens_scheduled_for_prefill_chunks():
@@ -451,10 +453,10 @@ index 47d35f4ff..b4e695e56 100644
 +            f"{num_target_verify_tokens=})"
 +        )
 diff --git a/vllm/config/vllm.py b/vllm/config/vllm.py
-index 20309f0c9..705f4935a 100644
+index f009dd6f1..e9ee3b671 100644
 --- a/vllm/config/vllm.py
 +++ b/vllm/config/vllm.py
-@@ -481,6 +481,15 @@ class VllmConfig:
+@@ -482,6 +482,15 @@ class VllmConfig:
  
      @property
      def num_speculative_tokens(self) -> int:
@@ -470,7 +472,7 @@ index 20309f0c9..705f4935a 100644
          if (
              self.speculative_config is not None
              and self.speculative_config.num_speculative_tokens is not None
-@@ -1637,11 +1646,8 @@ class VllmConfig:
+@@ -1649,11 +1658,8 @@ class VllmConfig:
              )
              if max_cudagraph_capture_size is None:
                  decode_query_len = 1
@@ -504,11 +506,11 @@ index d83489238..9643a2078 100644
                  self.reorder_batch_threshold = max(
                      self.reorder_batch_threshold,
 diff --git a/vllm/v1/attention/backends/gdn_attn.py b/vllm/v1/attention/backends/gdn_attn.py
-index 85715e91a..2d2bfd1da 100644
+index 2c0ff984b..06eefbfd2 100644
 --- a/vllm/v1/attention/backends/gdn_attn.py
 +++ b/vllm/v1/attention/backends/gdn_attn.py
-@@ -92,8 +92,7 @@ class GDNAttentionMetadataBuilder(AttentionMetadataBuilder[GDNAttentionMetadata]
-         self.kv_cache_spec = kv_cache_spec
+@@ -99,8 +99,7 @@ class GDNAttentionMetadataBuilder(AttentionMetadataBuilder[GDNAttentionMetadata]
+         _, self.gdn_prefill_backend = _resolve_gdn_prefill_backend(vllm_config)
  
          if self.speculative_config:
 -            assert self.speculative_config.num_speculative_tokens is not None
@@ -518,7 +520,7 @@ index 85715e91a..2d2bfd1da 100644
              self.num_spec = 0
          self.use_spec_decode: bool = self.num_spec > 0
 diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
-index 45a5169a3..f89a6422c 100644
+index c69c9a811..d858d082e 100644
 --- a/vllm/v1/core/sched/scheduler.py
 +++ b/vllm/v1/core/sched/scheduler.py
 @@ -212,12 +212,12 @@ class Scheduler(SchedulerInterface):
@@ -585,7 +587,7 @@ index 9a41ff5c8..cba585df8 100644
              else 0
          )
 diff --git a/vllm/v1/worker/gpu/model_runner.py b/vllm/v1/worker/gpu/model_runner.py
-index 3b965dfc6..b7a3addc0 100644
+index 52b447550..6d3f75dae 100644
 --- a/vllm/v1/worker/gpu/model_runner.py
 +++ b/vllm/v1/worker/gpu/model_runner.py
 @@ -170,7 +170,9 @@ class GPUModelRunner(LoRAModelRunnerMixin):
@@ -684,15 +686,16 @@ index d51bf2284..39778cae9 100644
 -- 
 2.54.0
 
-From 85781432fe6ceeae53b72756310a2579632ef962 Mon Sep 17 00:00:00 2001
+
+From d5bd655fabe532c2592860f74b9f85388a9e8a2b Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Mon, 27 Apr 2026 21:47:55 +0800
 Subject: [PATCH 4/9] feat: dflash + flashinfer integration updates
 
 ---
  vllm/config/speculative.py               |   5 +-
- vllm/v1/attention/backends/flashinfer.py | 536 ++++++++++++++++-------
- 2 files changed, 382 insertions(+), 159 deletions(-)
+ vllm/v1/attention/backends/flashinfer.py | 537 ++++++++++++++++-------
+ 2 files changed, 383 insertions(+), 159 deletions(-)
 
 diff --git a/vllm/config/speculative.py b/vllm/config/speculative.py
 index b4e695e56..23293d9ab 100644
@@ -725,7 +728,7 @@ index b4e695e56..23293d9ab 100644
  
          if self.draft_model_config:
 diff --git a/vllm/v1/attention/backends/flashinfer.py b/vllm/v1/attention/backends/flashinfer.py
-index 07de66aef..9639ebe99 100755
+index a29af111f..0747b41af 100755
 --- a/vllm/v1/attention/backends/flashinfer.py
 +++ b/vllm/v1/attention/backends/flashinfer.py
 @@ -70,7 +70,11 @@ from vllm.v1.attention.backends.utils import (
@@ -1376,31 +1379,31 @@ index 07de66aef..9639ebe99 100755
          if attn_metadata is None:
              # Profiling run.
              return output.fill_(0)
-@@ -1475,16 +1680,14 @@ class FlashInferImpl(AttentionImpl):
+@@ -1477,15 +1682,14 @@ class FlashInferImpl(AttentionImpl):
  
-         num_actual_tokens = attn_metadata.num_actual_tokens
- 
--        # The FlashInfer api requires data to be in fp8_e4m3 or fp8_e5m2
--        # to process the cache when the kv_cache_dtype is fp8
--        if self.kv_sharing_target_layer_name is None and is_quantized_kv_cache(
--            self.kv_cache_dtype
-+        # FlashInfer expects the cache tensor to be viewed as the concrete
-+        # FP8 dtype selected at plan time, not the storage dtype used by vLLM.
+         # FlashInfer treats uint8 KV cache as NVFP4. vLLM stores FP8 KV cache
+         # as uint8 bytes, so pass FP8 caches with their logical dtype.
+-        if not self.is_kvcache_nvfp4 and kv_cache.dtype == torch.uint8:
+-            fp8_view_dtype = None
+-            if self.kv_cache_dtype in ("fp8", "fp8_e4m3", torch.float8_e4m3fn):
+-                fp8_view_dtype = torch.float8_e4m3fn
+-            elif self.kv_cache_dtype in ("fp8_e5m2", torch.float8_e5m2):
+-                fp8_view_dtype = torch.float8_e5m2
+-            if fp8_view_dtype is not None:
+-                kv_cache = kv_cache.view(fp8_view_dtype)
+-
++        # Skip when layer is a KV-sharing target (cache already viewed).
 +        if (
 +            self.kv_sharing_target_layer_name is None
++            and not self.is_kvcache_nvfp4
 +            and self.flashinfer_kv_cache_dtype is not None
 +            and kv_cache.dtype != self.flashinfer_kv_cache_dtype
-         ):
--            torch_dtype = FlashInferBackend.get_dtype_for_flashinfer(
--                self.kv_cache_dtype
--            )
--            kv_cache = kv_cache.view(torch_dtype)
--
++        ):
 +            kv_cache = kv_cache.view(self.flashinfer_kv_cache_dtype)
          # Inputs and outputs may be padded for CUDA graphs
          query = query[:num_actual_tokens]
          key = key[:num_actual_tokens]
-@@ -1542,20 +1745,43 @@ class FlashInferImpl(AttentionImpl):
+@@ -1543,20 +1747,43 @@ class FlashInferImpl(AttentionImpl):
                  assert isinstance(attn_metadata.prefill, FIPrefill)
                  prefill_wrapper = attn_metadata.prefill.wrapper
                  assert prefill_wrapper is not None
@@ -1461,7 +1464,8 @@ index 07de66aef..9639ebe99 100755
 -- 
 2.54.0
 
-From f57d17a3cc1c3e22ac802ae46ba473f2643cb3fd Mon Sep 17 00:00:00 2001
+
+From df7f8844972f73643186f3303b52557206994e7e Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Wed, 29 Apr 2026 18:48:51 +0800
 Subject: [PATCH 5/9] feat: support batched draft
@@ -1472,7 +1476,7 @@ Subject: [PATCH 5/9] feat: support batched draft
  2 files changed, 79 insertions(+), 216 deletions(-)
 
 diff --git a/vllm/v1/attention/backends/flashinfer.py b/vllm/v1/attention/backends/flashinfer.py
-index 9639ebe99..35c060eb2 100755
+index 0747b41af..ae59d8cba 100755
 --- a/vllm/v1/attention/backends/flashinfer.py
 +++ b/vllm/v1/attention/backends/flashinfer.py
 @@ -87,12 +87,6 @@ logger = init_logger(__name__)
@@ -1757,7 +1761,7 @@ index 9639ebe99..35c060eb2 100755
                          page_size=self.page_size,
                          num_qo_heads=self.num_qo_heads,
                          dcp_world_size=self.dcp_world_size,
-@@ -1747,41 +1618,27 @@ class FlashInferImpl(AttentionImpl):
+@@ -1749,41 +1620,27 @@ class FlashInferImpl(AttentionImpl):
                  assert prefill_wrapper is not None
                  if use_dcp or not attn_metadata.causal:
                      assert isinstance(prefill_wrapper, BatchMergedPrefillWrapper)
@@ -1821,7 +1825,7 @@ index 9639ebe99..35c060eb2 100755
                      prefill_wrapper.run(
                          layer,
 diff --git a/vllm/v1/spec_decode/llm_base_proposer.py b/vllm/v1/spec_decode/llm_base_proposer.py
-index dc5086732..b1aaaf9b3 100644
+index 9979a0517..b2db2a187 100644
 --- a/vllm/v1/spec_decode/llm_base_proposer.py
 +++ b/vllm/v1/spec_decode/llm_base_proposer.py
 @@ -116,6 +116,12 @@ class SpecDecodeBaseProposer:
@@ -1840,7 +1844,8 @@ index dc5086732..b1aaaf9b3 100644
 -- 
 2.54.0
 
-From 8c9a1db62e259bfe5de7e1271ed5c676b7d35a33 Mon Sep 17 00:00:00 2001
+
+From 6b4c92fe67fd093202f433fa345293988e502b3e Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Fri, 1 May 2026 23:20:34 +0800
 Subject: [PATCH 6/9] Separate DFlash and DCP FlashInfer prefill wrappers
@@ -1850,7 +1855,7 @@ Subject: [PATCH 6/9] Separate DFlash and DCP FlashInfer prefill wrappers
  1 file changed, 199 insertions(+), 57 deletions(-)
 
 diff --git a/vllm/v1/attention/backends/flashinfer.py b/vllm/v1/attention/backends/flashinfer.py
-index 35c060eb2..e9cf40577 100755
+index ae59d8cba..2236e9a84 100755
 --- a/vllm/v1/attention/backends/flashinfer.py
 +++ b/vllm/v1/attention/backends/flashinfer.py
 @@ -211,23 +211,125 @@ def trtllm_prefill_attn_kvfp8_dequant(
@@ -2168,7 +2173,7 @@ index 35c060eb2..e9cf40577 100755
                          prefill_fixed_split_size=self.prefill_fixed_split_size,
                          disable_split_kv=self.disable_split_kv,
                      )
-@@ -1616,8 +1732,8 @@ class FlashInferImpl(AttentionImpl):
+@@ -1618,8 +1734,8 @@ class FlashInferImpl(AttentionImpl):
                  assert isinstance(attn_metadata.prefill, FIPrefill)
                  prefill_wrapper = attn_metadata.prefill.wrapper
                  assert prefill_wrapper is not None
@@ -2179,7 +2184,7 @@ index 35c060eb2..e9cf40577 100755
                      assert (
                          prefill_wrapper._context._window_left
                          == self.window_left
-@@ -1635,10 +1751,36 @@ class FlashInferImpl(AttentionImpl):
+@@ -1637,10 +1753,36 @@ class FlashInferImpl(AttentionImpl):
                          self.logits_soft_cap or 0.0
                      )
                      assert prefill_wrapper._new_tokens._sm_scale == self.scale
@@ -2221,7 +2226,8 @@ index 35c060eb2..e9cf40577 100755
 -- 
 2.54.0
 
-From e094efac14ae2b21eaeec093061c8589488b6177 Mon Sep 17 00:00:00 2001
+
+From d247350530b3eee9a68b7c6841687c220a29cbb6 Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Mon, 4 May 2026 00:45:57 +0800
 Subject: [PATCH 7/9] Make DFlash FlashInfer backend opt-in
@@ -2287,7 +2293,8 @@ index db74044f4..e2f8dfe32 100644
 -- 
 2.54.0
 
-From ce0757d573cb9aafdb799630f7b467d79d77ef7f Mon Sep 17 00:00:00 2001
+
+From c8d7a03a8501bda0a9fcaaa9db84566a92527661 Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Tue, 12 May 2026 16:19:38 +0800
 Subject: [PATCH 8/9] Support DFlash with FlashInfer sliding window attention
@@ -3301,7 +3308,7 @@ index e2f8dfe32..5dae03abb 100644
                  f"Attention metadata for layer {layer_name} does not have"
                  " non-causal support, which is required for DFlash."
 diff --git a/vllm/v1/spec_decode/llm_base_proposer.py b/vllm/v1/spec_decode/llm_base_proposer.py
-index b1aaaf9b3..87c27f0c6 100644
+index b2db2a187..efe59df8e 100644
 --- a/vllm/v1/spec_decode/llm_base_proposer.py
 +++ b/vllm/v1/spec_decode/llm_base_proposer.py
 @@ -30,7 +30,11 @@ from vllm.v1.attention.backend import CommonAttentionMetadata
@@ -3326,7 +3333,7 @@ index b1aaaf9b3..87c27f0c6 100644
          self.eagle3_use_aux_hidden_state: bool = (
              self._get_eagle3_use_aux_hidden_state_from_config()
          )
-@@ -1538,6 +1544,9 @@ class SpecDecodeBaseProposer:
+@@ -1544,6 +1550,9 @@ class SpecDecodeBaseProposer:
              == 1
          ), "All drafting layers should belong to the same kv cache group"
  
@@ -3336,7 +3343,7 @@ index b1aaaf9b3..87c27f0c6 100644
      def initialize_attn_backend(
          self,
          kv_cache_config: KVCacheConfig,
-@@ -1552,47 +1561,79 @@ class SpecDecodeBaseProposer:
+@@ -1558,47 +1567,79 @@ class SpecDecodeBaseProposer:
              AttentionLayerBase,  # type: ignore[type-abstract]
          )
  
@@ -3830,7 +3837,8 @@ index 39778cae9..ee9964dc7 100644
 -- 
 2.54.0
 
-From cee4d80188b25983aa1df42d7b17b24508a8bdf7 Mon Sep 17 00:00:00 2001
+
+From 5a17fc381cf324caf6f7572cef4f2f92735dc6ad Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Tue, 12 May 2026 20:29:36 +0800
 Subject: [PATCH 9/9] Fix DFlash SWA aux layer ids and KV sharing tests

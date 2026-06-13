@@ -1,4 +1,4 @@
-From 6efdb5dbfb9ebfc372a8ec627a7e5f113d408c06 Mon Sep 17 00:00:00 2001
+From eee7f854b760253da52c2902c288d7ae0b1a1728 Mon Sep 17 00:00:00 2001
 From: CNE Pierre FICHEPOIL <pierre-1.fichepoil@gendarmerie.interieur.gouv.fr>
 Date: Thu, 14 May 2026 11:26:47 +0000
 Subject: [PATCH] PR #40371: prompt_progress SSE events during prefill
@@ -22,10 +22,10 @@ Co-authored-by: ExtReMLapin <3909752+ExtReMLapin@users.noreply.github.com>
  9 files changed, 71 insertions(+), 5 deletions(-)
 
 diff --git a/vllm/entrypoints/openai/chat_completion/protocol.py b/vllm/entrypoints/openai/chat_completion/protocol.py
-index cf843f6f1..35dd71cff 100644
+index a83c8f855..73ee7ba8e 100644
 --- a/vllm/entrypoints/openai/chat_completion/protocol.py
 +++ b/vllm/entrypoints/openai/chat_completion/protocol.py
-@@ -131,6 +131,7 @@ class ChatCompletionStreamResponse(OpenAIBaseModel):
+@@ -141,6 +141,7 @@ class ChatCompletionStreamResponse(OpenAIBaseModel):
      created: int = Field(default_factory=lambda: int(time.time()))
      model: str
      choices: list[ChatCompletionResponseStreamChoice]
@@ -33,7 +33,7 @@ index cf843f6f1..35dd71cff 100644
      usage: UsageInfo | None = Field(default=None)
      # Set only on the final chunk of a stream to mirror non-streaming responses
      # without the per-chunk serialization overhead.
-@@ -192,6 +193,7 @@ class ChatCompletionRequest(OpenAIBaseModel):
+@@ -202,6 +203,7 @@ class ChatCompletionRequest(OpenAIBaseModel):
      stop: str | list[str] | None = []
      stream: bool | None = False
      stream_options: StreamOptions | None = None
@@ -42,10 +42,10 @@ index cf843f6f1..35dd71cff 100644
      top_p: float | None = None
      tools: list[ChatCompletionToolsParam] | None = None
 diff --git a/vllm/entrypoints/openai/chat_completion/serving.py b/vllm/entrypoints/openai/chat_completion/serving.py
-index 29a0249f6..3536c0b00 100644
+index 8f6d76d78..d2a1e7a81 100644
 --- a/vllm/entrypoints/openai/chat_completion/serving.py
 +++ b/vllm/entrypoints/openai/chat_completion/serving.py
-@@ -499,6 +499,27 @@ class OpenAIServingChat(OpenAIServing):
+@@ -502,6 +502,27 @@ class OpenAIServingChat(OpenAIServing):
                      if res.encoder_prompt_token_ids is not None:
                          num_prompt_tokens += len(res.encoder_prompt_token_ids)
  
@@ -74,7 +74,7 @@ index 29a0249f6..3536c0b00 100644
                  # the result_generator, it needs to be sent as the FIRST
                  # response (by the try...catch).
 diff --git a/vllm/entrypoints/openai/completion/protocol.py b/vllm/entrypoints/openai/completion/protocol.py
-index 831e5d910..d4c13970b 100644
+index cd8d9b89d..ebaa0dd1e 100644
 --- a/vllm/entrypoints/openai/completion/protocol.py
 +++ b/vllm/entrypoints/openai/completion/protocol.py
 @@ -61,6 +61,7 @@ class CompletionRequest(OpenAIBaseModel):
@@ -85,7 +85,7 @@ index 831e5d910..d4c13970b 100644
      suffix: str | None = None
      temperature: float | None = None
      top_p: float | None = None
-@@ -512,6 +513,7 @@ class CompletionResponseStreamChoice(OpenAIBaseModel):
+@@ -531,6 +532,7 @@ class CompletionResponseStreamChoice(OpenAIBaseModel):
      # prompt tokens is put into choice to align with CompletionResponseChoice
      prompt_token_ids: list[int] | None = None
      token_ids: list[int] | None = None
@@ -94,10 +94,10 @@ index 831e5d910..d4c13970b 100644
  
  class CompletionStreamResponse(OpenAIBaseModel):
 diff --git a/vllm/entrypoints/openai/completion/serving.py b/vllm/entrypoints/openai/completion/serving.py
-index bfe9fb226..8154ee7c5 100644
+index f393954e2..8b9fc9090 100644
 --- a/vllm/entrypoints/openai/completion/serving.py
 +++ b/vllm/entrypoints/openai/completion/serving.py
-@@ -303,6 +303,32 @@ class OpenAIServingCompletion(OpenAIServing):
+@@ -306,6 +306,32 @@ class OpenAIServingCompletion(OpenAIServing):
                  prompt_token_ids = res.prompt_token_ids
                  prompt_logprobs = res.prompt_logprobs
  
@@ -151,7 +151,7 @@ index 2c71d2afb..5ae1afa86 100644
  
      def add(self, next_output: "RequestOutput", aggregate: bool) -> None:
 diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
-index f89a6422c..328c660b7 100644
+index d858d082e..c647af8b6 100644
 --- a/vllm/v1/core/sched/scheduler.py
 +++ b/vllm/v1/core/sched/scheduler.py
 @@ -1504,6 +1504,8 @@ class Scheduler(SchedulerInterface):
@@ -172,10 +172,10 @@ index f89a6422c..328c660b7 100644
                  )
              else:
 diff --git a/vllm/v1/engine/__init__.py b/vllm/v1/engine/__init__.py
-index f6c80055b..f65a40317 100644
+index d8a413f4c..988fbd39b 100644
 --- a/vllm/v1/engine/__init__.py
 +++ b/vllm/v1/engine/__init__.py
-@@ -186,6 +186,7 @@ class EngineCoreOutput(
+@@ -187,6 +187,7 @@ class EngineCoreOutput(
      trace_headers: Mapping[str, str] | None = None
  
      prefill_stats: PrefillStats | None = None
@@ -184,7 +184,7 @@ index f6c80055b..f65a40317 100644
      routed_experts: np.ndarray | None = None
      # The number of NaNs in logits.
 diff --git a/vllm/v1/engine/output_processor.py b/vllm/v1/engine/output_processor.py
-index e1032cfd1..763248e2b 100644
+index e1032cfd1..096431caf 100644
 --- a/vllm/v1/engine/output_processor.py
 +++ b/vllm/v1/engine/output_processor.py
 @@ -276,6 +276,8 @@ class RequestState:

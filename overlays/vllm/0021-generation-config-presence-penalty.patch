@@ -1,4 +1,4 @@
-From 1b7c89b3afa70a15d2ff048335b4a21e0d8cab45 Mon Sep 17 00:00:00 2001
+From 601da52b55270c33faca50c69c4c2a249025adad Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <asosedkin@redhat.com>
 Date: Fri, 15 May 2026 16:39:23 +0000
 Subject: [PATCH] config: add presence_penalty/frequency_penalty to
@@ -11,10 +11,10 @@ symmetrically with temperature/top_p/top_k already supported.
  1 file changed, 2 insertions(+)
 
 diff --git a/vllm/config/model.py b/vllm/config/model.py
-index 26737f313..d9f704e85 100644
+index 547ec342f..254840992 100644
 --- a/vllm/config/model.py
 +++ b/vllm/config/model.py
-@@ -1445,6 +1445,8 @@ class ModelConfig:
+@@ -1486,6 +1486,8 @@ class ModelConfig:
  
          available_params = [
              "repetition_penalty",
