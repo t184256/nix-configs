@@ -1,3 +1,13 @@
+From d9ae7a70d2cbe029aa10c06d8ad241adee0a8a3f Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Sat, 13 Jun 2026 01:54:22 +0000
+Subject: [PATCH] Disable Rust frontend - not needed for Nix builds
+
+---
+ pyproject.toml |  1 -
+ setup.py       | 11 +++++++++--
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
 diff --git a/pyproject.toml b/pyproject.toml
 index faba7f3df..7b38dd49f 100644
 --- a/pyproject.toml
@@ -32,3 +42,6 @@ index a95ee3451..c28cc7065 100644
  from setuptools_scm import get_version
  from torch.utils.cpp_extension import CUDA_HOME, ROCM_HOME
  
+-- 
+2.54.0
+

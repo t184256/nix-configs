@@ -163,7 +163,7 @@ let
         # so they're skipped entirely for our SM86 build.
         # csrc/cutlass is an empty git submodule in the tarball; patch 0009
         # adds FETCHCONTENT_SOURCE_DIR_CUTLASS/include to the cmake targets.
-        # patch 0010 skips FA3 when no SM90+ archs (API incompat with v4.2.1).
+        # patch skips FA3 when no SM90+ archs (API incompat with v4.2.1).
         flash-attn-src = prev.applyPatches {
           src = prev.fetchFromGitHub {
             owner = "vllm-project";
@@ -171,7 +171,7 @@ let
             rev = "f5bc33cfc02c744d24a2e9d50e6db656de40611c";
             hash = "sha256-Bdvg5ROX4EFccrRElYnbGtHS9FD9qLY9ZwYfqTUYOnA=";
           };
-          patches = [ ./0010-flash-attn-skip-fa3-without-sm90.patch ];
+          patches = [ ./flash-attn-skip-fa3-without-sm90.patch ];
         };
         # filter flags we're replacing so we don't pass duplicates
         dropFlag = prefix: prev.lib.filter (f: !(prev.lib.hasPrefix prefix f));
