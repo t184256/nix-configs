@@ -86,7 +86,7 @@ let
       --max-model-len ${toString maxModelLen} \
       --tensor-parallel-size 2 \
       --disable-custom-all-reduce \
-      --gpu-memory-utilization 0.92 \
+      --gpu-memory-utilization 0.85 \
       --enable-prefix-caching \
       --enable-chunked-prefill \
       --reasoning-parser qwen3 \
