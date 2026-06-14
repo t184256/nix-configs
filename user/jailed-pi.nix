@@ -101,6 +101,7 @@ let
   jailedPi = jailedAgentsLib.makeJailedPi {
     name = "jailed-pi";
     env = { PI_SKIP_VERSION_CHECK = "1"; };
+    extraPkgs = [ pkgs.nix ];
     baseJailOptions = jailedAgentsLib.commonJailOptions ++ extraJailOpts;
   };
 
