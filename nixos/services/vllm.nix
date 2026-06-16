@@ -55,14 +55,19 @@ let
     # outside profiling window); BatchDFlashPrefillWrapper creates two per group
     "VLLM_FLASHINFER_WORKSPACE_BUFFER_SIZE=${toString (64 * 1024 * 1024)}"
     # expandable_segments crashes on some NVLink setups (cuMemMap path) but
-    # helps defragment reserved-but-unallocated memory during graph capture
-    "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:512"
+    # helps defragment reserved-but-unallocated memory during graph capture;
+    # incompatible with OffloadingConnector (pinned KV gets invalidated by VMM)
+    "PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512"
     "NCCL_P2P_LEVEL=NVL"  # pin NCCL P2P to NVLink, not PCIe
     #"NCCL_CUMEM_ENABLE=0"  # avoids cuMem unified-memory path in NCCL
     "SAFETENSORS_FAST_GPU=1"
     "CUDA_DEVICE_ORDER=PCI_BUS_ID"
     "OMP_NUM_THREADS=4"  # a rather random number for concurrency <=2
     #"VLLM_ENFORCE_STRICT_TOOL_CALLING=1"
+    # deterministic block hashing across restarts (required for fs tier)
+    "PYTHONHASHSEED=0"
+    # can't use Model Runner v2 yet, conflicts with dflash
+    #"VLLM_USE_V2_MODEL_RUNNER=1"
   ];
 
   # Fixes empty <think></think> spam, </thinking> hallucination, unclosed
@@ -98,6 +103,10 @@ let
       --disable-access-log-for-endpoints /metrics \
       --served-model-name qwen3.6-27b qwen3.6-27b-think qwen3.6-27b-nothink \
       --host 192.168.99.53 --port 11111
+      # gives File "/nix/store/wigapdll3k1jiv8m1g82wqfxi5kiychb-python3.13-vllm-0.22.1/lib/python3.13/site-packages/vllm/v1/kv_offload/tiering/spec.py", line 113, in get_manager
+      #      assert len(self.gpu_block_size) == 1
+      #--kv-offloading-size 4 --kv-offloading-backend native \
+      #--kv-transfer-config '{"kv_connector_extra_config": {"spec_name": "TieringOffloadingSpec", "secondary_tiers": [{"type": "fs", "root_dir": "/var/lib/vllm/kv-cache"}]}}' \
   '';
   # --language-model-only frees up VRAM
   # --limit-mm-per-prompt '{"image": 1, "video": 0}' is lighter alternative
@@ -110,6 +119,8 @@ in
 
 {
   environment.persistence."/mnt/persist".directories = [ "/var/lib/vllm" ];
+  # purge stale KV-cache blocks older than 7 days
+  systemd.tmpfiles.rules = [ "x /var/lib/vllm/kv-cache  - - 1w -" ];
 
   nix.settings.extra-substituters = [ "https://cache.nixos-cuda.org" ];
   nix.settings.extra-trusted-public-keys = [
