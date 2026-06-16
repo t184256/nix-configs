@@ -1,6 +1,6 @@
 final: prev:
 
-# override nixpkgs vllm (0.16.0) with v0.22.1 + dflash
+# override nixpkgs vllm (0.16.0) with 69b8956dc + dflash
 #
 # external cmake deps (CUDA only):
 #   cutlass v4.2.1       - nixpkgs (via oa.cmakeFlags FETCHCONTENT_SOURCE_DIR)
@@ -82,12 +82,12 @@ let
   overriddenVllm = (prev.python3Packages.vllm.override {
     inherit mistral-common flashinfer;
   }).overrideAttrs (oa: {
-    version = "0.22.1";
+    version = "0.23.0";
     src = prev.fetchFromGitHub {
       owner = "vllm-project";
       repo = "vllm";
-      rev = "v0.22.1";
-      hash = "sha256-4fBfQgk9qqTCIIwjBqM1XXVM3CQvGSv0puqZxCMUJfc=";
+      rev = "v0.23.0";
+      hash = "sha256-9mxu2jLchoKmRzD71enPomVJuP5LjbUtQqLMdP5k+Qw=";
     };
     patches =
       (prev.lib.filter

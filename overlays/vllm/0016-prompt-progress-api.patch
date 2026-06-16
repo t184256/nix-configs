@@ -25,7 +25,7 @@ diff --git a/vllm/entrypoints/openai/chat_completion/protocol.py b/vllm/entrypoi
 index a83c8f855..73ee7ba8e 100644
 --- a/vllm/entrypoints/openai/chat_completion/protocol.py
 +++ b/vllm/entrypoints/openai/chat_completion/protocol.py
-@@ -141,6 +141,7 @@ class ChatCompletionStreamResponse(OpenAIBaseModel):
+@@ -144,6 +144,7 @@ class ChatCompletionStreamResponse(OpenAIBaseModel):
      created: int = Field(default_factory=lambda: int(time.time()))
      model: str
      choices: list[ChatCompletionResponseStreamChoice]
@@ -33,7 +33,7 @@ index a83c8f855..73ee7ba8e 100644
      usage: UsageInfo | None = Field(default=None)
      # Set only on the final chunk of a stream to mirror non-streaming responses
      # without the per-chunk serialization overhead.
-@@ -202,6 +203,7 @@ class ChatCompletionRequest(OpenAIBaseModel):
+@@ -205,6 +206,7 @@ class ChatCompletionRequest(OpenAIBaseModel):
      stop: str | list[str] | None = []
      stream: bool | None = False
      stream_options: StreamOptions | None = None
@@ -45,7 +45,7 @@ diff --git a/vllm/entrypoints/openai/chat_completion/serving.py b/vllm/entrypoin
 index 8f6d76d78..d2a1e7a81 100644
 --- a/vllm/entrypoints/openai/chat_completion/serving.py
 +++ b/vllm/entrypoints/openai/chat_completion/serving.py
-@@ -502,6 +502,27 @@ class OpenAIServingChat(OpenAIServing):
+@@ -501,6 +501,27 @@ class OpenAIServingChat(OpenAIServing):
                      if res.encoder_prompt_token_ids is not None:
                          num_prompt_tokens += len(res.encoder_prompt_token_ids)
  
@@ -77,7 +77,7 @@ diff --git a/vllm/entrypoints/openai/completion/protocol.py b/vllm/entrypoints/o
 index cd8d9b89d..ebaa0dd1e 100644
 --- a/vllm/entrypoints/openai/completion/protocol.py
 +++ b/vllm/entrypoints/openai/completion/protocol.py
-@@ -61,6 +61,7 @@ class CompletionRequest(OpenAIBaseModel):
+@@ -64,6 +64,7 @@ class CompletionRequest(OpenAIBaseModel):
      stop: str | list[str] | None = []
      stream: bool | None = False
      stream_options: StreamOptions | None = None
@@ -85,7 +85,7 @@ index cd8d9b89d..ebaa0dd1e 100644
      suffix: str | None = None
      temperature: float | None = None
      top_p: float | None = None
-@@ -531,6 +532,7 @@ class CompletionResponseStreamChoice(OpenAIBaseModel):
+@@ -541,6 +542,7 @@ class CompletionResponseStreamChoice(OpenAIBaseModel):
      # prompt tokens is put into choice to align with CompletionResponseChoice
      prompt_token_ids: list[int] | None = None
      token_ids: list[int] | None = None
@@ -154,7 +154,7 @@ diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
 index d858d082e..c647af8b6 100644
 --- a/vllm/v1/core/sched/scheduler.py
 +++ b/vllm/v1/core/sched/scheduler.py
-@@ -1504,6 +1504,8 @@ class Scheduler(SchedulerInterface):
+@@ -1550,6 +1550,8 @@ class Scheduler(SchedulerInterface):
                  or pooler_output is not None
                  or kv_transfer_params
                  or stopped
@@ -163,7 +163,7 @@ index d858d082e..c647af8b6 100644
              ):
                  # Add EngineCoreOutput for this Request.
                  outputs[request.client_index].append(
-@@ -1521,6 +1523,7 @@ class Scheduler(SchedulerInterface):
+@@ -1567,6 +1569,7 @@ class Scheduler(SchedulerInterface):
                          trace_headers=request.trace_headers,
                          routed_experts=routed_experts,
                          num_nans_in_logits=request.num_nans_in_logits,
@@ -175,7 +175,7 @@ diff --git a/vllm/v1/engine/__init__.py b/vllm/v1/engine/__init__.py
 index d8a413f4c..988fbd39b 100644
 --- a/vllm/v1/engine/__init__.py
 +++ b/vllm/v1/engine/__init__.py
-@@ -187,6 +187,7 @@ class EngineCoreOutput(
+@@ -189,6 +189,7 @@ class EngineCoreOutput(
      trace_headers: Mapping[str, str] | None = None
  
      prefill_stats: PrefillStats | None = None

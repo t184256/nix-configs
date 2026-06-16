@@ -101,12 +101,12 @@ let
       --async-scheduling \
       --enable-auto-tool-choice --tool-call-parser qwen3_coder \
       --disable-access-log-for-endpoints /metrics \
+      --kv-offloading-size 12 --kv-offloading-backend native \
+      --kv-transfer-config '{"kv_connector_extra_config": {"spec_name": "TieringOffloadingSpec", "secondary_tiers": [{"type": "fs", "root_dir": "/var/lib/vllm/kv-cache"}]}}' \
       --served-model-name qwen3.6-27b qwen3.6-27b-think qwen3.6-27b-nothink \
       --host 192.168.99.53 --port 11111
       # gives File "/nix/store/wigapdll3k1jiv8m1g82wqfxi5kiychb-python3.13-vllm-0.22.1/lib/python3.13/site-packages/vllm/v1/kv_offload/tiering/spec.py", line 113, in get_manager
       #      assert len(self.gpu_block_size) == 1
-      #--kv-offloading-size 4 --kv-offloading-backend native \
-      #--kv-transfer-config '{"kv_connector_extra_config": {"spec_name": "TieringOffloadingSpec", "secondary_tiers": [{"type": "fs", "root_dir": "/var/lib/vllm/kv-cache"}]}}' \
   '';
   # --language-model-only frees up VRAM
   # --limit-mm-per-prompt '{"image": 1, "video": 0}' is lighter alternative

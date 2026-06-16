@@ -11,7 +11,7 @@ diff --git a/vllm/v1/spec_decode/llm_base_proposer.py b/vllm/v1/spec_decode/llm_
 index efe59df8e..bbcc4aaa0 100644
 --- a/vllm/v1/spec_decode/llm_base_proposer.py
 +++ b/vllm/v1/spec_decode/llm_base_proposer.py
-@@ -467,8 +467,11 @@ class SpecDecodeBaseProposer:
+@@ -475,8 +475,11 @@ class SpecDecodeBaseProposer:
                      DFlashQwen3ForCausalLM,
                  ),
              )

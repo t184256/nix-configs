@@ -1,4 +1,4 @@
-From 26b185ba5823bdfb6bca290aae5f63e739ad4fbd Mon Sep 17 00:00:00 2001
+From d131e739b79699b48c83f87d286b716ba92bb008 Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Thu, 16 Apr 2026 17:29:44 +0800
 Subject: [PATCH 1/9] dflash with flashinfer
@@ -8,10 +8,10 @@ Subject: [PATCH 1/9] dflash with flashinfer
  1 file changed, 25 insertions(+), 14 deletions(-)
 
 diff --git a/vllm/v1/attention/backends/flashinfer.py b/vllm/v1/attention/backends/flashinfer.py
-index a81c5742c..e3634ede0 100755
+index 73e1cce56d..79a060cfa0 100755
 --- a/vllm/v1/attention/backends/flashinfer.py
 +++ b/vllm/v1/attention/backends/flashinfer.py
-@@ -70,11 +70,7 @@ from vllm.v1.attention.backends.utils import (
+@@ -69,11 +69,7 @@ from vllm.v1.attention.backends.utils import (
  from vllm.v1.attention.ops.common import cp_lse_ag_out_rs
  from vllm.v1.attention.ops.dcp_alltoall import dcp_a2a_lse_reduce
  from vllm.v1.attention.ops.merge_attn_states import merge_attn_states
@@ -24,7 +24,7 @@ index a81c5742c..e3634ede0 100755
  from vllm.v1.utils import CpuGpuBuffer
  
  FLASHINFER_WORKSPACE_BUFFER_SIZE_BATCH_INVARIANT = 2048 * 1024 * 1024
-@@ -324,6 +320,7 @@ class BatchDCPPrefillWrapper:
+@@ -323,6 +319,7 @@ class BatchDCPPrefillWrapper:
  
  
  class FlashInferBackend(AttentionBackend):
@@ -32,7 +32,7 @@ index a81c5742c..e3634ede0 100755
      supported_dtypes: ClassVar[list[torch.dtype]] = [torch.float16, torch.bfloat16]
      supported_kv_cache_dtypes: ClassVar[list[CacheDType]] = [
          "auto",
-@@ -345,6 +342,10 @@ class FlashInferBackend(AttentionBackend):
+@@ -344,6 +341,10 @@ class FlashInferBackend(AttentionBackend):
      def get_name() -> str:
          return "FLASHINFER"
  
@@ -43,7 +43,7 @@ index a81c5742c..e3634ede0 100755
      @staticmethod
      def get_impl_cls() -> type["FlashInferImpl"]:
          return FlashInferImpl
-@@ -512,6 +513,7 @@ class FlashInferMetadata:
+@@ -511,6 +512,7 @@ class FlashInferMetadata:
      num_decode_tokens: int
      num_prefills: int
      num_prefill_tokens: int
@@ -51,7 +51,7 @@ index a81c5742c..e3634ede0 100755
  
      prefill: FIPrefill | TRTLLMPrefill | None
      """
-@@ -571,12 +573,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -570,12 +572,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
          )
          max_num_reqs = vllm_config.scheduler_config.max_num_seqs
          max_num_pages = max_num_reqs * max_num_pages_per_req
@@ -65,7 +65,7 @@ index a81c5742c..e3634ede0 100755
          self.enable_cuda_graph = (
              self.compilation_config.cudagraph_mode.decode_mode() == CUDAGraphMode.FULL
          )
-@@ -905,6 +902,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -910,6 +907,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
          block_table_tensor = common_attn_metadata.block_table_tensor
          qo_indptr = common_attn_metadata.query_start_loc
          qo_indptr_cpu = common_attn_metadata.query_start_loc_cpu
@@ -73,7 +73,7 @@ index a81c5742c..e3634ede0 100755
  
          # Step 1: Decide which dispatch modes to use:
          # - Cascade attention (distinct mode)
-@@ -929,6 +927,16 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -934,6 +932,16 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
              self.use_trtllm_decode_attention and self.dcp_world_size <= 1
          )
  
@@ -90,7 +90,7 @@ index a81c5742c..e3634ede0 100755
          all_uses_trtllm = (num_prefills == 0 or prefill_use_trtllm) and (
              num_decodes == 0 or decode_use_trtllm
          )
-@@ -969,6 +977,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -974,6 +982,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
              num_decode_tokens=num_decode_tokens,
              num_prefills=num_prefills,
              num_prefill_tokens=num_prefill_tokens,
@@ -98,7 +98,7 @@ index a81c5742c..e3634ede0 100755
              use_cascade=use_cascade,
              prefill=None,
              decode=None,
-@@ -1176,7 +1185,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -1181,7 +1190,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
                          num_kv_heads=self.num_kv_heads,
                          head_dim_qk=self.head_dim,
                          page_size=self.page_size,
@@ -107,7 +107,7 @@ index a81c5742c..e3634ede0 100755
                          sm_scale=self.sm_scale,
                          window_left=self.window_left,
                          logits_soft_cap=self.logits_soft_cap,
-@@ -1366,7 +1375,7 @@ class FlashInferImpl(AttentionImpl):
+@@ -1371,7 +1380,7 @@ class FlashInferImpl(AttentionImpl):
          value: torch.Tensor,
          kv_cache: torch.Tensor,
          attn_metadata: FlashInferMetadata,
@@ -116,7 +116,7 @@ index a81c5742c..e3634ede0 100755
          output_scale: torch.Tensor | None = None,
          output_block_scale: torch.Tensor | None = None,
      ) -> torch.Tensor:
-@@ -1383,6 +1392,8 @@ class FlashInferImpl(AttentionImpl):
+@@ -1388,6 +1397,8 @@ class FlashInferImpl(AttentionImpl):
          Returns:
              shape = [num_tokens, num_heads * head_size]
          """
@@ -125,7 +125,7 @@ index a81c5742c..e3634ede0 100755
          if attn_metadata is None:
              # Profiling run.
              return output.fill_(0)
-@@ -1551,7 +1562,7 @@ class FlashInferImpl(AttentionImpl):
+@@ -1556,7 +1567,7 @@ class FlashInferImpl(AttentionImpl):
                          self.logits_soft_cap or 0.0
                      )
                      assert prefill_wrapper._sm_scale == self.scale
@@ -138,7 +138,7 @@ index a81c5742c..e3634ede0 100755
 2.54.0
 
 
-From b46d71c333ccfddc7864f3950e2384c16a23538b Mon Sep 17 00:00:00 2001
+From b1d88db1f9741c3b2e3a01110234c09ea5acd898 Mon Sep 17 00:00:00 2001
 From: gq112 <guoqing66368@sangfor.com.cn>
 Date: Fri, 17 Apr 2026 17:33:19 +0800
 Subject: [PATCH 2/9] Update flashinfer.py
@@ -149,10 +149,10 @@ Signed-off-by: gq112 <guoqing66368@sangfor.com.cn>
  1 file changed, 17 insertions(+), 4 deletions(-)
 
 diff --git a/vllm/v1/attention/backends/flashinfer.py b/vllm/v1/attention/backends/flashinfer.py
-index e3634ede0..a29af111f 100755
+index 79a060cfa0..d8bbd2b0e7 100755
 --- a/vllm/v1/attention/backends/flashinfer.py
 +++ b/vllm/v1/attention/backends/flashinfer.py
-@@ -344,7 +344,17 @@ class FlashInferBackend(AttentionBackend):
+@@ -343,7 +343,17 @@ class FlashInferBackend(AttentionBackend):
  
      @classmethod
      def supports_non_causal(cls) -> bool:
@@ -171,7 +171,7 @@ index e3634ede0..a29af111f 100755
  
      @staticmethod
      def get_impl_cls() -> type["FlashInferImpl"]:
-@@ -931,10 +941,13 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -936,10 +946,13 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
              raise NotImplementedError(
                  "FlashInfer non-causal prefill is not supported with DCP yet."
              )
@@ -192,7 +192,7 @@ index e3634ede0..a29af111f 100755
 2.54.0
 
 
-From 6a3db2299e4b83ff31ed54415ae800250f224dd1 Mon Sep 17 00:00:00 2001
+From a297ac5a12d99aed98918ef49109b13995f3cf78 Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Mon, 27 Apr 2026 09:12:43 +0800
 Subject: [PATCH 3/9] Apply local dflash flashinfer changes after rebase
@@ -202,23 +202,23 @@ Subject: [PATCH 3/9] Apply local dflash flashinfer changes after rebase
  tests/v1/core/test_scheduler.py               | 28 ++++++++++++
  tests/v1/core/utils.py                        | 20 +++++++--
  tests/v1/cudagraph/test_cudagraph_dispatch.py | 16 +++++++
- vllm/config/speculative.py                    | 42 +++++++++++++++--
+ vllm/config/speculative.py                    | 41 +++++++++++++++--
  vllm/config/vllm.py                           | 16 ++++---
  vllm/v1/attention/backend.py                  |  4 +-
  vllm/v1/attention/backends/gdn_attn.py        |  3 +-
- vllm/v1/core/sched/scheduler.py               | 10 +++--
+ vllm/v1/core/sched/scheduler.py               |  8 +++-
  vllm/v1/cudagraph_dispatcher.py               |  2 +-
  vllm/v1/spec_decode/metrics.py                |  4 +-
  vllm/v1/worker/gpu/model_runner.py            |  4 +-
  .../gpu/spec_decode/rejection_sampler.py      |  2 +-
- vllm/v1/worker/gpu_model_runner.py            | 17 ++++---
- 14 files changed, 184 insertions(+), 29 deletions(-)
+ vllm/v1/worker/gpu_model_runner.py            | 14 +++---
+ 14 files changed, 180 insertions(+), 27 deletions(-)
 
 diff --git a/tests/test_config.py b/tests/test_config.py
-index 5c01d652a..ad898df2a 100644
+index b78570e54f..a62df3f7f1 100644
 --- a/tests/test_config.py
 +++ b/tests/test_config.py
-@@ -1403,6 +1403,51 @@ def test_draft_sample_method_gumbel_is_rejected():
+@@ -1443,6 +1443,51 @@ def test_draft_sample_method_gumbel_is_rejected():
          )
  
  
@@ -271,10 +271,10 @@ index 5c01d652a..ad898df2a 100644
      """Test that IR op priority defaults are set correctly."""
      from vllm.config.kernel import IrOpPriorityConfig
 diff --git a/tests/v1/core/test_scheduler.py b/tests/v1/core/test_scheduler.py
-index bcbac67a6..7da7069df 100644
+index 4d652beec8..f4094fd06b 100644
 --- a/tests/v1/core/test_scheduler.py
 +++ b/tests/v1/core/test_scheduler.py
-@@ -1039,6 +1039,34 @@ def test_no_spec_tokens_scheduled_for_prefill_chunks():
+@@ -1060,6 +1060,34 @@ def test_no_spec_tokens_scheduled_for_prefill_chunks():
      assert len(output.scheduled_spec_decode_tokens[req.request_id]) == num_spec_tokens
  
  
@@ -310,10 +310,10 @@ index bcbac67a6..7da7069df 100644
      """Test that scheduler stats correctly report waiting and skipped_waiting queues."""
      # Create scheduler with limited capacity so we can have waiting requests
 diff --git a/tests/v1/core/utils.py b/tests/v1/core/utils.py
-index 2d9834d2e..1ac51dcb1 100644
+index 7213a669c5..48922fa557 100644
 --- a/tests/v1/core/utils.py
 +++ b/tests/v1/core/utils.py
-@@ -52,6 +52,7 @@ def create_scheduler(
+@@ -53,6 +53,7 @@ def create_scheduler(
      block_size: int = 16,
      max_model_len: int | None = None,
      num_speculative_tokens: int | None = None,
@@ -321,7 +321,7 @@ index 2d9834d2e..1ac51dcb1 100644
      skip_tokenizer_init: bool = False,
      async_scheduling: bool = False,
      pipeline_parallel_size: int = 1,
-@@ -121,9 +122,22 @@ def create_scheduler(
+@@ -122,9 +123,22 @@ def create_scheduler(
  
      speculative_config: SpeculativeConfig | None = None
      if num_speculative_tokens is not None:
@@ -348,7 +348,7 @@ index 2d9834d2e..1ac51dcb1 100644
      ec_transfer_config = (
          ECTransferConfig(
 diff --git a/tests/v1/cudagraph/test_cudagraph_dispatch.py b/tests/v1/cudagraph/test_cudagraph_dispatch.py
-index 97b5fd46a..42df0b66a 100644
+index 97b5fd46a2..42df0b66ab 100644
 --- a/tests/v1/cudagraph/test_cudagraph_dispatch.py
 +++ b/tests/v1/cudagraph/test_cudagraph_dispatch.py
 @@ -1,6 +1,7 @@
@@ -382,7 +382,7 @@ index 97b5fd46a..42df0b66a 100644
          "cudagraph_mode_str,compilation_mode,lora_config",
          [
 diff --git a/vllm/config/speculative.py b/vllm/config/speculative.py
-index 47d35f4ff..b4e695e56 100644
+index a4d5b1302e..26b858abb3 100644
 --- a/vllm/config/speculative.py
 +++ b/vllm/config/speculative.py
 @@ -78,8 +78,12 @@ class SpeculativeConfig:
@@ -400,19 +400,10 @@ index 47d35f4ff..b4e695e56 100644
      model: str | None = None
      """The name of the draft model, eagle head, or additional weights, if
      provided."""
-@@ -990,6 +994,7 @@ class SpeculativeConfig:
-                 f"than zero ({self.num_speculative_tokens})."
+@@ -1010,6 +1014,32 @@ class SpeculativeConfig:
+                 "are only valid with rejection_sample_method='synthetic'."
              )
  
-+<<<<<<< Updated upstream
-         if self.rejection_sample_method == "synthetic":
-             # Consolidate to per-position rates
-             self.synthetic_acceptance_rates = self._resolve_synthetic_acceptance_rates(
-@@ -1005,6 +1010,32 @@ class SpeculativeConfig:
-             raise ValueError(
-                 "synthetic_acceptance_rates / synthetic_acceptance_length "
-                 "are only valid with rejection_sample_method='synthetic'."
-+=======
 +        if self.num_target_verify_tokens is None:
 +            self.num_target_verify_tokens = self.num_speculative_tokens
 +
@@ -437,11 +428,12 @@ index 47d35f4ff..b4e695e56 100644
 +            raise ValueError(
 +                "num_target_verify_tokens may differ from "
 +                "num_speculative_tokens only when method == 'dflash'."
-+>>>>>>> Stashed changes
-             )
- 
++            )
++
          if self.draft_model_config:
-@@ -1085,4 +1116,9 @@ class SpeculativeConfig:
+             self.draft_model_config.verify_with_parallel_config(
+                 self.draft_parallel_config
+@@ -1096,4 +1126,9 @@ class SpeculativeConfig:
              else self.draft_model_config.model
          )
          num_spec_tokens = self.num_speculative_tokens
@@ -453,10 +445,10 @@ index 47d35f4ff..b4e695e56 100644
 +            f"{num_target_verify_tokens=})"
 +        )
 diff --git a/vllm/config/vllm.py b/vllm/config/vllm.py
-index f009dd6f1..e9ee3b671 100644
+index fee1d20350..9210879973 100644
 --- a/vllm/config/vllm.py
 +++ b/vllm/config/vllm.py
-@@ -482,6 +482,15 @@ class VllmConfig:
+@@ -508,6 +508,15 @@ class VllmConfig:
  
      @property
      def num_speculative_tokens(self) -> int:
@@ -472,7 +464,7 @@ index f009dd6f1..e9ee3b671 100644
          if (
              self.speculative_config is not None
              and self.speculative_config.num_speculative_tokens is not None
-@@ -1649,11 +1658,8 @@ class VllmConfig:
+@@ -1670,11 +1679,8 @@ class VllmConfig:
              )
              if max_cudagraph_capture_size is None:
                  decode_query_len = 1
@@ -487,10 +479,10 @@ index f009dd6f1..e9ee3b671 100644
                      self.scheduler_config.max_num_seqs * decode_query_len * 2, 512
                  )
 diff --git a/vllm/v1/attention/backend.py b/vllm/v1/attention/backend.py
-index d83489238..9643a2078 100644
+index 4b4a4435b3..a5a79322c6 100644
 --- a/vllm/v1/attention/backend.py
 +++ b/vllm/v1/attention/backend.py
-@@ -561,12 +561,12 @@ class AttentionMetadataBuilder(ABC, Generic[M]):
+@@ -568,12 +568,12 @@ class AttentionMetadataBuilder(ABC, Generic[M]):
              speculative_config = self.vllm_config.speculative_config
              if (
                  speculative_config is not None
@@ -506,10 +498,10 @@ index d83489238..9643a2078 100644
                  self.reorder_batch_threshold = max(
                      self.reorder_batch_threshold,
 diff --git a/vllm/v1/attention/backends/gdn_attn.py b/vllm/v1/attention/backends/gdn_attn.py
-index 2c0ff984b..06eefbfd2 100644
+index 9323c5d8a4..86c41a07d9 100644
 --- a/vllm/v1/attention/backends/gdn_attn.py
 +++ b/vllm/v1/attention/backends/gdn_attn.py
-@@ -99,8 +99,7 @@ class GDNAttentionMetadataBuilder(AttentionMetadataBuilder[GDNAttentionMetadata]
+@@ -103,8 +103,7 @@ class GDNAttentionMetadataBuilder(AttentionMetadataBuilder[GDNAttentionMetadata]
          _, self.gdn_prefill_backend = _resolve_gdn_prefill_backend(vllm_config)
  
          if self.speculative_config:
@@ -520,10 +512,10 @@ index 2c0ff984b..06eefbfd2 100644
              self.num_spec = 0
          self.use_spec_decode: bool = self.num_spec > 0
 diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
-index c69c9a811..d858d082e 100644
+index 889232c3e4..bb1d2c58c0 100644
 --- a/vllm/v1/core/sched/scheduler.py
 +++ b/vllm/v1/core/sched/scheduler.py
-@@ -212,12 +212,12 @@ class Scheduler(SchedulerInterface):
+@@ -213,10 +213,10 @@ class Scheduler(SchedulerInterface):
          self.use_eagle = False
          self.num_spec_tokens = self.num_lookahead_tokens = 0
          if speculative_config:
@@ -534,12 +526,9 @@ index c69c9a811..d858d082e 100644
 -                self.num_lookahead_tokens = self.num_spec_tokens
 +                self.num_lookahead_tokens = speculative_config.num_speculative_tokens
              if speculative_config.uses_draft_model():
--                self.num_lookahead_tokens = self.num_spec_tokens
-+                self.num_lookahead_tokens = speculative_config.num_speculative_tokens
- 
-         # Create the KV cache manager.
-         if hash_block_size is None:
-@@ -508,6 +508,8 @@ class Scheduler(SchedulerInterface):
+                 self.num_lookahead_tokens = self.num_spec_tokens
+             if speculative_config.use_dflash():
+@@ -526,6 +526,8 @@ class Scheduler(SchedulerInterface):
                  )
                  if num_scheduled_spec_tokens > 0:
                      spec_token_ids = request.spec_token_ids
@@ -548,7 +537,7 @@ index c69c9a811..d858d082e 100644
                      if len(spec_token_ids) > num_scheduled_spec_tokens:
                          spec_token_ids = spec_token_ids[:num_scheduled_spec_tokens]
                      scheduled_spec_decode_tokens[request.request_id] = spec_token_ids
-@@ -1705,6 +1707,8 @@ class Scheduler(SchedulerInterface):
+@@ -1751,6 +1753,8 @@ class Scheduler(SchedulerInterface):
                  continue
  
              # Add newly generated spec token ids to the request.
@@ -558,7 +547,7 @@ index c69c9a811..d858d082e 100644
                  metadata = request.structured_output_request
                  spec_token_ids = metadata.grammar.validate_tokens(spec_token_ids)  # type: ignore[union-attr]
 diff --git a/vllm/v1/cudagraph_dispatcher.py b/vllm/v1/cudagraph_dispatcher.py
-index cf0c1d417..00178da77 100644
+index cf0c1d4177..00178da77d 100644
 --- a/vllm/v1/cudagraph_dispatcher.py
 +++ b/vllm/v1/cudagraph_dispatcher.py
 @@ -37,7 +37,7 @@ class CudagraphDispatcher:
@@ -571,7 +560,7 @@ index cf0c1d417..00178da77 100644
  
          # Dict to store valid cudagraph dispatching keys.
 diff --git a/vllm/v1/spec_decode/metrics.py b/vllm/v1/spec_decode/metrics.py
-index 9a41ff5c8..cba585df8 100644
+index 9a41ff5c81..cba585df82 100644
 --- a/vllm/v1/spec_decode/metrics.py
 +++ b/vllm/v1/spec_decode/metrics.py
 @@ -179,8 +179,10 @@ class SpecDecodingProm:
@@ -587,10 +576,10 @@ index 9a41ff5c8..cba585df8 100644
              else 0
          )
 diff --git a/vllm/v1/worker/gpu/model_runner.py b/vllm/v1/worker/gpu/model_runner.py
-index 52b447550..6d3f75dae 100644
+index 367147b0b4..cd6d117ca9 100644
 --- a/vllm/v1/worker/gpu/model_runner.py
 +++ b/vllm/v1/worker/gpu/model_runner.py
-@@ -170,7 +170,9 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+@@ -187,7 +187,9 @@ class GPUModelRunner(LoRAModelRunnerMixin):
          self.num_speculative_steps = 0
          self.use_aux_hidden_state_outputs = False
          if self.speculative_config is not None:
@@ -602,7 +591,7 @@ index 52b447550..6d3f75dae 100644
              if self.is_last_pp_rank:
                  self.speculator = init_speculator(self.vllm_config, self.device)
 diff --git a/vllm/v1/worker/gpu/spec_decode/rejection_sampler.py b/vllm/v1/worker/gpu/spec_decode/rejection_sampler.py
-index 1fe079a43..65f3ca399 100644
+index 1fe079a43e..65f3ca3994 100644
 --- a/vllm/v1/worker/gpu/spec_decode/rejection_sampler.py
 +++ b/vllm/v1/worker/gpu/spec_decode/rejection_sampler.py
 @@ -45,7 +45,7 @@ class RejectionSampler:
@@ -615,10 +604,10 @@ index 1fe079a43..65f3ca399 100644
          self.synthetic_conditional_rates: torch.Tensor | None = None
          if self.rejection_sample_method == "synthetic":
 diff --git a/vllm/v1/worker/gpu_model_runner.py b/vllm/v1/worker/gpu_model_runner.py
-index d51bf2284..39778cae9 100644
+index 801a8574ac..2ca0be1c12 100644
 --- a/vllm/v1/worker/gpu_model_runner.py
 +++ b/vllm/v1/worker/gpu_model_runner.py
-@@ -611,9 +611,11 @@ class GPUModelRunner(
+@@ -620,9 +620,11 @@ class GPUModelRunner(
              )
  
          self.num_spec_tokens = 0
@@ -631,7 +620,7 @@ index d51bf2284..39778cae9 100644
              draft_config = self.speculative_config.draft_model_config
              if draft_config is not None and draft_config.max_model_len is not None:
                  self.effective_drafter_max_model_len = draft_config.max_model_len
-@@ -859,12 +861,12 @@ class GPUModelRunner(
+@@ -868,12 +870,12 @@ class GPUModelRunner(
          self.valid_sampled_token_count_cpu: torch.Tensor | None = None
          self.draft_token_ids_cpu: torch.Tensor | None = None
          self.num_accepted_tokens_event: torch.Event | None = None
@@ -646,7 +635,7 @@ index d51bf2284..39778cae9 100644
                  dtype=torch.int64,
                  device="cpu",
                  pin_memory=self.pin_memory,
-@@ -1744,7 +1746,7 @@ class GPUModelRunner(
+@@ -1753,7 +1755,7 @@ class GPUModelRunner(
              spec_flattened_indices.extend(
                  range(flattened_index - draft_len + 1, flattened_index + 1)
              )
@@ -655,17 +644,7 @@ index d51bf2284..39778cae9 100644
              # prev_draft_token_indices is used to find which draft_tokens_id
              # should be copied to input_ids
              # example: prev draft_tokens_id [[1,2], [3,4], [5, 6]]
-@@ -4404,7 +4406,8 @@ class GPUModelRunner(
-         if spec_config is not None:
-             # Decide whether to run the drafter or zero out draft tokens.
-             input_fits_in_drafter = spec_decode_common_attn_metadata is not None and (
--                spec_decode_common_attn_metadata.max_seq_len + self.num_spec_tokens
-+                spec_decode_common_attn_metadata.max_seq_len
-+                + self.num_draft_spec_tokens
-                 <= self.effective_drafter_max_model_len
-             )
-             use_gpu_toks = (
-@@ -4472,7 +4475,7 @@ class GPUModelRunner(
+@@ -4527,7 +4529,7 @@ class GPUModelRunner(
                  # state and logprobs for sequences near max_model_len.
                  self._draft_token_ids = torch.zeros(
                      1, device=self.device, dtype=torch.int32
@@ -674,7 +653,7 @@ index d51bf2284..39778cae9 100644
                  self._draft_probs = None
                  self._draft_prob_req_ids = None
                  self._copy_draft_token_ids_to_cpu(scheduler_output, zeros_only=True)
-@@ -4635,7 +4638,7 @@ class GPUModelRunner(
+@@ -4690,7 +4692,7 @@ class GPUModelRunner(
          self.input_batch.prev_req_id_to_index = prev_req_id_to_index
  
      def take_draft_token_ids(self) -> DraftTokenIds | None:
@@ -687,51 +666,20 @@ index d51bf2284..39778cae9 100644
 2.54.0
 
 
-From d5bd655fabe532c2592860f74b9f85388a9e8a2b Mon Sep 17 00:00:00 2001
+From a8a3b1343cae5d3d33c0634e6d26a46dd84e7388 Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Mon, 27 Apr 2026 21:47:55 +0800
 Subject: [PATCH 4/9] feat: dflash + flashinfer integration updates
 
 ---
- vllm/config/speculative.py               |   5 +-
  vllm/v1/attention/backends/flashinfer.py | 537 ++++++++++++++++-------
- 2 files changed, 383 insertions(+), 159 deletions(-)
+ 1 file changed, 382 insertions(+), 155 deletions(-)
 
-diff --git a/vllm/config/speculative.py b/vllm/config/speculative.py
-index b4e695e56..23293d9ab 100644
---- a/vllm/config/speculative.py
-+++ b/vllm/config/speculative.py
-@@ -994,7 +994,6 @@ class SpeculativeConfig:
-                 f"than zero ({self.num_speculative_tokens})."
-             )
- 
--<<<<<<< Updated upstream
-         if self.rejection_sample_method == "synthetic":
-             # Consolidate to per-position rates
-             self.synthetic_acceptance_rates = self._resolve_synthetic_acceptance_rates(
-@@ -1009,8 +1008,7 @@ class SpeculativeConfig:
-         ):
-             raise ValueError(
-                 "synthetic_acceptance_rates / synthetic_acceptance_length "
--                "are only valid with rejection_sample_method='synthetic'."
--=======
-+                "are only valid with rejection_sample_method='synthetic'.")
-         if self.num_target_verify_tokens is None:
-             self.num_target_verify_tokens = self.num_speculative_tokens
- 
-@@ -1035,7 +1033,6 @@ class SpeculativeConfig:
-             raise ValueError(
-                 "num_target_verify_tokens may differ from "
-                 "num_speculative_tokens only when method == 'dflash'."
-->>>>>>> Stashed changes
-             )
- 
-         if self.draft_model_config:
 diff --git a/vllm/v1/attention/backends/flashinfer.py b/vllm/v1/attention/backends/flashinfer.py
-index a29af111f..0747b41af 100755
+index d8bbd2b0e7..65c4fb176c 100755
 --- a/vllm/v1/attention/backends/flashinfer.py
 +++ b/vllm/v1/attention/backends/flashinfer.py
-@@ -70,7 +70,11 @@ from vllm.v1.attention.backends.utils import (
+@@ -69,7 +69,11 @@ from vllm.v1.attention.backends.utils import (
  from vllm.v1.attention.ops.common import cp_lse_ag_out_rs
  from vllm.v1.attention.ops.dcp_alltoall import dcp_a2a_lse_reduce
  from vllm.v1.attention.ops.merge_attn_states import merge_attn_states
@@ -744,7 +692,7 @@ index a29af111f..0747b41af 100755
  from vllm.v1.utils import CpuGpuBuffer
  
  FLASHINFER_WORKSPACE_BUFFER_SIZE_BATCH_INVARIANT = 2048 * 1024 * 1024
-@@ -83,6 +87,12 @@ logger = init_logger(__name__)
+@@ -82,6 +86,12 @@ logger = init_logger(__name__)
  trtllm_gen_workspace_buffer = None
  
  
@@ -757,7 +705,7 @@ index a29af111f..0747b41af 100755
  def _get_trtllm_gen_workspace_buffer():
      global trtllm_gen_workspace_buffer
      if trtllm_gen_workspace_buffer is None:
-@@ -207,20 +217,55 @@ def trtllm_prefill_attn_kvfp8_dequant(
+@@ -206,20 +216,55 @@ def trtllm_prefill_attn_kvfp8_dequant(
      return mock_kv_cache, mock_block_table
  
  
@@ -818,7 +766,7 @@ index a29af111f..0747b41af 100755
  
      def plan(
          self,
-@@ -238,41 +283,86 @@ class BatchDCPPrefillWrapper:
+@@ -237,41 +282,86 @@ class BatchDCPPrefillWrapper:
          logits_soft_cap: float | None,
          q_data_type: torch.dtype,
          kv_cache_dtype: torch.dtype,
@@ -937,7 +885,7 @@ index a29af111f..0747b41af 100755
  
      def run(
          self,
-@@ -283,30 +373,114 @@ class BatchDCPPrefillWrapper:
+@@ -282,30 +372,114 @@ class BatchDCPPrefillWrapper:
          value: torch.Tensor,
          out: torch.Tensor,
      ):
@@ -1074,7 +1022,7 @@ index a29af111f..0747b41af 100755
          lse_query = lse_query.transpose(0, 1).contiguous()
  
          merge_attn_states(
-@@ -320,7 +494,6 @@ class BatchDCPPrefillWrapper:
+@@ -319,7 +493,6 @@ class BatchDCPPrefillWrapper:
  
  
  class FlashInferBackend(AttentionBackend):
@@ -1082,7 +1030,7 @@ index a29af111f..0747b41af 100755
      supported_dtypes: ClassVar[list[torch.dtype]] = [torch.float16, torch.bfloat16]
      supported_kv_cache_dtypes: ClassVar[list[CacheDType]] = [
          "auto",
-@@ -344,17 +517,7 @@ class FlashInferBackend(AttentionBackend):
+@@ -343,17 +516,7 @@ class FlashInferBackend(AttentionBackend):
  
      @classmethod
      def supports_non_causal(cls) -> bool:
@@ -1101,7 +1049,7 @@ index a29af111f..0747b41af 100755
  
      @staticmethod
      def get_impl_cls() -> type["FlashInferImpl"]:
-@@ -451,7 +614,7 @@ class FlashInferBackend(AttentionBackend):
+@@ -450,7 +613,7 @@ class FlashInferBackend(AttentionBackend):
  class FIPrefill:
      """Metadata for the native FlashInfer prefill pathway (non-TRTLLM)."""
  
@@ -1110,7 +1058,7 @@ index a29af111f..0747b41af 100755
  
  
  @dataclass
-@@ -564,8 +727,9 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -563,8 +726,9 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
          self.attention_config = vllm_config.attention_config
          self._workspace_buffer = None
          self._prefill_wrapper: (
@@ -1121,7 +1069,7 @@ index a29af111f..0747b41af 100755
          self._decode_wrapper = None  # Wrapper for decode (general shape)
  
          if envs.VLLM_BATCH_INVARIANT:
-@@ -583,7 +747,12 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -582,7 +746,12 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
          )
          max_num_reqs = vllm_config.scheduler_config.max_num_seqs
          max_num_pages = max_num_reqs * max_num_pages_per_req
@@ -1135,7 +1083,7 @@ index a29af111f..0747b41af 100755
          self.enable_cuda_graph = (
              self.compilation_config.cudagraph_mode.decode_mode() == CUDAGraphMode.FULL
          )
-@@ -767,22 +936,26 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -772,22 +941,26 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
  
      def _get_prefill_wrapper(
          self,
@@ -1175,7 +1123,7 @@ index a29af111f..0747b41af 100755
          assert self._prefill_wrapper is not None
          return self._prefill_wrapper
  
-@@ -898,13 +1071,26 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -903,13 +1076,26 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
      ) -> FlashInferMetadata:
          num_reqs = common_attn_metadata.num_reqs
          num_actual_tokens = common_attn_metadata.num_actual_tokens
@@ -1208,7 +1156,7 @@ index a29af111f..0747b41af 100755
  
          page_size = self.page_size
          max_seq_len = common_attn_metadata.max_seq_len
-@@ -912,7 +1098,6 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -917,7 +1103,6 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
          block_table_tensor = common_attn_metadata.block_table_tensor
          qo_indptr = common_attn_metadata.query_start_loc
          qo_indptr_cpu = common_attn_metadata.query_start_loc_cpu
@@ -1216,7 +1164,7 @@ index a29af111f..0747b41af 100755
  
          # Step 1: Decide which dispatch modes to use:
          # - Cascade attention (distinct mode)
-@@ -920,21 +1105,26 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -925,21 +1110,26 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
          # - Decode (FI native or TRTLLM)
          use_cascade = common_prefix_len > 0
          uses_spec_reorder = self.reorder_batch_threshold > 1
@@ -1256,7 +1204,7 @@ index a29af111f..0747b41af 100755
          )
  
          if not causal and self.use_dcp:
-@@ -1004,27 +1194,32 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -1009,27 +1199,32 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
          # (block_tables, seq_lens) directly.
          needs_seq_lens_cpu = self.use_dcp or use_cascade or not all_uses_trtllm
          seq_lens_cpu = common_attn_metadata.seq_lens_cpu if needs_seq_lens_cpu else None
@@ -1306,7 +1254,7 @@ index a29af111f..0747b41af 100755
              seq_lens_cpu = get_dcp_local_seq_lens(
                  seq_lens_cpu,
                  self.dcp_world_size,
-@@ -1032,6 +1227,13 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -1037,6 +1232,13 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
                  self.dcp_kv_cache_interleave_size,
              )
  
@@ -1320,7 +1268,7 @@ index a29af111f..0747b41af 100755
          # Adjust num_block_np for cascade attention
          if use_cascade:
              assert num_blocks_np is not None
-@@ -1148,7 +1350,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -1153,7 +1355,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
                      max_seq_len=max_seq_len,
                  )
              else:
@@ -1329,7 +1277,7 @@ index a29af111f..0747b41af 100755
                  # Slicing CPU buffers that are only needed for FI native prefills
                  paged_kv_last_page_len_prefill_cpu = self.paged_kv_last_page_len.cpu[
                      prefill_start:num_reqs
-@@ -1158,8 +1360,8 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -1163,8 +1365,8 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
                      prefill_start : num_reqs + 1
                  ]
                  assert paged_kv_indptr_prefill_cpu.shape[0] == num_prefills + 1
@@ -1340,7 +1288,7 @@ index a29af111f..0747b41af 100755
                      prefill_wrapper.plan(
                          qo_indptr_cpu=qo_indptr_prefill_cpu,
                          paged_kv_indptr_cpu=paged_kv_indptr_prefill_cpu,
-@@ -1175,6 +1377,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -1180,6 +1382,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
                          logits_soft_cap=self.logits_soft_cap,
                          q_data_type=self.q_data_type,
                          kv_cache_dtype=self.kv_cache_dtype,
@@ -1348,7 +1296,7 @@ index a29af111f..0747b41af 100755
                          prefill_fixed_split_size=self.prefill_fixed_split_size,
                          disable_split_kv=self.disable_split_kv,
                      )
-@@ -1312,7 +1515,11 @@ class FlashInferImpl(AttentionImpl):
+@@ -1317,7 +1520,11 @@ class FlashInferImpl(AttentionImpl):
          )
          self.kv_cache_dtype = kv_cache_dtype
          self.is_kvcache_nvfp4 = kv_cache_dtype == "nvfp4"
@@ -1361,7 +1309,7 @@ index a29af111f..0747b41af 100755
          self.logits_soft_cap = logits_soft_cap
          self.kv_sharing_target_layer_name = kv_sharing_target_layer_name
  
-@@ -1388,7 +1595,7 @@ class FlashInferImpl(AttentionImpl):
+@@ -1393,7 +1600,7 @@ class FlashInferImpl(AttentionImpl):
          value: torch.Tensor,
          kv_cache: torch.Tensor,
          attn_metadata: FlashInferMetadata,
@@ -1370,7 +1318,7 @@ index a29af111f..0747b41af 100755
          output_scale: torch.Tensor | None = None,
          output_block_scale: torch.Tensor | None = None,
      ) -> torch.Tensor:
-@@ -1405,8 +1612,6 @@ class FlashInferImpl(AttentionImpl):
+@@ -1410,8 +1617,6 @@ class FlashInferImpl(AttentionImpl):
          Returns:
              shape = [num_tokens, num_heads * head_size]
          """
@@ -1379,7 +1327,7 @@ index a29af111f..0747b41af 100755
          if attn_metadata is None:
              # Profiling run.
              return output.fill_(0)
-@@ -1477,15 +1682,14 @@ class FlashInferImpl(AttentionImpl):
+@@ -1482,15 +1687,14 @@ class FlashInferImpl(AttentionImpl):
  
          # FlashInfer treats uint8 KV cache as NVFP4. vLLM stores FP8 KV cache
          # as uint8 bytes, so pass FP8 caches with their logical dtype.
@@ -1403,7 +1351,7 @@ index a29af111f..0747b41af 100755
          # Inputs and outputs may be padded for CUDA graphs
          query = query[:num_actual_tokens]
          key = key[:num_actual_tokens]
-@@ -1543,20 +1747,43 @@ class FlashInferImpl(AttentionImpl):
+@@ -1548,20 +1752,43 @@ class FlashInferImpl(AttentionImpl):
                  assert isinstance(attn_metadata.prefill, FIPrefill)
                  prefill_wrapper = attn_metadata.prefill.wrapper
                  assert prefill_wrapper is not None
@@ -1465,7 +1413,7 @@ index a29af111f..0747b41af 100755
 2.54.0
 
 
-From df7f8844972f73643186f3303b52557206994e7e Mon Sep 17 00:00:00 2001
+From 8803a94d9558b74748369dbacf1977c9b726cd4f Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Wed, 29 Apr 2026 18:48:51 +0800
 Subject: [PATCH 5/9] feat: support batched draft
@@ -1476,10 +1424,10 @@ Subject: [PATCH 5/9] feat: support batched draft
  2 files changed, 79 insertions(+), 216 deletions(-)
 
 diff --git a/vllm/v1/attention/backends/flashinfer.py b/vllm/v1/attention/backends/flashinfer.py
-index 0747b41af..ae59d8cba 100755
+index 65c4fb176c..bb4e48c445 100755
 --- a/vllm/v1/attention/backends/flashinfer.py
 +++ b/vllm/v1/attention/backends/flashinfer.py
-@@ -87,12 +87,6 @@ logger = init_logger(__name__)
+@@ -86,12 +86,6 @@ logger = init_logger(__name__)
  trtllm_gen_workspace_buffer = None
  
  
@@ -1492,7 +1440,7 @@ index 0747b41af..ae59d8cba 100755
  def _get_trtllm_gen_workspace_buffer():
      global trtllm_gen_workspace_buffer
      if trtllm_gen_workspace_buffer is None:
-@@ -248,24 +242,6 @@ class BatchMergedPrefillWrapper:
+@@ -247,24 +241,6 @@ class BatchMergedPrefillWrapper:
          self._new_tokens = BatchPrefillWithRaggedKVCacheWrapper(
              new_tokens_workspace, get_kv_cache_layout()
          )
@@ -1517,7 +1465,7 @@ index 0747b41af..ae59d8cba 100755
  
      def plan(
          self,
-@@ -287,82 +263,37 @@ class BatchMergedPrefillWrapper:
+@@ -286,82 +262,37 @@ class BatchMergedPrefillWrapper:
          prefill_fixed_split_size: int,
          disable_split_kv: bool,
      ):
@@ -1631,7 +1579,7 @@ index 0747b41af..ae59d8cba 100755
  
      def run(
          self,
-@@ -391,47 +322,6 @@ class BatchMergedPrefillWrapper:
+@@ -390,47 +321,6 @@ class BatchMergedPrefillWrapper:
                  get_dcp_group(),
                  return_lse=True,
              )
@@ -1679,7 +1627,7 @@ index 0747b41af..ae59d8cba 100755
          else:
              output_context, lse_context = self._context.run(
                  prefill_query,
-@@ -442,45 +332,12 @@ class BatchMergedPrefillWrapper:
+@@ -441,45 +331,12 @@ class BatchMergedPrefillWrapper:
              )
          lse_context = lse_context.transpose(0, 1).contiguous()
  
@@ -1731,7 +1679,7 @@ index 0747b41af..ae59d8cba 100755
          lse_query = lse_query.transpose(0, 1).contiguous()
  
          merge_attn_states(
-@@ -1315,6 +1172,18 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -1320,6 +1177,18 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
                  qo_indptr_cpu[prefill_start:] - qo_indptr_cpu[prefill_start]
              )
              assert qo_indptr_prefill_cpu.shape[0] == num_prefills + 1
@@ -1750,7 +1698,7 @@ index 0747b41af..ae59d8cba 100755
  
              if prefill_use_trtllm:
                  # Create GPU versions
-@@ -1366,7 +1235,9 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -1371,7 +1240,9 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
                          qo_indptr_cpu=qo_indptr_prefill_cpu,
                          paged_kv_indptr_cpu=paged_kv_indptr_prefill_cpu,
                          paged_kv_indices=paged_kv_indices,
@@ -1761,7 +1709,7 @@ index 0747b41af..ae59d8cba 100755
                          page_size=self.page_size,
                          num_qo_heads=self.num_qo_heads,
                          dcp_world_size=self.dcp_world_size,
-@@ -1749,41 +1620,27 @@ class FlashInferImpl(AttentionImpl):
+@@ -1754,41 +1625,27 @@ class FlashInferImpl(AttentionImpl):
                  assert prefill_wrapper is not None
                  if use_dcp or not attn_metadata.causal:
                      assert isinstance(prefill_wrapper, BatchMergedPrefillWrapper)
@@ -1825,10 +1773,10 @@ index 0747b41af..ae59d8cba 100755
                      prefill_wrapper.run(
                          layer,
 diff --git a/vllm/v1/spec_decode/llm_base_proposer.py b/vllm/v1/spec_decode/llm_base_proposer.py
-index 9979a0517..b2db2a187 100644
+index cf9b70a7ca..e730ce18f0 100644
 --- a/vllm/v1/spec_decode/llm_base_proposer.py
 +++ b/vllm/v1/spec_decode/llm_base_proposer.py
-@@ -116,6 +116,12 @@ class SpecDecodeBaseProposer:
+@@ -122,6 +122,12 @@ class SpecDecodeBaseProposer:
  
          self.max_batch_size = vllm_config.scheduler_config.max_num_seqs
          self.max_num_tokens = vllm_config.scheduler_config.max_num_batched_tokens
@@ -1845,7 +1793,7 @@ index 9979a0517..b2db2a187 100644
 2.54.0
 
 
-From 6b4c92fe67fd093202f433fa345293988e502b3e Mon Sep 17 00:00:00 2001
+From 913ec17d46f6ea5b790a9d61f081a9d1ecfdca20 Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Fri, 1 May 2026 23:20:34 +0800
 Subject: [PATCH 6/9] Separate DFlash and DCP FlashInfer prefill wrappers
@@ -1855,10 +1803,10 @@ Subject: [PATCH 6/9] Separate DFlash and DCP FlashInfer prefill wrappers
  1 file changed, 199 insertions(+), 57 deletions(-)
 
 diff --git a/vllm/v1/attention/backends/flashinfer.py b/vllm/v1/attention/backends/flashinfer.py
-index ae59d8cba..2236e9a84 100755
+index bb4e48c445..dc2819ada9 100755
 --- a/vllm/v1/attention/backends/flashinfer.py
 +++ b/vllm/v1/attention/backends/flashinfer.py
-@@ -211,23 +211,125 @@ def trtllm_prefill_attn_kvfp8_dequant(
+@@ -210,23 +210,125 @@ def trtllm_prefill_attn_kvfp8_dequant(
      return mock_kv_cache, mock_block_table
  
  
@@ -1995,7 +1943,7 @@ index ae59d8cba..2236e9a84 100755
          # _context and _new_tokens need separate workspace buffers: both
          # plan() calls write CTA scheduling data into the workspace, and
          # the second plan() would overwrite the first's data if they shared
-@@ -251,7 +353,6 @@ class BatchMergedPrefillWrapper:
+@@ -250,7 +352,6 @@ class BatchMergedPrefillWrapper:
          paged_kv_last_page_len_cpu: torch.Tensor,
          page_size: int,
          num_qo_heads: int,
@@ -2003,7 +1951,7 @@ index ae59d8cba..2236e9a84 100755
          num_kv_heads: int,
          head_dim: int,
          sm_scale: float,
-@@ -259,7 +360,6 @@ class BatchMergedPrefillWrapper:
+@@ -258,7 +359,6 @@ class BatchMergedPrefillWrapper:
          logits_soft_cap: float | None,
          q_data_type: torch.dtype,
          kv_cache_dtype: torch.dtype,
@@ -2011,7 +1959,7 @@ index ae59d8cba..2236e9a84 100755
          prefill_fixed_split_size: int,
          disable_split_kv: bool,
      ):
-@@ -268,7 +368,7 @@ class BatchMergedPrefillWrapper:
+@@ -267,7 +367,7 @@ class BatchMergedPrefillWrapper:
              paged_kv_indptr=paged_kv_indptr_cpu,
              paged_kv_indices=paged_kv_indices,
              paged_kv_last_page_len=paged_kv_last_page_len_cpu,
@@ -2020,7 +1968,7 @@ index ae59d8cba..2236e9a84 100755
              num_kv_heads=num_kv_heads,
              head_dim_qk=head_dim,
              page_size=page_size,
-@@ -288,7 +388,7 @@ class BatchMergedPrefillWrapper:
+@@ -287,7 +387,7 @@ class BatchMergedPrefillWrapper:
              num_kv_heads=num_kv_heads,
              head_dim_qk=head_dim,
              head_dim_vo=head_dim,
@@ -2029,7 +1977,7 @@ index ae59d8cba..2236e9a84 100755
              sm_scale=sm_scale,
              window_left=window_left,
              logits_soft_cap=logits_soft_cap,
-@@ -304,32 +404,13 @@ class BatchMergedPrefillWrapper:
+@@ -303,32 +403,13 @@ class BatchMergedPrefillWrapper:
          value: torch.Tensor,
          out: torch.Tensor,
      ):
@@ -2069,7 +2017,7 @@ index ae59d8cba..2236e9a84 100755
          lse_context = lse_context.transpose(0, 1).contiguous()
  
          output_query, lse_query = self._new_tokens.run(
-@@ -471,7 +552,11 @@ class FlashInferBackend(AttentionBackend):
+@@ -470,7 +551,11 @@ class FlashInferBackend(AttentionBackend):
  class FIPrefill:
      """Metadata for the native FlashInfer prefill pathway (non-TRTLLM)."""
  
@@ -2082,7 +2030,7 @@ index ae59d8cba..2236e9a84 100755
  
  
  @dataclass
-@@ -586,7 +671,8 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -585,7 +670,8 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
          self._prefill_wrapper: (
              BatchPrefillWithPagedKVCacheWrapper | None
          ) = None  # Wrapper for prefill/append
@@ -2092,7 +2040,7 @@ index ae59d8cba..2236e9a84 100755
          self._decode_wrapper = None  # Wrapper for decode (general shape)
  
          if envs.VLLM_BATCH_INVARIANT:
-@@ -794,15 +880,25 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -799,15 +885,25 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
      def _get_prefill_wrapper(
          self,
          causal: bool,
@@ -2124,7 +2072,7 @@ index ae59d8cba..2236e9a84 100755
  
          if self._prefill_wrapper is None:
              # NVFP4 KV cache requires the trtllm-gen backend inside
-@@ -942,7 +1038,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -947,7 +1043,7 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
              # Even when the query length matches the speculative decode
              # threshold, FlashInfer decode/TRTLLM kernels cannot express that
              # bidirectional query-query attention. Treat the whole batch as an
@@ -2133,7 +2081,7 @@ index ae59d8cba..2236e9a84 100755
              # context KV with the current query KV.
              num_decodes = 0
              num_prefills = num_reqs
-@@ -1229,8 +1325,8 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -1234,8 +1330,8 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
                      prefill_start : num_reqs + 1
                  ]
                  assert paged_kv_indptr_prefill_cpu.shape[0] == num_prefills + 1
@@ -2144,7 +2092,7 @@ index ae59d8cba..2236e9a84 100755
                      prefill_wrapper.plan(
                          qo_indptr_cpu=qo_indptr_prefill_cpu,
                          paged_kv_indptr_cpu=paged_kv_indptr_prefill_cpu,
-@@ -1248,7 +1344,27 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
+@@ -1253,7 +1349,27 @@ class FlashInferMetadataBuilder(AttentionMetadataBuilder[FlashInferMetadata]):
                          logits_soft_cap=self.logits_soft_cap,
                          q_data_type=self.q_data_type,
                          kv_cache_dtype=self.kv_cache_dtype,
@@ -2173,7 +2121,7 @@ index ae59d8cba..2236e9a84 100755
                          prefill_fixed_split_size=self.prefill_fixed_split_size,
                          disable_split_kv=self.disable_split_kv,
                      )
-@@ -1618,8 +1734,8 @@ class FlashInferImpl(AttentionImpl):
+@@ -1623,8 +1739,8 @@ class FlashInferImpl(AttentionImpl):
                  assert isinstance(attn_metadata.prefill, FIPrefill)
                  prefill_wrapper = attn_metadata.prefill.wrapper
                  assert prefill_wrapper is not None
@@ -2184,7 +2132,7 @@ index ae59d8cba..2236e9a84 100755
                      assert (
                          prefill_wrapper._context._window_left
                          == self.window_left
-@@ -1637,10 +1753,36 @@ class FlashInferImpl(AttentionImpl):
+@@ -1642,10 +1758,36 @@ class FlashInferImpl(AttentionImpl):
                          self.logits_soft_cap or 0.0
                      )
                      assert prefill_wrapper._new_tokens._sm_scale == self.scale
@@ -2227,7 +2175,7 @@ index ae59d8cba..2236e9a84 100755
 2.54.0
 
 
-From d247350530b3eee9a68b7c6841687c220a29cbb6 Mon Sep 17 00:00:00 2001
+From 42e34af5a1225900c768cae795ebd077305f716f Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Mon, 4 May 2026 00:45:57 +0800
 Subject: [PATCH 7/9] Make DFlash FlashInfer backend opt-in
@@ -2237,7 +2185,7 @@ Subject: [PATCH 7/9] Make DFlash FlashInfer backend opt-in
  1 file changed, 26 insertions(+)
 
 diff --git a/vllm/v1/spec_decode/dflash.py b/vllm/v1/spec_decode/dflash.py
-index db74044f4..e2f8dfe32 100644
+index 72d0f99d07..6510c1db92 100644
 --- a/vllm/v1/spec_decode/dflash.py
 +++ b/vllm/v1/spec_decode/dflash.py
 @@ -12,12 +12,25 @@ from vllm.forward_context import set_forward_context
@@ -2266,7 +2214,7 @@ index db74044f4..e2f8dfe32 100644
  class DFlashProposer(SpecDecodeBaseProposer):
      def __init__(
          self,
-@@ -71,10 +84,23 @@ class DFlashProposer(SpecDecodeBaseProposer):
+@@ -73,10 +86,23 @@ class DFlashProposer(SpecDecodeBaseProposer):
      @override
      def _create_draft_vllm_config(self) -> VllmConfig:
          base = super()._create_draft_vllm_config()
@@ -2287,34 +2235,34 @@ index db74044f4..e2f8dfe32 100644
              attention_config=replace(
                  base.attention_config,
 +                backend=backend,
-                 use_non_causal=True,
+                 use_non_causal=not self.dflash_causal,
              ),
          )
 -- 
 2.54.0
 
 
-From c8d7a03a8501bda0a9fcaaa9db84566a92527661 Mon Sep 17 00:00:00 2001
+From dd345537c4d3080d6dcff779ddcae46f84ca1004 Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Tue, 12 May 2026 16:19:38 +0800
 Subject: [PATCH 8/9] Support DFlash with FlashInfer sliding window attention
 
 ---
- tests/v1/spec_decode/test_dflash_swa.py       | 248 ++++++++++++++
+ tests/v1/spec_decode/test_dflash_swa.py       | 248 +++++++++++++
  vllm/config/speculative.py                    |   8 +
  .../layers/attention/attention.py             |   7 +-
  vllm/model_executor/models/qwen3_dflash.py    | 107 +++++-
  .../configs/speculators/algos.py              |  12 +
- vllm/v1/spec_decode/dflash.py                 | 313 +++++++++++++-----
+ vllm/v1/spec_decode/dflash.py                 | 325 +++++++++++++-----
  vllm/v1/spec_decode/llm_base_proposer.py      | 125 ++++---
  vllm/v1/spec_decode/utils.py                  |  42 ++-
- vllm/v1/worker/gpu_model_runner.py            | 215 ++++++++++--
- 9 files changed, 914 insertions(+), 163 deletions(-)
+ vllm/v1/worker/gpu_model_runner.py            | 209 +++++++++--
+ 9 files changed, 914 insertions(+), 169 deletions(-)
  create mode 100644 tests/v1/spec_decode/test_dflash_swa.py
 
 diff --git a/tests/v1/spec_decode/test_dflash_swa.py b/tests/v1/spec_decode/test_dflash_swa.py
 new file mode 100644
-index 000000000..f5f58aec1
+index 0000000000..f5f58aec11
 --- /dev/null
 +++ b/tests/v1/spec_decode/test_dflash_swa.py
 @@ -0,0 +1,248 @@
@@ -2567,7 +2515,7 @@ index 000000000..f5f58aec1
 +    assert per_layer["layer.1"].block_table_tensor is block_table_1
 +    assert torch.equal(per_layer["layer.1"].slot_mapping, query_slots_1)
 diff --git a/vllm/config/speculative.py b/vllm/config/speculative.py
-index 23293d9ab..76b8f13f2 100644
+index 6a4fb9cff0..c8d44d4501 100644
 --- a/vllm/config/speculative.py
 +++ b/vllm/config/speculative.py
 @@ -294,6 +294,14 @@ class SpeculativeConfig:
@@ -2586,7 +2534,7 @@ index 23293d9ab..76b8f13f2 100644
                  # Convert to tuple to make it hashable
                  factors.append(tuple(layer_ids))
 diff --git a/vllm/model_executor/layers/attention/attention.py b/vllm/model_executor/layers/attention/attention.py
-index 2e17a55ce..01ef424e9 100644
+index 2e17a55ce7..01ef424e95 100644
 --- a/vllm/model_executor/layers/attention/attention.py
 +++ b/vllm/model_executor/layers/attention/attention.py
 @@ -203,6 +203,7 @@ class Attention(nn.Module, AttentionLayerBase):
@@ -2611,7 +2559,7 @@ index 2e17a55ce..01ef424e9 100644
          # During model initialization, the default dtype is set as the model
          # weight and activation dtype.
 diff --git a/vllm/model_executor/models/qwen3_dflash.py b/vllm/model_executor/models/qwen3_dflash.py
-index 231ed646e..397b942fa 100644
+index 820260f795..4a8cb1377a 100644
 --- a/vllm/model_executor/models/qwen3_dflash.py
 +++ b/vllm/model_executor/models/qwen3_dflash.py
 @@ -1,7 +1,7 @@
@@ -2817,7 +2765,7 @@ index 231ed646e..397b942fa 100644
              )
  
      def forward(
-@@ -523,7 +608,9 @@ class DFlashQwen3ForCausalLM(Qwen3ForCausalLM):
+@@ -511,7 +596,9 @@ class DFlashQwen3ForCausalLM(Qwen3ForCausalLM):
              prefix=maybe_prefix(prefix, "lm_head"),
          )
          self.logits_processor = LogitsProcessor(
@@ -2828,7 +2776,7 @@ index 231ed646e..397b942fa 100644
          )
          target_vocab_size = vllm_config.model_config.get_vocab_size()
          if self.config.draft_vocab_size != target_vocab_size:
-@@ -571,13 +658,17 @@ class DFlashQwen3ForCausalLM(Qwen3ForCausalLM):
+@@ -559,13 +646,17 @@ class DFlashQwen3ForCausalLM(Qwen3ForCausalLM):
          self,
          context_states: torch.Tensor,
          context_positions: torch.Tensor,
@@ -2848,7 +2796,7 @@ index 231ed646e..397b942fa 100644
          self,
          hidden_states: torch.Tensor,
 diff --git a/vllm/transformers_utils/configs/speculators/algos.py b/vllm/transformers_utils/configs/speculators/algos.py
-index 650f09c39..983b5b6f5 100644
+index 650f09c39f..983b5b6f50 100644
 --- a/vllm/transformers_utils/configs/speculators/algos.py
 +++ b/vllm/transformers_utils/configs/speculators/algos.py
 @@ -90,11 +90,23 @@ def update_dflash(config_dict: dict, pre_trained_config: dict) -> None:
@@ -2876,7 +2824,7 @@ index 650f09c39..983b5b6f5 100644
      aux_layer_ids = config_dict["aux_hidden_state_layer_ids"]
      pre_trained_config["eagle_aux_hidden_state_layer_ids"] = aux_layer_ids
 diff --git a/vllm/v1/spec_decode/dflash.py b/vllm/v1/spec_decode/dflash.py
-index e2f8dfe32..5dae03abb 100644
+index 6510c1db92..af75bcd68a 100644
 --- a/vllm/v1/spec_decode/dflash.py
 +++ b/vllm/v1/spec_decode/dflash.py
 @@ -1,36 +1,23 @@
@@ -2930,13 +2878,15 @@ index e2f8dfe32..5dae03abb 100644
          self._context_positions_buffer = torch.zeros(
              self.max_num_tokens,
              dtype=torch.int64,
-@@ -78,29 +70,37 @@ class DFlashProposer(SpecDecodeBaseProposer):
+@@ -78,31 +70,39 @@ class DFlashProposer(SpecDecodeBaseProposer):
              self.max_positions + 1, device=device, dtype=torch.int32
          )
  
 -        # For DFlash we use the input embeddings to embed the mask token
 +        # DFlash embeds mask tokens directly.
          self.parallel_drafting_hidden_state_tensor = None
+ 
+         self.dflash_causal = self.dflash_config.get("causal", False)
  
 +    @override
 +    def allow_multiple_draft_kv_cache_groups(self) -> bool:
@@ -2979,10 +2929,10 @@ index e2f8dfe32..5dae03abb 100644
              attention_config=replace(
                  base.attention_config,
 -                backend=backend,
-                 use_non_causal=True,
+                 use_non_causal=not self.dflash_causal,
              ),
          )
-@@ -110,6 +110,91 @@ class DFlashProposer(SpecDecodeBaseProposer):
+@@ -112,6 +112,91 @@ class DFlashProposer(SpecDecodeBaseProposer):
          # Override to allow multimodal inputs since DFlash supports Qwen3.5 models
          pass
  
@@ -3074,7 +3024,7 @@ index e2f8dfe32..5dae03abb 100644
      @override
      def set_inputs_first_pass(
          self,
-@@ -128,11 +213,9 @@ class DFlashProposer(SpecDecodeBaseProposer):
+@@ -130,11 +215,9 @@ class DFlashProposer(SpecDecodeBaseProposer):
          num_query_per_req = 1 + self.num_speculative_tokens
          num_query_total = batch_size * num_query_per_req
  
@@ -3087,7 +3037,7 @@ index e2f8dfe32..5dae03abb 100644
          self._dflash_hidden_states = target_hidden_states
  
          token_indices_to_sample = torch.empty(
-@@ -141,8 +224,7 @@ class DFlashProposer(SpecDecodeBaseProposer):
+@@ -143,8 +226,7 @@ class DFlashProposer(SpecDecodeBaseProposer):
              device=self.device,
          )
  
@@ -3097,7 +3047,7 @@ index e2f8dfe32..5dae03abb 100644
          max_ctx_per_req = cad.max_query_len
          max_tokens_per_req = max_ctx_per_req + num_query_per_req
          BLOCK_SIZE = min(256, triton.next_power_of_2(max_tokens_per_req))
-@@ -150,36 +232,48 @@ class DFlashProposer(SpecDecodeBaseProposer):
+@@ -152,36 +234,48 @@ class DFlashProposer(SpecDecodeBaseProposer):
          grid = (batch_size, num_blocks)
  
          has_num_rejected = num_rejected_tokens_gpu is not None
@@ -3175,7 +3125,7 @@ index e2f8dfe32..5dae03abb 100644
          new_query_start_loc = self.arange[: batch_size + 1] * num_query_per_req
  
          # In padded mode, cad.seq_lens includes rejected tokens. Subtract
-@@ -188,12 +282,6 @@ class DFlashProposer(SpecDecodeBaseProposer):
+@@ -190,12 +284,6 @@ class DFlashProposer(SpecDecodeBaseProposer):
          if has_num_rejected:
              effective_seq_lens = effective_seq_lens - num_rejected_tokens_gpu
  
@@ -3188,7 +3138,7 @@ index e2f8dfe32..5dae03abb 100644
          new_cad = CommonAttentionMetadata(
              query_start_loc=new_query_start_loc,
              seq_lens=effective_seq_lens + num_query_per_req,
-@@ -203,12 +291,11 @@ class DFlashProposer(SpecDecodeBaseProposer):
+@@ -205,12 +293,11 @@ class DFlashProposer(SpecDecodeBaseProposer):
              ),
              _seq_lens_cpu=None,
              _num_computed_tokens_cpu=None,
@@ -3200,9 +3150,9 @@ index e2f8dfe32..5dae03abb 100644
 -            block_table_tensor=cad.block_table_tensor,
 +            block_table_tensor=self._get_dflash_block_table(primary_kv_gid, cad),
              slot_mapping=query_slot_mapping,
-             causal=False,  # Non-causal attention is required for DFlash
+             causal=self.dflash_causal,
          )
-@@ -281,15 +368,13 @@ class DFlashProposer(SpecDecodeBaseProposer):
+@@ -283,15 +370,13 @@ class DFlashProposer(SpecDecodeBaseProposer):
          num_input_tokens: int,
          mm_embed_inputs: tuple[list[torch.Tensor], torch.Tensor] | None,
      ) -> tuple[dict[str, Any], int]:
@@ -3220,7 +3170,7 @@ index e2f8dfe32..5dae03abb 100644
          )
          return (
              dict(
-@@ -304,10 +389,84 @@ class DFlashProposer(SpecDecodeBaseProposer):
+@@ -306,17 +391,89 @@ class DFlashProposer(SpecDecodeBaseProposer):
      def build_per_group_and_layer_attn_metadata(
          self, cad: CommonAttentionMetadata, draft_index: int = 0
      ) -> tuple[list[object], dict[str, object]]:
@@ -3251,6 +3201,13 @@ index e2f8dfe32..5dae03abb 100644
 +        sliding_layer_names: set[str] = getattr(
 +            self.model, "sliding_attention_layer_names", set()
          )
+-        if not self.dflash_causal:
+-            # Require all layers to support non-causal attention when required by DFlash
+-            for layer_name, attn_metadata in per_layer.items():
+-                assert getattr(attn_metadata, "causal", None) is False, (
+-                    f"Attention metadata for layer {layer_name} does not have"
+-                    " non-causal support, which is required for DFlash."
+-                    " Consider using a different attention backend, e.g FlashAttention."
 +        self._ensure_slot_mapping_buffers()
 +        for attn_group in self.draft_attn_groups:
 +            kv_cache_gid = attn_group.kv_cache_group_id
@@ -3259,7 +3216,7 @@ index e2f8dfe32..5dae03abb 100644
 +                slot_mapping=self._slot_mapping_buffers_by_gid[kv_cache_gid][1][
 +                    : cad.num_actual_tokens
 +                ],
-+                causal=False,
++                causal=self.dflash_causal,
 +            )
 +            group_layer_names = set(attn_group.layer_names)
 +            sliding_layers = sliding_layer_names & group_layer_names
@@ -3291,24 +3248,29 @@ index e2f8dfe32..5dae03abb 100644
 +                    attn_group,
 +                    sliding_layer_names_in_group,
 +                    group_cad.replace(causal=True),
-+                )
+                 )
 +                if not full_layers:
 +                    per_group.append(attn_metadata)
 +                for layer_name in sliding_layer_names_in_group:
 +                    per_layer[layer_name] = attn_metadata
 +
-         for layer_name, attn_metadata in per_layer.items():
++        for layer_name, attn_metadata in per_layer.items():
 +            if layer_name in sliding_layer_names:
 +                assert getattr(attn_metadata, "causal", None) is True, (
 +                    f"Attention metadata for sliding layer {layer_name} does not have"
 +                    " causal support, which is required for DFlash SWA."
 +                )
 +                continue
-             assert getattr(attn_metadata, "causal", None) is False, (
-                 f"Attention metadata for layer {layer_name} does not have"
-                 " non-causal support, which is required for DFlash."
++            assert getattr(attn_metadata, "causal", None) is False, (
++                f"Attention metadata for layer {layer_name} does not have"
++                " non-causal support, which is required for DFlash."
++                " Consider using a different attention backend, such as FlashAttention."
++            )
+         return per_group, per_layer
+ 
+     @override
 diff --git a/vllm/v1/spec_decode/llm_base_proposer.py b/vllm/v1/spec_decode/llm_base_proposer.py
-index b2db2a187..efe59df8e 100644
+index e730ce1..e8935b7 100644
 --- a/vllm/v1/spec_decode/llm_base_proposer.py
 +++ b/vllm/v1/spec_decode/llm_base_proposer.py
 @@ -30,7 +30,11 @@ from vllm.v1.attention.backend import CommonAttentionMetadata
@@ -3322,9 +3284,9 @@ index b2db2a187..efe59df8e 100644
 +    UniformTypeKVCacheSpecs,
 +)
  from vllm.v1.sample.metadata import SamplingMetadata
- from vllm.v1.sample.sampler import _SAMPLING_EPS
- from vllm.v1.spec_decode.metadata import SpecDecodeMetadata
-@@ -136,6 +140,8 @@ class SpecDecodeBaseProposer:
+ from vllm.v1.sample.ops.topk_topp_sampler import (
+     empty_exponential_noise_like,
+@@ -142,6 +146,8 @@ class SpecDecodeBaseProposer:
  
          self.draft_attn_groups: list[AttentionGroup] = []
          self.kv_cache_gid: int = -1
@@ -3333,7 +3295,7 @@ index b2db2a187..efe59df8e 100644
          self.eagle3_use_aux_hidden_state: bool = (
              self._get_eagle3_use_aux_hidden_state_from_config()
          )
-@@ -1544,6 +1550,9 @@ class SpecDecodeBaseProposer:
+@@ -1582,6 +1588,9 @@ class SpecDecodeBaseProposer:
              == 1
          ), "All drafting layers should belong to the same kv cache group"
  
@@ -3343,7 +3305,7 @@ index b2db2a187..efe59df8e 100644
      def initialize_attn_backend(
          self,
          kv_cache_config: KVCacheConfig,
-@@ -1558,47 +1567,79 @@ class SpecDecodeBaseProposer:
+@@ -1596,47 +1605,79 @@ class SpecDecodeBaseProposer:
              AttentionLayerBase,  # type: ignore[type-abstract]
          )
  
@@ -3465,7 +3427,7 @@ index b2db2a187..efe59df8e 100644
          self.draft_attn_groups = list(attention_groups.values())
          self.block_size = (
 diff --git a/vllm/v1/spec_decode/utils.py b/vllm/v1/spec_decode/utils.py
-index e046f0136..861fe2c72 100644
+index e046f01361..861fe2c724 100644
 --- a/vllm/v1/spec_decode/utils.py
 +++ b/vllm/v1/spec_decode/utils.py
 @@ -502,20 +502,13 @@ def copy_and_expand_dflash_inputs_kernel(
@@ -3544,10 +3506,10 @@ index e046f0136..861fe2c72 100644
  
      # --- Input IDs (query tokens only) ---
 diff --git a/vllm/v1/worker/gpu_model_runner.py b/vllm/v1/worker/gpu_model_runner.py
-index 39778cae9..ee9964dc7 100644
+index 2ca0be1c12..bc500876f2 100644
 --- a/vllm/v1/worker/gpu_model_runner.py
 +++ b/vllm/v1/worker/gpu_model_runner.py
-@@ -2400,6 +2400,14 @@ class GPUModelRunner(
+@@ -2409,6 +2409,14 @@ class GPUModelRunner(
          # Prepare the attention metadata for each KV cache group and make layers
          # in the same group share the same metadata.
          spec_decode_common_attn_metadata = None
@@ -3562,7 +3524,7 @@ index 39778cae9..ee9964dc7 100644
          for kv_cache_gid, kv_cache_group in enumerate(kv_cache_groups):
              cm = copy(cm_base)  # shallow copy
  
-@@ -2415,6 +2423,11 @@ class GPUModelRunner(
+@@ -2424,6 +2432,11 @@ class GPUModelRunner(
                  cm.block_table_tensor = _get_block_table(kv_cache_gid)
                  cm.slot_mapping = slot_mappings[kv_cache_gid]
  
@@ -3574,19 +3536,19 @@ index 39778cae9..ee9964dc7 100644
              if self.speculative_config and spec_decode_common_attn_metadata is None:
                  if isinstance(
                      self.drafter,
-@@ -6561,6 +6574,7 @@ class GPUModelRunner(
-         class AttentionGroupKey(NamedTuple):
+@@ -6702,6 +6715,7 @@ class GPUModelRunner(
              attn_backend: type[AttentionBackend]
              kv_cache_spec: KVCacheSpec
+             num_heads_q: int
 +            flashinfer_params: tuple[int, float | None, float, bool] | None
  
          def get_attn_backends_for_group(
              kv_cache_group_spec: KVCacheGroupSpec,
-@@ -6589,9 +6603,20 @@ class GPUModelRunner(
-                 layer_kv_cache_spec = kv_cache_group_spec.kv_cache_spec
-                 if isinstance(layer_kv_cache_spec, UniformTypeKVCacheSpecs):
-                     layer_kv_cache_spec = layer_kv_cache_spec.kv_cache_specs[layer_name]
--                key = (full_cls_name, layer_kv_cache_spec)
+@@ -6737,9 +6751,20 @@ class GPUModelRunner(
+                 # fallback can never spuriously merge them with attention
+                 # layers.
+                 num_heads_q = getattr(layers[layer_name], "num_heads", 0)
+-                key = (full_cls_name, layer_kv_cache_spec, num_heads_q)
 +                flashinfer_params = None
 +                if attn_backend.get_name() == "FLASHINFER":
 +                    impl = layers[layer_name].impl
@@ -3598,27 +3560,14 @@ index 39778cae9..ee9964dc7 100644
 +                        impl.scale,
 +                        getattr(impl, "sinks", None) is not None,
 +                    )
-+                key = (full_cls_name, layer_kv_cache_spec, flashinfer_params)
++                key = (full_cls_name, layer_kv_cache_spec, num_heads_q, flashinfer_params)
                  attn_backends[key] = AttentionGroupKey(
--                    attn_backend, layer_kv_cache_spec
-+                    attn_backend, layer_kv_cache_spec, flashinfer_params
+-                    attn_backend, layer_kv_cache_spec, num_heads_q
++                    attn_backend, layer_kv_cache_spec, num_heads_q, flashinfer_params
                  )
                  attn_backend_layers[key].append(layer_name)
              return (
-@@ -6604,7 +6629,11 @@ class GPUModelRunner(
-             kv_cache_group_id: int,
-         ) -> list[AttentionGroup]:
-             attn_groups: list[AttentionGroup] = []
--            for (attn_backend, kv_cache_spec), layer_names in attn_backends_map.items():
-+            for (
-+                attn_backend,
-+                kv_cache_spec,
-+                _flashinfer_params,
-+            ), layer_names in attn_backends_map.items():
-                 attn_group = AttentionGroup(
-                     attn_backend,
-                     layer_names,
-@@ -6891,6 +6920,119 @@ class GPUModelRunner(
+@@ -7039,6 +7064,119 @@ class GPUModelRunner(
          for attn_groups in self.attn_groups:
              yield from attn_groups
  
@@ -3738,7 +3687,7 @@ index 39778cae9..ee9964dc7 100644
      def _reshape_kv_cache_tensors(
          self,
          kv_cache_raw_tensors: dict[str, torch.Tensor],
-@@ -6909,6 +7051,10 @@ class GPUModelRunner(
+@@ -7057,6 +7195,10 @@ class GPUModelRunner(
          """
          kv_caches: dict[str, torch.Tensor] = {}
          has_attn, has_mamba = False, False
@@ -3749,7 +3698,7 @@ index 39778cae9..ee9964dc7 100644
          for group in self._kv_cache_spec_attn_group_iterator():
              kv_cache_spec = group.kv_cache_spec
              attn_backend = group.backend
-@@ -6929,25 +7075,47 @@ class GPUModelRunner(
+@@ -7077,25 +7219,47 @@ class GPUModelRunner(
                      )
                      kernel_num_blocks = num_blocks * num_blocks_per_kv_block
  
@@ -3813,7 +3762,7 @@ index 39778cae9..ee9964dc7 100644
                      # The allocation respects the backend-defined stride order
                      # to ensure the semantic remains consistent for each
                      # backend. We first obtain the generic kv cache shape and
-@@ -6962,16 +7130,15 @@ class GPUModelRunner(
+@@ -7110,16 +7274,15 @@ class GPUModelRunner(
                          for i in range(len(kv_cache_stride_order))
                      ]
  
@@ -3838,7 +3787,7 @@ index 39778cae9..ee9964dc7 100644
 2.54.0
 
 
-From 5a17fc381cf324caf6f7572cef4f2f92735dc6ad Mon Sep 17 00:00:00 2001
+From 4c2a7acac5bc04a3196c1c636ab5b5694f7a6759 Mon Sep 17 00:00:00 2001
 From: gss <2783977641@qq.com>
 Date: Tue, 12 May 2026 20:29:36 +0800
 Subject: [PATCH 9/9] Fix DFlash SWA aux layer ids and KV sharing tests
@@ -3851,7 +3800,7 @@ Subject: [PATCH 9/9] Fix DFlash SWA aux layer ids and KV sharing tests
  4 files changed, 71 insertions(+), 4 deletions(-)
 
 diff --git a/tests/v1/core/test_kv_sharing.py b/tests/v1/core/test_kv_sharing.py
-index db0e8dae3..3378baddc 100644
+index db0e8dae3e..3378baddc7 100644
 --- a/tests/v1/core/test_kv_sharing.py
 +++ b/tests/v1/core/test_kv_sharing.py
 @@ -1,9 +1,12 @@
@@ -3898,7 +3847,7 @@ index db0e8dae3..3378baddc 100644
 +    ]
 \ No newline at end of file
 diff --git a/tests/v1/spec_decode/test_dflash_swa.py b/tests/v1/spec_decode/test_dflash_swa.py
-index f5f58aec1..16a55ba2e 100644
+index f5f58aec11..16a55ba2e9 100644
 --- a/tests/v1/spec_decode/test_dflash_swa.py
 +++ b/tests/v1/spec_decode/test_dflash_swa.py
 @@ -87,6 +87,7 @@ def test_dflash_speculators_preserves_swa_config():
@@ -3910,10 +3859,10 @@ index f5f58aec1..16a55ba2e 100644
  
  
 diff --git a/tests/v1/worker/test_gpu_model_runner.py b/tests/v1/worker/test_gpu_model_runner.py
-index 1da5d9570..5e4690a00 100644
+index 9642bfd79f..aea6f18887 100644
 --- a/tests/v1/worker/test_gpu_model_runner.py
 +++ b/tests/v1/worker/test_gpu_model_runner.py
-@@ -51,6 +51,41 @@ NUM_BLOCKS = 10
+@@ -53,6 +53,41 @@ NUM_BLOCKS = 10
  DEVICE_TYPE = current_platform.device_type
  
  
@@ -3956,7 +3905,7 @@ index 1da5d9570..5e4690a00 100644
      """
      Only perform necessary steps in GPUModelRunner.initialize_kv_cache()
 diff --git a/vllm/transformers_utils/configs/speculators/algos.py b/vllm/transformers_utils/configs/speculators/algos.py
-index 983b5b6f5..de5df47f9 100644
+index 983b5b6f50..de5df47f98 100644
 --- a/vllm/transformers_utils/configs/speculators/algos.py
 +++ b/vllm/transformers_utils/configs/speculators/algos.py
 @@ -87,9 +87,10 @@ def update_dflash(config_dict: dict, pre_trained_config: dict) -> None:

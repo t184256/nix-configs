@@ -31,7 +31,7 @@ diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
 index c647af8b6..4a1383b42 100644
 --- a/vllm/v1/core/sched/scheduler.py
 +++ b/vllm/v1/core/sched/scheduler.py
-@@ -1996,9 +1996,15 @@ class Scheduler(SchedulerInterface):
+@@ -2051,9 +2051,15 @@ class Scheduler(SchedulerInterface):
          connector_stats_payload = (
              kv_connector_stats.data if kv_connector_stats else None
          )

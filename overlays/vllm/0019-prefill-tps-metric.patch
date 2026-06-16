@@ -1,4 +1,4 @@
-From 784bc4e87c4b1a0d291ccbec8d31b316d9ebb9fe Mon Sep 17 00:00:00 2001
+From eb192ae40d750131d045846ffbb97f7f326d9b9b Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 14 May 2026 16:46:24 +0000
 Subject: [PATCH] metrics: add vllm:prefill_tokens_computed counter
@@ -17,7 +17,7 @@ end.
  2 files changed, 22 insertions(+)
 
 diff --git a/vllm/v1/metrics/loggers.py b/vllm/v1/metrics/loggers.py
-index 6855efd9f..14559e6d9 100644
+index 0052a35366a..12f2160d533 100644
 --- a/vllm/v1/metrics/loggers.py
 +++ b/vllm/v1/metrics/loggers.py
 @@ -668,6 +668,16 @@ class PrometheusStatLogger(AggregateStatLoggerBase):
@@ -45,10 +45,10 @@ index 6855efd9f..14559e6d9 100644
 +            iteration_stats.num_prefill_chunk_tokens
 +        )
          self.histogram_iteration_tokens[engine_idx].observe(
-             iteration_stats.num_prompt_tokens + iteration_stats.num_generation_tokens
-         )
+             iteration_stats.prompt_token_stats.computed
+             + iteration_stats.num_generation_tokens
 diff --git a/vllm/v1/metrics/stats.py b/vllm/v1/metrics/stats.py
-index f30abace7..6ca03fa6e 100644
+index f30abace720..6ca03fa6e08 100644
 --- a/vllm/v1/metrics/stats.py
 +++ b/vllm/v1/metrics/stats.py
 @@ -219,6 +219,10 @@ class RequestStateStats:
