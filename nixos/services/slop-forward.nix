@@ -108,7 +108,8 @@ in
           "qwen3.5-122b-a10b-drafted".hosts = [ grapefruit ];
           "qwen3.6-35b-a3b-drafted".hosts = [ grapefruit ];
 
-          "zeta-2.1".hosts = [ plumMini grapefruit ];
+          "zeta-2.1".hosts = [ grapefruit ];
+          "zeta-2".hosts = [ plumMini grapefruit ];
           "sweep-v2-7b".hosts = [ grapefruit ];
           "sweep-1.5b".hosts = [ grapefruit ];
           "sweep-0.5b".hosts = [ grapefruit ];
@@ -165,10 +166,9 @@ in
           "qwen3.6-35b-a3b-drafted-nothink" =
             { model = "qwen3.6-35b-a3b-drafted"; params = qwen36Nothink; };
 
-          "zeta-2.1".model = "zeta-2.1";
-          zeta.model = "zeta-2.1";
-          "sweep-1.5b".model = "sweep-1.5b";
-          "sweep-0.5b".model = "sweep-0.5b";
+          "zeta".model = "zeta-2.1";
+          "zeta-2".model = "zeta-2";
+          "sweep".model = "sweep-v2-7b";
         };
         grapefruitCatchall = {
           model_name = "*";

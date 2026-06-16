@@ -21,6 +21,7 @@
           f:close()
         end
         require('cursortab').setup({
+          log_level = "trace",
           behavior = {
             idle_completion_delay = 50,
             text_change_debounce = 50,
@@ -37,14 +38,15 @@
           },
           provider = {
             type = "zeta-2",
-            model = "zeta-2";
+            model = "zeta";
             --type = "sweep";
-            --model = "sweep-v2-7b";
+            --model = "sweep";
             url = "https://llm.slop.unboiled.info",
             api_key_env = "CURSORTAB_API_KEY",
             temperature = 0.0,
             top_k = 50,
-            max_tokens = 512,
+            context_size = 4096,
+            max_tokens = 256,
             completion_timeout = 10000,
           },
         })
