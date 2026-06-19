@@ -59,6 +59,7 @@ _:
       dhcp-host = [
         "c8:53:09:19:d3:6c,192.168.98.2"
         "34:5a:60:bd:7e:5f,192.168.98.3"
+        "f8:75:a4:af:de:92,192.168.98.4"
       ];
       dhcp-option = [
         "option:router"  # no default route, must be ignored anyway
@@ -67,7 +68,7 @@ _:
         "option:dns-server,192.168.98.1"  # DNS
         "option:mtu,1300"  # MTU
       ];
-      dhcp-range = "192.168.98.2,192.168.98.2,255.255.255.0,10m";
+      dhcp-range = "192.168.98.100,192.168.98.100,255.255.255.0,10m";
       dhcp-broadcast = true;
       address = [
         "/meshcentral.unboiled.info./192.168.98.1"
@@ -81,7 +82,7 @@ _:
   networking.firewall.allowedTCPPorts = [
     443 4433
     1449
-    2222 2223
+    2222 2223 2224
     47984 47989 47990 48010
   ];
   services.xinetd.enable = true;
@@ -110,6 +111,7 @@ _:
     forwardPorts = [
      { proto = "tcp"; sourcePort = 2222; destination = "192.168.98.2:22"; }
      { proto = "tcp"; sourcePort = 2223; destination = "192.168.98.3:22"; }
+     { proto = "tcp"; sourcePort = 2224; destination = "192.168.98.4:22"; }
      { proto = "tcp"; sourcePort = 47984; destination = "192.168.98.2:47984"; }
      { proto = "tcp"; sourcePort = 47989; destination = "192.168.98.2:47989"; }
      { proto = "tcp"; sourcePort = 47990; destination = "192.168.98.2:47990"; }
