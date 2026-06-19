@@ -1,8 +1,11 @@
-commit 58531491cf5ee57cdc4f6266caa368940836f35d
-Author: Alexander Sosedkin <asosedkin@redhat.com>
-Date:   Fri Jun 19 11:55:43 2026 +0200
+From cf94d0d52ca1e2a4fa4dbabe4120e9621ccd2cb9 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 21:11:49 +0000
+Subject: [PATCH] modes/interactive/interactive-mode: remove spacers
 
-    modes/interactive/interactive-mode: remove spacers
+---
+ .../src/modes/interactive/interactive-mode.ts | 51 ++-----------------
+ 1 file changed, 3 insertions(+), 48 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 index d50611a..b43b8e8 100644
@@ -318,3 +321,6 @@ index d50611a..b43b8e8 100644
  		this.chatContainer.addChild(new DaxnutsComponent(this.ui));
  		this.ui.requestRender();
  	}
+-- 
+2.54.0
+

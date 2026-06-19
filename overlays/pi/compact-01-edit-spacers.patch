@@ -1,11 +1,14 @@
-commit ac1f7bd32dfe8602e55aebca4782d077712611aa
-Author: Alexander Sosedkin <asosedkin@redhat.com>
-Date:   Fri Jun 19 11:46:00 2026 +0200
+From bd4ce6a4f1709d86d30145a5e56e0c77a3e11cbf Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 21:11:47 +0000
+Subject: [PATCH] src/core/tools/edit: remove spacers
 
-    src/core/tools/edit: remove spacers
+---
+ packages/coding-agent/src/core/tools/edit.ts | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agent/src/core/tools/edit.ts
-index 25aa1e17..75089178 100644
+index 25aa1e1..7508917 100644
 --- a/packages/coding-agent/src/core/tools/edit.ts
 +++ b/packages/coding-agent/src/core/tools/edit.ts
 @@ -1,5 +1,5 @@
@@ -33,3 +36,6 @@ index 25aa1e17..75089178 100644
  			return component;
  		},
  	};
+-- 
+2.54.0
+
