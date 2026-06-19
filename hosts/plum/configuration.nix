@@ -14,7 +14,9 @@
     ../../nixos/services/vllm.nix
     ../../nixos/services/llama-cpp-mini.nix
     ./bench-vllm.nix
+    ./clevis.nix
     ./clevis-highlevel.nix
+    ./safe-reboot.nix
     ./cooling/lact.nix
     ./cooling/fancontrol.nix
     ./cooling/measurement/calibrate-fancontroller.nix
@@ -40,11 +42,6 @@
 
   boot.initrd.systemd.enable = true;
   boot.initrd.systemd.network.enable = true;
-  #boot.initrd.clevis = {
-  #  enable = true;
-  #  useTang = true;
-  #  devices.root.secretFile = "/mnt/secrets/clevis";
-  #};
 
   home-manager.users.monk.home.stateVersion = "25.11";
   system.stateVersion = "25.11";

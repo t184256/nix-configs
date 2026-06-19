@@ -11,6 +11,7 @@
     ./secureboot.nix
     ./kiosk.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
+    ./tang-rotating.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
