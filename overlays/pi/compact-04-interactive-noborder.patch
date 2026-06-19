@@ -1,0 +1,114 @@
+From 0626ba46bd169459c31fc780fb917957cb242406 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 21:37:04 +0000
+Subject: [PATCH] modes/interactive/interactive-mode: remove borders
+
+---
+ .../src/modes/interactive/interactive-mode.ts | 24 +++++++++----------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
+index 83287a4..bce2ecc 100644
+--- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
++++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
+@@ -582,7 +582,7 @@ export class InteractiveMode {
+ 		if (this.chatContainer.children.length > 0) {
+ 			// no spacer
+ 		}
+-		this.chatContainer.addChild(new DynamicBorder());
++		// no border
+ 		if (this.settingsManager.getCollapseChangelog()) {
+ 			const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
+ 			const latestVersion = versionMatch ? versionMatch[1] : this.version;
+@@ -596,7 +596,7 @@ export class InteractiveMode {
+ 			);
+ 			// no spacer
+ 		}
+-		this.chatContainer.addChild(new DynamicBorder());
++		// no border
+ 	}
+ 
+ 	async init(): Promise<void> {
+@@ -3705,7 +3705,7 @@ export class InteractiveMode {
+ 		const note = release.note?.trim();
+ 
+ 		// no spacer
+-		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
++		// no border
+ 		this.chatContainer.addChild(
+ 			new Text(`${theme.bold(theme.fg("warning", "Update Available"))}\n${updateInstruction}`, 0, 0),
+ 		);
+@@ -3719,7 +3719,7 @@ export class InteractiveMode {
+ 			// no spacer
+ 		}
+ 		this.chatContainer.addChild(new Text(changelogLine, 0, 0));
+-		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
++		// no border
+ 		this.ui.requestRender();
+ 	}
+ 
+@@ -3729,7 +3729,7 @@ export class InteractiveMode {
+ 		const packageLines = packages.map((pkg) => `- ${pkg}`).join("\n");
+ 
+ 		// no spacer
+-		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
++		// no border
+ 		this.chatContainer.addChild(
+ 			new Text(
+ 				`${theme.bold(theme.fg("warning", "Package Updates Available"))}\n${updateInstruction}\n${theme.fg("muted", "Packages:")}\n${packageLines}`,
+@@ -3737,7 +3737,7 @@ export class InteractiveMode {
+ 				0,
+ 			),
+ 		);
+-		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
++		// no border
+ 		this.ui.requestRender();
+ 	}
+ 
+@@ -5044,13 +5044,13 @@ export class InteractiveMode {
+ 
+ 		const reloadBox = new Container();
+ 		const borderColor = (s: string) => theme.fg("border", s);
+-		reloadBox.addChild(new DynamicBorder(borderColor));
++		// no border
+ 		// no spacer
+ 		reloadBox.addChild(
+ 			new Text(theme.fg("muted", "Reloading keybindings, extensions, skills, prompts, themes..."), 0, 0),
+ 		);
+ 		// no spacer
+-		reloadBox.addChild(new DynamicBorder(borderColor));
++		// no border
+ 
+ 		const previousEditor = this.editor;
+ 		this.editorContainer.clear();
+@@ -5390,11 +5390,11 @@ export class InteractiveMode {
+ 				: "No changelog entries found.";
+ 
+ 		// no spacer
+-		this.chatContainer.addChild(new DynamicBorder());
++		// no border
+ 		this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 0, 0));
+ 		// no spacer
+ 		this.chatContainer.addChild(new Markdown(changelogMarkdown, 0, 0, this.getMarkdownThemeWithSettings()));
+-		this.chatContainer.addChild(new DynamicBorder());
++		// no border
+ 		this.ui.requestRender();
+ 	}
+ 
+@@ -5519,11 +5519,11 @@ export class InteractiveMode {
+ 		}
+ 
+ 		// no spacer
+-		this.chatContainer.addChild(new DynamicBorder());
++		// no border
+ 		this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "Keyboard Shortcuts")), 0, 0));
+ 		// no spacer
+ 		this.chatContainer.addChild(new Markdown(hotkeys.trim(), 0, 0, this.getMarkdownThemeWithSettings()));
+-		this.chatContainer.addChild(new DynamicBorder());
++		// no border
+ 		this.ui.requestRender();
+ 	}
+ 
+-- 
+2.54.0
+

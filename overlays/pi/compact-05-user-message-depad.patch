@@ -1,0 +1,25 @@
+From b66076f65b05ec5e402cf3834d19dd3e2e50aa46 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 21:37:10 +0000
+Subject: [PATCH] modes/interactive/components/user-message: depad
+
+---
+ .../src/modes/interactive/components/user-message.ts            | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/user-message.ts b/packages/coding-agent/src/modes/interactive/components/user-message.ts
+index 45d6557..d1b3160 100644
+--- a/packages/coding-agent/src/modes/interactive/components/user-message.ts
++++ b/packages/coding-agent/src/modes/interactive/components/user-message.ts
+@@ -13,7 +13,7 @@ export class UserMessageComponent extends Container {
+ 
+ 	constructor(text: string, markdownTheme: MarkdownTheme = getMarkdownTheme()) {
+ 		super();
+-		this.contentBox = new Box(1, 1, (content: string) => theme.bg("userMessageBg", content));
++		this.contentBox = new Box(0, 0, (content: string) => theme.bg("userMessageBg", content));
+ 		this.contentBox.addChild(
+ 			new Markdown(
+ 				text,
+-- 
+2.54.0
+

@@ -1,0 +1,25 @@
+From 4e23991ad1fe1ef4d611205e40b0e4683446388b Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 21:37:16 +0000
+Subject: [PATCH] modes/interactive/components/custom-message: depad
+
+---
+ .../src/modes/interactive/components/custom-message.ts          | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/custom-message.ts b/packages/coding-agent/src/modes/interactive/components/custom-message.ts
+index a8fffc6..3465dac 100644
+--- a/packages/coding-agent/src/modes/interactive/components/custom-message.ts
++++ b/packages/coding-agent/src/modes/interactive/components/custom-message.ts
+@@ -30,7 +30,7 @@ export class CustomMessageComponent extends Container {
+ 		this.addChild(new Spacer(1));
+ 
+ 		// Create box with purple background (used for default rendering)
+-		this.box = new Box(1, 1, (t) => theme.bg("customMessageBg", t));
++		this.box = new Box(0, 0, (t) => theme.bg("customMessageBg", t));
+ 
+ 		this.rebuild();
+ 	}
+-- 
+2.54.0
+

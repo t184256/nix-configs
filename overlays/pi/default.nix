@@ -4,6 +4,10 @@ _: prev: let
       ./compact-01-edit-spacers.patch
       ./compact-02-interactive-spacers.patch
       ./compact-03-interactive-depad.patch
+      ./compact-04-interactive-noborder.patch
+      ./compact-05-user-message-depad.patch
+      ./compact-06-tool-execution-depad.patch
+      ./compact-07-custom-message-depad.patch
       ./thinking-budget-tokens.patch
     ];
   });
