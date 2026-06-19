@@ -11,6 +11,8 @@ _: prev: let
       ./compact-08-bash-execution-spacer.patch
       ./compact-09-bash-execution-depad.patch
       ./compact-10-bash-execution-simplify.patch
+      ./compact-11-assistant-message-spacer.patch
+      ./compact-12-assistant-message-depad.patch
       ./thinking-budget-tokens.patch
     ];
   });

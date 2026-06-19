@@ -1,0 +1,58 @@
+From 4b306286d139a66448654ec839eaf8c327270b74 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 22:03:43 +0000
+Subject: [PATCH] modes/interactive/components/assistant-message: depad
+
+---
+ .../modes/interactive/components/assistant-message.ts | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
+index d950a49..e98953a 100644
+--- a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
++++ b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
+@@ -89,8 +89,7 @@ export class AssistantMessageComponent extends Container {
+ 			const content = message.content[i];
+ 			if (content.type === "text" && content.text.trim()) {
+ 				// Assistant text messages with no background - trim the text
+-				// Set paddingY=0 to avoid extra spacing before tool executions
+-				this.contentContainer.addChild(new Markdown(content.text.trim(), 1, 0, this.markdownTheme));
++				this.contentContainer.addChild(new Markdown(content.text.trim(), 0, 0, this.markdownTheme));
+ 			} else if (content.type === "thinking" && content.thinking.trim()) {
+ 				// Add spacing only when another visible assistant content block follows.
+ 				// This avoids a superfluous blank line before separately-rendered tool execution blocks.
+@@ -101,7 +100,7 @@ export class AssistantMessageComponent extends Container {
+ 				if (this.hideThinkingBlock) {
+ 					// Show static thinking label when hidden
+ 					this.contentContainer.addChild(
+-						new Text(theme.italic(theme.fg("thinkingText", this.hiddenThinkingLabel)), 1, 0),
++						new Text(theme.italic(theme.fg("thinkingText", this.hiddenThinkingLabel)), 0, 0),
+ 					);
+ 					if (hasVisibleContentAfter) {
+ 						// no spacer
+@@ -109,7 +108,7 @@ export class AssistantMessageComponent extends Container {
+ 				} else {
+ 					// Thinking traces in thinkingText color, italic
+ 					this.contentContainer.addChild(
+-						new Markdown(content.thinking.trim(), 1, 0, this.markdownTheme, {
++						new Markdown(content.thinking.trim(), 0, 0, this.markdownTheme, {
+ 							color: (text: string) => theme.fg("thinkingText", text),
+ 							italic: true,
+ 						}),
+@@ -136,11 +135,11 @@ export class AssistantMessageComponent extends Container {
+ 				} else {
+ 					// no spacer
+ 				}
+-				this.contentContainer.addChild(new Text(theme.fg("error", abortMessage), 1, 0));
++				this.contentContainer.addChild(new Text(theme.fg("error", abortMessage), 0, 0));
+ 			} else if (message.stopReason === "error") {
+ 				const errorMsg = message.errorMessage || "Unknown error";
+ 				// no spacer
+-				this.contentContainer.addChild(new Text(theme.fg("error", `Error: ${errorMsg}`), 1, 0));
++				this.contentContainer.addChild(new Text(theme.fg("error", `Error: ${errorMsg}`), 0, 0));
+ 			}
+ 		}
+ 	}
+-- 
+2.54.0
+

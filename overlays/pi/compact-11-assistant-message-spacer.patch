@@ -1,0 +1,69 @@
+From 38b7ae10e23c3a2c0dde21fb9d961f46eac18b60 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 21:57:32 +0000
+Subject: [PATCH] modes/interactive/components/assistant-message: remove
+ spacers
+
+---
+ .../interactive/components/assistant-message.ts    | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
+index 3227646..d950a49 100644
+--- a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
++++ b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
+@@ -1,5 +1,5 @@
+ import type { AssistantMessage } from "@earendil-works/pi-ai";
+-import { Container, Markdown, type MarkdownTheme, Spacer, Text } from "@earendil-works/pi-tui";
++import { Container, Markdown, type MarkdownTheme, Text } from "@earendil-works/pi-tui";
+ import { getMarkdownTheme, theme } from "../theme/theme.ts";
+ 
+ const OSC133_ZONE_START = "\x1b]133;A\x07";
+@@ -81,7 +81,7 @@ export class AssistantMessageComponent extends Container {
+ 		);
+ 
+ 		if (hasVisibleContent) {
+-			this.contentContainer.addChild(new Spacer(1));
++			// no spacer
+ 		}
+ 
+ 		// Render content in order
+@@ -104,7 +104,7 @@ export class AssistantMessageComponent extends Container {
+ 						new Text(theme.italic(theme.fg("thinkingText", this.hiddenThinkingLabel)), 1, 0),
+ 					);
+ 					if (hasVisibleContentAfter) {
+-						this.contentContainer.addChild(new Spacer(1));
++						// no spacer
+ 					}
+ 				} else {
+ 					// Thinking traces in thinkingText color, italic
+@@ -115,7 +115,7 @@ export class AssistantMessageComponent extends Container {
+ 						}),
+ 					);
+ 					if (hasVisibleContentAfter) {
+-						this.contentContainer.addChild(new Spacer(1));
++						// no spacer
+ 					}
+ 				}
+ 			}
+@@ -132,14 +132,14 @@ export class AssistantMessageComponent extends Container {
+ 						? message.errorMessage
+ 						: "Operation aborted";
+ 				if (hasVisibleContent) {
+-					this.contentContainer.addChild(new Spacer(1));
++					// no spacer
+ 				} else {
+-					this.contentContainer.addChild(new Spacer(1));
++					// no spacer
+ 				}
+ 				this.contentContainer.addChild(new Text(theme.fg("error", abortMessage), 1, 0));
+ 			} else if (message.stopReason === "error") {
+ 				const errorMsg = message.errorMessage || "Unknown error";
+-				this.contentContainer.addChild(new Spacer(1));
++				// no spacer
+ 				this.contentContainer.addChild(new Text(theme.fg("error", `Error: ${errorMsg}`), 1, 0));
+ 			}
+ 		}
+-- 
+2.54.0
+
