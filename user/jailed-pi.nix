@@ -91,6 +91,7 @@ let
 
   extraJailOpts = [
     (comb.fwd-env "LLAMA_KEY")
+    (comb.fwd-env "PWD")
     (comb.add-runtime ''
       RUNTIME_ARGS+=(--ro-bind ${modelsJson} ~/.pi/agent/models.json)
       RUNTIME_ARGS+=(--ro-bind ${settingsJson} ~/.pi/agent/settings.json)
@@ -100,6 +101,7 @@ let
 
   jailedPi = jailedAgentsLib.makeJailedPi {
     name = "jailed-pi";
+    pkg = pkgs.pi-coding-agent;
     env = { PI_SKIP_VERSION_CHECK = "1"; };
     extraPkgs = [ pkgs.nix ];
     baseJailOptions = jailedAgentsLib.commonJailOptions ++ extraJailOpts;
@@ -113,5 +115,6 @@ let
 
 in
 {
+  nixpkgs.overlays = [ (import ../overlays/pi) ];
   home.packages = [ jailed-pi ];
 }

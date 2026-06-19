@@ -1,0 +1,35 @@
+commit ac1f7bd32dfe8602e55aebca4782d077712611aa
+Author: Alexander Sosedkin <asosedkin@redhat.com>
+Date:   Fri Jun 19 11:46:00 2026 +0200
+
+    src/core/tools/edit: remove spacers
+
+diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agent/src/core/tools/edit.ts
+index 25aa1e17..75089178 100644
+--- a/packages/coding-agent/src/core/tools/edit.ts
++++ b/packages/coding-agent/src/core/tools/edit.ts
+@@ -1,5 +1,5 @@
+ import type { AgentTool } from "@earendil-works/pi-agent-core";
+-import { Box, Container, Spacer, Text } from "@earendil-works/pi-tui";
++import { Box, Container, Text } from "@earendil-works/pi-tui";
+ import { constants } from "fs";
+ import { access as fsAccess, readFile as fsReadFile, writeFile as fsWriteFile } from "fs/promises";
+ import { type Static, Type } from "typebox";
+@@ -259,7 +259,6 @@ function buildEditCallComponent(
+ 
+ 	const body =
+ 		"error" in component.preview ? theme.fg("error", component.preview.error) : renderDiff(component.preview.diff);
+-	component.addChild(new Spacer(1));
+ 	component.addChild(new Text(body, 0, 0));
+ 	return component;
+ }
+@@ -425,8 +424,7 @@ export function createEditToolDefinition(
+ 			if (!output) {
+ 				return component;
+ 			}
+-			component.addChild(new Spacer(1));
+-			component.addChild(new Text(output, 1, 0));
++			component.addChild(new Text(output, 0, 0));
+ 			return component;
+ 		},
+ 	};
