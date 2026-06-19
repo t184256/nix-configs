@@ -6,13 +6,16 @@ _: prev: let
       ./compact-03-interactive-depad.patch
       ./compact-04-interactive-noborder.patch
       ./compact-05-user-message-depad.patch
-      ./compact-06-tool-execution-depad.patch
-      ./compact-07-custom-message-depad.patch
-      ./compact-08-bash-execution-spacer.patch
-      ./compact-09-bash-execution-depad.patch
-      ./compact-10-bash-execution-simplify.patch
-      ./compact-11-assistant-message-spacer.patch
-      ./compact-12-assistant-message-depad.patch
+      ./compact-06-custom-message-depad.patch
+      ./compact-07-tool-execution-spacers.patch
+      ./compact-08-tool-execution-depad.patch
+      ./compact-09-bash-execution-spacers.patch
+      ./compact-10-bash-execution-depad.patch
+      ./compact-11-bash-execution-simplify.patch
+      ./compact-12-assistant-message-spacers.patch
+      ./compact-13-assistant-message-depad.patch
+      ./compact-14-tools-bash-newlines.patch
+      
       ./thinking-budget-tokens.patch
     ];
   });

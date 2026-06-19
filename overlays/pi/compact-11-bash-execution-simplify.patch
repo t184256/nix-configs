@@ -1,0 +1,46 @@
+From bf12ed00c8b9d267b651da82f14bf8f275a9eebf Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 22:09:44 +0000
+Subject: [PATCH] modes/interactive/components/bash-execution: remove leading
+ newlines
+
+---
+ .../src/modes/interactive/components/bash-execution.ts     | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+index e3c8cc7..1d8abfe 100644
+--- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
++++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+@@ -143,17 +143,16 @@ export class BashExecutionComponent extends Container {
+ 			if (this.expanded) {
+ 				// Show all lines
+ 				const displayText = availableLines.map((line) => theme.fg("muted", line)).join("\n");
+-				this.contentContainer.addChild(new Text(`\n${displayText}`, 0, 0));
++				this.contentContainer.addChild(new Text(displayText, 0, 0));
+ 			} else {
+ 				// Use shared visual truncation utility with width-aware caching
+ 				const styledOutput = previewLogicalLines.map((line) => theme.fg("muted", line)).join("\n");
+-				const styledInput = `\n${styledOutput}`;
+ 				let cachedWidth: number | undefined;
+ 				let cachedLines: string[] | undefined;
+ 				this.contentContainer.addChild({
+ 					render: (width: number) => {
+ 						if (cachedLines === undefined || cachedWidth !== width) {
+-							const result = truncateToVisualLines(styledInput, PREVIEW_LINES, width, 1);
++							const result = truncateToVisualLines(styledOutput, PREVIEW_LINES, width, 0);
+ 							cachedLines = result.visualLines;
+ 							cachedWidth = width;
+ 						}
+@@ -199,7 +198,7 @@ export class BashExecutionComponent extends Container {
+ 			}
+ 
+ 			if (statusParts.length > 0) {
+-				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 0, 0));
++				this.contentContainer.addChild(new Text(statusParts.join("\n"), 0, 0));
+ 			}
+ 		}
+ 	}
+-- 
+2.54.0
+

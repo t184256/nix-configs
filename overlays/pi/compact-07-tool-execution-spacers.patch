@@ -1,0 +1,51 @@
+From 44155b6abae559585a0a19d1e4cc6e864a50498a Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 22:48:31 +0000
+Subject: [PATCH] modes/interactive/components/tool-execution: remove spacers
+ and padding
+
+---
+ .../src/modes/interactive/components/tool-execution.ts   | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
+index 8d2828a..f7b931c 100644
+--- a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
++++ b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
+@@ -1,4 +1,4 @@
+-import { Box, type Component, Container, getCapabilities, Image, Spacer, Text, type TUI } from "@earendil-works/pi-tui";
++import { Box, type Component, Container, getCapabilities, Image, Text, type TUI } from "@earendil-works/pi-tui";
+ import type { ToolDefinition, ToolRenderContext } from "../../../core/extensions/types.ts";
+ import { createAllToolDefinitions, type ToolName } from "../../../core/tools/index.ts";
+ import { getTextOutput as getRenderedTextOutput } from "../../../core/tools/render-utils.ts";
+@@ -18,7 +18,7 @@ export class ToolExecutionComponent extends Container {
+ 	private resultRendererComponent?: Component;
+ 	private rendererState: any = {};
+ 	private imageComponents: Image[] = [];
+-	private imageSpacers: Spacer[] = [];
++	private imageSpacers: any[] = [];
+ 	private toolName: string;
+ 	private toolCallId: string;
+ 	private args: any;
+@@ -60,7 +60,7 @@ export class ToolExecutionComponent extends Container {
+ 		this.ui = ui;
+ 		this.cwd = cwd;
+ 
+-		this.addChild(new Spacer(1));
++		// no spacer
+ 
+ 		// Always create all shell variants. contentBox is used for default renderer-based composition.
+ 		// selfRenderContainer is used when the tool renders its own framing.
+@@ -338,9 +338,6 @@ export class ToolExecutionComponent extends Container {
+ 					const imageMimeType = converted?.mimeType ?? img.mimeType;
+ 					if (caps.images === "kitty" && imageMimeType !== "image/png") continue;
+ 
+-					const spacer = new Spacer(1);
+-					this.addChild(spacer);
+-					this.imageSpacers.push(spacer);
+ 					const imageComponent = new Image(
+ 						imageData,
+ 						imageMimeType,
+-- 
+2.54.0
+
