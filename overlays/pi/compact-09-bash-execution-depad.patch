@@ -1,0 +1,52 @@
+From 9f834ea05465943f11b026f34b0ff1d7b6fd0a13 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 21:50:24 +0000
+Subject: [PATCH] modes/interactive/components/bash-execution: depad
+
+---
+ .../src/modes/interactive/components/bash-execution.ts    | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+index 1876f93..e3c8cc7 100644
+--- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
++++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+@@ -48,7 +48,7 @@ export class BashExecutionComponent extends Container {
+ 		this.addChild(this.contentContainer);
+ 
+ 		// Command header
+-		const header = new Text(theme.fg(colorKey, theme.bold(`$ ${command}`)), 1, 0);
++		const header = new Text(theme.fg(colorKey, theme.bold(`$ ${command}`)), 0, 0);
+ 		this.contentContainer.addChild(header);
+ 
+ 		// Loader
+@@ -135,7 +135,7 @@ export class BashExecutionComponent extends Container {
+ 		this.contentContainer.clear();
+ 
+ 		// Command header
+-		const header = new Text(theme.fg("bashMode", theme.bold(`$ ${this.command}`)), 1, 0);
++		const header = new Text(theme.fg("bashMode", theme.bold(`$ ${this.command}`)), 0, 0);
+ 		this.contentContainer.addChild(header);
+ 
+ 		// Output
+@@ -143,7 +143,7 @@ export class BashExecutionComponent extends Container {
+ 			if (this.expanded) {
+ 				// Show all lines
+ 				const displayText = availableLines.map((line) => theme.fg("muted", line)).join("\n");
+-				this.contentContainer.addChild(new Text(`\n${displayText}`, 1, 0));
++				this.contentContainer.addChild(new Text(`\n${displayText}`, 0, 0));
+ 			} else {
+ 				// Use shared visual truncation utility with width-aware caching
+ 				const styledOutput = previewLogicalLines.map((line) => theme.fg("muted", line)).join("\n");
+@@ -199,7 +199,7 @@ export class BashExecutionComponent extends Container {
+ 			}
+ 
+ 			if (statusParts.length > 0) {
+-				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 1, 0));
++				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 0, 0));
+ 			}
+ 		}
+ 	}
+-- 
+2.54.0
+

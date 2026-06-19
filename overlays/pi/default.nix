@@ -8,6 +8,9 @@ _: prev: let
       ./compact-05-user-message-depad.patch
       ./compact-06-tool-execution-depad.patch
       ./compact-07-custom-message-depad.patch
+      ./compact-08-bash-execution-spacer.patch
+      ./compact-09-bash-execution-depad.patch
+      ./compact-10-bash-execution-simplify.patch
       ./thinking-budget-tokens.patch
     ];
   });

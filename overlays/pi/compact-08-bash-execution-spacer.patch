@@ -1,0 +1,34 @@
+From 2c0ff9941d17723049a365f21c51d04eec329736 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 21:50:13 +0000
+Subject: [PATCH] modes/interactive/components/bash-execution: remove spacer
+
+---
+ .../src/modes/interactive/components/bash-execution.ts        | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+index b46a9d0..1876f93 100644
+--- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
++++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+@@ -2,7 +2,7 @@
+  * Component for displaying bash command execution with streaming output.
+  */
+ 
+-import { Container, Loader, Spacer, Text, type TUI } from "@earendil-works/pi-tui";
++import { Container, Loader, Text, type TUI } from "@earendil-works/pi-tui";
+ import {
+ 	DEFAULT_MAX_BYTES,
+ 	DEFAULT_MAX_LINES,
+@@ -38,7 +38,7 @@ export class BashExecutionComponent extends Container {
+ 		const borderColor = (str: string) => theme.fg(colorKey, str);
+ 
+ 		// Add spacer
+-		this.addChild(new Spacer(1));
++		// no spacer
+ 
+ 		// Top border
+ 		this.addChild(new DynamicBorder(borderColor));
+-- 
+2.54.0
+
