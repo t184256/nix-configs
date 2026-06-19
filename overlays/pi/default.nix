@@ -3,6 +3,7 @@ _: prev: let
     patches = (oa.patches or []) ++ [
       ./compact-01-edit-spacers.patch
       ./compact-02-interactive-spacers.patch
+      ./compact-03-interactive-depad.patch
       ./thinking-budget-tokens.patch
     ];
   });
