@@ -1,6 +1,6 @@
-From 1aef175349c2f4c1aee57f34d76208e004d0376f Mon Sep 17 00:00:00 2001
+From 639e6681ca8a38e704e9d3355c7bf7c55677aee1 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
-Date: Fri, 19 Jun 2026 21:22:17 +0000
+Date: Fri, 19 Jun 2026 21:36:58 +0000
 Subject: [PATCH] modes/interactive/interactive-mode: depad
 
 ---
@@ -8,10 +8,10 @@ Subject: [PATCH] modes/interactive/interactive-mode: depad
  1 file changed, 27 insertions(+), 27 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index b43b8e8..5a130c1 100644
+index 3302f8f..83287a4 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -588,11 +588,11 @@ export class InteractiveMode {
+@@ -587,12 +587,12 @@ export class InteractiveMode {
  			const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
  			const latestVersion = versionMatch ? versionMatch[1] : this.version;
  			const condensedText = `Updated to v${latestVersion}. Use ${theme.bold("/changelog")} to view full changelog.`;
@@ -20,13 +20,14 @@ index b43b8e8..5a130c1 100644
  		} else {
 -			this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 1, 0));
 +			this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 0, 0));
+ 			// no spacer
  			this.chatContainer.addChild(
 -				new Markdown(this.changelogMarkdown.trim(), 1, 0, this.getMarkdownThemeWithSettings()),
 +				new Markdown(this.changelogMarkdown.trim(), 0, 0, this.getMarkdownThemeWithSettings()),
  			);
+ 			// no spacer
  		}
- 		this.chatContainer.addChild(new DynamicBorder());
-@@ -1796,10 +1796,10 @@ export class InteractiveMode {
+@@ -1805,10 +1805,10 @@ export class InteractiveMode {
  			// Wrap string array in a Container with Text components
  			const container = new Container();
  			for (const line of content.slice(0, InteractiveMode.MAX_WIDGET_LINES)) {
@@ -39,7 +40,7 @@ index b43b8e8..5a130c1 100644
  			}
  			component = container;
  		} else {
-@@ -2396,7 +2396,7 @@ export class InteractiveMode {
+@@ -2405,7 +2405,7 @@ export class InteractiveMode {
  	 */
  	private showExtensionError(extensionPath: string, error: string, stack?: string): void {
  		const errorMsg = `Extension "${extensionPath}" error: ${error}`;
@@ -48,7 +49,7 @@ index b43b8e8..5a130c1 100644
  		this.chatContainer.addChild(errorText);
  		if (stack) {
  			// Show stack trace in dim color, indented
-@@ -2406,7 +2406,7 @@ export class InteractiveMode {
+@@ -2415,7 +2415,7 @@ export class InteractiveMode {
  				.map((line) => theme.fg("dim", `  ${line.trim()}`))
  				.join("\n");
  			if (stackLines) {
@@ -57,16 +58,16 @@ index b43b8e8..5a130c1 100644
  			}
  		}
  		this.ui.requestRender();
-@@ -2969,7 +2969,7 @@ export class InteractiveMode {
- 					if (event.reason === "manual") {
+@@ -2979,7 +2979,7 @@ export class InteractiveMode {
  						this.showError(event.errorMessage);
  					} else {
+ 						// no spacer
 -						this.chatContainer.addChild(new Text(theme.fg("error", event.errorMessage), 1, 0));
 +						this.chatContainer.addChild(new Text(theme.fg("error", event.errorMessage), 0, 0));
  					}
  				}
  				void this.flushCompactionQueue({ willRetry: event.willRetry });
-@@ -3061,7 +3061,7 @@ export class InteractiveMode {
+@@ -3072,7 +3072,7 @@ export class InteractiveMode {
  			return;
  		}
  
@@ -75,43 +76,47 @@ index b43b8e8..5a130c1 100644
  		this.chatContainer.addChild(text);
  		this.lastStatusText = text;
  		this.ui.requestRender();
-@@ -3665,12 +3665,12 @@ export class InteractiveMode {
- 	}
+@@ -3683,14 +3683,14 @@ export class InteractiveMode {
  
  	showError(errorMessage: string): void {
+ 		// no spacer
 -		this.chatContainer.addChild(new Text(theme.fg("error", `Error: ${errorMessage}`), 1, 0));
 +		this.chatContainer.addChild(new Text(theme.fg("error", `Error: ${errorMessage}`), 0, 0));
+ 		// no spacer
  		this.ui.requestRender();
  	}
  
  	showWarning(warningMessage: string): void {
+ 		// no spacer
 -		this.chatContainer.addChild(new Text(theme.fg("warning", `Warning: ${warningMessage}`), 1, 0));
 +		this.chatContainer.addChild(new Text(theme.fg("warning", `Warning: ${warningMessage}`), 0, 0));
  		this.ui.requestRender();
  	}
  
-@@ -3686,16 +3686,16 @@ export class InteractiveMode {
- 
+@@ -3707,18 +3707,18 @@ export class InteractiveMode {
+ 		// no spacer
  		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
  		this.chatContainer.addChild(
 -			new Text(`${theme.bold(theme.fg("warning", "Update Available"))}\n${updateInstruction}`, 1, 0),
 +			new Text(`${theme.bold(theme.fg("warning", "Update Available"))}\n${updateInstruction}`, 0, 0),
  		);
  		if (note) {
+ 			// no spacer
  			this.chatContainer.addChild(
 -				new Markdown(note, 1, 0, this.getMarkdownThemeWithSettings(), {
 +				new Markdown(note, 0, 0, this.getMarkdownThemeWithSettings(), {
  					color: (text) => theme.fg("muted", text),
  				}),
  			);
+ 			// no spacer
  		}
 -		this.chatContainer.addChild(new Text(changelogLine, 1, 0));
 +		this.chatContainer.addChild(new Text(changelogLine, 0, 0));
  		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
  		this.ui.requestRender();
  	}
-@@ -3759,15 +3759,15 @@ export class InteractiveMode {
- 		if (steeringMessages.length > 0 || followUpMessages.length > 0) {
+@@ -3784,15 +3784,15 @@ export class InteractiveMode {
+ 			// no spacer
  			for (const message of steeringMessages) {
  				const text = theme.fg("dim", `Steering: ${message}`);
 -				this.pendingMessagesContainer.addChild(new TruncatedText(text, 1, 0));
@@ -129,76 +134,78 @@ index b43b8e8..5a130c1 100644
  		}
  	}
  
-@@ -5020,7 +5020,7 @@ export class InteractiveMode {
- 		const borderColor = (s: string) => theme.fg("border", s);
+@@ -5047,7 +5047,7 @@ export class InteractiveMode {
  		reloadBox.addChild(new DynamicBorder(borderColor));
+ 		// no spacer
  		reloadBox.addChild(
 -			new Text(theme.fg("muted", "Reloading keybindings, extensions, skills, prompts, themes..."), 1, 0),
 +			new Text(theme.fg("muted", "Reloading keybindings, extensions, skills, prompts, themes..."), 0, 0),
  		);
+ 		// no spacer
  		reloadBox.addChild(new DynamicBorder(borderColor));
- 
-@@ -5297,7 +5297,7 @@ export class InteractiveMode {
- 		if (!name) {
+@@ -5326,7 +5326,7 @@ export class InteractiveMode {
  			const currentName = this.sessionManager.getSessionName();
  			if (currentName) {
+ 				// no spacer
 -				this.chatContainer.addChild(new Text(theme.fg("dim", `Session name: ${currentName}`), 1, 0));
 +				this.chatContainer.addChild(new Text(theme.fg("dim", `Session name: ${currentName}`), 0, 0));
  			} else {
  				this.showWarning("Usage: /name <name>");
  			}
-@@ -5306,7 +5306,7 @@ export class InteractiveMode {
- 		}
+@@ -5336,7 +5336,7 @@ export class InteractiveMode {
  
  		this.session.setSessionName(name);
+ 		// no spacer
 -		this.chatContainer.addChild(new Text(theme.fg("dim", `Session name set: ${name}`), 1, 0));
 +		this.chatContainer.addChild(new Text(theme.fg("dim", `Session name set: ${name}`), 0, 0));
  		this.ui.requestRender();
  	}
  
-@@ -5342,7 +5342,7 @@ export class InteractiveMode {
- 			info += `${theme.fg("dim", "Total:")} ${stats.cost.toFixed(4)}`;
+@@ -5373,7 +5373,7 @@ export class InteractiveMode {
  		}
  
+ 		// no spacer
 -		this.chatContainer.addChild(new Text(info, 1, 0));
 +		this.chatContainer.addChild(new Text(info, 0, 0));
  		this.ui.requestRender();
  	}
  
-@@ -5359,8 +5359,8 @@ export class InteractiveMode {
- 				: "No changelog entries found.";
+@@ -5391,9 +5391,9 @@ export class InteractiveMode {
  
+ 		// no spacer
  		this.chatContainer.addChild(new DynamicBorder());
 -		this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 1, 0));
--		this.chatContainer.addChild(new Markdown(changelogMarkdown, 1, 1, this.getMarkdownThemeWithSettings()));
 +		this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 0, 0));
+ 		// no spacer
+-		this.chatContainer.addChild(new Markdown(changelogMarkdown, 1, 1, this.getMarkdownThemeWithSettings()));
 +		this.chatContainer.addChild(new Markdown(changelogMarkdown, 0, 0, this.getMarkdownThemeWithSettings()));
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
  	}
-@@ -5486,8 +5486,8 @@ export class InteractiveMode {
- 		}
+@@ -5520,9 +5520,9 @@ export class InteractiveMode {
  
+ 		// no spacer
  		this.chatContainer.addChild(new DynamicBorder());
 -		this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "Keyboard Shortcuts")), 1, 0));
--		this.chatContainer.addChild(new Markdown(hotkeys.trim(), 1, 1, this.getMarkdownThemeWithSettings()));
 +		this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "Keyboard Shortcuts")), 0, 0));
+ 		// no spacer
+-		this.chatContainer.addChild(new Markdown(hotkeys.trim(), 1, 1, this.getMarkdownThemeWithSettings()));
 +		this.chatContainer.addChild(new Markdown(hotkeys.trim(), 0, 0, this.getMarkdownThemeWithSettings()));
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
  	}
-@@ -5504,7 +5504,7 @@ export class InteractiveMode {
- 				return;
+@@ -5540,7 +5540,7 @@ export class InteractiveMode {
  			}
  			this.renderCurrentSessionState();
+ 			// no spacer
 -			this.chatContainer.addChild(new Text(`${theme.fg("accent", "✓ New session started")}`, 1, 1));
 +			this.chatContainer.addChild(new Text(`${theme.fg("accent", "✓ New session started")}`, 0, 0));
  			this.ui.requestRender();
  		} catch (error: unknown) {
  			await this.handleFatalRuntimeError("Failed to create session", error);
-@@ -5538,7 +5538,7 @@ export class InteractiveMode {
- 		fs.writeFileSync(debugLogPath, debugData);
+@@ -5575,7 +5575,7 @@ export class InteractiveMode {
  
+ 		// no spacer
  		this.chatContainer.addChild(
 -			new Text(`${theme.fg("accent", "✓ Debug log written")}\n${theme.fg("muted", debugLogPath)}`, 1, 1),
 +			new Text(`${theme.fg("accent", "✓ Debug log written")}\n${theme.fg("muted", debugLogPath)}`, 0, 0),

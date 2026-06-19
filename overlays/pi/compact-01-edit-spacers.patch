@@ -1,14 +1,14 @@
-From bd4ce6a4f1709d86d30145a5e56e0c77a3e11cbf Mon Sep 17 00:00:00 2001
+From b6e0d9ac75a2d53180b5f33b5d795b460ea7861b Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
-Date: Fri, 19 Jun 2026 21:11:47 +0000
+Date: Fri, 19 Jun 2026 21:37:29 +0000
 Subject: [PATCH] src/core/tools/edit: remove spacers
 
 ---
- packages/coding-agent/src/core/tools/edit.ts | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ packages/coding-agent/src/core/tools/edit.ts | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agent/src/core/tools/edit.ts
-index 25aa1e1..7508917 100644
+index 25aa1e1..1ea9bc7 100644
 --- a/packages/coding-agent/src/core/tools/edit.ts
 +++ b/packages/coding-agent/src/core/tools/edit.ts
 @@ -1,5 +1,5 @@
@@ -18,24 +18,24 @@ index 25aa1e1..7508917 100644
  import { constants } from "fs";
  import { access as fsAccess, readFile as fsReadFile, writeFile as fsWriteFile } from "fs/promises";
  import { type Static, Type } from "typebox";
-@@ -259,7 +259,6 @@ function buildEditCallComponent(
+@@ -259,7 +259,7 @@ function buildEditCallComponent(
  
  	const body =
  		"error" in component.preview ? theme.fg("error", component.preview.error) : renderDiff(component.preview.diff);
 -	component.addChild(new Spacer(1));
++	// no spacer
  	component.addChild(new Text(body, 0, 0));
  	return component;
  }
-@@ -425,8 +424,7 @@ export function createEditToolDefinition(
+@@ -425,7 +425,7 @@ export function createEditToolDefinition(
  			if (!output) {
  				return component;
  			}
 -			component.addChild(new Spacer(1));
--			component.addChild(new Text(output, 1, 0));
-+			component.addChild(new Text(output, 0, 0));
++			// no spacer
+ 			component.addChild(new Text(output, 1, 0));
  			return component;
  		},
- 	};
 -- 
 2.54.0
 
