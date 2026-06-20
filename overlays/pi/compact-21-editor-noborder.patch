@@ -1,0 +1,34 @@
+From 44b96666d5aed41068f65e7f3c0cb8d2026e749f Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Sat, 20 Jun 2026 01:06:22 +0000
+Subject: [PATCH] tui: remove editor borders
+
+---
+ packages/tui/src/components/editor.ts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/tui/src/components/editor.ts b/packages/tui/src/components/editor.ts
+index 128254b..476926e 100644
+--- a/packages/tui/src/components/editor.ts
++++ b/packages/tui/src/components/editor.ts
+@@ -495,7 +495,7 @@ export class Editor implements Component, Focusable {
+ 				result.push(this.borderColor(truncateToWidth(indicator, width)));
+ 			}
+ 		} else {
+-			result.push(horizontal.repeat(width));
++			// no top border
+ 		}
+ 
+ 		// Render each visible layout line
+@@ -553,7 +553,7 @@ export class Editor implements Component, Focusable {
+ 			const remaining = width - visibleWidth(indicator);
+ 			result.push(this.borderColor(indicator + "─".repeat(Math.max(0, remaining))));
+ 		} else {
+-			result.push(horizontal.repeat(width));
++			// no bottom border
+ 		}
+ 
+ 		// Add autocomplete list if active
+-- 
+2.54.0
+
