@@ -1,0 +1,40 @@
+From 01c6602209e99ec3c6699652c158769f22c68885 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 23:48:43 +0000
+Subject: [PATCH] modes/interactive/components/footer: compact model display
+
+---
+ .../src/modes/interactive/components/footer.ts         | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
+index 6e1cb69..e1b0620 100644
+--- a/packages/coding-agent/src/modes/interactive/components/footer.ts
++++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
+@@ -171,18 +171,18 @@ export class FooterComponent implements Component {
+ 		// Calculate available space for padding (minimum 2 spaces between stats and model)
+ 		const minPadding = 2;
+ 
+-		// Add thinking level indicator if model supports reasoning
++		// Abbreviate thinking level
+ 		let rightSideWithoutProvider = modelName;
+ 		if (state.model?.reasoning) {
+ 			const thinkingLevel = state.thinkingLevel || "off";
+-			rightSideWithoutProvider =
+-				thinkingLevel === "off" ? `${modelName} • thinking off` : `${modelName} • ${thinkingLevel}`;
++			const abbrev = thinkingLevel === "off" ? "off" : thinkingLevel.slice(0, 1);
++			rightSideWithoutProvider = `${modelName} ${abbrev}`;
+ 		}
+ 
+-		// Prepend the provider in parentheses if there are multiple providers and there's enough room
++		// Prepend the provider without parens if there are multiple providers and there's enough room
+ 		let rightSide = rightSideWithoutProvider;
+ 		if (this.footerData.getAvailableProviderCount() > 1 && state.model) {
+-			rightSide = `(${state.model!.provider}) ${rightSideWithoutProvider}`;
++			rightSide = `${state.model!.provider} ${rightSideWithoutProvider}`;
+ 			if (statsLeftWidth + minPadding + visibleWidth(rightSide) > width) {
+ 				// Too wide, fall back
+ 				rightSide = rightSideWithoutProvider;
+-- 
+2.54.0
+

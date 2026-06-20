@@ -1,0 +1,25 @@
+From 89292138d637ad1a8f942e16e3dbb4a988c5fb2d Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 23:46:53 +0000
+Subject: [PATCH] modes/interactive/components/footer: drop (auto) indicator
+
+---
+ .../coding-agent/src/modes/interactive/components/footer.ts     | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
+index fa58df8..6e1cb69 100644
+--- a/packages/coding-agent/src/modes/interactive/components/footer.ts
++++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
+@@ -141,7 +141,7 @@ export class FooterComponent implements Component {
+ 
+ 		// Colorize context percentage based on usage
+ 		let contextPercentStr: string;
+-		const autoIndicator = this.autoCompactEnabled ? " (auto)" : "";
++		const autoIndicator = "";
+ 		const contextPercentDisplay =
+ 			contextPercent === "?"
+ 				? `?/${formatTokens(contextWindow)}${autoIndicator}`
+-- 
+2.54.0
+

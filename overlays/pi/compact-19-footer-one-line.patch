@@ -1,0 +1,66 @@
+From d7a839e116d8f40e4a6e15d378a612d82703db39 Mon Sep 17 00:00:00 2001
+From: Sloppy <sloppy@unboiled.info>
+Date: Fri, 19 Jun 2026 23:59:06 +0000
+Subject: [PATCH] modes/interactive/components/footer: single line
+
+---
+ .../modes/interactive/components/footer.ts    | 25 +++----------------
+ 1 file changed, 4 insertions(+), 21 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
+index e1b0620..d295a37 100644
+--- a/packages/coding-agent/src/modes/interactive/components/footer.ts
++++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
+@@ -118,13 +118,13 @@ export class FooterComponent implements Component {
+ 		// Add git branch if available
+ 		const branch = this.footerData.getGitBranch();
+ 		if (branch) {
+-			pwd = `${pwd} (${branch})`;
++			pwd = `${pwd} ${branch}`;
+ 		}
+ 
+ 		// Add session name if set
+ 		const sessionName = this.session.sessionManager.getSessionName();
+ 		if (sessionName) {
+-			pwd = `${pwd} • ${sessionName}`;
++			pwd = `${pwd} ${sessionName}`;
+ 		}
+ 
+ 		// Build stats line
+@@ -155,6 +155,7 @@ export class FooterComponent implements Component {
+ 		}
+ 		statsParts.push(contextPercentStr);
+ 
++		statsParts.push(pwd);
+ 		let statsLeft = statsParts.join(" ");
+ 
+ 		// Add model name on the right side, plus thinking level if model supports it
+@@ -214,24 +215,6 @@ export class FooterComponent implements Component {
+ 		// Apply dim to each part separately. statsLeft may contain color codes (for context %)
+ 		// that end with a reset, which would clear an outer dim wrapper. So we dim the parts
+ 		// before and after the colored section independently.
+-		const dimStatsLeft = theme.fg("dim", statsLeft);
+-		const remainder = statsLine.slice(statsLeft.length); // padding + rightSide
+-		const dimRemainder = theme.fg("dim", remainder);
+-
+-		const pwdLine = truncateToWidth(theme.fg("dim", pwd), width, theme.fg("dim", "..."));
+-		const lines = [pwdLine, dimStatsLeft + dimRemainder];
+-
+-		// Add extension statuses on a single line, sorted by key alphabetically
+-		const extensionStatuses = this.footerData.getExtensionStatuses();
+-		if (extensionStatuses.size > 0) {
+-			const sortedStatuses = Array.from(extensionStatuses.entries())
+-				.sort(([a], [b]) => a.localeCompare(b))
+-				.map(([, text]) => sanitizeStatusText(text));
+-			const statusLine = sortedStatuses.join(" ");
+-			// Truncate to terminal width with dim ellipsis for consistency with footer style
+-			lines.push(truncateToWidth(statusLine, width, theme.fg("dim", "...")));
+-		}
+-
+-		return lines;
++		return [theme.fg("dim", statsLine)];
+ 	}
+ }
+-- 
+2.54.0
+

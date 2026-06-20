@@ -1,0 +1,32 @@
+From 854ea57c3619106fd84314cbe6e9a6d408cedd20 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 19 Jun 2026 23:39:54 +0000
+Subject: [PATCH] modes/interactive/components/footer: drop token counters
+
+---
+ .../src/modes/interactive/components/footer.ts           | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
+index f108ae5..fa58df8 100644
+--- a/packages/coding-agent/src/modes/interactive/components/footer.ts
++++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
+@@ -129,13 +129,8 @@ export class FooterComponent implements Component {
+ 
+ 		// Build stats line
+ 		const statsParts = [];
+-		if (totalInput) statsParts.push(`↑${formatTokens(totalInput)}`);
+-		if (totalOutput) statsParts.push(`↓${formatTokens(totalOutput)}`);
+-		if (totalCacheRead) statsParts.push(`R${formatTokens(totalCacheRead)}`);
+-		if (totalCacheWrite) statsParts.push(`W${formatTokens(totalCacheWrite)}`);
+-		if ((totalCacheRead > 0 || totalCacheWrite > 0) && latestCacheHitRate !== undefined) {
+-			statsParts.push(`CH${latestCacheHitRate.toFixed(1)}%`);
+-		}
++		// skip token counts
++
+ 
+ 		// Show cost with "(sub)" indicator if using OAuth subscription
+ 		const usingSubscription = state.model ? this.session.modelRegistry.isUsingOAuth(state.model) : false;
+-- 
+2.54.0
+

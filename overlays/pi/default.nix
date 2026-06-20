@@ -15,7 +15,11 @@ _: prev: let
       ./compact-12-assistant-message-spacers.patch
       ./compact-13-assistant-message-depad.patch
       ./compact-14-tools-bash-newlines.patch
-      
+      ./compact-16-footer-no-tokens.patch
+      ./compact-17-footer-no-auto.patch
+      ./compact-18-footer-model.patch
+      ./compact-19-footer-one-line.patch
+
       ./thinking-budget-tokens.patch
     ];
   });
