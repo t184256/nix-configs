@@ -20,6 +20,7 @@ _: prev: let
       ./compact-17-footer-no-auto.patch
       ./compact-18-footer-model.patch
       ./compact-19-footer-one-line.patch
+      ./compact-20-loader.patch
 
       ./thinking-budget-tokens.patch
     ];

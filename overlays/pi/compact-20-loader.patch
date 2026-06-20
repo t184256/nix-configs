@@ -1,0 +1,34 @@
+From 4449f7ea26423deb2f2cc22f68ea3df381320a22 Mon Sep 17 00:00:00 2001
+From: Sloppy <sloppy@unboiled.info>
+Date: Sat, 20 Jun 2026 00:14:28 +0000
+Subject: [PATCH] tui: depad loader spinner
+
+---
+ packages/tui/src/components/loader.ts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/tui/src/components/loader.ts b/packages/tui/src/components/loader.ts
+index 4a93eb0..d333bcd 100644
+--- a/packages/tui/src/components/loader.ts
++++ b/packages/tui/src/components/loader.ts
+@@ -32,7 +32,7 @@ export class Loader extends Text {
+ 		message: string = "Loading...",
+ 		indicator?: LoaderIndicatorOptions,
+ 	) {
+-		super("", 1, 0);
++		super("", 0, 0);
+ 		this.ui = ui;
+ 		this.spinnerColorFn = spinnerColorFn;
+ 		this.messageColorFn = messageColorFn;
+@@ -41,7 +41,7 @@ export class Loader extends Text {
+ 	}
+ 
+ 	render(width: number): string[] {
+-		return ["", ...super.render(width)];
++		return super.render(width);
+ 	}
+ 
+ 	start(): void {
+-- 
+2.54.0
+
