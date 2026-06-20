@@ -1,0 +1,25 @@
+From 5f11327d8d45fc1c7d403ee561478bc3be965b23 Mon Sep 17 00:00:00 2001
+From: Sloppy <sloppy@unboiled.info>
+Date: Sat, 20 Jun 2026 00:07:11 +0000
+Subject: [PATCH] core/tools/edit: depad
+
+---
+ packages/coding-agent/src/core/tools/edit.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agent/src/core/tools/edit.ts
+index 1ea9bc7..8614d52 100644
+--- a/packages/coding-agent/src/core/tools/edit.ts
++++ b/packages/coding-agent/src/core/tools/edit.ts
+@@ -145,7 +145,7 @@ type EditCallRenderComponent = Box & {
+ };
+ 
+ function createEditCallRenderComponent(): EditCallRenderComponent {
+-	return Object.assign(new Box(1, 1, (text: string) => text), {
++	return Object.assign(new Box(0, 0, (text: string) => text), {
+ 		preview: undefined as EditPreview | undefined,
+ 		previewArgsKey: undefined as string | undefined,
+ 		previewPending: false,
+-- 
+2.54.0
+
