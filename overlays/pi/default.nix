@@ -22,6 +22,7 @@ _: prev: let
       ./compact-19-footer-one-line.patch
       ./compact-20-loader.patch
       ./compact-21-editor-noborder.patch
+      ./compact-22-editor-background.patch
 
       ./thinking-budget-tokens.patch
     ];

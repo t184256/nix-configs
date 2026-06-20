@@ -1,0 +1,57 @@
+From ddeb0870b6a69eb51b12efed75c4121ca975ffdb Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Sat, 20 Jun 2026 13:32:00 +0000
+Subject: [PATCH] tui: grey background for editor input field
+
+---
+ packages/tui/src/components/editor.ts | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/packages/tui/src/components/editor.ts b/packages/tui/src/components/editor.ts
+index 128254b..a7fd12d 100644
+--- a/packages/tui/src/components/editor.ts
++++ b/packages/tui/src/components/editor.ts
+@@ -11,6 +11,10 @@ import { SelectList, type SelectListLayoutOptions, type SelectListTheme } from "
+ const graphemeSegmenter = getGraphemeSegmenter();
+ const wordSegmenter = getWordSegmenter();
+ 
++/** ANSI SGR codes for 20% grey background (rgb 51,51,51) */
++const EDITOR_BG_START = "\x1b[48;2;51;51;51m";
++const EDITOR_BG_END = "\x1b[49m";
++
+ /** Regex matching paste markers like `[paste #1 +123 lines]` or `[paste #2 1234 chars]`. */
+ const PASTE_MARKER_REGEX = /\[paste #(\d+)( (\+\d+ lines|\d+ chars))?\]/g;
+ 
+@@ -523,12 +527,12 @@ export class Editor implements Component, Focusable {
+ 					const afterGraphemes = [...this.segment(after, "grapheme")];
+ 					const firstGrapheme = afterGraphemes[0]?.segment || "";
+ 					const restAfter = after.slice(firstGrapheme.length);
+-					const cursor = `\x1b[7m${firstGrapheme}\x1b[0m`;
++					const cursor = `\x1b[7m${firstGrapheme}\x1b[27m`;
+ 					displayText = before + marker + cursor + restAfter;
+ 					// lineVisibleWidth stays the same - we're replacing, not adding
+ 				} else {
+ 					// Cursor is at the end - add highlighted space
+-					const cursor = "\x1b[7m \x1b[0m";
++					const cursor = "\x1b[7m \x1b[27m";
+ 					displayText = before + marker + cursor;
+ 					lineVisibleWidth = lineVisibleWidth + 1;
+ 					// If cursor overflows content width into the padding, flag it
+@@ -543,7 +547,7 @@ export class Editor implements Component, Focusable {
+ 			const lineRightPadding = cursorInPadding ? rightPadding.slice(1) : rightPadding;
+ 
+ 			// Render the line (no side borders, just horizontal lines above and below)
+-			result.push(`${leftPadding}${displayText}${padding}${lineRightPadding}`);
++			result.push(EDITOR_BG_START + leftPadding + displayText + padding + lineRightPadding + EDITOR_BG_END);
+ 		}
+ 
+ 		// Render bottom border (with scroll indicator if more content below)
+@@ -562,7 +566,7 @@ export class Editor implements Component, Focusable {
+ 			for (const line of autocompleteResult) {
+ 				const lineWidth = visibleWidth(line);
+ 				const linePadding = " ".repeat(Math.max(0, contentWidth - lineWidth));
+-				result.push(`${leftPadding}${line}${linePadding}${rightPadding}`);
++				result.push(EDITOR_BG_START + leftPadding + line + linePadding + rightPadding + EDITOR_BG_END);
+ 			}
+ 		}
+ 
