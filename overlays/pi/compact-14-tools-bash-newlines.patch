@@ -1,15 +1,14 @@
-From e8ca3cfe87648417f06ea25f566387269e9b051d Mon Sep 17 00:00:00 2001
+From 8574748dc18678668b511cb293157db9a49548b1 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:55:50 +0000
 Subject: [PATCH] tools: remove leading newlines
 
 ---
- packages/coding-agent/src/core/tools/bash.ts           | 10 +++++-----
- .../src/modes/interactive/components/bash-execution.ts |  7 +++----
- 2 files changed, 8 insertions(+), 9 deletions(-)
+ packages/coding-agent/src/core/tools/bash.ts | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agent/src/core/tools/bash.ts
-index d2bfacb..4543d2d 100644
+index d2bfacb..3d92e7a 100644
 --- a/packages/coding-agent/src/core/tools/bash.ts
 +++ b/packages/coding-agent/src/core/tools/bash.ts
 @@ -215,7 +215,7 @@ function rebuildBashResultRenderComponent(
@@ -49,6 +48,15 @@ index d2bfacb..4543d2d 100644
  	}
  }
  
+@@ -367,7 +367,7 @@ export function createBashToolDefinition(
+ 				return { text, details };
+ 			};
+ 
+-			const appendStatus = (text: string, status: string) => `${text ? `${text}\n\n` : ""}${status}`;
++			const appendStatus = (text: string, status: string) => `${text ? `${text}\n` : ""}${status}`;
+ 
+ 			try {
+ 				let exitCode: number | null;
 -- 
 2.54.0
 
