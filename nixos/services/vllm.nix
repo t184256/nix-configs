@@ -138,12 +138,15 @@ in
       Group = "vllm";
       Environment = env;
       ExecStart = script;
+      KillSignal = "SIGINT";
+      TimeoutStopSec = "30s";
       PrivateDevices = false;
       PrivateTmp = true;
       ProtectHome = true;
       StateDirectory = "vllm";
       Restart = "on-failure";
       RestartSec = "10s";
+      TemporaryFileSystem = [ "/dev/shm:mode=1777,size=16G" ];  # auto cleanup
     };
   };
 
