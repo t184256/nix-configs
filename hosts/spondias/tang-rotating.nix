@@ -2,7 +2,7 @@
 
 let
   # TODO: persist signing key, pin thp and rotate only {0,1,2}.jwk with ECMR
-  keysDir = "/var/lib/tangd";  # ephemeral, assuming tmpfs by default
+  keysDir = "/var/lib/tang";  # ephemeral, assuming tmpfs by default
 
   rotate = pkgs.writeShellScript "tang-rotate" ''
     set -eEuo pipefail
@@ -46,7 +46,7 @@ in
         ExecStart = rotate;
         User = "tangd";
         Group = "tangd";
-        StateDirectory = "tangd";
+        StateDirectory = "tang";
       };
     };
 
