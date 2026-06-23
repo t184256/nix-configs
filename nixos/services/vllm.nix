@@ -144,7 +144,7 @@ in
       PrivateTmp = true;
       ProtectHome = true;
       StateDirectory = "vllm";
-      Restart = "on-failure";
+      Restart = "always";
       RestartSec = "10s";
       TemporaryFileSystem = [ "/dev/shm:mode=1777,size=16G" ];  # auto cleanup
     };

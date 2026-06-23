@@ -122,6 +122,8 @@ let
            ./0021-generation-config-presence-penalty.patch
            # Disable Rust frontend - not needed for Nix builds
            ./0022-disable-rust-frontend.patch
+           # PR #46231: defer offload reads while transfers are pending
+           ./0023-defer-offload-reads-while-transfers-pending.patch
          ];
     # triton-kernels: bump to v3.6.0; nixpkgs ships 3.5.0.
     env =

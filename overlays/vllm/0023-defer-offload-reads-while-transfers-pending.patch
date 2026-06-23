@@ -1,0 +1,32 @@
+From bf3054b48677c4ba89c27c495586ed96aac009cb Mon Sep 17 00:00:00 2001
+From: Palaiologos1453 <2260891073@qq.com>
+Date: Sun, 21 Jun 2026 19:30:13 +0800
+Subject: [PATCH] [Bugfix] Defer offload reads while transfers are pending
+ (#46231)
+
+Signed-off-by: test test <2260891073@qq.com>
+---
+ .../kv_transfer/kv_connector/v1/offloading/scheduler.py    | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/vllm/distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py b/vllm/distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py
+index 6ee827fa1..5ebd21668 100644
+--- a/vllm/distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py
++++ b/vllm/distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py
+@@ -560,6 +560,13 @@ class OffloadingConnectorScheduler:
+         for group_state in req_status.group_states:
+             group_state.block_ids.clear()
+ 
++        if req_status.transfer_jobs:
++            logger.debug(
++                "Delaying request %s since it still has in-flight transfers",
++                request.request_id,
++            )
++            return None, False
++
+         req_status.update_offload_keys()
+         req_status.num_locally_computed_tokens = num_computed_tokens
+ 
+-- 
+2.54.0
+
