@@ -89,20 +89,20 @@ rec {
         src = super.fetchFromGitHub {
           owner = "cursortab";
           repo = "cursortab.nvim";
-          rev = "v0.7.8";
-          hash = "sha256-qLFYbr/QIoM6tIV6/3CTGQrMmv4AQEzhA+ET6N1LSbs=";
+          rev = "v0.8.0";
+          hash = "sha256-Y+q1NnQairgRE4lSbQ7pQn52ncobbRUmG7YuwbilDhY=";
         };
         server = super.pkgs.buildGoModule {
           pname = "cursortab-server";
-          version = "0.7.8";
+          version = "0.8.0";
           inherit src;
           sourceRoot = "source/server";
-          vendorHash = "sha256-IvJw+89eZ5Ghppjt0KT9IRL8XPyU6XbiAYL3axQO6u4=";
+          vendorHash = "sha256-4S14Vm2Ju084uxB2Zlku4z5AmIZkNZkQpiNgYrcqIbg=";
         };
       in
       super.pkgs.vimUtils.buildVimPlugin {
         pname = "cursortab-nvim";
-        version = "0.7.8";
+        version = "0.8.0";
         inherit src;
         postInstall = ''
           mkdir -p $out/server
