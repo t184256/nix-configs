@@ -44,6 +44,9 @@ python3Packages.buildPythonPackage rec {
   propagatedBuildInputs = [ backtrace ];
   prePatch = ''
     substituteInPlace xontrib/readable-traceback.xsh \
-            --replace 'sys.stderr.write(msg)' '__flush(msg)'
+            --replace 'sys.stderr.write(msg)' '__flush(msg)' \
+            --replace \
+              'def _print_exception(msg=None, exc_info=None):' \
+              'def _print_exception(msg=None, exc_info=None, source_msg=None):'
   '';
 }
