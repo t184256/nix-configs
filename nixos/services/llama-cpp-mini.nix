@@ -27,7 +27,6 @@ in
         -ngl 999 \
         --no-mmap \
         --flash-attn on \
-        --jinja \
         --offline
     '';
     serviceConfig = {
