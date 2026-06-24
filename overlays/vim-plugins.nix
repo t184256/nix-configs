@@ -97,6 +97,7 @@ rec {
           version = "0.8.0";
           inherit src;
           sourceRoot = "source/server";
+          patches = [ ./cursortab-zeta21.patch ];
           vendorHash = "sha256-4S14Vm2Ju084uxB2Zlku4z5AmIZkNZkQpiNgYrcqIbg=";
         };
       in
