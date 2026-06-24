@@ -21,7 +21,7 @@
     ../../nixos/services/wireguard-nl.nix
   ];
 
-  boot.loader.systemd-boot.configurationLimit = 10;  # small-ish /boot
+  system.smallDisk.enable = true;
   boot.loader.systemd-boot.enable = true;
   fileSystems."/boot" = {
     device = "/dev/disk/by-uuid/A2EB-3AB7";
@@ -33,10 +33,6 @@
   zramSwap = { enable = true; memoryPercent = 50; };
 
   nix.settings.auto-optimise-store = true;  # it's tight on disk space
-  nix.gc.automatic = true;
-  nix.gc.options = "--delete-older-than 21d";
-  nixpkgs.flake.setNixPath = false;  # save disk space
-  nixpkgs.flake.setFlakeRegistry = false;  # save disk space
 
   users.mutableUsers = false;
   users.users.monk.hashedPasswordFile = "/mnt/persist/secrets/login/monk";

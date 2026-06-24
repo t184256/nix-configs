@@ -10,7 +10,7 @@
     ../../nixos/services/nebula
   ];
 
-  boot.loader.systemd-boot.configurationLimit = 5;  # small-ish /boot
+  system.smallDisk.enable = true;
   boot.loader.systemd-boot.enable = true;
   boot.kernelParams = [ "console=ttyS0" ];
 
@@ -35,11 +35,6 @@
   services.resolved.settings.Resolve.FallbackDNS = [ "2a00:1098:2c::1" ];
 
   zramSwap = { enable = true; memoryPercent = 50; };
-
-  nix.gc.automatic = true;
-  nix.gc.options = "--delete-older-than 21d";
-  nixpkgs.flake.setNixPath = false;  # save disk space
-  nixpkgs.flake.setFlakeRegistry = false;  # save disk space
 
   users.mutableUsers = false;
   users.users.monk.hashedPasswordFile = "/mnt/persist/secrets/login/monk";
