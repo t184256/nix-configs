@@ -24,6 +24,13 @@
             "<C-c>" = "cmp.mapping.abort()";
             "<Tab>" = ''
               function(fallback)
+                local mt = pcall(function()
+                  return require("minuet.virtualtext")
+                end)
+                if mt and require("minuet.virtualtext").action.is_visible() then
+                  require("minuet.virtualtext").action.accept_line()
+                  return
+                end
                 local cmp = require('cmp')
                 local luasnip = require('luasnip')
                 if cmp.visible() then

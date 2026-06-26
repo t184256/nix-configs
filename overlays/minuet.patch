@@ -1,0 +1,2300 @@
+From 572d73d4ae5fff0de096cb00b0a0c6c9cda46c99 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 26 Jun 2026 13:19:53 +0200
+Subject: [PATCH 01/13] duet: extend preview tests
+
+---
+ tests/duet_preview_spec.lua | 325 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 325 insertions(+)
+
+diff --git a/tests/duet_preview_spec.lua b/tests/duet_preview_spec.lua
+index 0878166..230472e 100644
+--- a/tests/duet_preview_spec.lua
++++ b/tests/duet_preview_spec.lua
+@@ -35,6 +35,12 @@ return {
+ 
+             local extmarks = get_extmarks(bufnr, preview.ns_id)
+             helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 1) -- row
++            helpers.expect_equal(extmarks[1][3], 0) -- col
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].end_col, nil)
++            helpers.expect_equal(extmarks[1][4].hl_group, nil)
+             helpers.expect_equal(extmarks[1][4].virt_text, {
+                 { 'be', 'MinuetDuetComment' },
+                 { '|', 'MinuetDuetCursor' },
+@@ -80,6 +86,9 @@ return {
+ 
+             local extmarks = get_extmarks(bufnr, preview.ns_id)
+             helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 0) -- row
++            helpers.expect_equal(extmarks[1][3], 0) -- col
+             helpers.expect_equal(extmarks[1][4].virt_lines, {
+                 {
+                     { 'bra', 'MinuetDuetAdd' },
+@@ -89,6 +98,322 @@ return {
+             })
+             helpers.expect_truthy(preview.is_visible(bufnr, state))
+ 
++            helpers.delete_buffer(bufnr)
++        end,
++    },
++    {
++        name = 'duet.preview renders changed lines',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            local bufnr = helpers.create_buffer({ 'hello world' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 1 },
++                original_lines = { 'hello world' },
++                proposed_lines = { 'hallo world' },
++                proposed_cursor = nil,
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 0) -- row
++            helpers.expect_equal(extmarks[1][3], 0) -- col
++            helpers.expect_equal(extmarks[1][4].end_col, 11) -- #('hello world')
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { 'hallo world', 'MinuetDuetAdd' },
++            })
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
++    {
++        name = 'duet.preview renders cursor on changed line inside hunk',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            local bufnr = helpers.create_buffer({ 'hello world' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 1 },
++                original_lines = { 'hello world' },
++                proposed_lines = { 'hallo world' },
++                proposed_cursor = {
++                    row_offset = 0,
++                    col = 1, -- on 'a' in the replacement
++                },
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 0) -- row
++            helpers.expect_equal(extmarks[1][3], 0) -- col
++            helpers.expect_equal(extmarks[1][4].end_col, 11) -- #('hello world')
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { 'h', 'MinuetDuetAdd' },
++                { '|', 'MinuetDuetCursor' },
++                { 'allo world', 'MinuetDuetAdd' },
++            })
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
++    {
++        name = 'duet.preview renders cursor at EOL on unchanged line',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            local bufnr = helpers.create_buffer({ 'alpha', 'beta' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 2 },
++                original_lines = { 'alpha', 'beta' },
++                proposed_lines = { 'alpha', 'beta' },
++                proposed_cursor = {
++                    row_offset = 1,
++                    col = 4, -- at EOL of 'beta'
++                },
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 1) -- row
++            helpers.expect_equal(extmarks[1][3], 0) -- col
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].end_col, nil)
++            helpers.expect_equal(extmarks[1][4].hl_group, nil)
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { 'beta', 'MinuetDuetComment' },
++                { '|', 'MinuetDuetCursor' },
++            })
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
++    {
++        name = 'duet.preview renders cursor at EOL on changed line',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            local bufnr = helpers.create_buffer({ 'hello world' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 1 },
++                original_lines = { 'hello world' },
++                proposed_lines = { 'hallo world' },
++                proposed_cursor = {
++                    row_offset = 0,
++                    col = 11, -- at EOL of 'hallo world'
++                },
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 0) -- row
++            helpers.expect_equal(extmarks[1][3], 0) -- col
++            helpers.expect_equal(extmarks[1][4].end_col, 11) -- #('hello world')
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { 'hallo world', 'MinuetDuetAdd' },
++                { '|', 'MinuetDuetCursor' },
++            })
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
++    {
++        name = 'duet.preview renders deleted-only lines',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            -- line 1 changed, line 2 deleted
++            local bufnr = helpers.create_buffer({ 'hello world', 'goodbye' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 2 },
++                original_lines = { 'hello world', 'goodbye' },
++                proposed_lines = { 'hallo world' },
++                proposed_cursor = nil,
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 2)
++            -- extmark 1: changed line (full line highlight)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 0) -- row
++            helpers.expect_equal(extmarks[1][3], 0) -- col
++            helpers.expect_equal(extmarks[1][4].end_col, 11) -- #('hello world')
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].virt_text, { { 'hallo world', 'MinuetDuetAdd' } })
++            -- extmark 2: deleted-only line highlighted entirely
++            helpers.expect_equal(extmarks[2][1], 2) -- id
++            helpers.expect_equal(extmarks[2][2], 1) -- row
++            helpers.expect_equal(extmarks[2][3], 0) -- col
++            helpers.expect_equal(extmarks[2][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[2][4].end_col, 7) -- #('goodbye')
++            helpers.expect_equal(extmarks[2][4].virt_text, nil)
++            helpers.expect_equal(extmarks[2][4].virt_text_pos, nil)
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
++    {
++        name = 'duet.preview renders cursor on unchanged line after hunk',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            -- line 1 changed, cursor on line 3 (after the hunk)
++            local bufnr = helpers.create_buffer({ 'alpha', 'beta', 'gamma' }, { 3, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 3 },
++                original_lines = { 'alpha', 'beta', 'gamma' },
++                proposed_lines = { 'aloha', 'beta', 'gamma' },
++                proposed_cursor = {
++                    row_offset = 2, -- on 'gamma' (line after hunk)
++                    col = 2,
++                },
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            -- creation order: changed line first, cursor second
++            helpers.expect_equal(#extmarks, 2)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 0) -- row
++            helpers.expect_equal(extmarks[1][3], 0) -- col
++            helpers.expect_equal(extmarks[1][4].end_col, 5) -- #('alpha')
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { 'aloha', 'MinuetDuetAdd' },
++            })
++            helpers.expect_equal(extmarks[2][1], 2) -- id
++            helpers.expect_equal(extmarks[2][2], 2) -- row
++            helpers.expect_equal(extmarks[2][3], 0) -- col
++            helpers.expect_equal(extmarks[2][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[2][4].end_col, nil)
++            helpers.expect_equal(extmarks[2][4].hl_group, nil)
++            helpers.expect_equal(extmarks[2][4].virt_text, {
++                { 'ga', 'MinuetDuetComment' },
++                { '|', 'MinuetDuetCursor' },
++                { 'mma', 'MinuetDuetComment' },
++            })
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
++    {
++        name = 'duet.preview renders cursor on unchanged line before hunk',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            -- line 3 changed, cursor on line 1 (before the hunk)
++            local bufnr = helpers.create_buffer({ 'alpha', 'beta', 'gamma' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 3 },
++                original_lines = { 'alpha', 'beta', 'gamma' },
++                proposed_lines = { 'alpha', 'beta', 'gimme' },
++                proposed_cursor = {
++                    row_offset = 0, -- on 'alpha' (line before hunk)
++                    col = 2,
++                },
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 2)
++            -- cursor on 'alpha' rendered after changed line, so id=2 appears first by row
++            helpers.expect_equal(extmarks[1][1], 2) -- id
++            helpers.expect_equal(extmarks[1][2], 0) -- row
++            helpers.expect_equal(extmarks[1][3], 0) -- col
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].end_col, nil)
++            helpers.expect_equal(extmarks[1][4].hl_group, nil)
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { 'al', 'MinuetDuetComment' },
++                { '|', 'MinuetDuetCursor' },
++                { 'pha', 'MinuetDuetComment' },
++            })
++            helpers.expect_equal(extmarks[2][1], 1) -- id
++            helpers.expect_equal(extmarks[2][2], 2) -- row
++            helpers.expect_equal(extmarks[2][3], 0) -- col
++            helpers.expect_equal(extmarks[2][4].end_col, 5) -- #('gamma')
++            helpers.expect_equal(extmarks[2][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[2][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[2][4].virt_text, {
++                { 'gimme', 'MinuetDuetAdd' },
++            })
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
++    {
++        name = 'duet.preview renders cursor on inserted line past end of file',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            -- buffer has 1 line, proposal adds 3 more, cursor on the last one
++            local bufnr = helpers.create_buffer({ 'alpha' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 1 },
++                original_lines = { 'alpha' },
++                proposed_lines = { 'alpha', 'beta', 'gamma', 'delta' },
++                proposed_cursor = {
++                    row_offset = 3, -- on 'delta' (past end of original file)
++                    col = 2,
++                },
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 0) -- row
++            helpers.expect_equal(extmarks[1][3], 0) -- col
++            helpers.expect_equal(extmarks[1][4].virt_lines, {
++                { { 'beta', 'MinuetDuetAdd' } },
++                { { 'gamma', 'MinuetDuetAdd' } },
++                {
++                    { 'de', 'MinuetDuetAdd' },
++                    { '|', 'MinuetDuetCursor' },
++                    { 'lta', 'MinuetDuetAdd' },
++                },
++            })
++
+             helpers.delete_buffer(bufnr)
+         end,
+     },
+-- 
+2.54.0
+
+
+From 61f163bd462ddc06d67b77eb91d279de47a742be Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 25 Jun 2026 00:43:18 +0200
+Subject: [PATCH 02/13] duet: add col argument to add_extmark...
+
+... nvim_buf_set_extmark is kinda asymmetric:
+col is positional, end_col is in opts.
+Mirroring that asymmetry.
+---
+ lua/minuet/duet/preview.lua | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/lua/minuet/duet/preview.lua b/lua/minuet/duet/preview.lua
+index b1d01fe..c1ecd66 100644
+--- a/lua/minuet/duet/preview.lua
++++ b/lua/minuet/duet/preview.lua
+@@ -55,9 +55,9 @@ local function get_hunks(state)
+     return hunks
+ end
+ 
+-local function add_extmark(bufnr, state, row, opts)
++local function add_extmark(bufnr, state, row, col, opts)
+     state.extmark_ids = state.extmark_ids or {}
+-    local extmark_id = api.nvim_buf_set_extmark(bufnr, M.ns_id, row, 0, opts)
++    local extmark_id = api.nvim_buf_set_extmark(bufnr, M.ns_id, row, col, opts)
+     table.insert(state.extmark_ids, extmark_id)
+ end
+ 
+@@ -110,7 +110,7 @@ local function render_inserted_lines(bufnr, state, row, lines, proposed_indices,
+         table.insert(virt_lines, chunks)
+     end
+ 
+-    add_extmark(bufnr, state, row, {
++    add_extmark(bufnr, state, row, 0, {
+         virt_lines = virt_lines,
+         virt_lines_above = above or false,
+     })
+@@ -130,7 +130,7 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
+         local col = cursor_col_for(state, proposed_idx)
+         local chunks = make_chunks(proposed_line, 'MinuetDuetAdd', col, cursor_char)
+ 
+-        add_extmark(bufnr, state, buffer_row, {
++        add_extmark(bufnr, state, buffer_row, 0, {
+             end_col = #buffer_line,
+             hl_group = 'MinuetDuetDelete',
+             virt_text = chunks,
+@@ -141,7 +141,7 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
+     for offset = pair_count, original_count - 1 do
+         local buffer_row = first_buffer_row + offset
+         local buffer_line = api.nvim_buf_get_lines(bufnr, buffer_row, buffer_row + 1, false)[1] or ''
+-        add_extmark(bufnr, state, buffer_row, {
++        add_extmark(bufnr, state, buffer_row, 0, {
+             end_col = #buffer_line,
+             hl_group = 'MinuetDuetDelete',
+         })
+@@ -210,7 +210,7 @@ local function render_cursor_on_unchanged_line(bufnr, state, hunks, cursor_char)
+     local line_text = state.proposed_lines[proposed_row_1based] or ''
+     local chunks = make_chunks(line_text, 'MinuetDuetComment', c.col, cursor_char)
+ 
+-    add_extmark(bufnr, state, buffer_row, {
++    add_extmark(bufnr, state, buffer_row, 0, {
+         virt_text = chunks,
+         virt_text_pos = 'eol',
+     })
+-- 
+2.54.0
+
+
+From f96e4149395b87f9ad1b3486deabcc119c194c66 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 25 Jun 2026 18:54:14 +0200
+Subject: [PATCH 03/13] duet.utils: implement and test inline_diff
+
+---
+ lua/minuet/duet/utils.lua |  66 ++++++++++++
+ tests/duet_utils_spec.lua | 218 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 284 insertions(+)
+
+diff --git a/lua/minuet/duet/utils.lua b/lua/minuet/duet/utils.lua
+index 3332ada..aeff7de 100644
+--- a/lua/minuet/duet/utils.lua
++++ b/lua/minuet/duet/utils.lua
+@@ -311,4 +311,70 @@ function M.parse_duet_response(text, context)
+         nil
+ end
+ 
++--- Compute the number of common characters at the start of two strings.
++--- Walks character-by-character (handling multi-byte correctly).
++---@param a string
++---@param b string
++---@param a_len? integer optional pre-computed vim.fn.strchars(a)
++---@param b_len? integer optional pre-computed vim.fn.strchars(b)
++---@return integer number of common prefix characters
++function M.common_prefix_len(a, b, a_len, b_len)
++    a_len = a_len or vim.fn.strchars(a)
++    b_len = b_len or vim.fn.strchars(b)
++    local chars = 0
++    while chars < a_len and chars < b_len do
++        if vim.fn.strcharpart(a, chars, 1) ~=
++           vim.fn.strcharpart(b, chars, 1) then
++            break
++        end
++        chars = chars + 1
++    end
++    return chars
++end
++
++--- Compute the number of common characters at the end of two strings.
++--- Walks backwards character-by-character (handling multi-byte correctly).
++---@param a string
++---@param b string
++---@param a_len? integer optional pre-computed vim.fn.strchars(a)
++---@param b_len? integer optional pre-computed vim.fn.strchars(b)
++---@return integer number of common suffix characters
++function M.common_suffix_len(a, b, a_len, b_len)
++    a_len = a_len or vim.fn.strchars(a)
++    b_len = b_len or vim.fn.strchars(b)
++    local chars = 0
++    while chars < a_len and chars < b_len do
++        if vim.fn.strcharpart(a, a_len - chars - 1, 1) ~=
++           vim.fn.strcharpart(b, b_len - chars - 1, 1) then
++            break
++        end
++        chars = chars + 1
++    end
++    return chars
++end
++
++--- Compute character-granular inline diff between two strings.
++--- Return (prefix_bytes, orig_changed_bytes, sugg_changed_bytes) or nil
++--- when the strings are identical.
++---@param orig string original text
++---@param sugg string suggested text
++---@return integer|nil, integer|nil, integer|nil
++function M.inline_diff(orig, sugg)
++    if orig == sugg then return nil end
++    local orig_chars = vim.fn.strchars(orig)
++    local sugg_chars = vim.fn.strchars(sugg)
++    local prefix_chars = M.common_prefix_len(orig, sugg, orig_chars, sugg_chars)
++    local prefix_bytes = #vim.fn.strcharpart(orig, 0, prefix_chars)
++    local suffix_chars = M.common_suffix_len(orig, sugg, orig_chars, sugg_chars)
++    -- prevent prefix and suffix from overlapping on the shorter string
++    if prefix_chars + suffix_chars > math.min(orig_chars, sugg_chars) then
++        suffix_chars = math.min(orig_chars, sugg_chars) - prefix_chars
++    end
++    local suffix_bytes = #vim.fn.strcharpart(orig, orig_chars - suffix_chars,
++                                             suffix_chars)
++    return prefix_bytes,
++           #orig - prefix_bytes - suffix_bytes,
++           #sugg - prefix_bytes - suffix_bytes
++end
++
+ return M
+diff --git a/tests/duet_utils_spec.lua b/tests/duet_utils_spec.lua
+index 1a855a7..c1acf30 100644
+--- a/tests/duet_utils_spec.lua
++++ b/tests/duet_utils_spec.lua
+@@ -222,4 +222,222 @@ f<cursor_position/>o<cursor_position/>o
+             helpers.expect_match(err, 'cursor marker')
+         end,
+     },
++    {
++        name = 'duet.utils.inline_diff multi-byte same-length mismatch',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "игла" (needle) -> "стог" (stack): no common prefix or suffix
++            local p, o, s = utils.inline_diff('игла', 'стог')
++            helpers.expect_equal(p, 0)
++            helpers.expect_equal(o, 8)
++            helpers.expect_equal(s, 8)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff multi-byte mismatch',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "ура" / "фураж": no common prefix or suffix
++            local p, o, s = utils.inline_diff('ура', 'фураж')
++            helpers.expect_equal(p, 0)
++            helpers.expect_equal(o, 6)
++            helpers.expect_equal(s, 10)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff multi-byte common prefix',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "ура" / "ураган": common prefix "ура"
++            local p, o, s = utils.inline_diff('ура', 'ураган')
++            helpers.expect_equal(p, 6)
++            helpers.expect_equal(o, 0)
++            helpers.expect_equal(s, 6)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff multi-byte common suffix',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "ура" / "кобура": common suffix "ура"
++            local p, o, s = utils.inline_diff('ура', 'кобура')
++            helpers.expect_equal(p, 0)
++            helpers.expect_equal(o, 0)
++            helpers.expect_equal(s, 6)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff multi-byte same-length mid-change',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "кобура" / "кожура": mid-change
++            local p, o, s = utils.inline_diff('кобура', 'кожура')
++            helpers.expect_equal(p, 4)
++            helpers.expect_equal(o, 2)
++            helpers.expect_equal(s, 2)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff multi-byte mid-drop',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "кобура" / "кора": mid-drop
++            local p, o, s = utils.inline_diff('кобура', 'кора')
++            helpers.expect_equal(p, 4)
++            helpers.expect_equal(o, 4)
++            helpers.expect_equal(s, 0)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff identical strings returns nil',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            helpers.expect_falsy(utils.inline_diff('foo', 'foo'))
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff empty old string',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            local p, o, s = utils.inline_diff('', 'foo')
++            helpers.expect_equal(p, 0)
++            helpers.expect_equal(o, 0)
++            helpers.expect_equal(s, 3)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff empty new string',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            local p, o, s = utils.inline_diff('foo', '')
++            helpers.expect_equal(p, 0)
++            helpers.expect_equal(o, 3)
++            helpers.expect_equal(s, 0)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff both empty returns nil',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            helpers.expect_falsy(utils.inline_diff('', ''))
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff ASCII-only no common prefix or suffix',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            local p, o, s = utils.inline_diff('hello', 'world')
++            helpers.expect_equal(p, 0)
++            helpers.expect_equal(o, 5)
++            helpers.expect_equal(s, 5)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff ASCII-only common prefix',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "hello" / "hello world": common prefix "hello", no suffix
++            local p, o, s = utils.inline_diff('hello', 'hello world')
++            helpers.expect_equal(p, 5)
++            helpers.expect_equal(o, 0)
++            helpers.expect_equal(s, 6)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff ASCII-only common suffix',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            local p, o, s = utils.inline_diff('world', 'hello world')
++            helpers.expect_equal(p, 0)
++            helpers.expect_equal(o, 0)
++            helpers.expect_equal(s, 6)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff ASCII-only mid-change',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "foobar" / "foodar": prefix "foo", suffix "ar"
++            local p, o, s = utils.inline_diff('foobar', 'foodar')
++            helpers.expect_equal(p, 3)
++            helpers.expect_equal(o, 1)
++            helpers.expect_equal(s, 1)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff prefix/suffix overlap single char',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "a" / "aa": prefix takes priority for overlap
++            -- suffix must shrink to avoid overlap
++            local p, o, s = utils.inline_diff('a', 'aa')
++            helpers.expect_equal(p, 1)
++            helpers.expect_equal(o, 0)
++            helpers.expect_equal(s, 1)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff prefix/suffix overlap repeating pattern',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "aba" / "ababa": prefix takes priority for overlap
++            local p, o, s = utils.inline_diff('aba', 'ababa')
++            helpers.expect_equal(p, 3)
++            helpers.expect_equal(o, 0)
++            helpers.expect_equal(s, 2)
++        end,
++    },
++    {
++        name = 'duet.utils.inline_diff mixed ASCII/multi-byte',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- "plan Ш" vs "plan Щ": common ASCII prefix "plan " +
++            -- differing Cyrillic suffixes starting with the same byte
++            local p, o, s = utils.inline_diff('plan Ш', 'plan Щ')
++            helpers.expect_equal(p, 5)
++            helpers.expect_equal(o, 2)
++            helpers.expect_equal(s, 2)
++        end,
++    },
++    {
++        name = 'duet.utils.common_prefix_len basic cases',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            helpers.expect_equal(utils.common_prefix_len('abc', 'abd'), 2)
++            helpers.expect_equal(utils.common_prefix_len('abc', 'abc'), 3)
++            helpers.expect_equal(utils.common_prefix_len('abc', ''), 0)
++            helpers.expect_equal(utils.common_prefix_len('', 'abc'), 0)
++            helpers.expect_equal(utils.common_prefix_len('', ''), 0)
++        end,
++    },
++    {
++        name = 'duet.utils.common_suffix_len basic cases',
++        run = function()
++            helpers.setup_root_config {}
++            local utils = helpers.reload 'minuet.duet.utils'
++            helpers.expect_equal(utils.common_suffix_len('xab', 'yab'), 2)
++            helpers.expect_equal(utils.common_suffix_len('abc', 'abc'), 3)
++            helpers.expect_equal(utils.common_suffix_len('abc', ''), 0)
++            helpers.expect_equal(utils.common_suffix_len('', 'abc'), 0)
++            helpers.expect_equal(utils.common_suffix_len('', ''), 0)
++        end,
++    },
+ }
+-- 
+2.54.0
+
+
+From 1198f76bf0f4e29dc603bce85e017e46b6630ad7 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 25 Jun 2026 19:23:11 +0200
+Subject: [PATCH 04/13] duet: use inline diff rendering for preview
+
+---
+ lua/minuet/duet/preview.lua | 34 +++++++++++++++++++++-------
+ tests/duet_preview_spec.lua | 44 ++++++++++++++++++-------------------
+ 2 files changed, 48 insertions(+), 30 deletions(-)
+
+diff --git a/lua/minuet/duet/preview.lua b/lua/minuet/duet/preview.lua
+index c1ecd66..49325a0 100644
+--- a/lua/minuet/duet/preview.lua
++++ b/lua/minuet/duet/preview.lua
+@@ -128,14 +128,32 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
+         local proposed_line = state.proposed_lines[proposed_start + offset] or ''
+         local proposed_idx = proposed_start + offset - 1 -- 0-based index into proposed_lines
+         local col = cursor_col_for(state, proposed_idx)
+-        local chunks = make_chunks(proposed_line, 'MinuetDuetAdd', col, cursor_char)
+-
+-        add_extmark(bufnr, state, buffer_row, 0, {
+-            end_col = #buffer_line,
+-            hl_group = 'MinuetDuetDelete',
+-            virt_text = chunks,
+-            virt_text_pos = 'eol',
+-        })
++        local prefix, orig_len, prop_len = utils.inline_diff(buffer_line,
++                                                             proposed_line)
++        if prefix == nil then
++            -- lines match; render the cursor marker only if present
++            if col then
++                add_extmark(bufnr, state, buffer_row, col, {
++                    virt_text = { { cursor_char, 'MinuetDuetCursor' } },
++                    virt_text_pos = 'eol',
++                })
++            end
++        else
++            -- highlight the changed region and display only the replacement
++            local hl_start_col = prefix
++            local hl_end_col = prefix + orig_len
++            local replacement = proposed_line:sub(prefix + 1,
++                                                  prefix + prop_len)
++            local cursor_col_adjusted = col and col - prefix or nil
++            local chunks = make_chunks(replacement, 'MinuetDuetAdd',
++                                       cursor_col_adjusted, cursor_char)
++            add_extmark(bufnr, state, buffer_row, hl_start_col, {
++                end_col = hl_end_col,
++                hl_group = 'MinuetDuetDelete',
++                virt_text = chunks,
++                virt_text_pos = 'eol',
++            })
++        end
+     end
+ 
+     for offset = pair_count, original_count - 1 do
+diff --git a/tests/duet_preview_spec.lua b/tests/duet_preview_spec.lua
+index 230472e..87b3efb 100644
+--- a/tests/duet_preview_spec.lua
++++ b/tests/duet_preview_spec.lua
+@@ -102,7 +102,7 @@ return {
+         end,
+     },
+     {
+-        name = 'duet.preview renders changed lines',
++        name = 'duet.preview renders changed lines with inline diff',
+         run = function()
+             helpers.setup_root_config {
+                 duet = { preview = { cursor = '|' } },
+@@ -120,14 +120,15 @@ return {
+ 
+             local extmarks = get_extmarks(bufnr, preview.ns_id)
+             helpers.expect_equal(#extmarks, 1)
++            local details = extmarks[1][4]
+             helpers.expect_equal(extmarks[1][1], 1) -- id
+             helpers.expect_equal(extmarks[1][2], 0) -- row
+-            helpers.expect_equal(extmarks[1][3], 0) -- col
+-            helpers.expect_equal(extmarks[1][4].end_col, 11) -- #('hello world')
+-            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+-            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
+-            helpers.expect_equal(extmarks[1][4].virt_text, {
+-                { 'hallo world', 'MinuetDuetAdd' },
++            helpers.expect_equal(extmarks[1][3], 1) -- col
++            helpers.expect_equal(details.end_col, 2)
++            helpers.expect_equal(details.virt_text_pos, 'eol')
++            helpers.expect_equal(details.hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(details.virt_text, {
++                { 'a', 'MinuetDuetAdd' },
+             })
+ 
+             helpers.delete_buffer(bufnr)
+@@ -157,14 +158,13 @@ return {
+             helpers.expect_equal(#extmarks, 1)
+             helpers.expect_equal(extmarks[1][1], 1) -- id
+             helpers.expect_equal(extmarks[1][2], 0) -- row
+-            helpers.expect_equal(extmarks[1][3], 0) -- col
+-            helpers.expect_equal(extmarks[1][4].end_col, 11) -- #('hello world')
++            helpers.expect_equal(extmarks[1][3], 1) -- col
++            helpers.expect_equal(extmarks[1][4].end_col, 2)
+             helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+             helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
+             helpers.expect_equal(extmarks[1][4].virt_text, {
+-                { 'h', 'MinuetDuetAdd' },
+                 { '|', 'MinuetDuetCursor' },
+-                { 'allo world', 'MinuetDuetAdd' },
++                { 'a', 'MinuetDuetAdd' },
+             })
+ 
+             helpers.delete_buffer(bufnr)
+@@ -230,12 +230,12 @@ return {
+             helpers.expect_equal(#extmarks, 1)
+             helpers.expect_equal(extmarks[1][1], 1) -- id
+             helpers.expect_equal(extmarks[1][2], 0) -- row
+-            helpers.expect_equal(extmarks[1][3], 0) -- col
+-            helpers.expect_equal(extmarks[1][4].end_col, 11) -- #('hello world')
++            helpers.expect_equal(extmarks[1][3], 1) -- col
++            helpers.expect_equal(extmarks[1][4].end_col, 2)
+             helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+             helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
+             helpers.expect_equal(extmarks[1][4].virt_text, {
+-                { 'hallo world', 'MinuetDuetAdd' },
++                { 'a', 'MinuetDuetAdd' },
+                 { '|', 'MinuetDuetCursor' },
+             })
+ 
+@@ -265,11 +265,11 @@ return {
+             -- extmark 1: changed line (full line highlight)
+             helpers.expect_equal(extmarks[1][1], 1) -- id
+             helpers.expect_equal(extmarks[1][2], 0) -- row
+-            helpers.expect_equal(extmarks[1][3], 0) -- col
+-            helpers.expect_equal(extmarks[1][4].end_col, 11) -- #('hello world')
++            helpers.expect_equal(extmarks[1][3], 1) -- col
++            helpers.expect_equal(extmarks[1][4].end_col, 2)
+             helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
+             helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+-            helpers.expect_equal(extmarks[1][4].virt_text, { { 'hallo world', 'MinuetDuetAdd' } })
++            helpers.expect_equal(extmarks[1][4].virt_text, { { 'a', 'MinuetDuetAdd' } })
+             -- extmark 2: deleted-only line highlighted entirely
+             helpers.expect_equal(extmarks[2][1], 2) -- id
+             helpers.expect_equal(extmarks[2][2], 1) -- row
+@@ -308,12 +308,12 @@ return {
+             helpers.expect_equal(#extmarks, 2)
+             helpers.expect_equal(extmarks[1][1], 1) -- id
+             helpers.expect_equal(extmarks[1][2], 0) -- row
+-            helpers.expect_equal(extmarks[1][3], 0) -- col
+-            helpers.expect_equal(extmarks[1][4].end_col, 5) -- #('alpha')
++            helpers.expect_equal(extmarks[1][3], 2) -- col
++            helpers.expect_equal(extmarks[1][4].end_col, 3)
+             helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
+             helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+             helpers.expect_equal(extmarks[1][4].virt_text, {
+-                { 'aloha', 'MinuetDuetAdd' },
++                { 'o', 'MinuetDuetAdd' },
+             })
+             helpers.expect_equal(extmarks[2][1], 2) -- id
+             helpers.expect_equal(extmarks[2][2], 2) -- row
+@@ -367,12 +367,12 @@ return {
+             })
+             helpers.expect_equal(extmarks[2][1], 1) -- id
+             helpers.expect_equal(extmarks[2][2], 2) -- row
+-            helpers.expect_equal(extmarks[2][3], 0) -- col
++            helpers.expect_equal(extmarks[2][3], 1) -- col
+             helpers.expect_equal(extmarks[2][4].end_col, 5) -- #('gamma')
+             helpers.expect_equal(extmarks[2][4].hl_group, 'MinuetDuetDelete')
+             helpers.expect_equal(extmarks[2][4].virt_text_pos, 'eol')
+             helpers.expect_equal(extmarks[2][4].virt_text, {
+-                { 'gimme', 'MinuetDuetAdd' },
++                { 'imme', 'MinuetDuetAdd' },
+             })
+ 
+             helpers.delete_buffer(bufnr)
+-- 
+2.54.0
+
+
+From 19da2912d733b49d7260cff10c26cdf95b27db94 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 25 Jun 2026 20:45:56 +0200
+Subject: [PATCH 05/13] duet: allow configuring preview extmark priority
+
+---
+ lua/minuet/duet/config.lua  | 2 +-
+ lua/minuet/duet/preview.lua | 4 ++++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/lua/minuet/duet/config.lua b/lua/minuet/duet/config.lua
+index c3e2744..d9ff920 100644
+--- a/lua/minuet/duet/config.lua
++++ b/lua/minuet/duet/config.lua
+@@ -207,7 +207,7 @@ end
+ ---@field editable_region minuet.DuetEditableRegion
+ ---@field non_editable_region minuet.DuetNonEditableRegion
+ ---@field markers { editable_region_start: string, editable_region_end: string, cursor_position: string }
+----@field preview { cursor: string }
++---@field preview { cursor: string, priority?: integer }
+ ---@field provider_options table<string, table>
+ local M = {
+     provider = 'gemini',
+diff --git a/lua/minuet/duet/preview.lua b/lua/minuet/duet/preview.lua
+index 49325a0..d0126c4 100644
+--- a/lua/minuet/duet/preview.lua
++++ b/lua/minuet/duet/preview.lua
+@@ -57,6 +57,10 @@ end
+ 
+ local function add_extmark(bufnr, state, row, col, opts)
+     state.extmark_ids = state.extmark_ids or {}
++    local cfg = require('minuet').config.duet.preview
++    if cfg.priority then
++        opts.priority = opts.priority or cfg.priority
++    end
+     local extmark_id = api.nvim_buf_set_extmark(bufnr, M.ns_id, row, col, opts)
+     table.insert(state.extmark_ids, extmark_id)
+ end
+-- 
+2.54.0
+
+
+From 88795190a4579074662e7529df222b34c3cae81c Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 26 Jun 2026 15:35:37 +0200
+Subject: [PATCH 06/13] duet: separate out MinuetDuetReplace highlight group
+
+---
+ lua/minuet/duet/preview.lua | 27 +++++++++++++----------
+ tests/duet_preview_spec.lua | 43 +++++++++++++++++++++++++++++++------
+ 2 files changed, 53 insertions(+), 17 deletions(-)
+
+diff --git a/lua/minuet/duet/preview.lua b/lua/minuet/duet/preview.lua
+index d0126c4..78b863f 100644
+--- a/lua/minuet/duet/preview.lua
++++ b/lua/minuet/duet/preview.lua
+@@ -7,6 +7,7 @@ M.ns_id = api.nvim_create_namespace 'minuet.duet'
+ local default_highlights = {
+     MinuetDuetAdd = 'DiffAdd',
+     MinuetDuetDelete = 'DiffDelete',
++    MinuetDuetReplace = 'MinuetDuetDelete',
+     MinuetDuetComment = 'Comment',
+     MinuetDuetCursor = 'IncSearch',
+ }
+@@ -146,17 +147,21 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
+             -- highlight the changed region and display only the replacement
+             local hl_start_col = prefix
+             local hl_end_col = prefix + orig_len
+-            local replacement = proposed_line:sub(prefix + 1,
+-                                                  prefix + prop_len)
+-            local cursor_col_adjusted = col and col - prefix or nil
+-            local chunks = make_chunks(replacement, 'MinuetDuetAdd',
+-                                       cursor_col_adjusted, cursor_char)
+-            add_extmark(bufnr, state, buffer_row, hl_start_col, {
+-                end_col = hl_end_col,
+-                hl_group = 'MinuetDuetDelete',
+-                virt_text = chunks,
+-                virt_text_pos = 'eol',
+-            })
++            local hl_group = prop_len > 0 and
++                'MinuetDuetReplace' or 'MinuetDuetDelete'
++            local opts = { end_col = hl_end_col, hl_group = hl_group }
++            if prop_len > 0 then
++                local replacement = proposed_line:sub(prefix + 1,
++                                                      prefix + prop_len)
++                local cursor_col_adjusted = col and col - prefix or nil
++                opts.virt_text = make_chunks(replacement, 'MinuetDuetAdd',
++                                             cursor_col_adjusted, cursor_char)
++                opts.virt_text_pos = 'eol'
++            elseif col then
++                opts.virt_text = { { cursor_char, 'MinuetDuetCursor' } }
++                opts.virt_text_pos = 'eol'
++            end
++            add_extmark(bufnr, state, buffer_row, hl_start_col, opts)
+         end
+     end
+ 
+diff --git a/tests/duet_preview_spec.lua b/tests/duet_preview_spec.lua
+index 87b3efb..a112f56 100644
+--- a/tests/duet_preview_spec.lua
++++ b/tests/duet_preview_spec.lua
+@@ -126,7 +126,7 @@ return {
+             helpers.expect_equal(extmarks[1][3], 1) -- col
+             helpers.expect_equal(details.end_col, 2)
+             helpers.expect_equal(details.virt_text_pos, 'eol')
+-            helpers.expect_equal(details.hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(details.hl_group, 'MinuetDuetReplace')
+             helpers.expect_equal(details.virt_text, {
+                 { 'a', 'MinuetDuetAdd' },
+             })
+@@ -161,7 +161,7 @@ return {
+             helpers.expect_equal(extmarks[1][3], 1) -- col
+             helpers.expect_equal(extmarks[1][4].end_col, 2)
+             helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+-            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetReplace')
+             helpers.expect_equal(extmarks[1][4].virt_text, {
+                 { '|', 'MinuetDuetCursor' },
+                 { 'a', 'MinuetDuetAdd' },
+@@ -233,7 +233,7 @@ return {
+             helpers.expect_equal(extmarks[1][3], 1) -- col
+             helpers.expect_equal(extmarks[1][4].end_col, 2)
+             helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+-            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetReplace')
+             helpers.expect_equal(extmarks[1][4].virt_text, {
+                 { 'a', 'MinuetDuetAdd' },
+                 { '|', 'MinuetDuetCursor' },
+@@ -267,7 +267,7 @@ return {
+             helpers.expect_equal(extmarks[1][2], 0) -- row
+             helpers.expect_equal(extmarks[1][3], 1) -- col
+             helpers.expect_equal(extmarks[1][4].end_col, 2)
+-            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetReplace')
+             helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+             helpers.expect_equal(extmarks[1][4].virt_text, { { 'a', 'MinuetDuetAdd' } })
+             -- extmark 2: deleted-only line highlighted entirely
+@@ -282,6 +282,37 @@ return {
+             helpers.delete_buffer(bufnr)
+         end,
+     },
++    {
++        name = 'duet.preview uses MinuetDuetDelete when replacement is empty',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            -- proposed line is shorter, trailing text removed with nothing to replace it
++            local bufnr = helpers.create_buffer({ 'hello world' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 1 },
++                original_lines = { 'hello world' },
++                proposed_lines = { 'hello' },
++                proposed_cursor = nil,
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 0) -- row
++            helpers.expect_equal(extmarks[1][3], 5) -- col (after "hello")
++            helpers.expect_equal(extmarks[1][4].end_col, 11) -- #('hello world')
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[1][4].virt_text, nil)
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, nil)
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
+     {
+         name = 'duet.preview renders cursor on unchanged line after hunk',
+         run = function()
+@@ -310,7 +341,7 @@ return {
+             helpers.expect_equal(extmarks[1][2], 0) -- row
+             helpers.expect_equal(extmarks[1][3], 2) -- col
+             helpers.expect_equal(extmarks[1][4].end_col, 3)
+-            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetReplace')
+             helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+             helpers.expect_equal(extmarks[1][4].virt_text, {
+                 { 'o', 'MinuetDuetAdd' },
+@@ -369,7 +400,7 @@ return {
+             helpers.expect_equal(extmarks[2][2], 2) -- row
+             helpers.expect_equal(extmarks[2][3], 1) -- col
+             helpers.expect_equal(extmarks[2][4].end_col, 5) -- #('gamma')
+-            helpers.expect_equal(extmarks[2][4].hl_group, 'MinuetDuetDelete')
++            helpers.expect_equal(extmarks[2][4].hl_group, 'MinuetDuetReplace')
+             helpers.expect_equal(extmarks[2][4].virt_text_pos, 'eol')
+             helpers.expect_equal(extmarks[2][4].virt_text, {
+                 { 'imme', 'MinuetDuetAdd' },
+-- 
+2.54.0
+
+
+From 738dace2c3d7cd1373b6c7cc7b881229bb9b81e6 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 26 Jun 2026 15:49:12 +0200
+Subject: [PATCH 07/13] duet: add MinuetDuetPlaceHint highlight for pure
+ insertions
+
+---
+ lua/minuet/duet/preview.lua | 18 +++++++++--
+ tests/duet_preview_spec.lua | 64 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 80 insertions(+), 2 deletions(-)
+
+diff --git a/lua/minuet/duet/preview.lua b/lua/minuet/duet/preview.lua
+index 78b863f..33487ea 100644
+--- a/lua/minuet/duet/preview.lua
++++ b/lua/minuet/duet/preview.lua
+@@ -10,6 +10,7 @@ local default_highlights = {
+     MinuetDuetReplace = 'MinuetDuetDelete',
+     MinuetDuetComment = 'Comment',
+     MinuetDuetCursor = 'IncSearch',
++    MinuetDuetPlaceHint = 'IncSearch',
+ }
+ 
+ for hl_group, default_link in pairs(default_highlights) do
+@@ -147,8 +148,21 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
+             -- highlight the changed region and display only the replacement
+             local hl_start_col = prefix
+             local hl_end_col = prefix + orig_len
+-            local hl_group = prop_len > 0 and
+-                'MinuetDuetReplace' or 'MinuetDuetDelete'
++            local hl_group
++            if orig_len == 0 and prop_len > 0 then
++                -- pure insertion: highlight the insertion point character
++                local next_char = vim.fn.strcharpart(buffer_line, hl_start_col, 1)
++                hl_end_col = hl_start_col + #next_char
++                if #next_char > 0 then
++                    hl_group = 'MinuetDuetPlaceHint'
++                else
++                    -- insertion at end of line: nothing to highlight
++                    hl_group = nil
++                end
++            else
++                hl_group = prop_len > 0 and 'MinuetDuetReplace'
++                    or 'MinuetDuetDelete'
++            end
+             local opts = { end_col = hl_end_col, hl_group = hl_group }
+             if prop_len > 0 then
+                 local replacement = proposed_line:sub(prefix + 1,
+diff --git a/tests/duet_preview_spec.lua b/tests/duet_preview_spec.lua
+index a112f56..cc79411 100644
+--- a/tests/duet_preview_spec.lua
++++ b/tests/duet_preview_spec.lua
+@@ -134,6 +134,70 @@ return {
+             helpers.delete_buffer(bufnr)
+         end,
+     },
++    {
++        name = 'duet.preview highlights insertion point with MinuetDuetPlaceHint',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            -- 'greeings' -> 'greetings': pure insertion of 't' before 'i'
++            local bufnr = helpers.create_buffer({ 'greeings' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 1 },
++                original_lines = { 'greeings' },
++                proposed_lines = { 'greetings' },
++                proposed_cursor = nil,
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 1)
++            local details = extmarks[1][4]
++            helpers.expect_equal(details.end_col, 5)
++            helpers.expect_equal(details.virt_text_pos, 'eol')
++            helpers.expect_equal(details.hl_group, 'MinuetDuetPlaceHint')
++            helpers.expect_equal(details.virt_text, {
++                { 't', 'MinuetDuetAdd' },
++            })
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
++    {
++        name = 'duet.preview does not highlight insertion at end of line',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            -- 'hello' -> 'hello!': pure insertion at end of line
++            local bufnr = helpers.create_buffer({ 'hello' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 1 },
++                original_lines = { 'hello' },
++                proposed_lines = { 'hello!' },
++                proposed_cursor = nil,
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 1)
++            local details = extmarks[1][4]
++            -- insertion at EOL: no character to highlight, so hl_group is nil
++            helpers.expect_equal(details.end_col, 5)
++            helpers.expect_equal(extmarks[1][3], 5) -- col
++            helpers.expect_equal(details.virt_text_pos, 'eol')
++            helpers.expect_equal(details.hl_group, nil)
++            helpers.expect_equal(details.virt_text, {
++                { '!', 'MinuetDuetAdd' },
++            })
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
+     {
+         name = 'duet.preview renders cursor on changed line inside hunk',
+         run = function()
+-- 
+2.54.0
+
+
+From 8e4bf674a45b370f4e5842aaf27527aa6877c608 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 26 Jun 2026 16:00:50 +0200
+Subject: [PATCH 08/13] duet: use inline virt_text for inserted lines in
+ preview
+
+---
+ lua/minuet/duet/preview.lua | 23 +++++----
+ tests/duet_preview_spec.lua | 93 +++++++++++++++++++++++++++++++------
+ 2 files changed, 93 insertions(+), 23 deletions(-)
+
+diff --git a/lua/minuet/duet/preview.lua b/lua/minuet/duet/preview.lua
+index 33487ea..a747113 100644
+--- a/lua/minuet/duet/preview.lua
++++ b/lua/minuet/duet/preview.lua
+@@ -104,21 +104,28 @@ local function cursor_col_for(state, proposed_idx)
+     return nil
+ end
+ 
+-local function render_inserted_lines(bufnr, state, row, lines, proposed_indices, cursor_char, above)
++local function render_inserted_lines(bufnr, state, row, lines, proposed_indices, cursor_char)
+     if #lines == 0 then
+         return
+     end
+ 
+-    local virt_lines = {}
++    local parts = {}
++    table.insert(parts, { tostring(#lines) .. ' ', 'MinuetDuetComment' })
+     for i, line in ipairs(lines) do
++        local trimmed = line:match('^%s*(.*)')
+         local col = cursor_col_for(state, proposed_indices[i])
+-        local chunks = make_chunks(line, 'MinuetDuetAdd', col, cursor_char)
+-        table.insert(virt_lines, chunks)
++        local chunks = make_chunks(trimmed, 'MinuetDuetAdd', col, cursor_char)
++        for _, ch in ipairs(chunks) do
++            table.insert(parts, ch)
++        end
++        if i < #lines then
++            table.insert(parts, { '↵', 'MinuetDuetComment' })
++        end
+     end
+ 
+     add_extmark(bufnr, state, row, 0, {
+-        virt_lines = virt_lines,
+-        virt_lines_above = above or false,
++        virt_text = parts,
++        virt_text_pos = 'eol',
+     })
+ end
+ 
+@@ -197,7 +204,6 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
+         end
+ 
+         local insertion_anchor_row = first_buffer_row + math.max(original_count - 1, 0)
+-        local render_above = original_count == 0 and original_start == 0
+ 
+         if original_count == 0 then
+             insertion_anchor_row = state.range.start_row
+@@ -212,8 +218,7 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
+             insertion_anchor_row,
+             inserted_lines,
+             proposed_indices,
+-            cursor_char,
+-            render_above
++            cursor_char
+         )
+     end
+ end
+diff --git a/tests/duet_preview_spec.lua b/tests/duet_preview_spec.lua
+index cc79411..a378861 100644
+--- a/tests/duet_preview_spec.lua
++++ b/tests/duet_preview_spec.lua
+@@ -89,18 +89,81 @@ return {
+             helpers.expect_equal(extmarks[1][1], 1) -- id
+             helpers.expect_equal(extmarks[1][2], 0) -- row
+             helpers.expect_equal(extmarks[1][3], 0) -- col
+-            helpers.expect_equal(extmarks[1][4].virt_lines, {
+-                {
+-                    { 'bra', 'MinuetDuetAdd' },
+-                    { '|', 'MinuetDuetCursor' },
+-                    { 'vo', 'MinuetDuetAdd' },
+-                },
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { '1 ', 'MinuetDuetComment' },
++                { 'bra', 'MinuetDuetAdd' },
++                { '|', 'MinuetDuetCursor' },
++                { 'vo', 'MinuetDuetAdd' },
+             })
+             helpers.expect_truthy(preview.is_visible(bufnr, state))
+ 
+             helpers.delete_buffer(bufnr)
+         end,
+     },
++    {
++        name = 'duet.preview renders tab-indented inserted lines',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            local bufnr = helpers.create_buffer({ 'alpha' }, { 1, 0 })
++            -- "\t\tbravo" has leading tabs; trimming strips them
++            local state = {
++                range = { start_row = 0, end_row = 1 },
++                original_lines = { 'alpha' },
++                proposed_lines = { 'alpha', '\t\tbravo' },
++                proposed_cursor = {
++                    row_offset = 1,
++                    col = 6,
++                },
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { '1 ', 'MinuetDuetComment' },
++                { 'bravo', 'MinuetDuetAdd' },
++                { '|', 'MinuetDuetCursor' },
++            })
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
++    {
++        name = 'duet.preview renders multi-line insertions with separator',
++        run = function()
++            helpers.setup_root_config {
++                duet = { preview = { cursor = '|' } },
++            }
++            local preview = helpers.reload 'minuet.duet.preview'
++            local bufnr = helpers.create_buffer({ 'alpha' }, { 1, 0 })
++            local state = {
++                range = { start_row = 0, end_row = 1 },
++                original_lines = { 'alpha' },
++                proposed_lines = { 'alpha', '    bravo', 'charlie' },
++                proposed_cursor = nil,
++            }
++
++            preview.render(bufnr, state)
++
++            local extmarks = get_extmarks(bufnr, preview.ns_id)
++            helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { '2 ', 'MinuetDuetComment' },
++                { 'bravo', 'MinuetDuetAdd' },
++                { '↵', 'MinuetDuetComment' },
++                { 'charlie', 'MinuetDuetAdd' },
++            })
++
++            helpers.delete_buffer(bufnr)
++        end,
++    },
+     {
+         name = 'duet.preview renders changed lines with inline diff',
+         run = function()
+@@ -499,14 +562,16 @@ return {
+             helpers.expect_equal(extmarks[1][1], 1) -- id
+             helpers.expect_equal(extmarks[1][2], 0) -- row
+             helpers.expect_equal(extmarks[1][3], 0) -- col
+-            helpers.expect_equal(extmarks[1][4].virt_lines, {
+-                { { 'beta', 'MinuetDuetAdd' } },
+-                { { 'gamma', 'MinuetDuetAdd' } },
+-                {
+-                    { 'de', 'MinuetDuetAdd' },
+-                    { '|', 'MinuetDuetCursor' },
+-                    { 'lta', 'MinuetDuetAdd' },
+-                },
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { '3 ', 'MinuetDuetComment' },
++                { 'beta', 'MinuetDuetAdd' },
++                { '↵', 'MinuetDuetComment' },
++                { 'gamma', 'MinuetDuetAdd' },
++                { '↵', 'MinuetDuetComment' },
++                { 'de', 'MinuetDuetAdd' },
++                { '|', 'MinuetDuetCursor' },
++                { 'lta', 'MinuetDuetAdd' },
+             })
+ 
+             helpers.delete_buffer(bufnr)
+-- 
+2.54.0
+
+
+From 28d21e0bd66e31de2e0eaf91a409663b8bb3b519 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 26 Jun 2026 16:12:27 +0200
+Subject: [PATCH 09/13] duet: infer cursor position from edits when marker is
+ missing
+
+---
+ lua/minuet/duet/init.lua  |   5 ++
+ lua/minuet/duet/utils.lua |  67 +++++++++++++++--
+ tests/duet_utils_spec.lua | 147 +++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 209 insertions(+), 10 deletions(-)
+
+diff --git a/lua/minuet/duet/init.lua b/lua/minuet/duet/init.lua
+index ed929b8..19c0a3c 100644
+--- a/lua/minuet/duet/init.lua
++++ b/lua/minuet/duet/init.lua
+@@ -85,6 +85,11 @@ local function predict()
+                 return
+             end
+ 
++            if not parsed.cursor then
++                -- No edits detected; nothing to preview.
++                return
++            end
++
+             state.changedtick = current_context.changedtick
+             state.range = current_context.range
+             state.original_lines = current_context.original_lines
+diff --git a/lua/minuet/duet/utils.lua b/lua/minuet/duet/utils.lua
+index aeff7de..99526ef 100644
+--- a/lua/minuet/duet/utils.lua
++++ b/lua/minuet/duet/utils.lua
+@@ -165,7 +165,7 @@ end
+ 
+ ---@class minuet.DuetParseResult
+ ---@field lines string[]
+----@field cursor minuet.DuetParseCursor
++---@field cursor minuet.DuetParseCursor?
+ 
+ ---@class minuet.DuetFilterContext
+ ---@field non_editable_region_before? string
+@@ -173,6 +173,35 @@ end
+ 
+ ---@alias minuet.DuetParseContext minuet.DuetFilterContext|minuet.DuetContext
+ 
++--- Try to infer cursor position from edits. Returns {row_offset, col} of the last
++--- edited byte across all changed lines, or nil if no edits were detected.
++--- Uses inline_diff to find prefix/suffix boundaries, placing cursor at the
++--- end of the changed region (after orig replacement, before common suffix).
++---@param original_lines string[]
++---@param proposed_lines string[]
++---@return minuet.DuetParseCursor?
++local function infer_cursor_from_edits(original_lines, proposed_lines)
++    local last_row = nil
++    local last_col = nil
++
++    for i = 1, math.max(#original_lines, #proposed_lines) do
++        local prefix, _, sugg_len = M.inline_diff(original_lines[i] or '', proposed_lines[i] or '')
++        if prefix then
++            -- cursor at end of edit: prefix + changed portion (excludes common suffix)
++            last_row = i - 1 -- 0-based
++            last_col = prefix + sugg_len
++        end
++    end
++
++    if last_row == nil then
++        return nil
++    end
++
++    local sugg_line = proposed_lines[last_row + 1] or ''
++    return { row_offset = last_row, col = math.min(last_col, #sugg_line) }
++end
++
++
+ ---Trim duplicated non-editable text from the start of the editable response.
+ ---The boolean return is true only when duplicated left context was removed;
+ ---callers use it to decide whether a left boundary newline was only a separator.
+@@ -264,12 +293,36 @@ function M.parse_duet_response(text, context)
+ 
+     local cursor_marker_count = count_occurrences(inner, markers.cursor_position)
+     if cursor_marker_count == 0 then
+-        M.notify(
+-            'Minuet duet response did not include a cursor marker; placing the cursor at the end of the editable region.',
+-            'verbose',
+-            vim.log.levels.INFO
+-        )
+-        inner = inner .. markers.cursor_position
++        -- No cursor marker: try to infer from edits
++        local trimmed_right
++        inner, trimmed_right = trim_inner_right(inner, context)
++        if trimmed_right then
++            inner = trim_boundary_newlines(inner, 'right')
++        end
++        local parsed_lines = vim.split(inner, '\n', { plain = true })
++        if #parsed_lines == 0 then parsed_lines = { '' } end
++
++        local inferred = nil
++        if type(context) == 'table' and type(context.original_lines) == 'table' then
++            inferred = infer_cursor_from_edits(context.original_lines, parsed_lines)
++        end
++
++        if inferred then
++            M.notify(
++                'Minuet duet response did not include a cursor marker; inferring position from edits.',
++                'verbose',
++                vim.log.levels.INFO
++            )
++        else
++            M.notify(
++                'Minuet duet response did not include a cursor marker; no edits detected, skipping preview.',
++                'verbose',
++                vim.log.levels.INFO
++            )
++        end
++
++        return { lines = parsed_lines, cursor = inferred }, nil
++
+     elseif cursor_marker_count > 1 then
+         return nil, 'expected exactly one cursor marker inside editable region: ' .. text
+     end
+diff --git a/tests/duet_utils_spec.lua b/tests/duet_utils_spec.lua
+index c1acf30..18f1930 100644
+--- a/tests/duet_utils_spec.lua
++++ b/tests/duet_utils_spec.lua
+@@ -183,7 +183,7 @@ bar<cursor_position/>
+         end,
+     },
+     {
+-        name = 'duet.utils places cursor at the editable region end when the marker is missing',
++        name = 'duet.utils returns nil cursor when marker is missing and no context available',
+         run = function()
+             helpers.setup_root_config {
+                 notify = 'verbose',
+@@ -199,13 +199,154 @@ foo
+             helpers.expect_equal(err, nil)
+             helpers.expect_equal(parsed, {
+                 lines = { 'foo' },
++                cursor = nil,
++            })
++            helpers.expect_equal(#notifications, 1)
++            helpers.expect_match(notifications[1].msg, 'no edits detected')
++        end,
++    },
++    {
++        name = 'duet.utils infers cursor from edits when marker is missing',
++        run = function()
++            helpers.setup_root_config {
++                notify = 'verbose',
++            }
++
++            local utils = helpers.reload 'minuet.duet.utils'
++            local notifications, restore_notifications = helpers.capture_notifications()
++            local parsed, err = utils.parse_duet_response(
++                [[<editable_region>
++hallo world
++</editable_region>]],
++                { original_lines = { 'hello world' } }
++            )
++            restore_notifications()
++
++            helpers.expect_equal(err, nil)
++            helpers.expect_equal(parsed, {
++                lines = { 'hallo world' },
++                cursor = {
++                    row_offset = 0,
++                    col = 2, -- 'h' + 'a' (prefix=1, sugg_len=1)
++                },
++            })
++            helpers.expect_equal(#notifications, 1)
++            helpers.expect_match(notifications[1].msg, 'inferring position')
++        end,
++    },
++    {
++        name = 'duet.utils returns nil cursor when marker is missing and no edits',
++        run = function()
++            helpers.setup_root_config {
++                notify = 'verbose',
++            }
++
++            local utils = helpers.reload 'minuet.duet.utils'
++            local notifications, restore_notifications = helpers.capture_notifications()
++            local parsed, err = utils.parse_duet_response(
++                [[<editable_region>
++hello world
++</editable_region>]],
++                { original_lines = { 'hello world' } }
++            )
++            restore_notifications()
++
++            helpers.expect_equal(err, nil)
++            helpers.expect_equal(parsed, {
++                lines = { 'hello world' },
++                cursor = nil,
++            })
++            helpers.expect_equal(#notifications, 1)
++            helpers.expect_match(notifications[1].msg, 'no edits detected')
++        end,
++    },
++    {
++        name = 'duet.utils infers cursor from multi-line edits',
++        run = function()
++            helpers.setup_root_config {
++                notify = 'verbose',
++            }
++
++            local utils = helpers.reload 'minuet.duet.utils'
++            local notifications, restore_notifications = helpers.capture_notifications()
++            local parsed, err = utils.parse_duet_response(
++                [[<editable_region>
++hallo world
++goodby
++</editable_region>]],
++                { original_lines = { 'hello world', 'goodbye' } }
++            )
++            restore_notifications()
++
++            helpers.expect_equal(err, nil)
++            helpers.expect_equal(parsed, {
++                lines = { 'hallo world', 'goodby' },
++                cursor = {
++                    row_offset = 1, -- last changed line
++                    col = 6, -- prefix=5 ("goodb") + sugg_len=1
++                },
++            })
++            helpers.expect_equal(#notifications, 1)
++            helpers.expect_match(notifications[1].msg, 'inferring position')
++        end,
++    },
++    {
++        name = 'duet.utils infers cursor when lines are added',
++        run = function()
++            helpers.setup_root_config {
++                notify = 'verbose',
++            }
++
++            local utils = helpers.reload 'minuet.duet.utils'
++            local notifications, restore_notifications = helpers.capture_notifications()
++            local parsed, err = utils.parse_duet_response(
++                [[<editable_region>
++hello world
++new line
++</editable_region>]],
++                { original_lines = { 'hello world' } }
++            )
++            restore_notifications()
++
++            helpers.expect_equal(err, nil)
++            helpers.expect_equal(parsed, {
++                lines = { 'hello world', 'new line' },
++                cursor = {
++                    row_offset = 1,
++                    col = 8, -- entire new line
++                },
++            })
++            helpers.expect_equal(#notifications, 1)
++            helpers.expect_match(notifications[1].msg, 'inferring position')
++        end,
++    },
++    {
++        name = 'duet.utils infers cursor when strings differ from first character',
++        run = function()
++            helpers.setup_root_config {
++                notify = 'verbose',
++            }
++
++            local utils = helpers.reload 'minuet.duet.utils'
++            local notifications, restore_notifications = helpers.capture_notifications()
++            local parsed, err = utils.parse_duet_response(
++                [[<editable_region>
++xyz
++</editable_region>]],
++                { original_lines = { 'abc' } }
++            )
++            restore_notifications()
++
++            helpers.expect_equal(err, nil)
++            helpers.expect_equal(parsed, {
++                lines = { 'xyz' },
+                 cursor = {
+                     row_offset = 0,
+-                    col = 3,
++                    col = 3, -- prefix=0, sugg_len=3 (entire line differs)
+                 },
+             })
+             helpers.expect_equal(#notifications, 1)
+-            helpers.expect_match(notifications[1].msg, 'cursor marker')
++            helpers.expect_match(notifications[1].msg, 'inferring position')
+         end,
+     },
+     {
+-- 
+2.54.0
+
+
+From 04d70778802ca87083b095a47bf74b2cdfd40c63 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 26 Jun 2026 16:31:28 +0200
+Subject: [PATCH 10/13] duet: highlight cursor position instead of virt text
+ where possible
+
+---
+ lua/minuet/duet/preview.lua |  39 +++++++++--
+ tests/duet_preview_spec.lua | 126 ++++++++++++++++++++++--------------
+ 2 files changed, 112 insertions(+), 53 deletions(-)
+
+diff --git a/lua/minuet/duet/preview.lua b/lua/minuet/duet/preview.lua
+index a747113..b21f19f 100644
+--- a/lua/minuet/duet/preview.lua
++++ b/lua/minuet/duet/preview.lua
+@@ -3,6 +3,7 @@ local utils = require 'minuet.duet.utils'
+ local M = {}
+ 
+ M.ns_id = api.nvim_create_namespace 'minuet.duet'
++M.cursor_ns_id = api.nvim_create_namespace 'minuet.duet.cursor'
+ 
+ local default_highlights = {
+     MinuetDuetAdd = 'DiffAdd',
+@@ -183,6 +184,15 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
+                 opts.virt_text_pos = 'eol'
+             end
+             add_extmark(bufnr, state, buffer_row, hl_start_col, opts)
++            -- highlight cursor landing position in buffer
++            if col and orig_len > 0 then
++                local cur_char = vim.fn.strcharpart(buffer_line, hl_start_col, 1)
++                api.nvim_buf_set_extmark(bufnr, M.cursor_ns_id, buffer_row,
++                    hl_start_col, {
++                        end_col = hl_start_col + #cur_char,
++                        hl_group = 'MinuetDuetCursor',
++                    })
++            end
+         end
+     end
+ 
+@@ -254,12 +264,21 @@ local function render_cursor_on_unchanged_line(bufnr, state, hunks, cursor_char)
+     local buffer_row = state.range.start_row + original_row_1based - 1
+ 
+     local line_text = state.proposed_lines[proposed_row_1based] or ''
+-    local chunks = make_chunks(line_text, 'MinuetDuetComment', c.col, cursor_char)
+-
+-    add_extmark(bufnr, state, buffer_row, 0, {
+-        virt_text = chunks,
+-        virt_text_pos = 'eol',
+-    })
++    local cur_char = vim.fn.strcharpart(line_text, c.col, 1)
++    if #cur_char > 0 then
++        -- highlight the character where the cursor lands
++        api.nvim_buf_set_extmark(bufnr, M.cursor_ns_id, buffer_row,
++            c.col, {
++                end_col = c.col + #cur_char,
++                hl_group = 'MinuetDuetCursor',
++            })
++    else
++        -- cursor at EOL: show marker in virt_text
++        add_extmark(bufnr, state, buffer_row, 0, {
++            virt_text = { { cursor_char, 'MinuetDuetCursor' } },
++            virt_text_pos = 'eol',
++        })
++    end
+ end
+ 
+ function M.clear(bufnr, state)
+@@ -270,6 +289,7 @@ function M.clear(bufnr, state)
+     for _, extmark_id in ipairs(state.extmark_ids or {}) do
+         pcall(api.nvim_buf_del_extmark, bufnr, M.ns_id, extmark_id)
+     end
++    api.nvim_buf_clear_namespace(bufnr, M.cursor_ns_id, 0, -1)
+ 
+     state.extmark_ids = nil
+ end
+@@ -308,6 +328,13 @@ function M.is_visible(bufnr, state)
+             return true
+         end
+     end
++
++    -- Also check cursor namespace (unchanged line cursors)
++    local cursor_extmarks = api.nvim_buf_get_extmarks(bufnr, M.cursor_ns_id, 0, -1, {})
++    if #cursor_extmarks > 0 then
++        return true
++    end
++
+     return false
+ end
+ 
+diff --git a/tests/duet_preview_spec.lua b/tests/duet_preview_spec.lua
+index a378861..fdae6e1 100644
+--- a/tests/duet_preview_spec.lua
++++ b/tests/duet_preview_spec.lua
+@@ -34,23 +34,20 @@ return {
+             preview.render(bufnr, state)
+ 
+             local extmarks = get_extmarks(bufnr, preview.ns_id)
+-            helpers.expect_equal(#extmarks, 1)
+-            helpers.expect_equal(extmarks[1][1], 1) -- id
+-            helpers.expect_equal(extmarks[1][2], 1) -- row
+-            helpers.expect_equal(extmarks[1][3], 0) -- col
+-            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+-            helpers.expect_equal(extmarks[1][4].end_col, nil)
+-            helpers.expect_equal(extmarks[1][4].hl_group, nil)
+-            helpers.expect_equal(extmarks[1][4].virt_text, {
+-                { 'be', 'MinuetDuetComment' },
+-                { '|', 'MinuetDuetCursor' },
+-                { 'ta', 'MinuetDuetComment' },
+-            })
++            helpers.expect_equal(#extmarks, 0) -- no full-line virt_text anymore
++            local cursor_extmarks = get_extmarks(bufnr, preview.cursor_ns_id)
++            helpers.expect_equal(#cursor_extmarks, 1)
++            helpers.expect_equal(cursor_extmarks[1][2], 1) -- row
++            helpers.expect_equal(cursor_extmarks[1][3], 2) -- col ('t')
++            helpers.expect_equal(cursor_extmarks[1][4].end_col, 3)
++            helpers.expect_equal(cursor_extmarks[1][4].hl_group, 'MinuetDuetCursor')
++
+             helpers.expect_truthy(preview.is_visible(bufnr, state))
+ 
+             preview.clear(bufnr, state)
+ 
+             helpers.expect_equal(get_extmarks(bufnr, preview.ns_id), {})
++            helpers.expect_equal(get_extmarks(bufnr, preview.cursor_ns_id), {})
+             helpers.expect_falsy(preview.is_visible(bufnr, state))
+ 
+             helpers.delete_buffer(bufnr)
+@@ -96,8 +93,14 @@ return {
+                 { '|', 'MinuetDuetCursor' },
+                 { 'vo', 'MinuetDuetAdd' },
+             })
++            helpers.expect_equal(get_extmarks(bufnr, preview.cursor_ns_id), {}) -- cursor on inserted line, no buffer target
+             helpers.expect_truthy(preview.is_visible(bufnr, state))
+ 
++            preview.clear(bufnr, state)
++            helpers.expect_equal(get_extmarks(bufnr, preview.ns_id), {})
++            helpers.expect_equal(get_extmarks(bufnr, preview.cursor_ns_id), {})
++            helpers.expect_falsy(preview.is_visible(bufnr, state))
++
+             helpers.delete_buffer(bufnr)
+         end,
+     },
+@@ -131,6 +134,7 @@ return {
+                 { '|', 'MinuetDuetCursor' },
+             })
+ 
++            helpers.expect_equal(get_extmarks(bufnr, preview.cursor_ns_id), {}) -- cursor on inserted line
+             helpers.delete_buffer(bufnr)
+         end,
+     },
+@@ -293,6 +297,16 @@ return {
+                 { '|', 'MinuetDuetCursor' },
+                 { 'a', 'MinuetDuetAdd' },
+             })
++            local cursor_extmarks = get_extmarks(bufnr, preview.cursor_ns_id)
++            helpers.expect_equal(#cursor_extmarks, 1)
++            helpers.expect_equal(cursor_extmarks[1][2], 0) -- row
++            helpers.expect_equal(cursor_extmarks[1][3], 1) -- col ('e')
++            helpers.expect_equal(cursor_extmarks[1][4].end_col, 2)
++            helpers.expect_equal(cursor_extmarks[1][4].hl_group, 'MinuetDuetCursor')
++
++            preview.clear(bufnr, state)
++            helpers.expect_equal(get_extmarks(bufnr, preview.ns_id), {})
++            helpers.expect_equal(get_extmarks(bufnr, preview.cursor_ns_id), {})
+ 
+             helpers.delete_buffer(bufnr)
+         end,
+@@ -326,9 +340,13 @@ return {
+             helpers.expect_equal(extmarks[1][4].end_col, nil)
+             helpers.expect_equal(extmarks[1][4].hl_group, nil)
+             helpers.expect_equal(extmarks[1][4].virt_text, {
+-                { 'beta', 'MinuetDuetComment' },
+                 { '|', 'MinuetDuetCursor' },
+             })
++            helpers.expect_equal(get_extmarks(bufnr, preview.cursor_ns_id), {}) -- EOL, no char to highlight
++
++            preview.clear(bufnr, state)
++            helpers.expect_equal(get_extmarks(bufnr, preview.ns_id), {})
++            helpers.expect_equal(get_extmarks(bufnr, preview.cursor_ns_id), {})
+ 
+             helpers.delete_buffer(bufnr)
+         end,
+@@ -365,6 +383,16 @@ return {
+                 { 'a', 'MinuetDuetAdd' },
+                 { '|', 'MinuetDuetCursor' },
+             })
++            local cursor_extmarks = get_extmarks(bufnr, preview.cursor_ns_id)
++            helpers.expect_equal(#cursor_extmarks, 1)
++            helpers.expect_equal(cursor_extmarks[1][2], 0) -- row
++            helpers.expect_equal(cursor_extmarks[1][3], 1) -- col ('e')
++            helpers.expect_equal(cursor_extmarks[1][4].end_col, 2)
++            helpers.expect_equal(cursor_extmarks[1][4].hl_group, 'MinuetDuetCursor')
++
++            preview.clear(bufnr, state)
++            helpers.expect_equal(get_extmarks(bufnr, preview.ns_id), {})
++            helpers.expect_equal(get_extmarks(bufnr, preview.cursor_ns_id), {})
+ 
+             helpers.delete_buffer(bufnr)
+         end,
+@@ -422,7 +450,10 @@ return {
+                 range = { start_row = 0, end_row = 1 },
+                 original_lines = { 'hello world' },
+                 proposed_lines = { 'hello' },
+-                proposed_cursor = nil,
++                proposed_cursor = {
++                    row_offset = 0,
++                    col = 5, -- at EOL of 'hello'
++                },
+             }
+ 
+             preview.render(bufnr, state)
+@@ -434,8 +465,16 @@ return {
+             helpers.expect_equal(extmarks[1][3], 5) -- col (after "hello")
+             helpers.expect_equal(extmarks[1][4].end_col, 11) -- #('hello world')
+             helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetDelete')
+-            helpers.expect_equal(extmarks[1][4].virt_text, nil)
+-            helpers.expect_equal(extmarks[1][4].virt_text_pos, nil)
++            helpers.expect_equal(extmarks[1][4].virt_text, {
++                { '|', 'MinuetDuetCursor' },
++            })
++            helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
++            local cursor_extmarks = get_extmarks(bufnr, preview.cursor_ns_id)
++            helpers.expect_equal(#cursor_extmarks, 1)
++            helpers.expect_equal(cursor_extmarks[1][2], 0) -- row
++            helpers.expect_equal(cursor_extmarks[1][3], 5) -- col (' ')
++            helpers.expect_equal(cursor_extmarks[1][4].end_col, 6)
++            helpers.expect_equal(cursor_extmarks[1][4].hl_group, 'MinuetDuetCursor')
+ 
+             helpers.delete_buffer(bufnr)
+         end,
+@@ -462,8 +501,7 @@ return {
+             preview.render(bufnr, state)
+ 
+             local extmarks = get_extmarks(bufnr, preview.ns_id)
+-            -- creation order: changed line first, cursor second
+-            helpers.expect_equal(#extmarks, 2)
++            helpers.expect_equal(#extmarks, 1)
+             helpers.expect_equal(extmarks[1][1], 1) -- id
+             helpers.expect_equal(extmarks[1][2], 0) -- row
+             helpers.expect_equal(extmarks[1][3], 2) -- col
+@@ -473,17 +511,12 @@ return {
+             helpers.expect_equal(extmarks[1][4].virt_text, {
+                 { 'o', 'MinuetDuetAdd' },
+             })
+-            helpers.expect_equal(extmarks[2][1], 2) -- id
+-            helpers.expect_equal(extmarks[2][2], 2) -- row
+-            helpers.expect_equal(extmarks[2][3], 0) -- col
+-            helpers.expect_equal(extmarks[2][4].virt_text_pos, 'eol')
+-            helpers.expect_equal(extmarks[2][4].end_col, nil)
+-            helpers.expect_equal(extmarks[2][4].hl_group, nil)
+-            helpers.expect_equal(extmarks[2][4].virt_text, {
+-                { 'ga', 'MinuetDuetComment' },
+-                { '|', 'MinuetDuetCursor' },
+-                { 'mma', 'MinuetDuetComment' },
+-            })
++            local cursor_extmarks = get_extmarks(bufnr, preview.cursor_ns_id)
++            helpers.expect_equal(#cursor_extmarks, 1)
++            helpers.expect_equal(cursor_extmarks[1][2], 2) -- row
++            helpers.expect_equal(cursor_extmarks[1][3], 2) -- col ('m')
++            helpers.expect_equal(cursor_extmarks[1][4].end_col, 3)
++            helpers.expect_equal(cursor_extmarks[1][4].hl_group, 'MinuetDuetCursor')
+ 
+             helpers.delete_buffer(bufnr)
+         end,
+@@ -510,28 +543,22 @@ return {
+             preview.render(bufnr, state)
+ 
+             local extmarks = get_extmarks(bufnr, preview.ns_id)
+-            helpers.expect_equal(#extmarks, 2)
+-            -- cursor on 'alpha' rendered after changed line, so id=2 appears first by row
+-            helpers.expect_equal(extmarks[1][1], 2) -- id
+-            helpers.expect_equal(extmarks[1][2], 0) -- row
+-            helpers.expect_equal(extmarks[1][3], 0) -- col
++            helpers.expect_equal(#extmarks, 1)
++            helpers.expect_equal(extmarks[1][1], 1) -- id
++            helpers.expect_equal(extmarks[1][2], 2) -- row
++            helpers.expect_equal(extmarks[1][3], 1) -- col
++            helpers.expect_equal(extmarks[1][4].end_col, 5)
++            helpers.expect_equal(extmarks[1][4].hl_group, 'MinuetDuetReplace')
+             helpers.expect_equal(extmarks[1][4].virt_text_pos, 'eol')
+-            helpers.expect_equal(extmarks[1][4].end_col, nil)
+-            helpers.expect_equal(extmarks[1][4].hl_group, nil)
+             helpers.expect_equal(extmarks[1][4].virt_text, {
+-                { 'al', 'MinuetDuetComment' },
+-                { '|', 'MinuetDuetCursor' },
+-                { 'pha', 'MinuetDuetComment' },
+-            })
+-            helpers.expect_equal(extmarks[2][1], 1) -- id
+-            helpers.expect_equal(extmarks[2][2], 2) -- row
+-            helpers.expect_equal(extmarks[2][3], 1) -- col
+-            helpers.expect_equal(extmarks[2][4].end_col, 5) -- #('gamma')
+-            helpers.expect_equal(extmarks[2][4].hl_group, 'MinuetDuetReplace')
+-            helpers.expect_equal(extmarks[2][4].virt_text_pos, 'eol')
+-            helpers.expect_equal(extmarks[2][4].virt_text, {
+                 { 'imme', 'MinuetDuetAdd' },
+             })
++            local cursor_extmarks = get_extmarks(bufnr, preview.cursor_ns_id)
++            helpers.expect_equal(#cursor_extmarks, 1)
++            helpers.expect_equal(cursor_extmarks[1][2], 0) -- row ('alpha')
++            helpers.expect_equal(cursor_extmarks[1][3], 2) -- col ('p')
++            helpers.expect_equal(cursor_extmarks[1][4].end_col, 3)
++            helpers.expect_equal(cursor_extmarks[1][4].hl_group, 'MinuetDuetCursor')
+ 
+             helpers.delete_buffer(bufnr)
+         end,
+@@ -573,6 +600,11 @@ return {
+                 { '|', 'MinuetDuetCursor' },
+                 { 'lta', 'MinuetDuetAdd' },
+             })
++            helpers.expect_equal(get_extmarks(bufnr, preview.cursor_ns_id), {}) -- cursor on inserted line, no buffer target
++
++            preview.clear(bufnr, state)
++            helpers.expect_equal(get_extmarks(bufnr, preview.ns_id), {})
++            helpers.expect_equal(get_extmarks(bufnr, preview.cursor_ns_id), {})
+ 
+             helpers.delete_buffer(bufnr)
+         end,
+-- 
+2.54.0
+
+
+From 5d3b7dd05516c271bc6686d74b3575624edfbaba Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 26 Jun 2026 17:15:04 +0200
+Subject: [PATCH 11/13] duet: ignore cursor marker placed at end of long
+ suggestions
+
+---
+ lua/minuet/duet/utils.lua | 62 +++++++++++++++++++++++++++++----------
+ tests/duet_utils_spec.lua | 61 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 107 insertions(+), 16 deletions(-)
+
+diff --git a/lua/minuet/duet/utils.lua b/lua/minuet/duet/utils.lua
+index 99526ef..8cd525b 100644
+--- a/lua/minuet/duet/utils.lua
++++ b/lua/minuet/duet/utils.lua
+@@ -259,6 +259,29 @@ local function trim_inner_right(inner, context)
+     return inner, false
+ end
+ 
++--- Shared fallback: trim right, split into lines, infer cursor from edits.
++--- Returns {lines, cursor} or {lines, cursor=nil} if no edits were detected.
++---@param text string
++---@param context minuet.DuetParseContext?
++---@return minuet.DuetParseResult
++local function parse_without_cursor(text, context)
++    local trimmed_right
++    text, trimmed_right = trim_inner_right(text, context)
++    if trimmed_right then
++        text = trim_boundary_newlines(text, 'right')
++    end
++    local parsed_lines = vim.split(text, '\n', { plain = true })
++    if #parsed_lines == 0 then parsed_lines = { '' } end
++
++    local inferred = nil
++    if type(context) == 'table' and type(context.original_lines) == 'table' then
++        inferred = infer_cursor_from_edits(context.original_lines, parsed_lines)
++    end
++
++    return { lines = parsed_lines, cursor = inferred }
++end
++M._parse_without_cursor = parse_without_cursor
++
+ ---@param text string
+ ---@param context minuet.DuetParseContext?
+ ---@return minuet.DuetParseResult?, string?
+@@ -294,20 +317,8 @@ function M.parse_duet_response(text, context)
+     local cursor_marker_count = count_occurrences(inner, markers.cursor_position)
+     if cursor_marker_count == 0 then
+         -- No cursor marker: try to infer from edits
+-        local trimmed_right
+-        inner, trimmed_right = trim_inner_right(inner, context)
+-        if trimmed_right then
+-            inner = trim_boundary_newlines(inner, 'right')
+-        end
+-        local parsed_lines = vim.split(inner, '\n', { plain = true })
+-        if #parsed_lines == 0 then parsed_lines = { '' } end
+-
+-        local inferred = nil
+-        if type(context) == 'table' and type(context.original_lines) == 'table' then
+-            inferred = infer_cursor_from_edits(context.original_lines, parsed_lines)
+-        end
+-
+-        if inferred then
++        local result = M._parse_without_cursor(inner, context)
++        if result.cursor then
+             M.notify(
+                 'Minuet duet response did not include a cursor marker; inferring position from edits.',
+                 'verbose',
+@@ -320,8 +331,7 @@ function M.parse_duet_response(text, context)
+                 vim.log.levels.INFO
+             )
+         end
+-
+-        return { lines = parsed_lines, cursor = inferred }, nil
++        return result, nil
+ 
+     elseif cursor_marker_count > 1 then
+         return nil, 'expected exactly one cursor marker inside editable region: ' .. text
+@@ -333,6 +343,26 @@ function M.parse_duet_response(text, context)
+     local cursor_offset = #before
+     local text_without_cursor = before .. after
+ 
++    -- HACK: model often puts cursor at the very end of the suggestion,
++    -- which is patently useless; ignore when
++    -- the output has more lines than editable_region.lines_after / 2.
++    local cursor_at_end = (cursor_offset == #text_without_cursor)
++    if cursor_at_end then
++        local config = M.get_config() or {}
++        local editable_region = config.editable_region or {}
++        local lines_after = editable_region.lines_after or 15
++        local output_lines = vim.split(text_without_cursor, '\n', { plain = true })
++        if #output_lines > math.floor(lines_after / 2) then
++            M.notify(
++                'Minuet duet response has cursor marker at end of long suggestion; ignoring it.',
++                'verbose',
++                vim.log.levels.INFO
++            )
++            return M._parse_without_cursor(text_without_cursor, context)
++                or { lines = { '' }, cursor = nil }
++        end
++    end
++
+     local trimmed_right
+     text_without_cursor, trimmed_right = trim_inner_right(text_without_cursor, context)
+     if trimmed_right then
+diff --git a/tests/duet_utils_spec.lua b/tests/duet_utils_spec.lua
+index 18f1930..a49a517 100644
+--- a/tests/duet_utils_spec.lua
++++ b/tests/duet_utils_spec.lua
+@@ -349,6 +349,67 @@ xyz
+             helpers.expect_match(notifications[1].msg, 'inferring position')
+         end,
+     },
++    {
++        name = 'duet.utils ignores cursor at end of long suggestion and infers from edits',
++        run = function()
++            helpers.setup_root_config {
++                notify = 'verbose',
++            }
++
++            local utils = helpers.reload 'minuet.duet.utils'
++            local notifications, restore_notifications = helpers.capture_notifications()
++            -- default lines_after is 15, threshold is > 7 lines; this has 9.
++            -- The model edits line 1 but lazily drops the cursor at the end
++            local parsed, err = utils.parse_duet_response(
++                [[<editable_region>
++hallo world
++line two
++line three
++line four
++line five
++line six
++line seven
++line eight
++line nine<cursor_position/>
++</editable_region>]],
++                { original_lines = { 'hello world', 'line two', 'line three',
++                                     'line four', 'line five', 'line six',
++                                     'line seven', 'line eight', 'line nine' } }
++            )
++            restore_notifications()
++
++            helpers.expect_equal(err, nil)
++            -- hack ignores the bottom cursor and infers from the edit on line 1
++            helpers.expect_equal(parsed,
++                { lines = { 'hallo world', 'line two', 'line three', 'line four',
++                            'line five', 'line six', 'line seven', 'line eight',
++                            'line nine' },
++                  cursor = { row_offset = 0, col = 2 } })
++            helpers.expect_equal(#notifications, 1)
++            helpers.expect_match(notifications[1].msg, 'end of long suggestion')
++        end,
++    },
++    {
++        name = 'duet.utils keeps cursor at end of short suggestion',
++        run = function()
++            helpers.setup_root_config {}
++
++            local utils = helpers.reload 'minuet.duet.utils'
++            -- 3 lines, well under threshold of 7; cursor at end should be respected
++            local parsed, err = utils.parse_duet_response(
++                [[<editable_region>
++foo
++bar
++baz<cursor_position/>
++</editable_region>]]
++            )
++
++            helpers.expect_equal(err, nil)
++            helpers.expect_equal(parsed,
++                { lines = { 'foo', 'bar', 'baz' },
++                  cursor = { row_offset = 2, col = 3 } })
++        end,
++    },
+     {
+         name = 'duet.utils rejects responses with multiple cursor markers',
+         run = function()
+-- 
+2.54.0
+
+
+From 41b5a011940b3e481a52ecf3c33ee5bdfe3f1de0 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 26 Jun 2026 17:46:00 +0200
+Subject: [PATCH 12/13] duet: render suggestion as a single line
+
+---
+ lua/minuet/virtualtext.lua | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/lua/minuet/virtualtext.lua b/lua/minuet/virtualtext.lua
+index 0eb62de..5a04336 100644
+--- a/lua/minuet/virtualtext.lua
++++ b/lua/minuet/virtualtext.lua
+@@ -173,13 +173,15 @@ local function update_preview(ctx)
+     }
+ 
+     if #display_lines > 1 then
+-        extmark.virt_lines = {}
++        local parts = { { display_lines[1], 'MinuetVirtualText' } }
+         for i = 2, #display_lines do
+-            extmark.virt_lines[i - 1] = { { display_lines[i], 'MinuetVirtualText' } }
++            table.insert(parts, { '↵', 'Comment' })
++            table.insert(parts, { display_lines[i]:match('^%s*(.*)'), 'MinuetVirtualText' })
++        end
++        extmark.virt_text = parts
++        if #annot > 0 then
++            table.insert(parts, { ' ' .. annot, 'Comment' })
+         end
+-
+-        local last_line = #display_lines - 1
+-        extmark.virt_lines[last_line][1][1] = extmark.virt_lines[last_line][1][1] .. ' ' .. annot
+     elseif #annot > 0 then
+         extmark.virt_text[1][1] = extmark.virt_text[1][1] .. ' ' .. annot
+     end
+-- 
+2.54.0
+
+
+From e185438b01b8d7092f3e4e97fc66609d5b3f43bf Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Fri, 26 Jun 2026 18:00:53 +0200
+Subject: [PATCH 13/13] duet: render preview virtual text at eol
+
+---
+ lua/minuet/virtualtext.lua | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lua/minuet/virtualtext.lua b/lua/minuet/virtualtext.lua
+index 5a04336..19ed4e9 100644
+--- a/lua/minuet/virtualtext.lua
++++ b/lua/minuet/virtualtext.lua
+@@ -169,7 +169,7 @@ local function update_preview(ctx)
+     local extmark = {
+         id = internal.extmark_id,
+         virt_text = { { display_lines[1], 'MinuetVirtualText' } },
+-        virt_text_pos = 'inline',
++        virt_text_pos = 'eol',
+     }
+ 
+     if #display_lines > 1 then
+@@ -188,7 +188,7 @@ local function update_preview(ctx)
+ 
+     extmark.hl_mode = 'replace'
+ 
+-    api.nvim_buf_set_extmark(0, internal.ns_id, cursor_line - 1, cursor_col - 1, extmark)
++    api.nvim_buf_set_extmark(0, internal.ns_id, cursor_line - 1, 0, extmark)
+ 
+     if not ctx.shown_choices[suggestion] then
+         ctx.shown_choices[suggestion] = true
+-- 
+2.54.0
+

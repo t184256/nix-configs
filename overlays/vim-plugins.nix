@@ -73,6 +73,10 @@ rec {
       };
     };
 
+    minuet-ai-nvim = prev.minuet-ai-nvim.overrideAttrs (oa: {
+      patches = [ ./minuet.patch ];
+    });
+
     shipwright = super.pkgs.vimUtils.buildVimPlugin {
       pname = "shipwright";
       version = "2024-03-29";
@@ -84,31 +88,6 @@ rec {
       };
     };
 
-    cursortab-nvim =
-      let
-        src = super.fetchFromGitHub {
-          owner = "cursortab";
-          repo = "cursortab.nvim";
-          rev = "v0.8.0";
-          hash = "sha256-Y+q1NnQairgRE4lSbQ7pQn52ncobbRUmG7YuwbilDhY=";
-        };
-        server = super.pkgs.buildGoModule {
-          pname = "cursortab-server";
-          version = "0.8.0";
-          inherit src;
-          sourceRoot = "source/server";
-          patches = [ ./cursortab-zeta21.patch ];
-          vendorHash = "sha256-4S14Vm2Ju084uxB2Zlku4z5AmIZkNZkQpiNgYrcqIbg=";
-        };
-      in
-      super.pkgs.vimUtils.buildVimPlugin {
-        pname = "cursortab-nvim";
-        version = "0.8.0";
-        inherit src;
-        postInstall = ''
-          mkdir -p $out/server
-          cp ${server}/bin/cursortab $out/server/cursortab
-        '';
-      };
+
   });
 }

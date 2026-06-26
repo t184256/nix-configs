@@ -10,7 +10,7 @@ in
     ../config/language-support.nix
     ../config/neovim.nix
     ./aider.nix
-    ./cursortab.nix
+    ./minuet.nix
     ./classic-plugins.nix
     ./colorcolumn.nix
     ./colorscheme.nix

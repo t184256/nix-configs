@@ -49,6 +49,14 @@
       vim.cmd('highlight TreesitterContext gui=altfont');
       vim.cmd('highlight TreesitterContextSeparator gui=altfont');
       vim.cmd('highlight UfoFoldedEllipsis gui=altfont');
+
+      -- Minuet duet preview highlights
+      vim.cmd('highlight MinuetDuetCursor guibg=#c0a0c0 guisp=#c0a0c0 gui=undercurl');
+      vim.cmd('highlight MinuetDuetAdd guifg=#c0a0c0 gui=altfont');
+      vim.cmd('highlight MinuetDuetDelete guisp=#c0a0c0 gui=strikethrough');
+      vim.cmd('highlight MinuetDuetPlaceHint guisp=#c0a0c0 gui=undercurl');
+      vim.cmd('highlight MinuetDuetReplace guisp=#c0a0c0 gui=underline,strikethrough');
+      vim.cmd('highlight MinuetDuetComment guifg=#babdb6 gui=italic,dim,altfont');
     '';
   };
 }
