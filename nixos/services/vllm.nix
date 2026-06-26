@@ -117,8 +117,8 @@ in
 
 {
   environment.persistence."/mnt/persist".directories = [ "/var/lib/vllm" ];
-  # purge stale KV-cache blocks older than 7 days
-  systemd.tmpfiles.rules = [ "x /var/lib/vllm/kv-cache  - - 1w -" ];
+  # purge stale KV-cache blocks older than one day
+  systemd.tmpfiles.rules = [ "x /var/lib/vllm/kv-cache  - - 1d -" ];
 
   nix.settings.extra-substituters = [ "https://cache.nixos-cuda.org" ];
   nix.settings.extra-trusted-public-keys = [
