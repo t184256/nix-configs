@@ -1,12 +1,13 @@
-{ pkgs, config, inputs, ... }:
+{ pkgs, config, lib, inputs, ... }:
 
 let
   llm-commit-msg-pkgs =
     inputs.llm-commit-msg.packages.${pkgs.stdenv.hostPlatform.system};
 in
 {
-  imports = [ ../config/neovim.nix ];
-  programs.nixvim = if (! config.neovim.fat) then {} else {
+  imports = [ ../config/roles.nix ../config/neovim.nix ];
+
+  programs.nixvim = lib.mkIf (config.roles.slop && config.neovim.fat) {
     extraPlugins = [ llm-commit-msg-pkgs.neovim-plugin ];
     extraConfigLua = ''
       require("llm-commit-msg").setup({

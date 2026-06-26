@@ -1,6 +1,6 @@
 # TODO: try jj-specific https://github.com/anglesideangle/jjinn
 
-{ pkgs, inputs, ... }:
+{ pkgs, lib, inputs, config, ... }:
 
 let
   jailedAgentsLib = inputs.jailed-agents.lib.${pkgs.system};
@@ -115,6 +115,7 @@ let
 
 in
 {
-  nixpkgs.overlays = [ (import ../overlays/pi) ];
-  home.packages = [ jailed-pi ];
+  imports = [ ./config/roles.nix ];
+  nixpkgs.overlays = lib.mkIf config.roles.slop [ (import ../overlays/pi) ];
+  home.packages = lib.mkIf config.roles.slop [ jailed-pi ];
 }

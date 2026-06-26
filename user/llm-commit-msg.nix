@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ pkgs, lib, config, inputs, ... }:
 
 let
   llm-commit-msg-upstream =
@@ -12,5 +12,7 @@ let
   '';
 in
 {
-  home.packages = [ llm-commit-msg ];
+  imports = [ ./config/roles.nix ];
+
+  home.packages = lib.mkIf config.roles.slop [ llm-commit-msg ];
 }

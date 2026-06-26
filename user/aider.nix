@@ -68,9 +68,9 @@ let
     else pkgs.aider-chat-with-playwright;
 in
 {
-  imports = [ ./config/no-graphics.nix ];
+  imports = [ ./config/roles.nix ./config/no-graphics.nix ];
 
-  nixpkgs.overlays = [ (import ../overlays/aider) ];
+  nixpkgs.overlays = lib.mkIf config.roles.slop [ (import ../overlays/aider) ];
 
   programs.aider-chat = {
     enable = lib.mkDefault false;
@@ -107,7 +107,7 @@ in
     };
   };
 
-  home.packages = lib.mkIf config.programs.aider-chat.enable [
+  home.packages = lib.mkIf (config.roles.slop && config.programs.aider-chat.enable) [
     (pkgs.symlinkJoin {
       name = "aider";
       paths = [ aiderPkg ];

@@ -63,6 +63,7 @@
   home-manager.users.monk.home.stateVersion = "24.05";
 
   home-manager.users.monk.neovim.fat = true;
+  home-manager.users.monk.roles.slop = true;
   home-manager.users.monk.language-support = [
     "nix" "bash" "prose" "python" "typst" "yaml"
   ];

@@ -1,9 +1,9 @@
-{ pkgs, config, ... }:
-
+{ pkgs, config, lib, ... }:
 
 {
-  imports = [ ../config/neovim.nix ];
-  programs.nixvim = if (! config.neovim.fat) then {} else {
+  imports = [ ../config/roles.nix ../config/neovim.nix ];
+
+  programs.nixvim = lib.mkIf (config.roles.slop && config.neovim.fat) {
     extraPlugins = with pkgs.vimPlugins; [ aider-nvim ];
 
     extraConfigLua = ''

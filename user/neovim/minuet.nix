@@ -1,11 +1,8 @@
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 
 {
-  imports = [
-    ../config/language-support.nix
-    ../config/neovim.nix
-  ];
-  programs.nixvim = if (! config.neovim.fat) then {} else {
+  imports = [ ../config/language-support.nix ../config/neovim.nix ../config/roles.nix ];
+  programs.nixvim = lib.mkIf (config.roles.slop && config.neovim.fat) {
     extraPlugins = with pkgs.vimPlugins; [
       {
         plugin = minuet-ai-nvim;
@@ -132,7 +129,7 @@
       end
     '';
   };
-  home.wraplings = if (! config.neovim.fat) then {} else {
+  home.wraplings = lib.mkIf (config.roles.slop && config.neovim.fat) {
     ai = "nvim --cmd 'lua vim.g.ai_mode = true'";
   };
 }
