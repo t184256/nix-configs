@@ -16,7 +16,7 @@
     kernelModules = [ "kvm-amd" "nct6687" ];
     extraModulePackages = with config.boot.kernelPackages; [ nct6687d ];
     extraModprobeConfig = "options nct6687 msi_fan_brute_force=1";
-    kernelParams = [ "iommu=pt" ];
+    kernelParams = [ "iommu=pt" "pcie_aspm=off" ];
   };
 
   fileSystems."/mnt/persist".neededForBoot = true;
