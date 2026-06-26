@@ -24,7 +24,7 @@ let
       eos_token_id = [ 248046 248044 ];  # <|im_end|> <|endoftext|>
     });
   maxModelLen = 262144;
-  maxNumSeqs = 4;
+  maxNumSeqs = 2;
   numSpecTokens = 7;
   # vllm reserves maxNumSeqs * (numSpecTokens - 1) draft slots inside the batch;
   # add them on top of the 2048 base so max_num_scheduled_tokens stays 2048.
