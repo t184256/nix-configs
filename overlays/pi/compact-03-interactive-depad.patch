@@ -1,11 +1,11 @@
-From 639e6681ca8a38e704e9d3355c7bf7c55677aee1 Mon Sep 17 00:00:00 2001
+From 7862d6357cd73e92a7a83104a2c4f250afd47c9a Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:36:58 +0000
 Subject: [PATCH] modes/interactive/interactive-mode: depad
 
 ---
- .../src/modes/interactive/interactive-mode.ts | 54 +++++++++----------
- 1 file changed, 27 insertions(+), 27 deletions(-)
+ .../src/modes/interactive/interactive-mode.ts | 58 ++++++++++---------
+ 1 file changed, 31 insertions(+), 27 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 index 3302f8f..83287a4 100644
@@ -27,7 +27,7 @@ index 3302f8f..83287a4 100644
  			);
  			// no spacer
  		}
-@@ -1805,10 +1805,10 @@ export class InteractiveMode {
+@@ -1815,10 +1815,10 @@ export class InteractiveMode {
  			// Wrap string array in a Container with Text components
  			const container = new Container();
  			for (const line of content.slice(0, InteractiveMode.MAX_WIDGET_LINES)) {
@@ -40,7 +40,7 @@ index 3302f8f..83287a4 100644
  			}
  			component = container;
  		} else {
-@@ -2405,7 +2405,7 @@ export class InteractiveMode {
+@@ -2412,7 +2412,7 @@ export class InteractiveMode {
  	 */
  	private showExtensionError(extensionPath: string, error: string, stack?: string): void {
  		const errorMsg = `Extension "${extensionPath}" error: ${error}`;
@@ -49,7 +49,7 @@ index 3302f8f..83287a4 100644
  		this.chatContainer.addChild(errorText);
  		if (stack) {
  			// Show stack trace in dim color, indented
-@@ -2415,7 +2415,7 @@ export class InteractiveMode {
+@@ -2422,7 +2422,7 @@ export class InteractiveMode {
  				.map((line) => theme.fg("dim", `  ${line.trim()}`))
  				.join("\n");
  			if (stackLines) {
@@ -58,7 +58,7 @@ index 3302f8f..83287a4 100644
  			}
  		}
  		this.ui.requestRender();
-@@ -2979,7 +2979,7 @@ export class InteractiveMode {
+@@ -2986,7 +2986,7 @@ export class InteractiveMode {
  						this.showError(event.errorMessage);
  					} else {
  						// no spacer
@@ -67,7 +67,7 @@ index 3302f8f..83287a4 100644
  					}
  				}
  				void this.flushCompactionQueue({ willRetry: event.willRetry });
-@@ -3072,7 +3072,7 @@ export class InteractiveMode {
+@@ -3079,7 +3079,7 @@ export class InteractiveMode {
  			return;
  		}
  
@@ -76,13 +76,16 @@ index 3302f8f..83287a4 100644
  		this.chatContainer.addChild(text);
  		this.lastStatusText = text;
  		this.ui.requestRender();
-@@ -3683,14 +3683,14 @@ export class InteractiveMode {
+@@ -3694,13 +3694,17 @@ export class InteractiveMode {
  
  	showError(errorMessage: string): void {
  		// no spacer
 -		this.chatContainer.addChild(new Text(theme.fg("error", `Error: ${errorMessage}`), 1, 0));
++	showError(errorMessage: string): void {
++		// no spacer
 +		this.chatContainer.addChild(new Text(theme.fg("error", `Error: ${errorMessage}`), 0, 0));
- 		// no spacer
++		this.ui.requestRender();
++	}/
  		this.ui.requestRender();
  	}
  
@@ -93,7 +96,7 @@ index 3302f8f..83287a4 100644
  		this.ui.requestRender();
  	}
  
-@@ -3707,18 +3707,18 @@ export class InteractiveMode {
+@@ -3717,18 +3721,18 @@ export class InteractiveMode {
  		// no spacer
  		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
  		this.chatContainer.addChild(
@@ -115,7 +118,7 @@ index 3302f8f..83287a4 100644
  		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
  		this.ui.requestRender();
  	}
-@@ -3784,15 +3784,15 @@ export class InteractiveMode {
+@@ -3794,15 +3798,15 @@ export class InteractiveMode {
  			// no spacer
  			for (const message of steeringMessages) {
  				const text = theme.fg("dim", `Steering: ${message}`);
@@ -134,7 +137,7 @@ index 3302f8f..83287a4 100644
  		}
  	}
  
-@@ -5047,7 +5047,7 @@ export class InteractiveMode {
+@@ -5048,7 +5052,7 @@ export class InteractiveMode {
  		reloadBox.addChild(new DynamicBorder(borderColor));
  		// no spacer
  		reloadBox.addChild(
@@ -143,7 +146,7 @@ index 3302f8f..83287a4 100644
  		);
  		// no spacer
  		reloadBox.addChild(new DynamicBorder(borderColor));
-@@ -5326,7 +5326,7 @@ export class InteractiveMode {
+@@ -5323,7 +5327,7 @@ export class InteractiveMode {
  			const currentName = this.sessionManager.getSessionName();
  			if (currentName) {
  				// no spacer
@@ -152,7 +155,7 @@ index 3302f8f..83287a4 100644
  			} else {
  				this.showWarning("Usage: /name <name>");
  			}
-@@ -5336,7 +5336,7 @@ export class InteractiveMode {
+@@ -5333,7 +5337,7 @@ export class InteractiveMode {
  
  		this.session.setSessionName(name);
  		// no spacer
@@ -161,7 +164,7 @@ index 3302f8f..83287a4 100644
  		this.ui.requestRender();
  	}
  
-@@ -5373,7 +5373,7 @@ export class InteractiveMode {
+@@ -5370,7 +5374,7 @@ export class InteractiveMode {
  		}
  
  		// no spacer
@@ -170,7 +173,7 @@ index 3302f8f..83287a4 100644
  		this.ui.requestRender();
  	}
  
-@@ -5391,9 +5391,9 @@ export class InteractiveMode {
+@@ -5388,9 +5392,9 @@ export class InteractiveMode {
  
  		// no spacer
  		this.chatContainer.addChild(new DynamicBorder());
@@ -182,7 +185,7 @@ index 3302f8f..83287a4 100644
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
  	}
-@@ -5520,9 +5520,9 @@ export class InteractiveMode {
+@@ -5517,9 +5521,9 @@ export class InteractiveMode {
  
  		// no spacer
  		this.chatContainer.addChild(new DynamicBorder());
@@ -194,7 +197,7 @@ index 3302f8f..83287a4 100644
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
  	}
-@@ -5540,7 +5540,7 @@ export class InteractiveMode {
+@@ -5537,7 +5541,7 @@ export class InteractiveMode {
  			}
  			this.renderCurrentSessionState();
  			// no spacer
@@ -203,7 +206,7 @@ index 3302f8f..83287a4 100644
  			this.ui.requestRender();
  		} catch (error: unknown) {
  			await this.handleFatalRuntimeError("Failed to create session", error);
-@@ -5575,7 +5575,7 @@ export class InteractiveMode {
+@@ -5572,7 +5576,7 @@ export class InteractiveMode {
  
  		// no spacer
  		this.chatContainer.addChild(

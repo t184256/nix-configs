@@ -149,7 +149,7 @@
     specialArgs = { inherit inputs; };
     common_modules = [ impermanence.nixosModule
                        disko.nixosModules.disko
-                       simple-nixos-mailserver.nixosModule
+                       simple-nixos-mailserver.nixosModules.default
                        yousable.nixosModule
                        autosync-voice.nixosModule
                        home-manager.nixosModules.home-manager {
