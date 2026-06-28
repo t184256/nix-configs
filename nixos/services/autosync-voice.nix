@@ -63,5 +63,4 @@ in
       }
     });
   '';
-  security.polkit.debug = true;
 }
