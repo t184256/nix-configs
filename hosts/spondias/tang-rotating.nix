@@ -36,7 +36,7 @@ in
     # don't listen until the first rotation has run.
     sockets.tangd = {
       requires = [ "tang-rotate.service" ];
-      after    = [ "tang-rotate.service" ];
+      #after    = [ "tang-rotate.service" ];
       wantedBy = lib.mkForce [ "multi-user.target" ];
     };
 
