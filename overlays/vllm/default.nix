@@ -17,10 +17,8 @@ final: prev:
 #   deepgemm 477618cd    - new in trunk; added below via cmakeFlags
 #                          SM90+/SM100 compile only; SM80 gets empty target
 #
-# trunk moved opencv-python-headless, mistral-common, torchaudio, torchvision
+# trunk moved opencv-python-headless, torchaudio, torchvision
 # from optional-deps to required; all in cache.nixos-cuda.org, kept as-is.
-# mistral-common: trunk requires >= 1.11.0; nixpkgs has 1.8.8 (NamedToolChoice
-# was added in 1.11.0); overridden below.
 
 let
   humming-kernels = prev.python3Packages.buildPythonPackage {
@@ -67,20 +65,22 @@ let
     pythonRemoveDeps = (oa.pythonRemoveDeps or []) ++ [ "cuda-tile" ];
   });
 
-  mistral-common = prev.python3Packages.mistral-common.overrideAttrs (oa: {
-    version = "1.11.0";
+  prometheus-fastapi-instrumentator = prev.python3Packages."prometheus-fastapi-instrumentator".overrideAttrs (oa: {
+    version = "8.0.2";
     src = prev.fetchFromGitHub {
-      owner = "mistralai";
-      repo = "mistral-common";
-      tag = "v1.11.0";
-      hash = "sha256-DejbLY2i6Hp1J+spxMut5RKugj7rDyrZmp6v+5wqyWY=";
+      owner = "trallnag";
+      repo = "prometheus-fastapi-instrumentator";
+      tag = "v8.0.2";
+      hash = "sha256-fTJjAM1jUZXfhjLo9xqlu45LaoqZ330ogOA6x7aByqw=";
     };
-    # tests/guidance/ requires llguidance, not in nixpkgs
-    disabledTestPaths = (oa.disabledTestPaths or []) ++ [ "tests/guidance" ];
+    nativeBuildInputs = (oa.nativeBuildInputs or []) ++ [ prev.python3Packages.httpx2 ];
+    disabledTestPaths = (oa.disabledTestPaths or []) ++ [
+      "tests/test_instrumentator_included_router.py"
+    ];
   });
 
   overriddenVllm = (prev.python3Packages.vllm.override {
-    inherit mistral-common flashinfer;
+    inherit flashinfer prometheus-fastapi-instrumentator;
   }).overrideAttrs (oa: {
     version = "0.23.0";
     src = prev.fetchFromGitHub {
@@ -204,8 +204,8 @@ in
 
 {
   python3Packages = prev.python3Packages // {
-    inherit mistral-common;
     vllm = overriddenVllm;
+    prometheus-fastapi-instrumentator = prometheus-fastapi-instrumentator;
   };
   vllm = overriddenVllm;
 }
