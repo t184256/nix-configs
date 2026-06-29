@@ -46,6 +46,7 @@
   home-manager.users.monk.home.stateVersion = "25.11";
   system.stateVersion = "25.11";
 
+  systemd.tpm2.enable = false;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
