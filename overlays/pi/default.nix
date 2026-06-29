@@ -34,9 +34,18 @@ _: prev: let
     let
       extArgs = builtins.concatStringsSep " "
         (builtins.map (e: "--extension ${e}") exts);
-    in ''exec ${prev.lib.getExe base} ${extArgs} "$@"''
+    in ''
+      case "$1" in
+        install|remove|uninstall|update|list)
+          exec ${prev.lib.getExe base} "$@"
+          ;;
+        *)
+          exec ${prev.lib.getExe base} ${extArgs} "$@"
+          ;;
+      esac
+    ''
   );
-in rec {
+in {
   pi-coding-agent-without-extensions = base;
   pi-coding-agent = mkWrapped extensions;
 }
