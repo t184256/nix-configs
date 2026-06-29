@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   withLang = lang: builtins.elem lang config.language-support;
@@ -9,6 +9,7 @@ in
   imports = [
     ../config/language-support.nix
     ../config/neovim.nix
+    ../config/no-graphics.nix
     ./aider.nix
     ./minuet.nix
     ./classic-plugins.nix
@@ -40,6 +41,20 @@ in
     viAlias = true;
 
     withRuby = false;  # one radical way to skip loading notmuch plugin
+
+    # Disable runtimes on headless or slim setups
+    withPython3 = lib.mkMerge [
+      (lib.mkForce false)
+      (lib.mkIf (config.neovim.fat && ! config.system.noGraphics) true)
+    ];
+    withNodeJs = lib.mkMerge [
+      (lib.mkForce false)
+      (lib.mkIf (config.neovim.fat && ! config.system.noGraphics) true)
+    ];
+    waylandSupport = lib.mkMerge [
+      (lib.mkForce false)
+      (lib.mkIf (config.neovim.fat && ! config.system.noGraphics) true)
+    ];
 
     opts = {
       shell = "/bin/sh";
