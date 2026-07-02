@@ -53,7 +53,7 @@ index d2bfacb..3d92e7a 100644
  			};
  
 -			const appendStatus = (text: string, status: string) => `${text ? `${text}\n\n` : ""}${status}`;
-+			const appendStatus = (text: string, status: string) => `${text ? `${text}\n` : ""}${status}`;
++			const appendStatus = (text: string, status: string) => `${text ? `${text}` : ""}[${status}]`;
  
  			try {
  				let exitCode: number | null;

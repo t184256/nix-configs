@@ -25,6 +25,7 @@ _: prev: let
       ./compact-22-editor-background.patch
 
       ./thinking-budget-tokens.patch
+      ./success-completion.patch
     ];
   });
 

@@ -1,0 +1,49 @@
+commit ed09ee58e370b5640ee39031ab2b641291d199a1
+Author: Alexander Sosedkin <asosedkin@redhat.com>
+Date:   Thu Jul 2 19:29:34 2026 +0200
+
+    Show completion duration in bash tool output...
+    
+    so that the model knows it completed.
+
+diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agent/src/core/tools/bash.ts
+index b0bd5022..fbbf70dc 100644
+--- a/packages/coding-agent/src/core/tools/bash.ts
++++ b/packages/coding-agent/src/core/tools/bash.ts
+@@ -47,6 +47,7 @@ export type BashToolInput = Static<typeof bashSchema>;
+ export interface BashToolDetails {
+ 	truncation?: TruncationResult;
+ 	fullOutputPath?: string;
++	hasCompletionMessage?: boolean;
+ }
+ 
+ /**
+@@ -281,7 +282,7 @@ function rebuildBashResultRenderComponent(
+ 		component.addChild(new Text(`\n${theme.fg("warning", `[${warnings.join(". ")}]`)}`, 0, 0));
+ 	}
+ 
+-	if (startedAt !== undefined) {
++	if (startedAt !== undefined && !result.details?.hasCompletionMessage) {
+ 		const label = options.isPartial ? "Elapsed" : "Took";
+ 		const endTime = endedAt ?? Date.now();
+ 		component.addChild(new Text(`\n${theme.fg("muted", `${label} ${formatDuration(endTime - startedAt)}`)}`, 0, 0));
+@@ -395,6 +396,7 @@ export function createBashToolDefinition(
+ 			const appendStatus = (text: string, status: string) => `${text ? `${text}\n\n` : ""}${status}`;
+ 
+ 			try {
++				const startedAt = Date.now();
+ 				let exitCode: number | null;
+ 				try {
+ 					const result = await ops.exec(spawnContext.command, spawnContext.cwd, {
+@@ -422,7 +424,10 @@ export function createBashToolDefinition(
+ 				if (exitCode !== 0 && exitCode !== null) {
+ 					throw new Error(appendStatus(outputText, `Command exited with code ${exitCode}`));
+ 				}
+-				return { content: [{ type: "text", text: outputText }], details };
++				return {
++					content: [{ type: "text", text: appendStatus(outputText, `Command completed successfully in ${formatDuration(Date.now() - startedAt)}`) }],
++					details: { ...details, hasCompletionMessage: true },
++				};
+ 			} finally {
+ 				clearUpdateTimer();
+ 			}
