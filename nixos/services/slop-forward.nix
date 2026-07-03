@@ -217,7 +217,7 @@ in
       "llm.slop.unboiled.info" =
         mkForward "http://127.0.0.1:11110";
       "whisper.slop.unboiled.info" =
-        mkForward "http://192.168.99.52:11112";
+        mkForward "http://192.168.99.53:11112";
       "goose.slop.unboiled.info" =
         mkForward "http://192.168.99.52:8000";
       "ctl.slop.unboiled.info" =

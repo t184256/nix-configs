@@ -332,5 +332,15 @@ in
     name = "ggml-large-v3-turbo.bin";
     hash = "sha256-H8cPd0046xaZk6w5Huo1fvR8iHV+9y7llDh5t+jivGk=";
   };
+  whisper-distil-large-v35 = fetchHF {  # uses 1986MiB VRAM with CUDA
+    repo = "distil-whisper/distil-large-v3.5-ggml";
+    name = "ggml-model.bin";
+    hash = "sha256-7CSYkZtJjF9rAAQa20VlASSzzZ8m9UX/+o9dEcKNzyY=";
+  };
+  whisper-large-turbo-q8_0 = fetchHF {  # uses 1382MiB VRAM with CUDA
+    repo = "ggerganov/whisper.cpp";
+    name = "ggml-large-v3-turbo-q8_0.bin";
+    hash = "sha256-MX62nBFnPJ3h4fDUWbJTmZgE7HGsTCPBfs9fviTiWaE=";
+  };
 
 }
