@@ -62,7 +62,10 @@
   system.role.virtualizer.enable = true;
   system.role.virtualizer.storageLocation = "persist";
 
-  networking.firewall.allowedTCPPorts = [ 8787 ];  # slopfest pi bridge
+  networking.firewall.allowedTCPPorts = [
+    8787 # slopfest pi bridge
+    9988 # ctl
+  ];
 
   environment.systemPackages = with pkgs; [ amdgpu_top ];
 }
