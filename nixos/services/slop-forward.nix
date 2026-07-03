@@ -220,6 +220,8 @@ in
         mkForward "http://192.168.99.52:11112";
       "goose.slop.unboiled.info" =
         mkForward "http://192.168.99.52:8000";
+      "ctl.slop.unboiled.info" =
+        mkForward "http://192.168.99.53:9988";
       # pi.slop.unboiled.info — no auth, websockets needed
       "pi.slop.unboiled.info" = {
         enableACME = true;
