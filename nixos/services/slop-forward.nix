@@ -94,7 +94,7 @@ in
         qwen36Nothink = qwen35Nothink;
         # hosts: primary first, fallbacks after
         models = {
-          "qwen3.6-27b".hosts = [ plum grapefruit ];
+          "qwen3.6-27b".hosts = [ plum ];  # don't fall back
 
           "qwen3.5-0.8b".hosts = [ grapefruit ];
           "qwen3.6-35b-a3b".hosts = [ grapefruit ];
