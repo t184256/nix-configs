@@ -312,4 +312,25 @@ in
     hash = "sha256-LS9cqFZ2WghtTuPQ3E0wNY6dVi42SA4MdUJA6c9F7WQ=";
   };
 
+  whisper-tiny = fetchHF {
+    repo = "ggerganov/whisper.cpp";
+    name = "ggml-tiny.bin";
+    hash = "sha256-vgfgSOHlma1GNByNKhNWRQl6U4IhZ4t6zdGxkZxuGyE=";
+  };
+  whisper-base = fetchHF {
+    repo = "ggerganov/whisper.cpp";
+    name = "ggml-base.bin";
+    hash = "sha256-YO1bw90U7qhWST0zQ0m0BXgt3K8AKNS130CINF+6Lv4=";
+  };
+  whisper-large = fetchHF {
+    repo = "ggerganov/whisper.cpp";
+    name = "ggml-large-v3.bin";
+    hash = "sha256-ZNGCtEC5jVIDxPm9VBVE2ExgUZbE97hF36EfsjWU0eI=";
+  };
+  whisper-large-turbo = fetchHF {
+    repo = "ggerganov/whisper.cpp";
+    name = "ggml-large-v3-turbo.bin";
+    hash = "sha256-H8cPd0046xaZk6w5Huo1fvR8iHV+9y7llDh5t+jivGk=";
+  };
+
 }
