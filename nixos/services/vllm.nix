@@ -91,7 +91,7 @@ let
       --max-model-len ${toString maxModelLen} \
       --tensor-parallel-size 2 \
       --disable-custom-all-reduce \
-      --gpu-memory-utilization 0.85 \
+      --gpu-memory-utilization 0.82 \
       --enable-prefix-caching \
       --enable-chunked-prefill \
       --reasoning-parser qwen3 \
@@ -106,14 +106,14 @@ let
       --served-model-name qwen3.6-27b qwen3.6-27b-think qwen3.6-27b-nothink \
       --host 192.168.99.53 --port 11111
   '';
-  # --gpu-memory-utilization 0.85 currently uses 22244MiB / 24576MiB,
-  #                               leaving ~2.2 GB VRAM for desktop/GUI on GPU 0
-  #                                   and ~2.2 GB VRAM for whisper.cpp on GPU 1
+  # --gpu-memory-utilization 0.82 currently uses ~ 21670MiB / 24576MiB,
+  #                               leaving ~2.8 GB VRAM for desktop/GUI on GPU 0
+  #                                   and ~2.8 GB VRAM for whisper.cpp on GPU 1
   # --language-model-only frees up VRAM
   # --limit-mm-per-prompt '{"image": 1, "video": 0}' is lighter alternative
   # 1,2,4,8,16,24,32 is tuned for numSpecTokens=7
   # Frees up a bit of it: --compilation-config.max_cudagraph_capture_size=64
-  # dflash: Maximum concurrency for 262,144 tokens per request: 1.30x
+  # dflash: Maximum concurrency for 262,144 tokens per request: 1.20x
   # without dflash it is more like 2x that
   # illegal memory access in custom_all_reduce.cuh: --disable-custom-all-reduce
 in
