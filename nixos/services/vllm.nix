@@ -101,11 +101,11 @@ let
       --async-scheduling \
       --enable-auto-tool-choice --tool-call-parser qwen3_coder \
       --disable-access-log-for-endpoints /metrics \
-      --kv-offloading-size 12 --kv-offloading-backend native \
-      --kv-transfer-config '{"kv_connector_extra_config": {"spec_name": "TieringOffloadingSpec", "secondary_tiers": [{"type": "fs", "root_dir": "/var/lib/vllm/kv-cache"}]}}' \
       --served-model-name qwen3.6-27b qwen3.6-27b-think qwen3.6-27b-nothink \
       --host 192.168.99.53 --port 11111
   '';
+      #--kv-offloading-size 12 --kv-offloading-backend native \
+      #--kv-transfer-config '{"kv_connector_extra_config": {"spec_name": "TieringOffloadingSpec", "secondary_tiers": [{"type": "fs", "root_dir": "/var/lib/vllm/kv-cache"}]}}' \
   # --gpu-memory-utilization 0.82 currently uses ~ 21670MiB / 24576MiB,
   #                               leaving ~2.8 GB VRAM for desktop/GUI on GPU 0
   #                                   and ~2.8 GB VRAM for whisper.cpp on GPU 1
