@@ -6,8 +6,8 @@ let
 
   cementbox-src = pkgs.fetchgit {
     url = "https://github.com/t184256/cementbox";
-    rev = "ac3649304ade2ac68039c816e75499e40377848e";
-    hash = "sha256-+8Hy5KpDa7Eb2+s9WRzePtv2MgQxIWUAFm6L/nuV0wg=";
+    rev = "430b85b18968281087bbc94d24cac0f4b5af5462";
+    hash = "sha256-Q5poyKXMWrz1zhDaOjj8+WzWSTsKPb/aOw4kc5uNtnk=";
   };
 
   sftp-server-closure = pkgs.closureInfo { rootPaths = [ pkgs.openssh ]; };
