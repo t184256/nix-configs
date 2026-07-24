@@ -1,5 +1,8 @@
 { pkgs, ... }:
 
+let
+  model = pkgs.whisper-large;
+in
 {
   systemd.services.whisper-cpp = {
     wants = [ "network-online.target" ];
@@ -13,7 +16,7 @@
         ("${pkgs.whisper-cpp-vulkan}/bin/whisper-server" +
          " --host 192.168.99.52 --port 11112 --language auto --flash-attn" +
          " --inference-path /v1/audio/transcriptions --convert" +
-         " --model /var/lib/whisper/model.bin"
+         " --model ${model}"
         )
       ];
       CapabilityBoundingSet = "";
