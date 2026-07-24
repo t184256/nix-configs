@@ -8,8 +8,8 @@ self: super:
       src = super.fetchFromGitHub {
         owner = "ClassicOldSong";
         repo = "Apollo";
-        tag = "v${version}";
-        hash = "sha256-bjQdGo7JttWnrp7Z7BeU20A7y4YqIURtIzC146mr7go=";
+        rev = "adc5c5a0bd80831ce495434bb16aee2cd4175fb8";
+        hash = "sha256-2HKjpv/NK8eMq4fUC6sFSfSDSIvT8crP//MMDoF/Bxs=";
         fetchSubmodules = true;
       };
       # Follow postPatch from sunshine but skip the desktop-file
@@ -27,7 +27,7 @@ self: super:
         pname = "apollo-ui";
         inherit src version;
         postPatch = "cp ${./package-lock.json} ./package-lock.json";
-        npmDepsHash = "sha256-vuPjiQ7hWNJX6fd4u9y8YjcB2U4Zt0vDclj0E7GbadQ=";
+        npmDepsHash = "sha256-h42bmqnHjiAK1RS8FFAeRWfQKVuenQug1W0P7n+ZWTU=";
         npmDeps = super.fetchNpmDeps {
           inherit src;
           name = "${pname}-${version}-npm-deps";
