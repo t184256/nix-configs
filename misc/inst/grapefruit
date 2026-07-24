@@ -17,7 +17,7 @@ ssh "$REMOTE_USER@$IP" "
   set -xEeuo pipefail; shopt -s inherit_errexit
   [[ \"\$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)\" \
     == 'db47e28e-caaa-f011-bee3-9cbf0d0102fb' ]]
-  [[ -e '/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0Y837900L' ]]
+  [[ -e '/dev/disk/by-id/nvme-AirDisk_1TB_SSD_QDC448R000185P110N' ]]
   [[ -e '/dev/nvme0n1' ]]
   [[ ! -e '/mnt/secrets' ]]
 "
@@ -53,3 +53,7 @@ echo "$IP $pubkey" >> ~/.ssh/known_hosts
 # the promised fix-up
 for i in {120..1}; do echo 1>&2 -n "$i... "; sleep 1; done
 ssh "monk@$IP" 'sudo find /mnt/secrets -type d -exec chmod 400 {} \;'
+
+# then
+# clevis luks bind -d /dev/nvme0n1p[2-4] \
+#   tang '{"url": "http://192.168.0.2:1449"}'

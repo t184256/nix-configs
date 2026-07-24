@@ -4,7 +4,7 @@
       grapefruit-main = {
         type = "disk";
         device =
-          "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0Y837900L";
+          "/dev/disk/by-id/nvme-AirDisk_1TB_SSD_QDC448R000185P110N";
         content = {
           type = "gpt";
           partitions = {
@@ -19,7 +19,7 @@
               };
             };
             ROOT = {
-              end = "512G";
+              end = "384G";
               content = {
                 type = "luks";
                 name = "root";
@@ -46,7 +46,7 @@
               };
             };
             STORAGE = {
-              end = "-128G";
+              end = "-32G";
               content = {
                 type = "luks";
                 name = "storage";

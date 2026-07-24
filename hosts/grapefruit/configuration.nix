@@ -125,15 +125,7 @@
   programs.nix-ld.enable = true;
 
   boot.initrd.systemd.network.enable = true;  # see network.nix
-  boot.initrd.clevis = {
-    enable = true;
-    useTang = true;
-    devices = {
-      root.secretFile = "/mnt/secrets/clevis";
-      storage.secretFile = "/mnt/secrets/clevis";
-      swap.secretFile = "/mnt/secrets/clevis";
-    };
-  };
+  boot.initrd.clevisLuksAskpass.enable = true;
 
   systemd.sleep.settings.Sleep.AllowSuspend = false;
   services.displayManager.gdm.autoSuspend = false;
