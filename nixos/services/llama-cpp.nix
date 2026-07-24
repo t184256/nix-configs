@@ -85,14 +85,13 @@ let
 
   mergeScript = pkgs.writeShellScript "llama-merge-config" ''
     cat ${generatedConfig} > ${effectiveConfig}
-    [[ -f ${localConfig} ]] && cat ${localConfig} >> ${effectiveConfig}
+    [[ ! -f ${localConfig} ]] || cat ${localConfig} >> ${effectiveConfig}
   '';
 
   extraFlags = [
     "--models-dir" "/var/lib/llama"
     "--models-preset" effectiveConfig
-    "--models-max" "2"
-    #"--models-max" "1"
+    "--models-max" "1"
     "--parallel" "1"
     "-ngl" "999"
     "--no-mmap"
