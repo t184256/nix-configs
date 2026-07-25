@@ -61,7 +61,6 @@
         sql
         ssh_config
         strace
-        tmux
         todotxt
         toml
         typst
