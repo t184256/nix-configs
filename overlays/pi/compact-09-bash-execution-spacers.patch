@@ -1,34 +1,46 @@
-From 2c0ff9941d17723049a365f21c51d04eec329736 Mon Sep 17 00:00:00 2001
+From 9ac6a3eb98d325213c446c943e19464981b9079b Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
-Date: Fri, 19 Jun 2026 21:50:13 +0000
-Subject: [PATCH] modes/interactive/components/bash-execution: remove spacer
+Date: Fri, 19 Jun 2026 22:09:44 +0000
+Subject: [PATCH 09/22] modes/interactive/components/bash-execution: remove
+ leading newlines
 
 ---
- .../src/modes/interactive/components/bash-execution.ts        | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ .../src/modes/interactive/components/bash-execution.ts     | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-index b46a9d0..1876f93 100644
+index 387819ddd..8c7a38a4f 100644
 --- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-@@ -2,7 +2,7 @@
-  * Component for displaying bash command execution with streaming output.
-  */
+@@ -143,17 +143,16 @@ export class BashExecutionComponent extends Container {
+ 			if (this.expanded) {
+ 				// Show all lines
+ 				const displayText = availableLines.map((line) => theme.fg("muted", line)).join("\n");
+-				this.contentContainer.addChild(new Text(`\n${displayText}`, 0, 0));
++				this.contentContainer.addChild(new Text(displayText, 0, 0));
+ 			} else {
+ 				// Use shared visual truncation utility with width-aware caching
+ 				const styledOutput = previewLogicalLines.map((line) => theme.fg("muted", line)).join("\n");
+-				const styledInput = `\n${styledOutput}`;
+ 				let cachedWidth: number | undefined;
+ 				let cachedLines: string[] | undefined;
+ 				this.contentContainer.addChild({
+ 					render: (width: number) => {
+ 						if (cachedLines === undefined || cachedWidth !== width) {
+-							const result = truncateToVisualLines(styledInput, PREVIEW_LINES, width, 1);
++							const result = truncateToVisualLines(styledOutput, PREVIEW_LINES, width, 0);
+ 							cachedLines = result.visualLines;
+ 							cachedWidth = width;
+ 						}
+@@ -199,7 +198,7 @@ export class BashExecutionComponent extends Container {
+ 			}
  
--import { Container, Loader, Spacer, Text, type TUI } from "@earendil-works/pi-tui";
-+import { Container, Loader, Text, type TUI } from "@earendil-works/pi-tui";
- import {
- 	DEFAULT_MAX_BYTES,
- 	DEFAULT_MAX_LINES,
-@@ -38,7 +38,7 @@ export class BashExecutionComponent extends Container {
- 		const borderColor = (str: string) => theme.fg(colorKey, str);
- 
- 		// Add spacer
--		this.addChild(new Spacer(1));
-+		// no spacer
- 
- 		// Top border
- 		this.addChild(new DynamicBorder(borderColor));
+ 			if (statusParts.length > 0) {
+-				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 0, 0));
++				this.contentContainer.addChild(new Text(statusParts.join("\n"), 0, 0));
+ 			}
+ 		}
+ 	}
 -- 
-2.54.0
+2.55.0
 

@@ -48,6 +48,8 @@ in
     enable = true;
     configFile = pkgs.writers.writeTOML "autosync-voice.cfg.yaml" config;
     user = "monk";
+    record.enable = true;
+    record.outDir = config.storage.raw;
   };
 
   systemd.services.autosync-voice = {

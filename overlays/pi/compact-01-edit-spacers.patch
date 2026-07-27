@@ -1,14 +1,14 @@
-From b6e0d9ac75a2d53180b5f33b5d795b460ea7861b Mon Sep 17 00:00:00 2001
+From 7181385cab3b9d70328e9d9db75941b1890cadda Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:37:29 +0000
-Subject: [PATCH] src/core/tools/edit: remove spacers
+Subject: [PATCH 01/22] src/core/tools/edit: remove spacers
 
 ---
  packages/coding-agent/src/core/tools/edit.ts | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agent/src/core/tools/edit.ts
-index 25aa1e1..1ea9bc7 100644
+index feaa7176f..f25116e46 100644
 --- a/packages/coding-agent/src/core/tools/edit.ts
 +++ b/packages/coding-agent/src/core/tools/edit.ts
 @@ -1,5 +1,5 @@
@@ -37,5 +37,5 @@ index 25aa1e1..1ea9bc7 100644
  			return component;
  		},
 -- 
-2.54.0
+2.55.0
 

@@ -1,25 +1,52 @@
-From c0f738fd4d6d21d93a98f51846be10107f6975e3 Mon Sep 17 00:00:00 2001
+From b630e87f51764161f3a878b21cf24574ffb6ff14 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
-Date: Fri, 19 Jun 2026 21:37:13 +0000
-Subject: [PATCH] modes/interactive/components/tool-execution: depad
+Date: Fri, 19 Jun 2026 21:50:24 +0000
+Subject: [PATCH 08/22] modes/interactive/components/bash-execution: depad
 
 ---
- .../src/modes/interactive/components/tool-execution.ts          | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../src/modes/interactive/components/bash-execution.ts    | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-index ad84f44..8d2828a 100644
---- a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-+++ b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-@@ -65,7 +65,7 @@ export class ToolExecutionComponent extends Container {
- 		// Always create all shell variants. contentBox is used for default renderer-based composition.
- 		// selfRenderContainer is used when the tool renders its own framing.
- 		// contentText is reserved for generic fallback rendering when no tool definition exists.
--		this.contentBox = new Box(1, 1, (text: string) => theme.bg("toolPendingBg", text));
-+		this.contentBox = new Box(0, 0, (text: string) => theme.bg("toolPendingBg", text));
- 		this.contentText = new Text("", 1, 1, (text: string) => theme.bg("toolPendingBg", text));
- 		this.selfRenderContainer = new Container();
+diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+index b46a9d0b9..387819ddd 100644
+--- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
++++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+@@ -48,7 +48,7 @@ export class BashExecutionComponent extends Container {
+ 		this.addChild(this.contentContainer);
  
+ 		// Command header
+-		const header = new Text(theme.fg(colorKey, theme.bold(`$ ${command}`)), 1, 0);
++		const header = new Text(theme.fg(colorKey, theme.bold(`$ ${command}`)), 0, 0);
+ 		this.contentContainer.addChild(header);
+ 
+ 		// Loader
+@@ -135,7 +135,7 @@ export class BashExecutionComponent extends Container {
+ 		this.contentContainer.clear();
+ 
+ 		// Command header
+-		const header = new Text(theme.fg("bashMode", theme.bold(`$ ${this.command}`)), 1, 0);
++		const header = new Text(theme.fg("bashMode", theme.bold(`$ ${this.command}`)), 0, 0);
+ 		this.contentContainer.addChild(header);
+ 
+ 		// Output
+@@ -143,7 +143,7 @@ export class BashExecutionComponent extends Container {
+ 			if (this.expanded) {
+ 				// Show all lines
+ 				const displayText = availableLines.map((line) => theme.fg("muted", line)).join("\n");
+-				this.contentContainer.addChild(new Text(`\n${displayText}`, 1, 0));
++				this.contentContainer.addChild(new Text(`\n${displayText}`, 0, 0));
+ 			} else {
+ 				// Use shared visual truncation utility with width-aware caching
+ 				const styledOutput = previewLogicalLines.map((line) => theme.fg("muted", line)).join("\n");
+@@ -199,7 +199,7 @@ export class BashExecutionComponent extends Container {
+ 			}
+ 
+ 			if (statusParts.length > 0) {
+-				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 1, 0));
++				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 0, 0));
+ 			}
+ 		}
+ 	}
 -- 
-2.54.0
+2.55.0
 

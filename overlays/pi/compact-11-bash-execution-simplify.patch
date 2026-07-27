@@ -1,46 +1,25 @@
-From bf12ed00c8b9d267b651da82f14bf8f275a9eebf Mon Sep 17 00:00:00 2001
-From: Alexander Sosedkin <monk@unboiled.info>
-Date: Fri, 19 Jun 2026 22:09:44 +0000
-Subject: [PATCH] modes/interactive/components/bash-execution: remove leading
- newlines
+From 46b757f13713beb0f8910542b3de3377942a1328 Mon Sep 17 00:00:00 2001
+From: Sloppy <sloppy@unboiled.info>
+Date: Sat, 20 Jun 2026 00:07:11 +0000
+Subject: [PATCH 11/22] core/tools/edit: depad
 
 ---
- .../src/modes/interactive/components/bash-execution.ts     | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ packages/coding-agent/src/core/tools/edit.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-index e3c8cc7..1d8abfe 100644
---- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-+++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-@@ -143,17 +143,16 @@ export class BashExecutionComponent extends Container {
- 			if (this.expanded) {
- 				// Show all lines
- 				const displayText = availableLines.map((line) => theme.fg("muted", line)).join("\n");
--				this.contentContainer.addChild(new Text(`\n${displayText}`, 0, 0));
-+				this.contentContainer.addChild(new Text(displayText, 0, 0));
- 			} else {
- 				// Use shared visual truncation utility with width-aware caching
- 				const styledOutput = previewLogicalLines.map((line) => theme.fg("muted", line)).join("\n");
--				const styledInput = `\n${styledOutput}`;
- 				let cachedWidth: number | undefined;
- 				let cachedLines: string[] | undefined;
- 				this.contentContainer.addChild({
- 					render: (width: number) => {
- 						if (cachedLines === undefined || cachedWidth !== width) {
--							const result = truncateToVisualLines(styledInput, PREVIEW_LINES, width, 1);
-+							const result = truncateToVisualLines(styledOutput, PREVIEW_LINES, width, 0);
- 							cachedLines = result.visualLines;
- 							cachedWidth = width;
- 						}
-@@ -199,7 +198,7 @@ export class BashExecutionComponent extends Container {
- 			}
+diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agent/src/core/tools/edit.ts
+index f25116e46..348ddf4f9 100644
+--- a/packages/coding-agent/src/core/tools/edit.ts
++++ b/packages/coding-agent/src/core/tools/edit.ts
+@@ -145,7 +145,7 @@ type EditCallRenderComponent = Box & {
+ };
  
- 			if (statusParts.length > 0) {
--				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 0, 0));
-+				this.contentContainer.addChild(new Text(statusParts.join("\n"), 0, 0));
- 			}
- 		}
- 	}
+ function createEditCallRenderComponent(): EditCallRenderComponent {
+-	return Object.assign(new Box(1, 1, (text: string) => text), {
++	return Object.assign(new Box(0, 0, (text: string) => text), {
+ 		preview: undefined as EditPreview | undefined,
+ 		previewArgsKey: undefined as string | undefined,
+ 		previewPending: false,
 -- 
-2.54.0
+2.55.0
 

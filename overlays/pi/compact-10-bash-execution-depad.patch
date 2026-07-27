@@ -1,52 +1,62 @@
-From 9f834ea05465943f11b026f34b0ff1d7b6fd0a13 Mon Sep 17 00:00:00 2001
+From 759f6a942d88f9fcb6d276d377e588383c8dbf85 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
-Date: Fri, 19 Jun 2026 21:50:24 +0000
-Subject: [PATCH] modes/interactive/components/bash-execution: depad
+Date: Fri, 19 Jun 2026 22:55:50 +0000
+Subject: [PATCH 10/22] tools: remove leading newlines
 
 ---
- .../src/modes/interactive/components/bash-execution.ts    | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ packages/coding-agent/src/core/tools/bash.ts | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-index 1876f93..e3c8cc7 100644
---- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-+++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-@@ -48,7 +48,7 @@ export class BashExecutionComponent extends Container {
- 		this.addChild(this.contentContainer);
+diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agent/src/core/tools/bash.ts
+index b0bd50224..26488cb5e 100644
+--- a/packages/coding-agent/src/core/tools/bash.ts
++++ b/packages/coding-agent/src/core/tools/bash.ts
+@@ -237,7 +237,7 @@ function rebuildBashResultRenderComponent(
+ 			.join("\n");
  
- 		// Command header
--		const header = new Text(theme.fg(colorKey, theme.bold(`$ ${command}`)), 1, 0);
-+		const header = new Text(theme.fg(colorKey, theme.bold(`$ ${command}`)), 0, 0);
- 		this.contentContainer.addChild(header);
- 
- 		// Loader
-@@ -135,7 +135,7 @@ export class BashExecutionComponent extends Container {
- 		this.contentContainer.clear();
- 
- 		// Command header
--		const header = new Text(theme.fg("bashMode", theme.bold(`$ ${this.command}`)), 1, 0);
-+		const header = new Text(theme.fg("bashMode", theme.bold(`$ ${this.command}`)), 0, 0);
- 		this.contentContainer.addChild(header);
- 
- 		// Output
-@@ -143,7 +143,7 @@ export class BashExecutionComponent extends Container {
- 			if (this.expanded) {
- 				// Show all lines
- 				const displayText = availableLines.map((line) => theme.fg("muted", line)).join("\n");
--				this.contentContainer.addChild(new Text(`\n${displayText}`, 1, 0));
-+				this.contentContainer.addChild(new Text(`\n${displayText}`, 0, 0));
- 			} else {
- 				// Use shared visual truncation utility with width-aware caching
- 				const styledOutput = previewLogicalLines.map((line) => theme.fg("muted", line)).join("\n");
-@@ -199,7 +199,7 @@ export class BashExecutionComponent extends Container {
- 			}
- 
- 			if (statusParts.length > 0) {
--				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 1, 0));
-+				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 0, 0));
+ 		if (options.expanded) {
+-			component.addChild(new Text(`\n${styledOutput}`, 0, 0));
++			component.addChild(new Text(styledOutput, 0, 0));
+ 		} else {
+ 			component.addChild({
+ 				render: (width: number) => {
+@@ -251,9 +251,9 @@ function rebuildBashResultRenderComponent(
+ 						const hint =
+ 							theme.fg("muted", `... (${state.cachedSkipped} earlier lines,`) +
+ 							` ${keyHint("app.tools.expand", "to expand")}${theme.fg("muted", ")")}`;
+-						return ["", truncateToWidth(hint, width, "..."), ...(state.cachedLines ?? [])];
++						return [truncateToWidth(hint, width, "..."), ...(state.cachedLines ?? [])];
+ 					}
+-					return ["", ...(state.cachedLines ?? [])];
++					return [...(state.cachedLines ?? [])];
+ 				},
+ 				invalidate: () => {
+ 					state.cachedWidth = undefined;
+@@ -278,13 +278,13 @@ function rebuildBashResultRenderComponent(
+ 				);
  			}
  		}
+-		component.addChild(new Text(`\n${theme.fg("warning", `[${warnings.join(". ")}]`)}`, 0, 0));
++		component.addChild(new Text(theme.fg("warning", `[${warnings.join(". ")}]`), 0, 0));
  	}
+ 
+ 	if (startedAt !== undefined) {
+ 		const label = options.isPartial ? "Elapsed" : "Took";
+ 		const endTime = endedAt ?? Date.now();
+-		component.addChild(new Text(`\n${theme.fg("muted", `${label} ${formatDuration(endTime - startedAt)}`)}`, 0, 0));
++		component.addChild(new Text(theme.fg("muted", `${label} ${formatDuration(endTime - startedAt)}`), 0, 0));
+ 	}
+ }
+ 
+@@ -392,7 +392,7 @@ export function createBashToolDefinition(
+ 				return { text, details };
+ 			};
+ 
+-			const appendStatus = (text: string, status: string) => `${text ? `${text}\n\n` : ""}${status}`;
++			const appendStatus = (text: string, status: string) => `${text ? `${text}` : ""}[${status}]`;
+ 
+ 			try {
+ 				let exitCode: number | null;
 -- 
-2.54.0
+2.55.0
 

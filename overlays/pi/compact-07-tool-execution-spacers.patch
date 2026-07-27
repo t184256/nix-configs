@@ -1,15 +1,15 @@
-From 44155b6abae559585a0a19d1e4cc6e864a50498a Mon Sep 17 00:00:00 2001
+From 4dec0f3fdb2c131a7fec62291d45635c8048a3f8 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:48:31 +0000
-Subject: [PATCH] modes/interactive/components/tool-execution: remove spacers
- and padding
+Subject: [PATCH 07/22] modes/interactive/components/tool-execution: remove
+ spacers and padding
 
 ---
  .../src/modes/interactive/components/tool-execution.ts   | 9 +++------
  1 file changed, 3 insertions(+), 6 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-index 8d2828a..f7b931c 100644
+index ad84f4413..38f9f4648 100644
 --- a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
 @@ -1,4 +1,4 @@
@@ -47,5 +47,5 @@ index 8d2828a..f7b931c 100644
  						imageData,
  						imageMimeType,
 -- 
-2.54.0
+2.55.0
 

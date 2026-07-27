@@ -3,7 +3,7 @@
 let
   backtrace = python3Packages.buildPythonPackage {
     pname = "backtrace";
-    version = "0.2.1+";
+    version = "0.2.1";
     src = pkgs.fetchFromGitHub {
       owner = "nir0s";
       repo = "backtrace";

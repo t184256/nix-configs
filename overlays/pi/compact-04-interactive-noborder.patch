@@ -1,35 +1,35 @@
-From 0626ba46bd169459c31fc780fb917957cb242406 Mon Sep 17 00:00:00 2001
-From: Alexander Sosedkin <monk@unboiled.info>
-Date: Fri, 19 Jun 2026 21:37:04 +0000
-Subject: [PATCH] modes/interactive/interactive-mode: remove borders
+From b9385fe54a3b88e771f2a9cbaa07d44da1d752a1 Mon Sep 17 00:00:00 2001
+From: Sloppy <sloppy@unboiled.info>
+Date: Mon, 27 Jul 2026 18:51:23 +0000
+Subject: [PATCH 04/22] modes/interactive/interactive-mode: remove borders
 
 ---
- .../src/modes/interactive/interactive-mode.ts | 24 +++++++++----------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ .../src/modes/interactive/interactive-mode.ts | 31 +++++++++----------
+ 1 file changed, 15 insertions(+), 16 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index 83287a4..bce2ecc 100644
+index a4912c7a8..925f7d09b 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -582,7 +582,7 @@ export class InteractiveMode {
+@@ -651,7 +651,7 @@ export class InteractiveMode {
  		if (this.chatContainer.children.length > 0) {
- 			// no spacer
+ 		// no spacer
  		}
 -		this.chatContainer.addChild(new DynamicBorder());
 +		// no border
  		if (this.settingsManager.getCollapseChangelog()) {
  			const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
  			const latestVersion = versionMatch ? versionMatch[1] : this.version;
-@@ -596,7 +596,7 @@ export class InteractiveMode {
+@@ -665,7 +665,7 @@ export class InteractiveMode {
  			);
- 			// no spacer
+ 		// no spacer
  		}
 -		this.chatContainer.addChild(new DynamicBorder());
 +		// no border
  	}
  
  	async init(): Promise<void> {
-@@ -3705,7 +3705,7 @@ export class InteractiveMode {
+@@ -3891,21 +3891,21 @@ export class InteractiveMode {
  		const note = release.note?.trim();
  
  		// no spacer
@@ -38,7 +38,14 @@ index 83287a4..bce2ecc 100644
  		this.chatContainer.addChild(
  			new Text(`${theme.bold(theme.fg("warning", "Update Available"))}\n${updateInstruction}`, 0, 0),
  		);
-@@ -3719,7 +3719,7 @@ export class InteractiveMode {
+ 		if (note) {
+ 			// no spacer
+ 			this.chatContainer.addChild(
+-				new Markdown(note, 1, 0, this.getMarkdownThemeWithSettings(), {
++				new Markdown(note, 0, 0, this.getMarkdownThemeWithSettings(), {
+ 					color: (text) => theme.fg("muted", text),
+ 				}),
+ 			);
  			// no spacer
  		}
  		this.chatContainer.addChild(new Text(changelogLine, 0, 0));
@@ -47,7 +54,7 @@ index 83287a4..bce2ecc 100644
  		this.ui.requestRender();
  	}
  
-@@ -3729,7 +3729,7 @@ export class InteractiveMode {
+@@ -3915,15 +3915,15 @@ export class InteractiveMode {
  		const packageLines = packages.map((pkg) => `- ${pkg}`).join("\n");
  
  		// no spacer
@@ -56,7 +63,8 @@ index 83287a4..bce2ecc 100644
  		this.chatContainer.addChild(
  			new Text(
  				`${theme.bold(theme.fg("warning", "Package Updates Available"))}\n${updateInstruction}\n${theme.fg("muted", "Packages:")}\n${packageLines}`,
-@@ -3737,7 +3737,7 @@ export class InteractiveMode {
+-				1,
++				0,
  				0,
  			),
  		);
@@ -65,15 +73,21 @@ index 83287a4..bce2ecc 100644
  		this.ui.requestRender();
  	}
  
-@@ -5044,13 +5044,13 @@ export class InteractiveMode {
+@@ -5309,18 +5309,17 @@ export class InteractiveMode {
+ 		this.resetExtensionUI();
  
  		const reloadBox = new Container();
- 		const borderColor = (s: string) => theme.fg("border", s);
+-		const borderColor = (s: string) => theme.fg("border", s);
 -		reloadBox.addChild(new DynamicBorder(borderColor));
 +		// no border
  		// no spacer
  		reloadBox.addChild(
- 			new Text(theme.fg("muted", "Reloading keybindings, extensions, skills, prompts, themes..."), 0, 0),
+ 			new Text(
+ 				theme.fg("muted", "Reloading keybindings, extensions, skills, prompts, themes, and context files..."),
+-				1,
++				0,
+ 				0,
+ 			),
  		);
  		// no spacer
 -		reloadBox.addChild(new DynamicBorder(borderColor));
@@ -81,7 +95,7 @@ index 83287a4..bce2ecc 100644
  
  		const previousEditor = this.editor;
  		this.editorContainer.clear();
-@@ -5390,11 +5390,11 @@ export class InteractiveMode {
+@@ -5698,11 +5697,11 @@ export class InteractiveMode {
  				: "No changelog entries found.";
  
  		// no spacer
@@ -95,7 +109,7 @@ index 83287a4..bce2ecc 100644
  		this.ui.requestRender();
  	}
  
-@@ -5519,11 +5519,11 @@ export class InteractiveMode {
+@@ -5829,11 +5828,11 @@ export class InteractiveMode {
  		}
  
  		// no spacer
@@ -110,5 +124,5 @@ index 83287a4..bce2ecc 100644
  	}
  
 -- 
-2.54.0
+2.55.0
 

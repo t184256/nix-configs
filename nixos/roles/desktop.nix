@@ -59,7 +59,6 @@ in {
         just-perfection
         open-bar
         paperwm
-        sound-output-device-chooser
         unite
       ]);
     };

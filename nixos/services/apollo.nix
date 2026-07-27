@@ -1,5 +1,13 @@
 { pkgs, lib, config, ... }:
 
+let
+  sys-connector = "HDMI-A-1";  # TODO: varies by host
+  #gnome-connector = "HDMI-1";  # TODO: varies by host
+  edid-custom = pkgs.runCommand "edid-custom" {} ''
+    mkdir -p "$out/lib/firmware/edid"
+    cat ${../../misc/custom.edid} > "$out/lib/firmware/edid/custom.edid"
+  '';
+in
 {
   boot.kernelModules = [ "uhid" ];
   hardware.uinput.enable = true;
@@ -36,4 +44,14 @@
   environment.persistence."/mnt/persist".users.monk.directories = [
     ".config/sunshine"
   ];
+  environment.persistence."/mnt/persist".directories = [
+    "/var/lib/gdm/seat0/config/sunshine"
+  ];
+
+  # TODO: applying handmade custom edid
+  hardware.display = {
+    edid.enable = true;
+    edid.packages = [ edid-custom ];
+    outputs."${sys-connector}".edid = "custom.edid";
+  };
 }

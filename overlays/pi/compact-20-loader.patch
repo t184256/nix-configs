@@ -1,34 +1,54 @@
-From 4449f7ea26423deb2f2cc22f68ea3df381320a22 Mon Sep 17 00:00:00 2001
+From eb337003b528e22669945a5e473d177b8e330906 Mon Sep 17 00:00:00 2001
 From: Sloppy <sloppy@unboiled.info>
-Date: Sat, 20 Jun 2026 00:14:28 +0000
-Subject: [PATCH] tui: depad loader spinner
+Date: Mon, 27 Jul 2026 18:57:03 +0000
+Subject: [PATCH 19/22] modes/interactive/components/assistant-message: depad
 
 ---
- packages/tui/src/components/loader.ts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ .../modes/interactive/components/assistant-message.ts  | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/packages/tui/src/components/loader.ts b/packages/tui/src/components/loader.ts
-index 4a93eb0..d333bcd 100644
---- a/packages/tui/src/components/loader.ts
-+++ b/packages/tui/src/components/loader.ts
-@@ -32,7 +32,7 @@ export class Loader extends Text {
- 		message: string = "Loading...",
- 		indicator?: LoaderIndicatorOptions,
- 	) {
--		super("", 1, 0);
-+		super("", 0, 0);
- 		this.ui = ui;
- 		this.spinnerColorFn = spinnerColorFn;
- 		this.messageColorFn = messageColorFn;
-@@ -41,7 +41,7 @@ export class Loader extends Text {
+diff --git a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
+index 71daf0dbb..fede10c0e 100644
+--- a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
++++ b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
+@@ -100,7 +100,7 @@ export class AssistantMessageComponent extends Container {
+ 			if (content.type === "text" && content.text.trim()) {
+ 				// Assistant text messages with no background - trim the text
+ 				// Set paddingY=0 to avoid extra spacing before tool executions
+-				this.contentContainer.addChild(new Markdown(content.text.trim(), this.outputPad, 0, this.markdownTheme));
++				this.contentContainer.addChild(new Markdown(content.text.trim(), 0, 0, this.markdownTheme));
+ 			} else if (content.type === "thinking") {
+ 				const thinkingBlocks: string[] = [];
+ 				for (; i < message.content.length; i++) {
+@@ -128,12 +128,12 @@ export class AssistantMessageComponent extends Container {
+ 				if (this.hideThinkingBlock) {
+ 					// Show one static label for each run of thinking blocks when hidden.
+ 					this.contentContainer.addChild(
+-						new Text(theme.italic(theme.fg("thinkingText", this.hiddenThinkingLabel)), this.outputPad, 0),
++						new Text(theme.italic(theme.fg("thinkingText", this.hiddenThinkingLabel)), 0, 0),
+ 					);
+ 				} else {
+ 					// Render each run of thinking blocks as one Markdown section.
+ 					this.contentContainer.addChild(
+-						new Markdown(thinkingBlocks.join("\n\n"), this.outputPad, 0, this.markdownTheme, {
++						new Markdown(thinkingBlocks.join("\n\n"), 0, 0, this.markdownTheme, {
+ 							color: (text: string) => theme.fg("thinkingText", text),
+ 							italic: true,
+ 						}),
+@@ -169,11 +169,11 @@ export class AssistantMessageComponent extends Container {
+ 						? message.errorMessage
+ 						: "Operation aborted";
+ 				// no spacer
+-				this.contentContainer.addChild(new Text(theme.fg("error", abortMessage), this.outputPad, 0));
++				this.contentContainer.addChild(new Text(theme.fg("error", abortMessage), 0, 0));
+ 			} else if (message.stopReason === "error") {
+ 				const errorMsg = message.errorMessage || "Unknown error";
+ 				// no spacer
+-				this.contentContainer.addChild(new Text(theme.fg("error", `Error: ${errorMsg}`), this.outputPad, 0));
++				this.contentContainer.addChild(new Text(theme.fg("error", `Error: ${errorMsg}`), 0, 0));
+ 			}
+ 		}
  	}
- 
- 	render(width: number): string[] {
--		return ["", ...super.render(width)];
-+		return super.render(width);
- 	}
- 
- 	start(): void {
 -- 
-2.54.0
+2.55.0
 

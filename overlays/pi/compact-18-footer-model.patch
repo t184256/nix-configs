@@ -1,40 +1,35 @@
-From 01c6602209e99ec3c6699652c158769f22c68885 Mon Sep 17 00:00:00 2001
+From 7d03bcd2ba0357334a8231bfc4e780de00c460c4 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
-Date: Fri, 19 Jun 2026 23:48:43 +0000
-Subject: [PATCH] modes/interactive/components/footer: compact model display
+Date: Fri, 19 Jun 2026 21:50:13 +0000
+Subject: [PATCH 17/22] modes/interactive/components/bash-execution: remove
+ spacer
 
 ---
- .../src/modes/interactive/components/footer.ts         | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ .../src/modes/interactive/components/bash-execution.ts        | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
-index 6e1cb69..e1b0620 100644
---- a/packages/coding-agent/src/modes/interactive/components/footer.ts
-+++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
-@@ -171,18 +171,18 @@ export class FooterComponent implements Component {
- 		// Calculate available space for padding (minimum 2 spaces between stats and model)
- 		const minPadding = 2;
+diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+index 8c7a38a4f..1d8abfece 100644
+--- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
++++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+@@ -2,7 +2,7 @@
+  * Component for displaying bash command execution with streaming output.
+  */
  
--		// Add thinking level indicator if model supports reasoning
-+		// Abbreviate thinking level
- 		let rightSideWithoutProvider = modelName;
- 		if (state.model?.reasoning) {
- 			const thinkingLevel = state.thinkingLevel || "off";
--			rightSideWithoutProvider =
--				thinkingLevel === "off" ? `${modelName} • thinking off` : `${modelName} • ${thinkingLevel}`;
-+			const abbrev = thinkingLevel === "off" ? "off" : thinkingLevel.slice(0, 1);
-+			rightSideWithoutProvider = `${modelName} ${abbrev}`;
- 		}
+-import { Container, Loader, Spacer, Text, type TUI } from "@earendil-works/pi-tui";
++import { Container, Loader, Text, type TUI } from "@earendil-works/pi-tui";
+ import {
+ 	DEFAULT_MAX_BYTES,
+ 	DEFAULT_MAX_LINES,
+@@ -38,7 +38,7 @@ export class BashExecutionComponent extends Container {
+ 		const borderColor = (str: string) => theme.fg(colorKey, str);
  
--		// Prepend the provider in parentheses if there are multiple providers and there's enough room
-+		// Prepend the provider without parens if there are multiple providers and there's enough room
- 		let rightSide = rightSideWithoutProvider;
- 		if (this.footerData.getAvailableProviderCount() > 1 && state.model) {
--			rightSide = `(${state.model!.provider}) ${rightSideWithoutProvider}`;
-+			rightSide = `${state.model!.provider} ${rightSideWithoutProvider}`;
- 			if (statsLeftWidth + minPadding + visibleWidth(rightSide) > width) {
- 				// Too wide, fall back
- 				rightSide = rightSideWithoutProvider;
+ 		// Add spacer
+-		this.addChild(new Spacer(1));
++		// no spacer
+ 
+ 		// Top border
+ 		this.addChild(new DynamicBorder(borderColor));
 -- 
-2.54.0
+2.55.0
 

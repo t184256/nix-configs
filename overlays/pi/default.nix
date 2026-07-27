@@ -16,7 +16,6 @@ _: prev: let
       ./compact-13-assistant-message-depad.patch
       ./compact-14-tools-bash-newlines.patch
       ./compact-15-edit-depad.patch
-      ./compact-16-footer-no-tokens.patch
       ./compact-17-footer-no-auto.patch
       ./compact-18-footer-model.patch
       ./compact-19-footer-one-line.patch
@@ -24,7 +23,6 @@ _: prev: let
       ./compact-21-editor-noborder.patch
       ./compact-22-editor-background.patch
 
-      ./thinking-budget-tokens.patch
       ./success-completion.patch
     ];
   });

@@ -4,51 +4,51 @@ _ :
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
-    matchBlocks = {
-      fig = { user = "monk"; hostname = "fig.unboiled.info"; };
-      mango = { user = "monk"; hostname = "mango.unboiled.info"; };
-      duckweed = { user = "monk"; hostname = "duckweed.unboiled.info"; };
-      loquat = { user = "monk"; hostname = "loquat.unboiled.info"; };
-      jungle = { user = "root"; hostname = "jungle.lan"; };
-      bayroot = { user = "monk"; hostname = "192.168.99.3"; };
-      araceae = { user = "monk"; hostname = "192.168.99.4"; };
-      quince = { user = "monk"; hostname = "duckweed.unboiled.info";
-                port = 226; };
-      spondias = { user = "monk"; hostname = "192.168.99.51"; };
-      cocoa = { user = "monk"; hostname = "duckweed.unboiled.info";
-                port = 227; };
-      grapefruit = { user = "monk"; hostname = "192.168.99.52"; };
-      plum = { user = "monk"; hostname = "192.168.99.53"; };
-      sloe = { user = "monk"; hostname = "sloe.unboiled.info"; };
-      olosapo = { user = "monk"; hostname = "olosapo.unboiled.info"; };
-      watermelon = { user = "monk"; hostname = "watermelon.unboiled.info"; };
-      etrog = { user = "monk"; hostname = "etrog.unboiled.info"; };
-      iyokan = { user = "monk"; hostname = "iyokan.unboiled.info"; };
+    settings = {
+      fig = { User = "monk"; Hostname = "fig.unboiled.info"; };
+      mango = { User = "monk"; Hostname = "mango.unboiled.info"; };
+      duckweed = { User = "monk"; Hostname = "duckweed.unboiled.info"; };
+      loquat = { User = "monk"; Hostname = "loquat.unboiled.info"; };
+      jungle = { User = "root"; Hostname = "jungle.lan"; };
+      bayroot = { User = "monk"; Hostname = "192.168.99.3"; };
+      araceae = { User = "monk"; Hostname = "192.168.99.4"; };
+      quince = { User = "monk"; Hostname = "duckweed.unboiled.info";
+                Port = 226; };
+      spondias = { User = "monk"; Hostname = "192.168.99.51"; };
+      cocoa = { User = "monk"; Hostname = "duckweed.unboiled.info";
+                Port = 227; };
+      grapefruit = { User = "monk"; Hostname = "192.168.99.52"; };
+      plum = { User = "monk"; Hostname = "192.168.99.53"; };
+      sloe = { User = "monk"; Hostname = "sloe.unboiled.info"; };
+      olosapo = { User = "monk"; Hostname = "olosapo.unboiled.info"; };
+      watermelon = { User = "monk"; Hostname = "watermelon.unboiled.info"; };
+      etrog = { User = "monk"; Hostname = "etrog.unboiled.info"; };
+      iyokan = { User = "monk"; Hostname = "iyokan.unboiled.info"; };
 
       bayroot64 = {
-        user = "monk";
-        hostname = "bayroot.unboiled.info";
-        proxyJump = "duckweed";
+        User = "monk";
+        Hostname = "bayroot.unboiled.info";
+        ProxyJump = "duckweed";
       };
       araceae64 = {
-        user = "monk";
-        hostname = "araceae.unboiled.info";
-        proxyJump = "duckweed";
+        User = "monk";
+        Hostname = "araceae.unboiled.info";
+        ProxyJump = "duckweed";
       };
 
       slopfest = {
-        user = "sloppy";
-        hostname = "qemu:system/slopfest";
-        proxyCommand =
+        User = "sloppy";
+        Hostname = "qemu:system/slopfest";
+        ProxyCommand =
           "ssh -T plum '" +
           " cid=$(virsh -c qemu:///system dumpxml slopfest" +
           " | xmllint --xpath \"string(//cid/@address)\" -);" +
           " exec ncat --vsock $cid 22" +
           "'"
         ;
-        extraOptions.ProxyUseFdpass = "no";
-        checkHostIP = false;
-        userKnownHostsFile = "~/.ssh/slopfest.known_host";
+        ProxyUseFdpass = "no";
+        CheckHostIP = false;
+        UserKnownHostsFile = "~/.ssh/slopfest.known_host";
       };
     };
   };

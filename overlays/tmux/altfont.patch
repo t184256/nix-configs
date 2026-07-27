@@ -53,10 +53,10 @@ diff --git a/tmux.1 b/tmux.1
 index 404909bd..fee7a17a 100644
 --- a/tmux.1
 +++ b/tmux.1
-@@ -4376,6 +4376,8 @@ mouse sequences.
- Supports the OSC 7 working directory extension.
- .It overline
+@@ -4609,6 +4609,8 @@ mouse sequences.
  Supports the overline SGR attribute.
+ .It progressbar
+ Supports the OSC 9;4 progress bar extension.
 +.It altfont
 +Supports the altfont SGR attribute.
  .It rectfill

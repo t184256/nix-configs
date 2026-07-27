@@ -1,25 +1,34 @@
-From 5f11327d8d45fc1c7d403ee561478bc3be965b23 Mon Sep 17 00:00:00 2001
-From: Sloppy <sloppy@unboiled.info>
-Date: Sat, 20 Jun 2026 00:07:11 +0000
-Subject: [PATCH] core/tools/edit: depad
+From 0d29c8bc3945c9ec2a967dd95e1a3425a4b1cef9 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Sat, 20 Jun 2026 01:06:22 +0000
+Subject: [PATCH 15/22] tui: remove editor borders
 
 ---
- packages/coding-agent/src/core/tools/edit.ts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ packages/tui/src/components/editor.ts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agent/src/core/tools/edit.ts
-index 1ea9bc7..8614d52 100644
---- a/packages/coding-agent/src/core/tools/edit.ts
-+++ b/packages/coding-agent/src/core/tools/edit.ts
-@@ -145,7 +145,7 @@ type EditCallRenderComponent = Box & {
- };
+diff --git a/packages/tui/src/components/editor.ts b/packages/tui/src/components/editor.ts
+index 706324c77..9ce5be241 100644
+--- a/packages/tui/src/components/editor.ts
++++ b/packages/tui/src/components/editor.ts
+@@ -521,7 +521,7 @@ export class Editor implements Component, Focusable {
+ 				result.push(this.borderColor(truncateToWidth(indicator, width)));
+ 			}
+ 		} else {
+-			result.push(horizontal.repeat(width));
++			// no top border
+ 		}
  
- function createEditCallRenderComponent(): EditCallRenderComponent {
--	return Object.assign(new Box(1, 1, (text: string) => text), {
-+	return Object.assign(new Box(0, 0, (text: string) => text), {
- 		preview: undefined as EditPreview | undefined,
- 		previewArgsKey: undefined as string | undefined,
- 		previewPending: false,
+ 		// Render each visible layout line
+@@ -579,7 +579,7 @@ export class Editor implements Component, Focusable {
+ 			const remaining = width - visibleWidth(indicator);
+ 			result.push(this.borderColor(indicator + "─".repeat(Math.max(0, remaining))));
+ 		} else {
+-			result.push(horizontal.repeat(width));
++			// no bottom border
+ 		}
+ 
+ 		// Add autocomplete list if active
 -- 
-2.54.0
+2.55.0
 

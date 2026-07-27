@@ -1,66 +1,65 @@
-From d7a839e116d8f40e4a6e15d378a612d82703db39 Mon Sep 17 00:00:00 2001
+From 346ad1b5e3af6195ce50f7c5f95b531ffb2ebe8b Mon Sep 17 00:00:00 2001
 From: Sloppy <sloppy@unboiled.info>
-Date: Fri, 19 Jun 2026 23:59:06 +0000
-Subject: [PATCH] modes/interactive/components/footer: single line
+Date: Mon, 27 Jul 2026 18:56:28 +0000
+Subject: [PATCH 18/22] modes/interactive/components/assistant-message: remove
+ spacers
 
 ---
- .../modes/interactive/components/footer.ts    | 25 +++----------------
- 1 file changed, 4 insertions(+), 21 deletions(-)
+ .../interactive/components/assistant-message.ts      | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
-index e1b0620..d295a37 100644
---- a/packages/coding-agent/src/modes/interactive/components/footer.ts
-+++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
-@@ -118,13 +118,13 @@ export class FooterComponent implements Component {
- 		// Add git branch if available
- 		const branch = this.footerData.getGitBranch();
- 		if (branch) {
--			pwd = `${pwd} (${branch})`;
-+			pwd = `${pwd} ${branch}`;
+diff --git a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
+index 6c9a2a404..71daf0dbb 100644
+--- a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
++++ b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
+@@ -1,5 +1,5 @@
+ import type { AssistantMessage } from "@earendil-works/pi-ai";
+-import { Container, Markdown, type MarkdownTheme, Spacer, Text } from "@earendil-works/pi-tui";
++import { Container, Markdown, type MarkdownTheme, Text } from "@earendil-works/pi-tui";
+ import { getMarkdownTheme, theme } from "../theme/theme.ts";
+ 
+ const OSC133_ZONE_START = "\x1b]133;A\x07";
+@@ -91,7 +91,7 @@ export class AssistantMessageComponent extends Container {
+ 		);
+ 
+ 		if (hasVisibleContent) {
+-			this.contentContainer.addChild(new Spacer(1));
++			// no spacer
  		}
  
- 		// Add session name if set
- 		const sessionName = this.session.sessionManager.getSessionName();
- 		if (sessionName) {
--			pwd = `${pwd} • ${sessionName}`;
-+			pwd = `${pwd} ${sessionName}`;
+ 		// Render content in order
+@@ -140,7 +140,7 @@ export class AssistantMessageComponent extends Container {
+ 					);
+ 				}
+ 				if (hasVisibleContentAfter) {
+-					this.contentContainer.addChild(new Spacer(1));
++					// no spacer
+ 				}
+ 			}
  		}
- 
- 		// Build stats line
-@@ -155,6 +155,7 @@ export class FooterComponent implements Component {
+@@ -151,7 +151,7 @@ export class AssistantMessageComponent extends Container {
+ 		const hasToolCalls = message.content.some((c) => c.type === "toolCall");
+ 		this.hasToolCalls = hasToolCalls;
+ 		if (message.stopReason === "length") {
+-			this.contentContainer.addChild(new Spacer(1));
++			// no spacer
+ 			this.contentContainer.addChild(
+ 				new Text(
+ 					theme.fg(
+@@ -168,11 +168,11 @@ export class AssistantMessageComponent extends Container {
+ 					message.errorMessage && message.errorMessage !== "Request was aborted"
+ 						? message.errorMessage
+ 						: "Operation aborted";
+-				this.contentContainer.addChild(new Spacer(1));
++				// no spacer
+ 				this.contentContainer.addChild(new Text(theme.fg("error", abortMessage), this.outputPad, 0));
+ 			} else if (message.stopReason === "error") {
+ 				const errorMsg = message.errorMessage || "Unknown error";
+-				this.contentContainer.addChild(new Spacer(1));
++				// no spacer
+ 				this.contentContainer.addChild(new Text(theme.fg("error", `Error: ${errorMsg}`), this.outputPad, 0));
+ 			}
  		}
- 		statsParts.push(contextPercentStr);
- 
-+		statsParts.push(pwd);
- 		let statsLeft = statsParts.join(" ");
- 
- 		// Add model name on the right side, plus thinking level if model supports it
-@@ -214,24 +215,6 @@ export class FooterComponent implements Component {
- 		// Apply dim to each part separately. statsLeft may contain color codes (for context %)
- 		// that end with a reset, which would clear an outer dim wrapper. So we dim the parts
- 		// before and after the colored section independently.
--		const dimStatsLeft = theme.fg("dim", statsLeft);
--		const remainder = statsLine.slice(statsLeft.length); // padding + rightSide
--		const dimRemainder = theme.fg("dim", remainder);
--
--		const pwdLine = truncateToWidth(theme.fg("dim", pwd), width, theme.fg("dim", "..."));
--		const lines = [pwdLine, dimStatsLeft + dimRemainder];
--
--		// Add extension statuses on a single line, sorted by key alphabetically
--		const extensionStatuses = this.footerData.getExtensionStatuses();
--		if (extensionStatuses.size > 0) {
--			const sortedStatuses = Array.from(extensionStatuses.entries())
--				.sort(([a], [b]) => a.localeCompare(b))
--				.map(([, text]) => sanitizeStatusText(text));
--			const statusLine = sortedStatuses.join(" ");
--			// Truncate to terminal width with dim ellipsis for consistency with footer style
--			lines.push(truncateToWidth(statusLine, width, theme.fg("dim", "...")));
--		}
--
--		return lines;
-+		return [theme.fg("dim", statsLine)];
- 	}
- }
 -- 
-2.54.0
+2.55.0
 

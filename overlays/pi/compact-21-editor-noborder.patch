@@ -1,34 +1,70 @@
-From 44b96666d5aed41068f65e7f3c0cb8d2026e749f Mon Sep 17 00:00:00 2001
-From: Alexander Sosedkin <monk@unboiled.info>
-Date: Sat, 20 Jun 2026 01:06:22 +0000
-Subject: [PATCH] tui: remove editor borders
+From 77a4be025706e118326892c7d9bf1f4cb2073948 Mon Sep 17 00:00:00 2001
+From: Sloppy <sloppy@unboiled.info>
+Date: Mon, 27 Jul 2026 18:58:35 +0000
+Subject: [PATCH 20/22] modes/interactive/components/footer: single line
 
 ---
- packages/tui/src/components/editor.ts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ .../modes/interactive/components/footer.ts    | 29 ++++---------------
+ 1 file changed, 5 insertions(+), 24 deletions(-)
 
-diff --git a/packages/tui/src/components/editor.ts b/packages/tui/src/components/editor.ts
-index 128254b..476926e 100644
---- a/packages/tui/src/components/editor.ts
-+++ b/packages/tui/src/components/editor.ts
-@@ -495,7 +495,7 @@ export class Editor implements Component, Focusable {
- 				result.push(this.borderColor(truncateToWidth(indicator, width)));
+diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
+index b99343eea..fcc6d28fc 100644
+--- a/packages/coding-agent/src/modes/interactive/components/footer.ts
++++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
+@@ -116,13 +116,13 @@ export class FooterComponent implements Component {
+ 		// Add git branch if available
+ 		const branch = this.footerData.getGitBranch();
+ 		if (branch) {
+-			pwd = `${pwd} (${branch})`;
++			pwd = `${pwd} ${branch}`;
+ 		}
+ 
+ 		// Add session name if set
+ 		const sessionName = this.session.sessionManager.getSessionName();
+ 		if (sessionName) {
+-			pwd = `${pwd} • ${sessionName}`;
++			pwd = `${pwd} ${sessionName}`;
+ 		}
+ 
+ 		// Build stats line
+@@ -163,6 +163,8 @@ export class FooterComponent implements Component {
+ 			statsParts.push(`${theme.fg("dim", "•")} ${theme.bold(theme.fg("warning", "xp"))}`);
+ 		}
+ 
++		statsParts.push(pwd);
++
+ 		let statsLeft = statsParts.join(" ");
+ 
+ 		// Add model name on the right side, plus thinking level if model supports it
+@@ -219,27 +221,6 @@ export class FooterComponent implements Component {
  			}
- 		} else {
--			result.push(horizontal.repeat(width));
-+			// no top border
  		}
  
- 		// Render each visible layout line
-@@ -553,7 +553,7 @@ export class Editor implements Component, Focusable {
- 			const remaining = width - visibleWidth(indicator);
- 			result.push(this.borderColor(indicator + "─".repeat(Math.max(0, remaining))));
- 		} else {
--			result.push(horizontal.repeat(width));
-+			// no bottom border
- 		}
- 
- 		// Add autocomplete list if active
+-		// Apply dim to each part separately. statsLeft may contain color codes (for context %)
+-		// that end with a reset, which would clear an outer dim wrapper. So we dim the parts
+-		// before and after the colored section independently.
+-		const dimStatsLeft = theme.fg("dim", statsLeft);
+-		const remainder = statsLine.slice(statsLeft.length); // padding + rightSide
+-		const dimRemainder = theme.fg("dim", remainder);
+-
+-		const pwdLine = truncateToWidth(theme.fg("dim", pwd), width, theme.fg("dim", "..."));
+-		const lines = [pwdLine, dimStatsLeft + dimRemainder];
+-
+-		// Add extension statuses on a single line, sorted by key alphabetically
+-		const extensionStatuses = this.footerData.getExtensionStatuses();
+-		if (extensionStatuses.size > 0) {
+-			const sortedStatuses = Array.from(extensionStatuses.entries())
+-				.sort(([a], [b]) => a.localeCompare(b))
+-				.map(([, text]) => sanitizeStatusText(text));
+-			const statusLine = sortedStatuses.join(" ");
+-			// Truncate to terminal width with dim ellipsis for consistency with footer style
+-			lines.push(truncateToWidth(statusLine, width, theme.fg("dim", "...")));
+-		}
+-
+-		return lines;
++		return [theme.fg("dim", statsLine)];
+ 	}
+ }
 -- 
-2.54.0
+2.55.0
 
