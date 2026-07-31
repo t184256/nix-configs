@@ -1,7 +1,7 @@
 final: prev:
 
 let
-  # usage: `nix-hf-hash unsloth/Qwen3.5-0.8B-GGUF Qwen3.5-0.8B-UD-Q4_K_XL.gguf`
+  # usage: nix run .#nixpkgs.nix-hf-hash -- ggerganov/whisper.cpp ggml-tiny.bin
   nix-hf-hash = prev.writers.writePython3Bin "nix-hf-hash" { } ''
     import base64
     import binascii
@@ -169,7 +169,7 @@ in
     ];
   };
 
-  # No dflash.py (unlike 9B draft); uses built-in vllm qwen3_dflash
+  # Uses built-in vllm qwen3_dflash support natively.
   # support natively.
   # Mirrored from gated z-lab/Qwen3.6-27B-DFlash.
   qwen36-27b-dflash-draft = let
@@ -191,13 +191,9 @@ in
     repo = "z-lab/Qwen3.5-9B-DFlash";
     files = [
       { path = "config.json";
-        hash = "sha256-C9ld/KskR/eAm4aBIsTjM8McT2Sc9e3WrIzFKsMdT+I="; }
-      # dflash.py contains the model architecture; required for
-      # trust_remote_code loading if vllm doesn't have built-in support
-      { path = "dflash.py";
-        hash = "sha256-gNWCaPiDmiLK1CUWzJXRJ7efyhlNJe56jMTWELyPVg4="; }
+        hash = "sha256-5oUWyskgwEgtJoWPIQIaHd0REGmmhapaqmDKLEEQG84="; }
       { path = "model.safetensors";
-        hash = "sha256-iXnsI0qp8TDqThoSgyb1P/t/yZQKdnFNEO9HGqg+xcM="; }
+        hash = "sha256-CkInSzJVT0jeH6oNQoJOnCztpknDCuCnMc3fQQ3WmMc="; }
     ];
   };
 
