@@ -14,6 +14,7 @@
       runner.capacity = 1;
       cache.enabled = true;
       container.network = "host";
+      container.options = "--device /dev/kvm";
       #container.options = "-e NIX_REMOTE=daemon -v /nix/:/nix/ -v /nix/var/nix/daemon-socket:/nix/var/nix/daemon-socket";
       #container.valid_volumes = [ "/nix/" ];
     };
