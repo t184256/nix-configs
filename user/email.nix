@@ -1,7 +1,6 @@
 { config, pkgs, lib, ... }:
 
 {
-  nixpkgs.overlays = [ (import ../overlays/alot) ];
   accounts.email = lib.mkIf (config.roles.mua) {
     maildirBasePath = ".mail";
     accounts."monk@unboiled.info" = {
