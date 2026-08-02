@@ -12,7 +12,7 @@ let
   '';
 
   # greedy, raw completion (no chat template)
-  sweepAttrs = ''
+  completionAttrs = ''
     temp = 0
   '';
 
@@ -67,17 +67,21 @@ let
     model-draft = ${pkgs.qwen35-08b-q4kxl}
     ${qwen35NoThinkAttrs}
     [zeta-2.1]
+    model = ${pkgs.zeta-2_1}
+    ctx-size = 32768
+    ${completionAttrs}
+    [sweep-v2-7b]
     model = ${pkgs.sweep-v2-7b}
     ctx-size = 32768
-    ${sweepAttrs}
+    ${completionAttrs}
     [sweep-1.5b]
     model = ${pkgs.sweep-1_5b}
     ctx-size = 8192
-    ${sweepAttrs}
+    ${completionAttrs}
     [sweep-0.5b]
     model = ${pkgs.sweep-0_5b}
     ctx-size = 8192
-    ${sweepAttrs}
+    ${completionAttrs}
   '';
 
   effectiveConfig = "/var/lib/llama/.effective.config.ini";
