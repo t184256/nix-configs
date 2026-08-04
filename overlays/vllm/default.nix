@@ -65,6 +65,11 @@ let
     pythonRemoveDeps = (oa.pythonRemoveDeps or []) ++ [ "cuda-tile" ];
   });
 
+  model-hosting-container-standards =
+    prev.python3Packages."model-hosting-container-standards".overridePythonAttrs (_: {
+      doCheck = false;
+    });
+
   prometheus-fastapi-instrumentator = prev.python3Packages."prometheus-fastapi-instrumentator".overrideAttrs (oa: {
     version = "8.0.2";
     src = prev.fetchFromGitHub {
@@ -81,6 +86,7 @@ let
 
   overriddenVllm = (prev.python3Packages.vllm.override {
     inherit flashinfer prometheus-fastapi-instrumentator;
+    inherit model-hosting-container-standards;
   }).overrideAttrs (oa: {
     version = "0.23.0";
     src = prev.fetchFromGitHub {
@@ -205,7 +211,8 @@ in
 {
   python3Packages = prev.python3Packages // {
     vllm = overriddenVllm;
-    prometheus-fastapi-instrumentator = prometheus-fastapi-instrumentator;
+    inherit prometheus-fastapi-instrumentator;
+    inherit model-hosting-container-standards;
   };
   vllm = overriddenVllm;
 }
