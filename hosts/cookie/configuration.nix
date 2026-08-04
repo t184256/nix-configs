@@ -17,6 +17,7 @@
     gparted parted cryptsetup btrfs-progs bcachefs-tools
     dnf5
     evtest
+    yubikey-manager
   ];
 
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
@@ -32,8 +33,8 @@
   #boot.kernelPackages = pkgs.linuxPackages_testing;  # needed for bcachefs now
 
   # nixos/modules/installer/cd-dvd/installation-cd-minimal-new-kernel-no-zfs.nix
-  boot.supportedFilesystems.zfs = lib.mkForce false;
+  #boot.supportedFilesystems.zfs = lib.mkForce false;
 
-  system.stateVersion = "24.11";
-  home-manager.users.monk.home.stateVersion = "24.11";
+  system.stateVersion = "26.05";
+  home-manager.users.monk.home.stateVersion = "26.05";
 }
