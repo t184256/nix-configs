@@ -21,7 +21,7 @@ final: prev:
 # from optional-deps to required; all in cache.nixos-cuda.org, kept as-is.
 
 let
-  humming-kernels = prev.python3Packages.buildPythonPackage {
+  humming-kernels = prev.python313Packages.buildPythonPackage {
     pname = "humming-kernels";
     version = "0.1.2";
     format = "wheel";
@@ -39,13 +39,13 @@ let
       "nvidia-cuda-runtime" "nvidia-cuda-cccl"
       "nvidia-cuda-nvcc" "nvidia-cuda-nvrtc"
     ];
-    propagatedBuildInputs = with prev.python3Packages; [
+    propagatedBuildInputs = with prev.python313Packages; [
       cuda-bindings filelock nvidia-ml-py packaging pyelftools tabulate
     ];
     doCheck = false;
   };
 
-  flashinfer = prev.python3Packages.flashinfer.overrideAttrs (oa: {
+  flashinfer = prev.python313Packages.flashinfer.overridePythonAttrs (oa: {
     version = "0.6.8.post1";
     src = prev.fetchFromGitHub {
       owner = "flashinfer-ai";
@@ -59,18 +59,23 @@ let
     # apache-tvm-ffi is a runtime dep (imported in flashinfer.jit) but
     # nixpkgs only puts it in build-system; add it to propagated as well.
     propagatedBuildInputs = (oa.propagatedBuildInputs or [])
-      ++ [ prev.python3Packages.apache-tvm-ffi ];
+      ++ [ prev.python313Packages.apache-tvm-ffi ];
     # cuda-tile is listed in requirements.txt but never imported; requires
     # CUDA 13.1+ which we don't have. Strip it like nixpkgs strips cutlass-dsl.
     pythonRemoveDeps = (oa.pythonRemoveDeps or []) ++ [ "cuda-tile" ];
+    # runtime-deps-check-hook fails on 0.6.8.post1 (can't find own metadata)
+    nativeBuildInputs = prev.lib.filter
+      (p: !(prev.lib.hasInfix "runtime-deps-check" (p.name or "")))
+      oa.nativeBuildInputs;
+    doCheck = false;
   });
 
   model-hosting-container-standards =
-    prev.python3Packages."model-hosting-container-standards".overridePythonAttrs (_: {
+    prev.python313Packages."model-hosting-container-standards".overridePythonAttrs (_: {
       doCheck = false;
     });
 
-  prometheus-fastapi-instrumentator = prev.python3Packages."prometheus-fastapi-instrumentator".overrideAttrs (oa: {
+  prometheus-fastapi-instrumentator = prev.python313Packages."prometheus-fastapi-instrumentator".overrideAttrs (oa: {
     version = "8.0.2";
     src = prev.fetchFromGitHub {
       owner = "trallnag";
@@ -78,15 +83,20 @@ let
       tag = "v8.0.2";
       hash = "sha256-fTJjAM1jUZXfhjLo9xqlu45LaoqZ330ogOA6x7aByqw=";
     };
-    nativeBuildInputs = (oa.nativeBuildInputs or []) ++ [ prev.python3Packages.httpx2 ];
+    nativeBuildInputs = (oa.nativeBuildInputs or []) ++ [ prev.python313Packages.httpx2 ];
     disabledTestPaths = (oa.disabledTestPaths or []) ++ [
       "tests/test_instrumentator_included_router.py"
     ];
   });
 
-  overriddenVllm = (prev.python3Packages.vllm.override {
+  outlines = prev.python313Packages.outlines.overridePythonAttrs (_: {
+    pythonRemoveDeps = [ "tensorflow" ];
+  });
+
+  overriddenVllm = (prev.python313Packages.vllm.override {
     inherit flashinfer prometheus-fastapi-instrumentator;
     inherit model-hosting-container-standards;
+    inherit outlines;
   }).overrideAttrs (oa: {
     version = "0.23.0";
     src = prev.fetchFromGitHub {
@@ -209,7 +219,7 @@ let
 in
 
 {
-  python3Packages = prev.python3Packages // {
+  python313Packages = prev.python313Packages // {
     vllm = overriddenVllm;
     inherit prometheus-fastapi-instrumentator;
     inherit model-hosting-container-standards;
