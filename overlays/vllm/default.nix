@@ -11,7 +11,13 @@ final: prev:
 #   deepgemm              - added below via cmakeFlags (SM90+/SM100 only)
 
 let
-  overriddenVllm = prev.python313Packages.vllm.overrideAttrs (oa: {
+  flashinfer = prev.python313Packages.flashinfer.overrideAttrs (_oa: {
+    dontCheckPythonMetadata = true;
+  });
+
+  overriddenVllm = (prev.python313Packages.vllm.override {
+    inherit flashinfer;
+  }).overrideAttrs (oa: {
     patches =
       (prev.lib.filter
         (p: !prev.lib.hasSuffix "0006-drop-rocm-extra-reqs.patch" (toString p))
