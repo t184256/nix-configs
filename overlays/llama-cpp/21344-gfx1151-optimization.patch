@@ -1,8 +1,18 @@
+From 00cd208554e3f21e967084e9845c4de64dc761c0 Mon Sep 17 00:00:00 2001
+From: Sunil Pedapudi <skpedapudi@gmail.com>
+Date: Thu, 2 Apr 2026 16:43:55 -0700
+Subject: [PATCH 1/6] gfx1151 nwarps, tile sizing to curb VGPR pressure
+
+---
+ ggml/src/ggml-cuda/mmq.cuh | 47 +++++++++++++++++++++++++++++++-------
+ ggml/src/ggml-cuda/mmvq.cu | 10 ++++++--
+ 2 files changed, 47 insertions(+), 10 deletions(-)
+
 diff --git a/ggml/src/ggml-cuda/mmq.cuh b/ggml/src/ggml-cuda/mmq.cuh
-index b1a319de..fba91817 100644
+index edf546d8f1e2..f3fb97594a7e 100644
 --- a/ggml/src/ggml-cuda/mmq.cuh
 +++ b/ggml/src/ggml-cuda/mmq.cuh
-@@ -104,18 +104,32 @@ struct tile_x_sizes {
+@@ -107,18 +107,32 @@ struct tile_x_sizes {
  };
  
  static int get_mmq_x_max_host(const int cc) {
@@ -13,15 +23,15 @@ index b1a319de..fba91817 100644
 +        return 48;
 +    }
 +    if (turing_mma_available(cc) || amd_wmma_available(cc)) {
-+        return 128;
++         return 128;
 +    }
 +    if (GGML_CUDA_CC_IS_NVIDIA(cc) && ggml_cuda_highest_compiled_arch(cc) >= GGML_CUDA_CC_VOLTA) {
  #ifdef GGML_CUDA_FORCE_MMQ
 -            128                     : 64;
-+        return 128;
++            return 128;
  #else
 -            MMQ_DP4A_MAX_BATCH_SIZE : 64;
-+        return MMQ_DP4A_MAX_BATCH_SIZE;
++            return MMQ_DP4A_MAX_BATCH_SIZE;
  #endif // GGML_CUDA_FORCE_MMQ
 +    }
 +    return 64;
@@ -30,23 +40,23 @@ index b1a319de..fba91817 100644
  static constexpr __device__ int get_mmq_x_max_device() {
 -#if defined(TURING_MMA_AVAILABLE) || defined(AMD_WMMA_AVAILABLE)
 +#if defined(TURING_MMA_AVAILABLE)
-+    return 128;
+     return 128;
 +#elif defined(AMD_WMMA_AVAILABLE)
 +#if defined(RDNA3_5)
 +    return 48;
 +#else
-     return 128;
-+#endif // defined(RDNA3_5)
++    return 128;
++#endif
  #else // defined(TURING_MMA_AVAILABLE) || defined(AMD_WMMA_AVAILABLE)
  
  #if defined(GGML_USE_HIP)
-@@ -137,8 +151,16 @@ static constexpr __device__ int get_mmq_x_max_device() {
+@@ -140,8 +154,16 @@ static constexpr __device__ int get_mmq_x_max_device() {
  }
  
  static int get_mmq_y_host(const int cc) {
 -    return GGML_CUDA_CC_IS_AMD(cc) ? (GGML_CUDA_CC_IS_RDNA1(cc) ? 64 : 128) :
 -        ((GGML_CUDA_CC_IS_NVIDIA(cc) && ggml_cuda_highest_compiled_arch(cc) >= GGML_CUDA_CC_VOLTA) ? 128 : 64);
-+    if (GGML_CUDA_CC_IS_AMD(cc)) {
++    if (GGML_CUDA_CC_IS_AMD(cc))    {
 +        if (GGML_CUDA_CC_IS_RDNA1(cc) || GGML_CUDA_CC_IS_RDNA3_5(cc)) {
 +            return 64;
 +        }
@@ -59,16 +69,18 @@ index b1a319de..fba91817 100644
  }
  
  static constexpr __device__ int get_iter_k([[maybe_unused]] const ggml_type type) {
-@@ -151,7 +173,7 @@ static constexpr __device__ int get_iter_k([[maybe_unused]] const ggml_type type
+@@ -155,7 +177,9 @@ if (type == GGML_TYPE_NVFP4 || type == GGML_TYPE_MXFP4) {
  
  static constexpr __device__ int get_mmq_y_device() {
  #if defined(GGML_USE_HIP)
 -#if defined(RDNA1)
-+#if defined(RDNA1) || defined(RDNA3_5)
++#if defined(RDNA3_5)
++    return 64;
++#elif defined(RDNA1)
      return 64;
  #else
      return 128;
-@@ -288,6 +310,9 @@ static constexpr __device__ int mmq_get_granularity_device(const int /*mmq_x*/)
+@@ -296,6 +320,9 @@ static constexpr __device__ int mmq_get_granularity_device(const int /*mmq_x*/)
  
  #if defined(GGML_USE_HIP)
  static int mmq_get_nwarps_host(const int cc, const int warp_size) {
@@ -78,7 +90,7 @@ index b1a319de..fba91817 100644
      return amd_mfma_available(cc) ? 8 : 256/warp_size;
  }
  #else
-@@ -298,7 +323,11 @@ static int mmq_get_nwarps_host(const int /*cc*/, const int warp_size) {
+@@ -306,7 +333,11 @@ static int mmq_get_nwarps_host(const int /*cc*/, const int warp_size) {
  
  static constexpr __device__ int mmq_get_nwarps_device() {
  #if defined(AMD_MFMA_AVAILABLE) || defined(AMD_WMMA_AVAILABLE)
@@ -86,7 +98,316 @@ index b1a319de..fba91817 100644
 +    return 4;
 +#else
      return 8;
++#endif
+ #else
+     return 256/ggml_cuda_get_physical_warp_size();
+ #endif // AMD_MFMA_AVAILABLE
+diff --git a/ggml/src/ggml-cuda/mmvq.cu b/ggml/src/ggml-cuda/mmvq.cu
+index da48f313a38b..eeaacab42bf4 100644
+--- a/ggml/src/ggml-cuda/mmvq.cu
++++ b/ggml/src/ggml-cuda/mmvq.cu
+@@ -66,6 +66,7 @@ enum mmvq_parameter_table_id {
+     MMVQ_PARAMETERS_GCN,
+     MMVQ_PARAMETERS_RDNA2,
+     MMVQ_PARAMETERS_RDNA3_0,
++    MMVQ_PARAMETERS_RDNA3_5,
+     MMVQ_PARAMETERS_RDNA4
+ };
+ 
+@@ -74,7 +75,9 @@ static constexpr __device__ mmvq_parameter_table_id get_device_table_id() {
+     return MMVQ_PARAMETERS_RDNA4;
+ #elif defined(RDNA3_0)
+     return MMVQ_PARAMETERS_RDNA3_0;
+-#elif defined(RDNA2) || defined(RDNA3_5)
++#elif defined(RDNA3_5)
++    return MMVQ_PARAMETERS_RDNA3_5;
++#elif defined(RDNA2)
+     return MMVQ_PARAMETERS_RDNA2;
+ #elif defined(GCN) || defined(CDNA)
+     return MMVQ_PARAMETERS_GCN;
+@@ -90,7 +93,10 @@ static __host__ mmvq_parameter_table_id get_device_table_id(int cc) {
+     if (GGML_CUDA_CC_IS_RDNA3_0(cc)) {
+         return MMVQ_PARAMETERS_RDNA3_0;
+     }
+-    if (GGML_CUDA_CC_IS_RDNA2(cc) || GGML_CUDA_CC_IS_RDNA3_5(cc)) {
++    if (GGML_CUDA_CC_IS_RDNA3_5(cc)) {
++        return MMVQ_PARAMETERS_RDNA3_5;
++    }
++    if (GGML_CUDA_CC_IS_RDNA2(cc)) {
+         return MMVQ_PARAMETERS_RDNA2;
+     }
+     if (GGML_CUDA_CC_IS_GCN(cc) || GGML_CUDA_CC_IS_CDNA(cc)) {
+
+From 2dcae92b3094381fa601d7a195f005975e5ab035 Mon Sep 17 00:00:00 2001
+From: Sunil Pedapudi <skpedapudi@gmail.com>
+Date: Mon, 6 Apr 2026 18:47:16 -0700
+Subject: [PATCH 2/6] Apply suggestions from code review
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Co-authored-by: Johannes Gäßler <johannesg@5d6.de>
+---
+ ggml/src/ggml-cuda/mmq.cuh | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/ggml/src/ggml-cuda/mmq.cuh b/ggml/src/ggml-cuda/mmq.cuh
+index f3fb97594a7e..ce78471dd0c0 100644
+--- a/ggml/src/ggml-cuda/mmq.cuh
++++ b/ggml/src/ggml-cuda/mmq.cuh
+@@ -132,7 +132,7 @@ static constexpr __device__ int get_mmq_x_max_device() {
+     return 48;
+ #else
+     return 128;
+-#endif
++#endif // defined(RDNA3_5)
+ #else // defined(TURING_MMA_AVAILABLE) || defined(AMD_WMMA_AVAILABLE)
+ 
+ #if defined(GGML_USE_HIP)
+@@ -154,7 +154,7 @@ static constexpr __device__ int get_mmq_x_max_device() {
+ }
+ 
+ static int get_mmq_y_host(const int cc) {
+-    if (GGML_CUDA_CC_IS_AMD(cc))    {
++    if (GGML_CUDA_CC_IS_AMD(cc)) {
+         if (GGML_CUDA_CC_IS_RDNA1(cc) || GGML_CUDA_CC_IS_RDNA3_5(cc)) {
+             return 64;
+         }
+@@ -177,9 +177,7 @@ if (type == GGML_TYPE_NVFP4 || type == GGML_TYPE_MXFP4) {
+ 
+ static constexpr __device__ int get_mmq_y_device() {
+ #if defined(GGML_USE_HIP)
+-#if defined(RDNA3_5)
+-    return 64;
+-#elif defined(RDNA1)
++#if defined(RDNA1) || defined(RDNA3_5)
+     return 64;
+ #else
+     return 128;
+@@ -337,7 +335,7 @@ static constexpr __device__ int mmq_get_nwarps_device() {
+     return 4;
+ #else
+     return 8;
+-#endif
 +#endif // defined(RDNA3_5)
  #else
      return 256/ggml_cuda_get_physical_warp_size();
  #endif // AMD_MFMA_AVAILABLE
+
+From e21631eceb8a7dc36f0329ee6558f99712cfda7c Mon Sep 17 00:00:00 2001
+From: Sunil Pedapudi <skpedapudi@gmail.com>
+Date: Mon, 6 Apr 2026 18:48:53 -0700
+Subject: [PATCH 3/6] revert changes to mmvq.cu
+
+---
+ ggml/src/ggml-cuda/mmvq.cu | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/ggml/src/ggml-cuda/mmvq.cu b/ggml/src/ggml-cuda/mmvq.cu
+index eeaacab42bf4..da48f313a38b 100644
+--- a/ggml/src/ggml-cuda/mmvq.cu
++++ b/ggml/src/ggml-cuda/mmvq.cu
+@@ -66,7 +66,6 @@ enum mmvq_parameter_table_id {
+     MMVQ_PARAMETERS_GCN,
+     MMVQ_PARAMETERS_RDNA2,
+     MMVQ_PARAMETERS_RDNA3_0,
+-    MMVQ_PARAMETERS_RDNA3_5,
+     MMVQ_PARAMETERS_RDNA4
+ };
+ 
+@@ -75,9 +74,7 @@ static constexpr __device__ mmvq_parameter_table_id get_device_table_id() {
+     return MMVQ_PARAMETERS_RDNA4;
+ #elif defined(RDNA3_0)
+     return MMVQ_PARAMETERS_RDNA3_0;
+-#elif defined(RDNA3_5)
+-    return MMVQ_PARAMETERS_RDNA3_5;
+-#elif defined(RDNA2)
++#elif defined(RDNA2) || defined(RDNA3_5)
+     return MMVQ_PARAMETERS_RDNA2;
+ #elif defined(GCN) || defined(CDNA)
+     return MMVQ_PARAMETERS_GCN;
+@@ -93,10 +90,7 @@ static __host__ mmvq_parameter_table_id get_device_table_id(int cc) {
+     if (GGML_CUDA_CC_IS_RDNA3_0(cc)) {
+         return MMVQ_PARAMETERS_RDNA3_0;
+     }
+-    if (GGML_CUDA_CC_IS_RDNA3_5(cc)) {
+-        return MMVQ_PARAMETERS_RDNA3_5;
+-    }
+-    if (GGML_CUDA_CC_IS_RDNA2(cc)) {
++    if (GGML_CUDA_CC_IS_RDNA2(cc) || GGML_CUDA_CC_IS_RDNA3_5(cc)) {
+         return MMVQ_PARAMETERS_RDNA2;
+     }
+     if (GGML_CUDA_CC_IS_GCN(cc) || GGML_CUDA_CC_IS_CDNA(cc)) {
+
+From 455835fc163750837d148e913a2bf44f8af177bd Mon Sep 17 00:00:00 2001
+From: Sunil Pedapudi <skpedapudi@gmail.com>
+Date: Fri, 8 May 2026 22:00:55 -0700
+Subject: [PATCH 4/6] =?UTF-8?q?gfx1151:=20dense-aware=20mmq=5Fx=5Fmax=20?=
+ =?UTF-8?q?=E2=80=94=20dense=20uses=20128,=20MoE=20stays=2048?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Split the RDNA3.5 mmq_x_max cap by workload at runtime:
+
+- get_mmq_x_max_host returns 128 for RDNA3.5 (was 48), exposing the
+  full AMD_WMMA_AVAILABLE device-side limit to dense GEMMs.
+- get_mmq_x_max_device drops the RDNA3.5=48 carve-out and follows the
+  default 128 for AMD_WMMA_AVAILABLE, so mmq_x=128 kernel templates
+  are instantiated.
+- mul_mat_q_case caps mmq_x_max back to 48 only when args.expert_bounds
+  is non-null (the MoE path). Dense GEMMs (ggml_cuda_mul_mat_q with
+  ids==nullptr, plus ggml_cuda_op_mul_mat_q) leave it null and pick
+  up the 128 cap.
+
+The existing tile-selection loop walks mmq_x up to mmq_x_max and picks
+the largest one that minimises tile count, so dense pp1024 lands on
+mmq_x=128 (8 tiles, no waste) while MoE per-expert dispatches still
+stay at mmq_x<=48 (low fragmentation on the long tail of cold experts).
+
+Measured on Strix Halo (gfx1151), ROCm 7.2.1, clean local A/B versus
+this branch's prior settings (mmq_x_max=48 for both paths):
+
+| workload                 | prior (48) | this  | delta  |
+|--------------------------|-----------:|------:|-------:|
+| Dense 27B Q8 pp1024      |       292  |  422  | +44.8% |
+| Dense 27B Q8 pp4096      |       271  |  351  | +29.4% |
+| Dense  2B Q8 pp1024      |      4728  | 5172  |  +9.4% |
+| Qwen3.5 122B MoE pp1024  |       474  |  513  |  +8.2% |
+| Qwen3.5 122B MoE pp4096  |       512  |  534  |  +4.3% |
+| Qwen3.5  35B MoE pp1024  |      1505  | 1540  |  +2.3% |
+| Qwen3.5  35B MoE pp4096  |      1465  | 1508  |  +3.0% |
+| Qwen3.5  35B MoE pp32768 |      1007  | 1032  |  +2.5% |
+
+The MoE FFN path keeps the original 48 cap; dense and 122B MoE gains
+come from attention/projection layers picking up the 128 cap.
+---
+ ggml/src/ggml-cuda/mmq.cuh | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
+
+diff --git a/ggml/src/ggml-cuda/mmq.cuh b/ggml/src/ggml-cuda/mmq.cuh
+index ce78471dd0c0..f3663a199d17 100644
+--- a/ggml/src/ggml-cuda/mmq.cuh
++++ b/ggml/src/ggml-cuda/mmq.cuh
+@@ -107,9 +107,9 @@ struct tile_x_sizes {
+ };
+ 
+ static int get_mmq_x_max_host(const int cc) {
+-    // RDNA3_5 (GFX1151): mmq_x_max=48 for optimal VGPR/performance balance
++    // RDNA3_5 (gfx1151): use 128 to give dense GEMM the largest tiles; MoE path is capped to 48 in mul_mat_q_case.
+     if (GGML_CUDA_CC_IS_RDNA3_5(cc)) {
+-        return 48;
++        return 128;
+     }
+     if (turing_mma_available(cc) || amd_wmma_available(cc)) {
+          return 128;
+@@ -125,14 +125,8 @@ static int get_mmq_x_max_host(const int cc) {
+ }
+ 
+ static constexpr __device__ int get_mmq_x_max_device() {
+-#if defined(TURING_MMA_AVAILABLE)
+-    return 128;
+-#elif defined(AMD_WMMA_AVAILABLE)
+-#if defined(RDNA3_5)
+-    return 48;
+-#else
++#if defined(TURING_MMA_AVAILABLE) || defined(AMD_WMMA_AVAILABLE)
+     return 128;
+-#endif // defined(RDNA3_5)
+ #else // defined(TURING_MMA_AVAILABLE) || defined(AMD_WMMA_AVAILABLE)
+ 
+ #if defined(GGML_USE_HIP)
+@@ -4089,7 +4083,12 @@ void mul_mat_q_case(ggml_backend_cuda_context & ctx, const mmq_args & args, cuda
+     const int warp_size = ggml_cuda_info().devices[id].warp_size;
+     const int nwarps    = mmq_get_nwarps_host(cc, warp_size);
+ 
+-    const int mmq_x_max = get_mmq_x_max_host(cc);
++    int mmq_x_max = get_mmq_x_max_host(cc);
++    // RDNA3_5: cap MoE path to 48 (preserves the original VGPR/performance balance for per-expert dispatch)
++    // but let dense path use the full 128 cap from get_mmq_x_max_host.
++    if (GGML_CUDA_CC_IS_RDNA3_5(cc) && args.expert_bounds != nullptr) {
++        mmq_x_max = 48;
++    }
+     const int mmq_y = get_mmq_y_host(cc);
+ 
+     int mmq_x_best  = 0;
+
+From 2ba9b939bab040c48417ba07c8bc5189f1862280 Mon Sep 17 00:00:00 2001
+From: Sunil Pedapudi <skpedapudi@gmail.com>
+Date: Sun, 10 May 2026 21:05:58 -0700
+Subject: [PATCH 5/6] gfx1151: fattn-tile nbatch_K=64 for DKQ=DV=256 ncols=32
+
+Adds an RDNA3.5-only config override that drops nbatch_K from 128 to 64
+for the flash_attn_tile<256,256,4,8> path. Clears the 256 VGPR/wave cliff
+(256 -> 192) and cuts LDS/WG by ~22%, yielding +4-9% on long-context pp.
+Other RDNA generations are unaffected via fall-through to the general
+RDNA table.
+---
+ ggml/src/ggml-cuda/fattn-tile.cuh | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/ggml/src/ggml-cuda/fattn-tile.cuh b/ggml/src/ggml-cuda/fattn-tile.cuh
+index 7b0a5e5cf497..0547439801f0 100644
+--- a/ggml/src/ggml-cuda/fattn-tile.cuh
++++ b/ggml/src/ggml-cuda/fattn-tile.cuh
+@@ -309,8 +309,21 @@ static constexpr __host__ __device__ uint32_t ggml_cuda_fattn_tile_get_config_am
+     return 0;
+ }
+ 
++// exp193: RDNA3.5-specific overrides. Falls through to the general RDNA table
++// for any shape not explicitly overridden here. Strix Halo (gfx1151) has
++// 1536 VGPR/SIMD; dropping nbatch_K to 64 for the DKQ=256/ncols=32 hot path
++// (Qwen3.5-35B-A3B Q4_K_M) takes VGPR/wave 256 -> 192 (off the 256 cliff)
++// and yields +4.3% pp32k / +5.9-9.4% pp512@d{16k,32k}.
++static constexpr __host__ __device__ uint32_t ggml_cuda_fattn_tile_get_config_amd_rdna3_5(const int DKQ, const int DV, const int ncols) {
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(256, 256, 32, 256, 3,  64,  64)
++    return ggml_cuda_fattn_tile_get_config_amd_rdna(DKQ, DV, ncols);
++}
++
+ static __host__ uint32_t ggml_cuda_fattn_tile_get_config(const int DKQ, const int DV, const int ncols, const int cc) {
+     if (GGML_CUDA_CC_IS_AMD(cc)) {
++        if (GGML_CUDA_CC_IS_RDNA3_5(cc)) {
++            return ggml_cuda_fattn_tile_get_config_amd_rdna3_5(DKQ, DV, ncols);
++        }
+         if (GGML_CUDA_CC_IS_RDNA(cc)) {
+             return ggml_cuda_fattn_tile_get_config_amd_rdna(DKQ, DV, ncols);
+         }
+@@ -324,7 +337,9 @@ static __host__ uint32_t ggml_cuda_fattn_tile_get_config(const int DKQ, const in
+ 
+ static constexpr __device__ uint32_t ggml_cuda_fattn_tile_get_config(const int DKQ, const int DV, const int ncols) {
+ #ifdef GGML_USE_HIP
+-#ifdef RDNA
++#ifdef RDNA3_5
++    return ggml_cuda_fattn_tile_get_config_amd_rdna3_5(DKQ, DV, ncols);
++#elif defined(RDNA)
+     return ggml_cuda_fattn_tile_get_config_amd_rdna(DKQ, DV, ncols);
+ #else
+     return ggml_cuda_fattn_tile_get_config_amd(DKQ, DV, ncols);
+
+From 3f496a6eeafdf1170cb1f4b83fa6a5d30e4d8503 Mon Sep 17 00:00:00 2001
+From: Sunil Pedapudi <skpedapudi@gmail.com>
+Date: Sun, 10 May 2026 21:18:59 -0700
+Subject: [PATCH 6/6] fix comment in fattn-tile.cuh to be less specific
+
+---
+ ggml/src/ggml-cuda/fattn-tile.cuh | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/ggml/src/ggml-cuda/fattn-tile.cuh b/ggml/src/ggml-cuda/fattn-tile.cuh
+index 0547439801f0..52fe0442be76 100644
+--- a/ggml/src/ggml-cuda/fattn-tile.cuh
++++ b/ggml/src/ggml-cuda/fattn-tile.cuh
+@@ -309,11 +309,10 @@ static constexpr __host__ __device__ uint32_t ggml_cuda_fattn_tile_get_config_am
+     return 0;
+ }
+ 
+-// exp193: RDNA3.5-specific overrides. Falls through to the general RDNA table
++// RDNA3.5-specific overrides. Falls through to the general RDNA table
+ // for any shape not explicitly overridden here. Strix Halo (gfx1151) has
+ // 1536 VGPR/SIMD; dropping nbatch_K to 64 for the DKQ=256/ncols=32 hot path
+-// (Qwen3.5-35B-A3B Q4_K_M) takes VGPR/wave 256 -> 192 (off the 256 cliff)
+-// and yields +4.3% pp32k / +5.9-9.4% pp512@d{16k,32k}.
++// takes VGPR/wave 256 -> 192 (off the 256 cliff).
+ static constexpr __host__ __device__ uint32_t ggml_cuda_fattn_tile_get_config_amd_rdna3_5(const int DKQ, const int DV, const int ncols) {
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE(256, 256, 32, 256, 3,  64,  64)
+     return ggml_cuda_fattn_tile_get_config_amd_rdna(DKQ, DV, ncols);

@@ -2,7 +2,7 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "8927";
+  newerVer = "10288";
   overrides-fresh = old: {
     name = "llama-cpp-${newerVer}";
     version = newerVer;
@@ -10,19 +10,18 @@ let
       owner = "ggml-org";
       repo = "llama.cpp";
       tag = "b${newerVer}";
-      hash = "sha256-ZGdSNN2KSUuQeDwZZ+/2aMqvslj6REz32D8uijKAAuU=";
+      hash = "sha256-lZskIz2VSOrKYNbhK1tVUN1K8GU/rR5quZvwrChHtQM=";
       leaveDotGit = true;
       postFetch = ''
         git -C "$out" rev-parse --short HEAD > $out/COMMIT
         find "$out" -name .git -print0 | xargs -0 rm -rf
       '';
     };
-    npmDepsHash = "sha256-RAFtsbBGBjteCt5yXhrmHL39rIDJMCFBETgzId2eRRk=";
-    # add stub tools/server/public/index.html.gz to pacify upstream patchPhase
-    prePatch = (old.prePatch or "") + ''
-      mkdir -p tools/server/public
-      touch tools/server/public/index.html.gz
-    '';
+    npmDepsHash = "sha256-FHvd2bMvBc9EXrJEzu8EN78oUVSLcOKYCc0232V+L4A=";
+  };
+  cuda-vulkan = prev.llama-cpp.override {
+    cudaSupport = true;
+    vulkanSupport = true;
   };
 in
 rec {
@@ -38,16 +37,21 @@ rec {
     if prev.lib.versionAtLeast prev.llama-cpp-rocm.version newerVer
     then prev.llama-cpp-rocm
     else prev.llama-cpp-rocm.overrideAttrs overrides-fresh;
+  llama-cpp-cuda-vulkan =
+    if prev.lib.versionAtLeast prev.llama-cpp-rocm.version newerVer
+    then cuda-vulkan
+    else cuda-vulkan.overrideAttrs overrides-fresh;
 
-  llama-cpp-rocm-gfx1151 = llama-cpp-rocm.overrideAttrs (oa: {
+  llama-cpp-rocm-gfx1151 = (llama-cpp.override {
+    rocmSupport = true;
+    rocmGpuTargets = [ "gfx1151" ];
+  }).overrideAttrs (_: {
     name = "llama-cpp-rocm-gfx1151-${newerVer}";
-    patches = (oa.patches or []) ++ [
-      # https://github.com/ggml-org/llama.cpp/pull/21344 slightly boosts PP,
-      # and lowers TG, which I'm OK with for the slow-mo use case
-      ./21344-gfx1151-optimization.patch
-    ];
   });
-  llama-cpp-rocm-gfx1102 = llama-cpp-rocm.overrideAttrs (oa: {
+  llama-cpp-rocm-gfx1102 = (llama-cpp.override {
+    rocmSupport = true;
+    rocmGpuTargets = [ "gfx1102" ];
+  }).overrideAttrs (_: {
     name = "llama-cpp-rocm-gfx1102-${newerVer}";
   });
 }

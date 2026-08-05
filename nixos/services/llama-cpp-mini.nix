@@ -1,7 +1,7 @@
 { pkgs, lib, ... }:
 
 let
-  llama-cpp = pkgs.llama-cpp-rocm-gfx1102;
+  llama-cpp = pkgs.llama-cpp-rocm;
   model   = pkgs.zeta_2_1;
   host    = "192.168.99.53";
   port    = 11113;

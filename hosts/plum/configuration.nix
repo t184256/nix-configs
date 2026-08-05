@@ -68,5 +68,8 @@
     9988 # ctl
   ];
 
-  environment.systemPackages = with pkgs; [ amdgpu_top ];
+  environment.systemPackages = with pkgs; [
+    amdgpu_top
+    llama-cpp-cuda-vulkan
+  ];
 }
