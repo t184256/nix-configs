@@ -72,11 +72,10 @@ let
 
   # Fixes empty <think></think> spam, </thinking> hallucination, unclosed
   # think before tool call, no-user-query crash, developer role, etc.
-  froggericTemplate = pkgs.fetchurl {  # qwen3.6-froggeric-v20 (2026-06-22)
+  froggericTemplate = pkgs.fetchurl {  # qwen3.6-froggeric-v21.3 (2026-07-02)
     url = "https://huggingface.co/froggeric/Qwen-Fixed-Chat-Templates"
-        + "/resolve/cc662897c571bc90d74ff9e4c53d682b40eabe20"
-        + "/chat_template.jinja";
-    hash = "sha256-J9Iqs1Lvu2PNzDecxYkk8WspSZMebxhblZ+JMO/JUgs=";
+        + "/resolve/main/chat_template.jinja";
+    hash = "sha256-0gPzNC2Kf4R03VVWPuzjom5xshxvZnyduck7dis7+Zc=";
   };
 
   script = pkgs.writeShellScript "vllm" ''
