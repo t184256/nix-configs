@@ -45,6 +45,16 @@ let
     doCheck = false;
   };
 
+  # torchcodec h264 encoder test fails (nixpkgs upstream bug);
+  # torchaudio depends on it, so suppress checks here too.
+  torchcodec = prev.python313Packages.torchcodec.overridePythonAttrs (_: {
+    doCheck = false;
+  });
+
+  torchaudio = prev.python313Packages.torchaudio.overridePythonAttrs (_: {
+    doCheck = false;
+  });
+
   flashinfer = prev.python313Packages.flashinfer.overridePythonAttrs (oa: {
     version = "0.6.8.post1";
     src = prev.fetchFromGitHub {
@@ -154,7 +164,7 @@ let
       (oa.env or { }) // {
         TRITON_KERNELS_SRC_DIR =
           "${triton-kernels}/python/triton_kernels/triton_kernels";
-        SETUPTOOLS_SCM_PRETEND_VERSION = "0.19.0.dev20260514";
+        SETUPTOOLS_SCM_PRETEND_VERSION = "0.23.0";
         VLLM_REQUIRE_RUST_FRONTEND = "0";
       };
     # TORCH_CUDA_ARCH_LIST must be set in preBuild, not env:
@@ -165,6 +175,12 @@ let
     preBuild = ''
       export VLLM_CUDA_ARCHS_OVERRIDE="8.6"
       export MAX_JOBS=8
+      # Set CMAKE_LIBRARY_PATH so fallback find_library finds libgomp.
+      # vllm probes torch.libs first (doesn't exist in Nix), then falls back.
+      GOMP=$(find /nix/store -maxdepth 4 -name 'libgomp.so' -not -name '*.spec' 2>/dev/null | head -1)
+      if [ -n "$GOMP" ]; then
+        export CMAKE_LIBRARY_PATH="$(dirname $GOMP):$CMAKE_LIBRARY_PATH"
+      fi
     '' + (oa.preBuild or "");
     cmakeFlags =
       let
@@ -209,12 +225,26 @@ let
       [ " \\\n  --replace-fail \"grpcio-tools==1.78.0\" \"grpcio\"" ]
       [ "" ]
       oa.postPatch;
-    nativeBuildInputs = prev.lib.filter
-      (p: !(prev.lib.hasInfix "runtime-deps-check" (p.name or "")))
-      oa.nativeBuildInputs;
-    propagatedBuildInputs = (oa.propagatedBuildInputs or [])
-      ++ [ humming-kernels ];
+    nativeBuildInputs =
+      let
+        replace = old: new: map (x: if x == old then new else x);
+      in
+      replace prev.python313Packages.torchcodec torchcodec
+        (replace prev.python313Packages.torchaudio torchaudio
+          (prev.lib.filter
+            (p: !(prev.lib.hasInfix "runtime-deps-check" (p.name or "")))
+            oa.nativeBuildInputs));
+    propagatedBuildInputs =
+      let
+        replace = old: new: map (x: if x == old then new else x);
+      in
+      replace prev.python313Packages.torchcodec torchcodec
+        (replace prev.python313Packages.torchaudio torchaudio
+          ((oa.propagatedBuildInputs or []) ++ [ humming-kernels ]));
     meta = { knownVulnerabilities = []; };
+    # vllm appends +cpu/+cu121 etc to the version at build time
+    doCheck = false;
+    dontCheckPythonMetadata = true;
   });
 in
 
