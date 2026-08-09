@@ -259,6 +259,16 @@ in
     name = "Qwen3.6-27B-UD-Q4_K_XL.gguf";
     hash = "sha256-/2lB3tUls06xWUlnYsKd0Oxucdwxt01X512HGgPuwlk=";
   };
+  qwen36-27b-mtp-q4kxl = fetchHF {
+    repo = "unsloth/Qwen3.6-27B-MTP-GGUF";
+    name = "Qwen3.6-27B-UD-Q4_K_XL.gguf";
+    hash = "sha256-QIVmXuNtgqZyojikPw5WQ/Lw458te9XTc/DvEOz1MJU=";
+  };
+  qwen36-27b-mtp-q80 = fetchHF {
+    repo = "unsloth/Qwen3.6-27B-MTP-GGUF";
+    name = "Qwen3.6-27B-Q8_0.gguf";
+    hash = "sha256-lAjcs1bMBhoFwTnlZHy94GmP+YDGpp9/whTpmJ+Gz6g=";
+  };
   qwen35-35b-a3b-mxfp4 = fetchHF {
     repo = "unsloth/Qwen3.5-35B-A3B-GGUF";
     name = "Qwen3.5-35B-A3B-MXFP4_MOE.gguf";

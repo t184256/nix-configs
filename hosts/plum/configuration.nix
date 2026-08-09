@@ -3,6 +3,10 @@
 {
   networking.hostName = "plum";
 
+  nixpkgs.overlays = [
+    (import ../../overlays/llama-cpp/default.nix)
+  ];
+
   imports = [
     ../../nixos/profiles/2024.nix
     ./disko.nix
@@ -11,12 +15,13 @@
     ./hardware.nix
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
-    ../../nixos/services/vllm.nix
-    ../../nixos/services/whisper-cpp-cuda.nix
-    ../../nixos/services/llama-cpp-mini.nix
+    #../../nixos/services/vllm.nix
+    #../../nixos/services/whisper-cpp-cuda.nix
+    #../../nixos/services/llama-cpp-mini.nix
     ./bench-llm.nix
     ./clevis.nix
     ./clevis-highlevel.nix
+    ./llama-cpp.nix
     ./safe-reboot.nix
     ./cooling/lact.nix
     ./cooling/fancontrol.nix
@@ -71,5 +76,7 @@
     9988 # ctl
   ];
 
-  environment.systemPackages = with pkgs; [ amdgpu_top ];
+  environment.systemPackages = with pkgs; [
+    amdgpu_top
+  ];
 }

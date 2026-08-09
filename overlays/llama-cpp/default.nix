@@ -19,6 +19,13 @@ let
     };
     npmDepsHash = "sha256-FHvd2bMvBc9EXrJEzu8EN78oUVSLcOKYCc0232V+L4A=";
   };
+  cuda-vulkan = (prev.llama-cpp.override {
+    cudaSupport = true;
+    vulkanSupport = true;
+  }).overrideAttrs (oa: {
+    cmakeFlags = (oa.cmakeFlags or []) ++ [ "-DGGML_CUDA_NCCL=ON" ];
+    buildInputs = (oa.buildInputs or []) ++ [ prev.cudaPackages.nccl ];
+  });
 in
 rec {
   llama-cpp =
@@ -34,15 +41,21 @@ rec {
     then prev.llama-cpp-rocm
     else prev.llama-cpp-rocm.overrideAttrs overrides-fresh;
 
-  llama-cpp-rocm-gfx1151 = llama-cpp-rocm.overrideAttrs (oa: {
+  llama-cpp-cuda-vulkan =
+    if prev.lib.versionAtLeast prev.llama-cpp-rocm.version newerVer
+    then cuda-vulkan
+    else cuda-vulkan.overrideAttrs overrides-fresh;
+
+  llama-cpp-rocm-gfx1151 = (llama-cpp.override {
+    rocmSupport = true;
+    rocmGpuTargets = [ "gfx1151" ];
+  }).overrideAttrs (_: {
     name = "llama-cpp-rocm-gfx1151-${newerVer}";
-    patches = (oa.patches or []) ++ [
-      # https://github.com/ggml-org/llama.cpp/pull/21344 slightly boosts PP,
-      # and lowers TG, which I'm OK with for the slow-mo use case
-      ./21344-gfx1151-optimization.patch
-    ];
   });
-  llama-cpp-rocm-gfx1102 = llama-cpp-rocm.overrideAttrs (oa: {
+  llama-cpp-rocm-gfx1102 = (llama-cpp.override {
+    rocmSupport = true;
+    rocmGpuTargets = [ "gfx1102" ];
+  }).overrideAttrs (_: {
     name = "llama-cpp-rocm-gfx1102-${newerVer}";
   });
 }
