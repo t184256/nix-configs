@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 # Dual NVLinked RTX 3090 Lorbus/Qwen3.6-27B-int4-AutoRound dflash=7, 250W cap:
-# (top MSI GPU: 23G 100% 82°  79% 249W; bottom ASUS GPU: 23G 100% 60°  63% 248W)
+# (top MSI GPU: 19G 100% 92°  67% 216W; bottom ASUS GPU: 19G 100% 52°  57% 220W)
 # --- thinking=True ---
 # target      pp      ttft   pp tps   decode tps    gen
 #    256     272    0.180s     1515        174.3    128
@@ -23,6 +23,55 @@
 # 196608  196408  194.862s     1008         71.4    128
 # 262144  261678  303.095s      863         62.6    128
 
+#--- thinking=True ---
+#target      pp      ttft   pp tps   decode tps    gen
+#   256     272    0.179s     1520        150.3    128
+#  8192    8201    4.308s     1904         92.6    128
+# 16384   16384    8.839s     1854         61.5    128
+# 32768   32750   18.798s     1742         39.3    128
+# 65536   65481   42.253s     1550         22.8    128
+
+#--- thinking=True ---
+#target      pp      ttft   pp tps   decode tps    gen
+#   256     272    0.361s      754        136.8    128
+#  8192    8201    4.329s     1894        106.5    128
+# 16384   16384    8.897s     1842         71.5    128
+# 32768   32750   18.880s     1735         50.1    128
+# 65536   65481   42.268s     1549         30.6    128
+
+# NO MTP maxNumBatchedTokens=2048
+# --- thinking=False ---
+# target      pp      ttft   pp tps   decode tps    gen
+#    256     274    0.356s      769         74.9    128
+#   8192    8203    4.190s     1958         72.0    128
+#  16384   16386    8.632s     1898         69.8    128
+#  32768   32752   18.403s     1780         66.1    128
+#  65536   65483   41.322s     1585         60.2    128
+
+# MTP=3 maxNumBatchedTokens=2048
+# --- thinking=False ---
+# target      pp      ttft   pp tps   decode tps    gen
+#    256     274    0.321s      854        105.9    128
+#   8192    8203    4.303s     1906         73.3    128
+#  16384   16386    8.840s     1854         53.1    128
+#  32768   32752   18.767s     1745         33.2    128
+#  65536   65483   42.227s     1551         19.9    128
+
+# MTP=3 maxNumBatchedTokens=8192
+# --- thinking=False ---
+# target      pp      ttft   pp tps   decode tps    gen
+#    256     274    0.315s      869        111.8    128
+#   8192    8203    4.303s     1906         71.8    128
+#  16384   16386    8.841s     1853         51.5    128
+#  32768   32752   18.767s     1745         32.8    128
+#  65536   65483   42.235s     1550         19.3    128
+# --- thinking=True ---
+# target      pp      ttft   pp tps   decode tps    gen
+#    256     272    0.276s      987        148.5    128
+#   8192    8201    4.297s     1909         91.5    128
+#  16384   16384    8.834s     1855         61.5    128
+#  32768   32750   18.784s     1743         39.3    128
+
 {
   environment.systemPackages = [
     (pkgs.writers.writePython3Bin "bench-vllm" {
@@ -36,7 +85,7 @@
       MAX_MODEL_LEN = 262144
       PROMPT_LENS = [256, 8192, 16384, 32768, 65536, 131072, 196608, 262144]
       GEN_TOKENS = 128
-      RUNS = 5
+      RUNS = 2
 
       MODEL = 'qwen3.6-27b'
       BASE = """\

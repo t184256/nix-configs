@@ -11,12 +11,47 @@ final: prev:
 #   deepgemm              - added below via cmakeFlags (SM90+/SM100 only)
 
 let
-  flashinfer = prev.python313Packages.flashinfer.overrideAttrs (_oa: {
+  xgrammar = prev.python313Packages.xgrammar.overrideAttrs (oa: {
+    version = "0.2.3";
+    src = prev.fetchFromGitHub {
+      owner = "mlc-ai";
+      repo = "xgrammar";
+      rev = "557becfb64c503ae9c04344b0047661f43f44320";
+      fetchSubmodules = true;
+      hash = "sha256-bznSz1fOCCGFR3NsuXm5eWo7EXrvBrFavEllC5+vDHM=";
+    };
+    patches = [];
+    disabledTestPaths = [];
+    nativeBuildInputs = oa.nativeBuildInputs
+      ++ [ prev.python313Packages.apache-tvm-ffi ];
+    propagatedBuildInputs = oa.propagatedBuildInputs
+      ++ [ prev.python313Packages.apache-tvm-ffi ];
+  });
+
+  flashinfer = prev.python313Packages.flashinfer.overrideAttrs (oa: {
+    version = "0.6.8.post1";
+    src = prev.fetchFromGitHub {
+      owner = "flashinfer-ai";
+      repo = "flashinfer";
+      tag = "v0.6.8.post1";
+      fetchSubmodules = true;
+      hash = "sha256-OAPR7vSxI6KZdPzvgRvl6owo6Hmi5244Y/fJ3IK5Vos=";
+    };
+    # Compile AOT for SM86 only; avoids JIT at runtime.
+    env = (oa.env or {}) // { FLASHINFER_CUDA_ARCH_LIST = "8.6"; };
+    # apache-tvm-ffi is a runtime dep (imported in flashinfer.jit) but
+    # nixpkgs only puts it in build-system; add it to propagated as well.
+    propagatedBuildInputs = (oa.propagatedBuildInputs or [])
+      ++ [ prev.python313Packages.apache-tvm-ffi ];
+    # cuda-tile is listed in requirements.txt but never imported; requires
+    # CUDA 13.1+ which we don't have. Strip it like nixpkgs strips cutlass-dsl.
+    pythonRemoveDeps = (oa.pythonRemoveDeps or []) ++ [ "cuda-tile" ];
     dontCheckPythonMetadata = true;
+    meta = (oa.meta or {}) // { broken = false; };
   });
 
   overriddenVllm = (prev.python313Packages.vllm.override {
-    inherit flashinfer;
+    inherit flashinfer xgrammar;
   }).overrideAttrs (oa: {
     patches =
       (prev.lib.filter
@@ -111,7 +146,9 @@ in
 
 {
   python313Packages = prev.python313Packages // {
+    inherit flashinfer xgrammar;
     vllm = overriddenVllm;
   };
+  inherit flashinfer;
   vllm = overriddenVllm;
 }

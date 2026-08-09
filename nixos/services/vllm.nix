@@ -1,8 +1,6 @@
 { inputs, pkgs, ... }:
 
-# Qwen3.6-27B AutoRound INT4 + DFlash speculative decoding on plum with dual RTX 3090
-# To disable DFlash: drop --speculative-config,
-# set --max-num-batched-tokens 2048, drop two dflash-only VLLM_* env vars
+# Qwen3.6-27B AutoRound INT4 + MTP on plum with dual RTX 3090
 
 let
   pkgsCuda = import inputs.nixpkgs {
@@ -15,7 +13,6 @@ let
   cudatoolkit = pkgsCuda.cudaPackages.cudatoolkit;
 
   model = pkgs.qwen36-27b-autoround;
-  draft = pkgs.qwen36-27b-dflash-draft;
   # Nothink defaults (server default is enable_thinking=false).
   # Applies to bare requests only, users should override it.
   generationConfig = pkgs.writeTextDir "generation_config.json"
@@ -25,16 +22,12 @@ let
     });
   maxModelLen = 262144;
   maxNumSeqs = 2;
-  numSpecTokens = 7;
-  # vllm reserves maxNumSeqs * (numSpecTokens - 1) draft slots inside the batch;
-  # add them on top of the 2048 base so max_num_scheduled_tokens stays 2048.
-  # without dflash: just use 2048 directly.
-  maxNumBatchedTokens = 2048 + maxNumSeqs * (numSpecTokens - 1);
+  numSpecTokens = 3;
+  #maxNumBatchedTokens = 8192;
+  maxNumBatchedTokens = 2048;
   specConfig = builtins.toJSON {
-    method = "dflash";
-    model = toString draft;
+    method = "mtp";
     num_speculative_tokens = numSpecTokens;
-    draft_tensor_parallel_size = 2;
   };
 
   env = [
@@ -50,10 +43,10 @@ let
     "FLASHINFER_NVCC=${pkgsCuda.cudaPackages.cuda_nvcc}/bin/nvcc"
     "FLASHINFER_CACHE_DIR=/var/lib/vllm/flashinfer"
     # dflash only: reclaim 0.18 GiB from CUDA graph memory profiling (PIECEWISE)
-    "VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0"
+    #"VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0"
     # dflash only: default 394 MiB workspace OOMs at first inference (lazy alloc
     # outside profiling window); BatchDFlashPrefillWrapper creates two per group
-    "VLLM_FLASHINFER_WORKSPACE_BUFFER_SIZE=${toString (64 * 1024 * 1024)}"
+    #"VLLM_FLASHINFER_WORKSPACE_BUFFER_SIZE=${toString (64 * 1024 * 1024)}"
     # expandable_segments crashes on some NVLink setups (cuMemMap path) but
     # helps defragment reserved-but-unallocated memory during graph capture;
     # incompatible with OffloadingConnector (pinned KV gets invalidated by VMM)
@@ -62,6 +55,8 @@ let
     #"NCCL_CUMEM_ENABLE=0"  # avoids cuMem unified-memory path in NCCL
     "SAFETENSORS_FAST_GPU=1"
     "CUDA_DEVICE_ORDER=PCI_BUS_ID"
+    # MTP rejection-sampler path: FlashInfer sampler adds overhead without a win
+    "VLLM_USE_FLASHINFER_SAMPLER=0"
     "OMP_NUM_THREADS=4"  # a rather random number for concurrency <=2
     #"VLLM_ENFORCE_STRICT_TOOL_CALLING=1"
     # deterministic block hashing across restarts (required for fs tier)
@@ -81,28 +76,29 @@ let
   script = pkgs.writeShellScript "vllm" ''
     exec ${vllm}/bin/vllm serve ${model} \
       --generation-config ${generationConfig} \
-      --kv-cache-dtype fp8 \
       --quantization auto_round \
       --language-model-only \
-      --speculative-config '${specConfig}' \
       --max-num-seqs ${toString maxNumSeqs} \
       --max-num-batched-tokens ${toString maxNumBatchedTokens} \
-      --max-model-len ${toString maxModelLen} \
+      --speculative-config '${specConfig}' \
       --tensor-parallel-size 2 \
-      --disable-custom-all-reduce \
-      --gpu-memory-utilization 0.82 \
-      --enable-prefix-caching \
+      --gpu-memory-utilization 0.92 \
       --enable-chunked-prefill \
       --reasoning-parser qwen3 \
       --chat-template ${froggericTemplate} \
       --default-chat-template-kwargs '{"enable_thinking": false}' \
       --compilation-config '{"cudagraph_capture_sizes": [1,2,4,8,16,24,32]}' \
-      --async-scheduling \
+      --long-prefill-token-threshold 2048 \
       --enable-auto-tool-choice --tool-call-parser qwen3_coder \
+      --enable-prefix-caching \
       --disable-access-log-for-endpoints /metrics \
       --served-model-name qwen3.6-27b qwen3.6-27b-think qwen3.6-27b-nothink \
       --host 192.168.99.53 --port 11111
   '';
+      #--kv-cache-dtype fp8_e4m3 \
+      #--async-scheduling \
+      #--disable-custom-all-reduce \
+
       #--kv-offloading-size 12 --kv-offloading-backend native \
       #--kv-transfer-config '{"kv_connector_extra_config": {"spec_name": "TieringOffloadingSpec", "secondary_tiers": [{"type": "fs", "root_dir": "/var/lib/vllm/kv-cache"}]}}' \
   # --gpu-memory-utilization 0.82 currently uses ~ 21670MiB / 24576MiB,
@@ -120,7 +116,7 @@ in
 {
   environment.persistence."/mnt/persist".directories = [ "/var/lib/vllm" ];
   # purge stale KV-cache blocks older than one day
-  systemd.tmpfiles.rules = [ "x /var/lib/vllm/kv-cache  - - 1d -" ];
+  systemd.tmpfiles.rules = [ "x /var/lib/vllm/kv-cache  - - - 1d" ];
 
   nix.settings.extra-substituters = [ "https://cache.nixos-cuda.org" ];
   nix.settings.extra-trusted-public-keys = [
