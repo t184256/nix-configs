@@ -48,6 +48,9 @@
   system.stateVersion = "25.11";
 
   systemd.tpm2.enable = false;
+  systemd.services.libvirtd.serviceConfig = {
+    LoadCredentialEncrypted = lib.mkForce [];
+  };
   services.pipewire = {
     enable = true;
     alsa.enable = true;
