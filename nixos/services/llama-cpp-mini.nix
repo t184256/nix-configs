@@ -30,8 +30,8 @@ in
         --offline
     '';
     serviceConfig = {
-      User = "vllm";
-      Group = "vllm";
+      User = "llama-cpp";
+      Group = "llama-cpp";
       PrivateDevices = false;
       PrivateTmp = true;
       ProtectHome = true;
