@@ -2,7 +2,7 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "8927";
+  newerVer = "10313";
   overrides-fresh = old: {
     name = "llama-cpp-${newerVer}";
     version = newerVer;
@@ -10,19 +10,14 @@ let
       owner = "ggml-org";
       repo = "llama.cpp";
       tag = "b${newerVer}";
-      hash = "sha256-ZGdSNN2KSUuQeDwZZ+/2aMqvslj6REz32D8uijKAAuU=";
+      hash = "sha256-tHqT6Fh4ZM8vBrA+hQjh+3kbq+6FL60rcdWCH1NT8eg=";
       leaveDotGit = true;
       postFetch = ''
         git -C "$out" rev-parse --short HEAD > $out/COMMIT
         find "$out" -name .git -print0 | xargs -0 rm -rf
       '';
     };
-    npmDepsHash = "sha256-RAFtsbBGBjteCt5yXhrmHL39rIDJMCFBETgzId2eRRk=";
-    # add stub tools/server/public/index.html.gz to pacify upstream patchPhase
-    prePatch = (old.prePatch or "") + ''
-      mkdir -p tools/server/public
-      touch tools/server/public/index.html.gz
-    '';
+    npmDepsHash = "sha256-FHvd2bMvBc9EXrJEzu8EN78oUVSLcOKYCc0232V+L4A=";
   };
 in
 rec {
