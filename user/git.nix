@@ -63,6 +63,8 @@ in
         frag = "dim";
         func = "dim";
         commit = "#feffd0";
+        old = "#ffe0e0";
+        new = "#e0ffe0";
         oldMoved = "#fce0ff";
         newMoved = "#daeeff";
         oldMovedAlternative = "#e0c0e4";
