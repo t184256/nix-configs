@@ -40,7 +40,8 @@ in
     settings = {
       user.name = "Alexander Sosedkin";
       user.email = config.identity.email;
-      alias.tip = "show HEAD";
+      alias.tip = "format-patch --stdout -1";
+      alias.fp = "format-patch --stdout";
       alias.ci = "commit";
       alias.sw = "switch";
       alias.ff = "pull --ff-only";
