@@ -17,7 +17,7 @@ let
           supportsDeveloperRole = false;
           maxTokensField = "max_tokens";
         };
-        models = [
+        models = map (m: m // { samplingParams = { return_progress = true; }; }) [
           { id = "qwen3.5-35b-a3b-think"; reasoning = true;
             contextWindow = 262144;
             cost = { input = 0.011; output = 0.12;
@@ -67,11 +67,13 @@ let
           { id = "qwen3.6-27b-think"; reasoning = true;
             contextWindow = 262144;
             cost = { input = 0; output = 0;
-                     cacheRead = 0; cacheWrite = 0; }; }
+                     cacheRead = 0; cacheWrite = 0; };
+            samplingParams = { return_progress = true; }; }
           { id = "qwen3.6-27b-nothink";
             contextWindow = 262144;
             cost = { input = 0; output = 0;
-                     cacheRead = 0; cacheWrite = 0; }; }
+                     cacheRead = 0; cacheWrite = 0; };
+            samplingParams = { return_progress = true; }; }
         ];
       };
     };
