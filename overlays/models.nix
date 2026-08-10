@@ -188,5 +188,10 @@ in
     name = "ggml-large-v3-turbo-q8_0.bin";
     hash = "sha256-MX62nBFnPJ3h4fDUWbJTmZgE7HGsTCPBfs9fviTiWaE=";
   };
+  whisper-large-q5_0 = fetchHF {
+    repo = "ggerganov/whisper.cpp";
+    name = "ggml-large-v3-q5_0.bin";
+    hash = "sha256-11eV7P8/g7X6qJ0ZAGBK2MeAq9Vzn65AbeGfI+zZitE=";
+  };
 
 }

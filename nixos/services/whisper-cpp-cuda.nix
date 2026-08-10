@@ -7,11 +7,20 @@ let
     overlays = [ (import ../../overlays/models.nix) ];
   };
 
-  whisperCpp = pkgsCuda.whisper-cpp;
+  whisperCpp = pkgsCuda.whisper-cpp.overrideAttrs (old: {
+    # RTX 3090 = Ampere sm_86; Ryzen 7600 = Zen 3 (znver3)
+    cmakeFlags = (old.cmakeFlags or []) ++ [
+      "-DGGML_CPU_ALL_VARIANTS=OFF"
+      "-DCMAKE_CUDA_ARCHITECTURES=86"
+    ];
+    CFLAGS = old.CFLAGS or "" + " -march=znver3";
+    CXXFLAGS = old.CXXFLAGS or "" + " -march=znver3";
+  });
   cudatoolkit = pkgsCuda.cudaPackages.cudatoolkit;
 
   #model = pkgsCuda.whisper-distil-large-v35;
-  model = pkgsCuda.whisper-large-turbo-q8_0;
+  #model = pkgsCuda.whisper-large-turbo-q8_0;
+  model = pkgsCuda.whisper-large-q5_0;
 in
 
 {

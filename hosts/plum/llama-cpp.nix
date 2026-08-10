@@ -30,6 +30,9 @@ in
       ];
       ExecStart = ''
         ${llama-cpp}/bin/llama-server \
+          --fit off \
+          -c 262144 \
+          -ngl 9999 \
           -fa on \
           -m ${model} \
           --mmproj ${mmproj} \
