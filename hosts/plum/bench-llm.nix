@@ -71,7 +71,9 @@
                               usage = chunk.usage
                           elif chunk.choices:
                               d = chunk.choices[0].delta
-                              if d.content or getattr(d, 'reasoning', None):
+                              if d.content or \
+                                      getattr(d, 'reasoning_content') or \
+                                      getattr(d, 'reasoning'):
                                   if ttft is None:
                                       ttft = time.perf_counter() - t0
                   total = time.perf_counter() - t0
