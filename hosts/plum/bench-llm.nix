@@ -25,7 +25,7 @@
 
 {
   environment.systemPackages = [
-    (pkgs.writers.writePython3Bin "bench-vllm" {
+    (pkgs.writers.writePython3Bin "bench-llm" {
       libraries = [ pkgs.python3Packages.openai ];
     } ''
       import statistics

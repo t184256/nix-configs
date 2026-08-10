@@ -14,7 +14,7 @@
     ../../nixos/services/vllm.nix
     ../../nixos/services/whisper-cpp-cuda.nix
     ../../nixos/services/llama-cpp-mini.nix
-    ./bench-vllm.nix
+    ./bench-llm.nix
     ./clevis.nix
     ./clevis-highlevel.nix
     ./safe-reboot.nix
