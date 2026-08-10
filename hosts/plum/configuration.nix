@@ -15,7 +15,6 @@
     ./hardware.nix
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
-    #../../nixos/services/vllm.nix
     #../../nixos/services/whisper-cpp-cuda.nix
     #../../nixos/services/llama-cpp-mini.nix
     ./bench-llm.nix
