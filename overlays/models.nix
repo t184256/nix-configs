@@ -81,6 +81,12 @@ in
     name = "Qwen3.6-27B-UD-Q4_K_XL.gguf";
     hash = "sha256-QIVmXuNtgqZyojikPw5WQ/Lw458te9XTc/DvEOz1MJU=";
   };
+  qwen36-27b-mmproj-q80 = fetchHF {
+    repo = "ggml-org/Qwen3.6-27B-MTP-GGUF";
+    name = "mmproj-Qwen3.6-27B-Q8_0.gguf";
+    hash = "sha256-71A19mnxNFIb7MXdGwplSX+3I2vtLeHN8Raq50WJtjs=";
+  };
+
   qwen36-27b-mtp-q80 = fetchHF {
     repo = "unsloth/Qwen3.6-27B-MTP-GGUF";
     name = "Qwen3.6-27B-Q8_0.gguf";

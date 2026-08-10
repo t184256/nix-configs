@@ -6,6 +6,7 @@
 let
   llama-cpp = pkgs.llama-cpp-cuda-vulkan;
   model = pkgs.qwen36-27b-mtp-q80;
+  mmproj = pkgs.qwen36-27b-mmproj-q80;
 in
 
 {
@@ -31,6 +32,8 @@ in
         ${llama-cpp}/bin/llama-server \
           -fa on \
           -m ${model} \
+          --mmproj ${mmproj} \
+          --image-max-tokens 8192 \
           --jinja \
           --reasoning off \
           --parallel 2 \
