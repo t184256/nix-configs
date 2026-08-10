@@ -81,13 +81,24 @@ let
     defaultProvider = "litellm";
     defaultModel = "qwen3.6-27b-think";
     quietStartup = true;
+    extensions = [ "extensions/llama-cpp-stats.ts" ];
+    packages = ["npm:pi-web-access@0.10.7"];
   };
+
+  # pi-llama-cpp-stats: single .ts file, zero deps (from overlay)
+  llamaCppStatsSrc = pkgs.pi-llama-cpp-stats;
+
+  # npm-based extensions, copied into a single node_modules tree (incl. deps)
+  piNpmNodeModules = pkgs.runCommand "pi-npm-node-modules" {} ''
+    cp -r ${pkgs.pi-web-access}/lib/node_modules $out
+  '';
 
   # makeJailedAgent puts configPaths last, shadowing any ro-bind in
   # baseJailOptions. Use add-runtime to inject the ro-binds AFTER
   # configPaths by appending to $RUNTIME_ARGS.
   modelsJson = pkgs.writeText "models.json" modelsRaw;
   settingsJson = pkgs.writeText "settings.json" settingsRaw;
+  webSearchJson = pkgs.writeText "web-search.json" (builtins.toJSON { workflow = "none"; });
 
   extraJailOpts = [
     (comb.fwd-env "LLAMA_KEY")
@@ -95,7 +106,11 @@ let
     (comb.add-runtime ''
       RUNTIME_ARGS+=(--ro-bind ${modelsJson} ~/.pi/agent/models.json)
       RUNTIME_ARGS+=(--ro-bind ${settingsJson} ~/.pi/agent/settings.json)
+      RUNTIME_ARGS+=(--ro-bind ${webSearchJson} ~/.pi/web-search.json)
       RUNTIME_ARGS+=(--ro-bind-try /etc/pki /etc/pki)  # Fedora hack
+      RUNTIME_ARGS+=(--ro-bind ${llamaCppStatsSrc}
+                               ~/.pi/agent/extensions/llama-cpp-stats.ts)
+      RUNTIME_ARGS+=(--ro-bind ${piNpmNodeModules} ~/.pi/agent/npm/node_modules)
     '')
   ];
 
@@ -116,6 +131,9 @@ let
 in
 {
   imports = [ ./config/roles.nix ];
-  nixpkgs.overlays = lib.mkIf config.roles.slop [ (import ../overlays/pi) ];
+  nixpkgs.overlays = lib.mkIf config.roles.slop [
+    (import ../overlays/pi)
+    (import ../overlays/pi-extensions.nix)
+  ];
   home.packages = lib.mkIf config.roles.slop [ jailed-pi ];
 }
