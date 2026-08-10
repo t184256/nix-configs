@@ -15,12 +15,9 @@ from common import (
 
 VRAM_GB = 24
 FANLISTENER_HOST, FANLISTENER_PORT = '127.0.0.1', 9271
-VLLM_HOST, VLLM_PORT = '192.168.99.53', 11111
-VLLM_MAX_SEQS  = 4    # --max-num-seqs
-VLLM_PP_TPS_MAX = 400  # computed-prefill peak (cache-heavy workload)
-VLLM_TG_TPS_MAX = 120  # decode peak (DFlash thinking mode)
-VLLM_DELTA_WINDOW = 0.3  # seconds of history for TPS / ACC window
-VLLM_PP_BURST_WINDOW = 5.0  # seconds; burst-aware PP TPS history
+LLAMA_HOST, LLAMA_PORT = '192.168.99.53', 11111
+LLAMA_MAX_SLOTS = 2      # --parallel
+
 DB_OVER = 20
 FANS = {  # name: (max_rpm, profile, pwm_n)
     'CPU Fan':       (2010, 'cpu0',  1),
@@ -69,38 +66,17 @@ class LoudnessMonitor:
             return self._base
 
 
-class VllmMonitor:
+class LlamaCppMonitor:
     def __init__(self):
-        self._lock = threading.Lock()
-        self._tg_tps = self._kv_pct = 0.0
-        self._reqs = 0
-        self._acc = self._acc_cum = self._pc_pct = 0.0
-        self._reusing = False
-        self._n_pp = self._n_dec = 0
-        self._history = []  # (t, gen, acc, draft)
-        self._prev_kv = 0.0
-        self._pp_burst_tps = 0.0
-        self._pp_bursts = []      # poll-thread only; no lock needed
-        self._prev_pp_computed = None  # poll-thread only
+        self._requests = 0
         self._conn = None
         threading.Thread(target=self._poll, daemon=True).start()
 
     def _connect(self):
         self._conn = http.client.HTTPConnection(
-            VLLM_HOST, VLLM_PORT, timeout=1.0)
+            LLAMA_HOST, LLAMA_PORT, timeout=1.0)
 
-    @staticmethod
-    def _metric(text, name, label=None):
-        prefix = name + '{'
-        for line in text.splitlines():
-            if line.startswith(prefix) and (label is None or label in line):
-                try:
-                    return float(line.split()[-1])
-                except ValueError:
-                    pass
-        return 0.0
-
-    def _fetch(self):
+    def _fetch_metrics(self):
         for attempt in range(2):
             try:
                 if self._conn is None:
@@ -115,93 +91,28 @@ class VllmMonitor:
                     continue
         return None
 
-    @staticmethod
-    def _trim(buf, now, window):
-        while buf and now - buf[0][0] > window:
-            buf.pop(0)
-
     def _poll(self):
+        active = False
         while True:
             t0 = time.monotonic()
-            text = self._fetch()
-            active = False
+            text = self._fetch_metrics()
+            requests = 0
             if text is not None:
-                run = int(self._metric(text, 'vllm:num_requests_running'))
-                gen   = self._metric(text, 'vllm:generation_tokens_total')
-                now = time.monotonic()
-                if run > 0:
-                    active = True
-                    kv    = self._metric(text, 'vllm:kv_cache_usage_perc')
-                    acc   = self._metric(
-                        text, 'vllm:spec_decode_num_accepted_tokens_total')
-                    draft = self._metric(
-                        text, 'vllm:spec_decode_num_draft_tokens_total')
-                    pc_h  = self._metric(text, 'vllm:prefix_cache_hits_total')
-                    pc_q  = self._metric(
-                        text, 'vllm:prefix_cache_queries_total')
-                    pp_computed = self._metric(
-                        text, 'vllm:prefill_tokens_computed_total')
-                    n_pp  = int(self._metric(
-                        text, 'vllm:num_requests_prefilling'))
-                    n_dec = int(self._metric(
-                        text, 'vllm:num_requests_decoding'))
-                    delta = 0.0
-                    if self._prev_pp_computed is not None:
-                        delta = pp_computed - self._prev_pp_computed
-                        if delta > 0:
-                            self._pp_bursts.append((now, delta))
-                    self._prev_pp_computed = pp_computed
-                    self._trim(self._pp_bursts, now, VLLM_PP_BURST_WINDOW)
-                    burst_tps = 0.0
-                    if len(self._pp_bursts) >= 2:
-                        total = sum(d for _, d in self._pp_bursts)
-                        span = (self._pp_bursts[-1][0]
-                                - self._pp_bursts[0][0])
-                        if span > 0:
-                            burst_tps = total / span
-                    with self._lock:
-                        self._history.append((now, gen, acc, draft))
-                        self._trim(self._history, now, VLLM_DELTA_WINDOW)
-                        base, top = self._history[0], self._history[-1]
-                        dt = top[0] - base[0]
-                        if dt > 0:
-                            self._tg_tps = max(0, (top[1] - base[1]) / dt)
-                            d_draft = top[3] - base[3]
-                            if d_draft > 0:
-                                self._acc = (top[2] - base[2]) / d_draft
-                        self._pp_burst_tps = burst_tps
-                        self._reusing = kv > self._prev_kv and delta <= 0
-                        self._prev_kv = kv
-                        self._acc_cum = acc / draft if draft > 0 else 0.0
-                        self._kv_pct = kv * 100
-                        self._reqs = run
-                        self._pc_pct = (
-                            pc_h / pc_q * 100 if pc_q > 0 else 0.0)
-                        self._n_pp  = n_pp
-                        self._n_dec = n_dec
-                else:
-                    self._pp_bursts.clear()
-                    self._prev_pp_computed = None
-                    with self._lock:
-                        self._history.append((now, gen, 0.0, 0.0))
-                        self._trim(self._history, now, VLLM_DELTA_WINDOW)
-                        self._prev_kv = 0.0
-                        self._reqs = 0
-                        self._tg_tps = 0.0
-                        self._reusing = False
-                        self._n_pp = self._n_dec = 0
-                        self._pp_burst_tps = 0.0
+                for line in text.splitlines():
+                    if line.startswith('llamacpp:requests_processing '):
+                        try:
+                            requests = int(line.split()[-1])
+                        except ValueError:
+                            pass
+                        break
+            self._requests = requests
+            active = requests > 0
             elapsed = time.monotonic() - t0
             time.sleep(max(0, (0.1 if active else 0.5) - elapsed))
 
-    def values(self):
-        with self._lock:
-            return (self._tg_tps,
-                    self._kv_pct, self._reqs,
-                    self._acc, self._acc_cum, self._pc_pct,
-                    self._reusing,
-                    self._pp_burst_tps,
-                    self._n_pp, self._n_dec)
+    @property
+    def requests(self):
+        return self._requests
 
 
 def temp_color(t, t_min=45, t_max=80):
@@ -332,7 +243,7 @@ def gpu(h, profile_name):
     return r, u, t, f, w
 
 
-def get_lines(nct, gpu0, gpu1, vllm, loudness_usb, loudness_analog):
+def get_lines(nct, gpu0, gpu1, llama, loudness_usb, loudness_analog):
     sensors_data = chip_data(nct)
     ct = int(sensors_data["CPU"])
     ct = f'{temp_color(ct)}{ct:3d}°{RESET}'
@@ -358,43 +269,15 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness_usb, loudness_analog):
 
     r0, u0, t0, f0, w0 = gpu(gpu0, 'gpu0')
     r1, u1, t1, f1, w1 = gpu(gpu1, 'gpu1')
-    (tg_tps, kv_pct, reqs, acc, acc_cum, pc_pct,
-     reusing, pp_burst_tps, n_pp, n_dec) = vllm.values()
-    active = reqs > 0
 
-    if active and reusing:
-        pp_tps = min(9999, int(pp_burst_tps))
-        pp_col = f' {gw_color(0)}{pp_tps:4d} KV{RESET}  '
-        top_fill = f'─{gw_color(0)}↓─↓{RESET}──────'
-    elif active and tg_tps > 5:
-        pp_col = '          '
-        top_fill = '──────────'
-    elif active and pp_burst_tps > 5:
-        pp_tps = min(9999, int(pp_burst_tps))
-        c = gw_color(pp_burst_tps / VLLM_PP_TPS_MAX)
-        pp_col = f' {c}{pp_tps:4d} PP{RESET}  '
-        top_fill = (f'─↓{gw_color(n_pp/VLLM_MAX_SEQS)}{n_pp}{RESET}↓──────'
-                    if n_pp > 1 else '─↓─↓──────')
+    if llama.requests > LLAMA_MAX_SLOTS:
+        mid_fill = f'──{_fg((255, 0, 0))}{llama.requests}{RESET}───────'  # red
+    elif llama.requests > 1:
+        mid_fill = f'──{_fg((255, 220, 0))}{llama.requests}{RESET}───────'  # y
+    elif llama.requests == 1:
+        mid_fill = '──1───────'
     else:
-        pp_col = '          '
-        top_fill = '──────────'
-    if active:
-        kv_fill = f'{gw_color(kv_pct/100)}{int(kv_pct):3d}%{RESET}─────'
-        if n_dec > 1:
-            dc = _fg((255, 0, 0)) if n_dec > 2 else _fg((255, 220, 0))
-            bot_fill = f'─↓{dc}{n_dec}{RESET}↓──────'
-        elif n_dec == 1:
-            bot_fill = '─↓─↓──────'
-        else:
-            bot_fill = '──────────'
-        _vllm1 = (f'{gw_color(tg_tps/VLLM_TG_TPS_MAX)}'
-                  f'{int(tg_tps):5d} TG{RESET}')
-        vllm2 = f'{gwyor_color(acc)}{int(acc*100):3d}% ac{RESET}'
-    else:
-        kv_fill = '─────────'
-        bot_fill = '──────────'
-        _vllm1 = f'{gw_color(0)}{int(pc_pct):4d}% pc{RESET}'
-        vllm2 = f'{gw_color(0)}{int(acc_cum*100):3d}% ac{RESET}'
+        mid_fill = '──────────'
 
     _db_usb = loudness_usb.db()
     db_usb = (f'{db_color(_db_usb)}{_db_usb:6.1f} dB{RESET} '
@@ -415,13 +298,13 @@ def get_lines(nct, gpu0, gpu1, vllm, loudness_usb, loudness_analog):
         f'          │     ┌────────┐           {tf} {tf_txt}',
         f'         {tr_}  {cpu_line} {cpu_tx}  {tf}',
         f' {tr_txt}{tr_}  └────────┘            │',
-        f'         {tr}{pp_col}{st}            {mf}',
-        f'          │┌{top_fill}──────────────┐{mf} {mf_txt}',
+        f'         {tr_}       {st}            {mf}',
+        f'          │┌────────────────────────┐{mf} {mf_txt}',
         f'       {br}│{r0} {u0}{t0} {f0} {w0} │{mf}',
-        f'       {br}├{kv_fill}───────────────┤ │',
+        f'       {br}├{mid_fill}──────────────┤ │',
         f'       {br}│{r1} {u1}{t1} {f1} {w1} │{bf}',
-        f'          │└{bot_fill}──────────────┘{bf} {bf_txt}',
-        f'{  db_ana}│{_vllm1}{vllm2} {bot_tx}  {bf}',
+        f'          │└────────────────────────┘{bf} {bf_txt}',
+        f'{  db_ana}│                {bot_tx}  {bf}',
         f'{base_ana}└──────────────{ bot_fans}──┘',
     ]
 
@@ -433,13 +316,13 @@ try:
     nct_hwmon = find_hwmon('nct6687')
     gpu0 = pynvml.nvmlDeviceGetHandleByIndex(0)
     gpu1 = pynvml.nvmlDeviceGetHandleByIndex(1)
-    vllm = VllmMonitor()
+    llama = LlamaCppMonitor()
     loudness_usb = LoudnessMonitor(port=9271)
     loudness_analog = LoudnessMonitor(port=9272)
     once = '-1' in sys.argv
     try:
         while True:
-            lines = get_lines(nct, gpu0, gpu1, vllm,
+            lines = get_lines(nct, gpu0, gpu1, llama,
                               loudness_usb, loudness_analog)
             print('\n'.join(lines))
             if once:
