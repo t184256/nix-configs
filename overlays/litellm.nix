@@ -25,6 +25,7 @@ in {
         patches = (old.patches or []) ++ [
           ./litellm/14295-cancel-on-disconnect.patch
           ./litellm/custom-openai-extra-body.patch
+          ./litellm/prompt-progress-passthrough.patch
         ];
         propagatedBuildInputs =
           (prev.lib.filter (d: !(prev.lib.elem d.pname unneeded))

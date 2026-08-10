@@ -1,0 +1,29 @@
+diff --git a/litellm/litellm_core_utils/streaming_handler.py b/litellm/litellm_core_utils/streaming_handler.py
+index f3274151e5..e6f1c3f27d 100644
+--- a/litellm/litellm_core_utils/streaming_handler.py
++++ b/litellm/litellm_core_utils/streaming_handler.py
+@@ -1092,6 +1092,24 @@ class CustomStreamWrapper:
+         else:
+             if hasattr(model_response, "usage"):
+                 self.chunks.append(model_response)
++            # Preserve non-OpenAI attributes (e.g. prompt_progress) on
++            # metadata-only chunks that have no content delta.
++            _original_chunk = response_obj.get("original_chunk", None)
++            if _original_chunk is not None:
++                preserve_upstream_non_openai_attributes(
++                    model_response=model_response,
++                    original_chunk=_original_chunk,
++                )
++                # If custom attributes were preserved, return the chunk
++                # instead of dropping it.
++                _expected_keys = (
++                    set(type(model_response).model_fields.keys()) | {"usage"}
++                )
++                if any(
++                    k not in _expected_keys
++                    for k in model_response.model_dump()
++                ):
++                    return model_response
+             return
+ 
+     def _optional_combine_thinking_block_in_choices(
