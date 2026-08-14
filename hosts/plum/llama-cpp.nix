@@ -36,7 +36,7 @@ in
           -fa on \
           -m ${model} \
           --mmproj ${mmproj} \
-          --image-max-tokens 8192 \
+          --image-max-tokens 16384 \
           --jinja \
           --reasoning off \
           --parallel 2 \
