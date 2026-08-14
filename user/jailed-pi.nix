@@ -104,15 +104,39 @@ let
   # configPaths by appending to $RUNTIME_ARGS.
   modelsJson = pkgs.writeText "models.json" modelsRaw;
   settingsJson = pkgs.writeText "settings.json" settingsRaw;
-  webSearchJson = pkgs.writeText "web-search.json" (builtins.toJSON { workflow = "none"; });
+  webSearchJson = pkgs.writeText "web-search.json"
+    (builtins.toJSON { workflow = "none"; });
+  nixRegistry = pkgs.writeText "registry.json" (builtins.toJSON {
+    version = 2;
+    flakes = [
+      {
+        from = { id = "nixpkgs"; type = "indirect"; };
+        to = { __final = true; lastModified = 0;
+               path = inputs.nixpkgs.outPath; type = "path"; };
+      }
+    ];
+  });
+
+  agentsMd = pkgs.writeText "AGENTS.md" ''
+    ## Nix Environment
+
+    You only have the most basic tools installed.
+    `nix shell nixpkgs#<package1> nixpkgs#package2 --command <command>
+    if you need more."
+  '';
 
   extraJailOpts = [
     (comb.fwd-env "LLAMA_KEY")
     (comb.fwd-env "PWD")
+    (comb.write-text (comb.noescape "~/.config/nix/nix.conf") ''
+      experimental-features = nix-command flakes
+    '')
     (comb.add-runtime ''
       RUNTIME_ARGS+=(--ro-bind ${modelsJson} ~/.pi/agent/models.json)
       RUNTIME_ARGS+=(--ro-bind ${settingsJson} ~/.pi/agent/settings.json)
       RUNTIME_ARGS+=(--ro-bind ${webSearchJson} ~/.pi/web-search.json)
+      RUNTIME_ARGS+=(--ro-bind ${agentsMd} ~/.pi/agent/AGENTS.md)
+      RUNTIME_ARGS+=(--ro-bind ${nixRegistry} ~/.config/nix/registry.json)
       RUNTIME_ARGS+=(--ro-bind-try /etc/pki /etc/pki)  # Fedora hack
       RUNTIME_ARGS+=(--ro-bind ${llamaCppStatsSrc}
                                ~/.pi/agent/extensions/llama-cpp-stats.ts)
@@ -125,6 +149,7 @@ let
     pkg = pkgs.pi-coding-agent;
     env = { PI_SKIP_VERSION_CHECK = "1"; };
     extraPkgs = [ pkgs.nix ];
+    extraReadonlyDirs = [ inputs.nixpkgs.outPath ];
     baseJailOptions = jailedAgentsLib.commonJailOptions ++ extraJailOpts;
   };
 
