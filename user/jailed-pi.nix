@@ -148,8 +148,9 @@ let
     name = "jailed-pi";
     pkg = pkgs.pi-coding-agent;
     env = { PI_SKIP_VERSION_CHECK = "1"; };
-    extraPkgs = [ pkgs.nix ];
-    extraReadonlyDirs = [ inputs.nixpkgs.outPath ];
+    enableNix = true;
+    extraPkgs = with pkgs; [
+    ];
     baseJailOptions = jailedAgentsLib.commonJailOptions ++ extraJailOpts;
   };
 
