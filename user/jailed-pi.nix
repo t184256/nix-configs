@@ -121,8 +121,8 @@ let
     ## Nix Environment
 
     You only have the most basic tools installed.
-    `nix shell nixpkgs#<package1> nixpkgs#package2 --command <command>
-    if you need more."
+    `nix shell nixpkgs#python3 nixpkgs#file --command <command> <arguments>`
+    if you need more. Command and arguments must not be quoted.
   '';
 
   extraJailOpts = [
