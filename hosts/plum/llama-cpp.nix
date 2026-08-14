@@ -1,7 +1,6 @@
 { pkgs, ... }:
 
 # Qwen3.8-27B-Q8_0 GGUF + MTP speculative decoding on plum with dual RTX 3090
-# To disable MTP: drop --spec-type/--spec-draft-n-max and --device-draft/ -ctkd/-ctvd flags
 
 let
   llama-cpp = pkgs.llama-cpp-cuda-vulkan;
@@ -30,6 +29,7 @@ in
       ];
       ExecStart = ''
         ${llama-cpp}/bin/llama-server \
+          --cache-ram 16384 \
           --fit off \
           -c 262144 \
           -ngl 9999 \
