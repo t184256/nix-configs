@@ -150,6 +150,7 @@ let
     env = { PI_SKIP_VERSION_CHECK = "1"; };
     enableNix = true;
     extraPkgs = with pkgs; [
+      gh xxd
     ];
     baseJailOptions = jailedAgentsLib.commonJailOptions ++ extraJailOpts;
   };
