@@ -34,34 +34,13 @@ let
     model = ${pkgs.qwen36-35b-a3b-mxfp4}
     ${qwen35NoThinkAttrs}
     [qwen3.5-122b-a10b]
-    model = ${pkgs.qwen35-122b-a10b-mxfp4}/Qwen3.5-122B-A10B-MXFP4_MOE-00001-of-00003.gguf
-    ${qwen35NoThinkAttrs}
-    [qwen3.8-27b-drafted]
-    model = ${pkgs.qwen36-27b-q4kxl}
-    model-draft = ${pkgs.qwen35-08b-q4kxl}
-    ${qwen35NoThinkAttrs}
-    [qwen3.8-27b-drafted2]
-    model = ${pkgs.qwen36-27b-q4kxl}
-    model-draft = ${pkgs.qwen35-2b-q4kxl}
-    ${qwen35NoThinkAttrs}
-    [qwen3.8-27b-drafted4]
-    model = ${pkgs.qwen36-27b-q4kxl}
-    model-draft = ${pkgs.qwen35-4b-q4kxl}
-    ${qwen35NoThinkAttrs}
-    [qwen3.5-35b-a3b-drafted]
-    # 50.77 -> 38.62 =(
-    model = ${pkgs.qwen35-35b-a3b-mxfp4}
-    model-draft = ${pkgs.qwen35-08b-q4kxl}
-    ${qwen35NoThinkAttrs}
-    [qwen3.5-122b-a10b-drafted]
-    # 20.79 -> 17.06 =(
-    model = ${pkgs.qwen35-122b-a10b-mxfp4}/Qwen3.5-122B-A10B-MXFP4_MOE-00001-of-00003.gguf
-    model-draft = ${pkgs.qwen35-08b-q4kxl}
-    ${qwen35NoThinkAttrs}
-    [qwen3.6-35b-a3b-drafted]
-    # 51.28 -> 34.29 =(
-    model = ${pkgs.qwen36-35b-a3b-mxfp4}
-    model-draft = ${pkgs.qwen35-08b-q4kxl}
+    model = ${pkgs.qwen35-122b-a10b-mtp-mxfp4}/Qwen3.5-122B-A10B-MXFP4_MOE-00001-of-00003.gguf
+    spec-type = draft-mtp
+    spec-draft-n-max = 2
+    cache-type-k = q8_0
+    cache-type-v = q8_0
+    cache-type-k-draft = q8_0
+    cache-type-v-draft = q8_0
     ${qwen35NoThinkAttrs}
     [zeta-2.1]
     model = ${pkgs.zeta_2_1}

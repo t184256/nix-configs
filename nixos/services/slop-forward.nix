@@ -103,13 +103,6 @@ in
           "qwen3.5-35b-a3b".hosts = [ grapefruit ];
           "qwen3.5-122b-a10b".hosts = [ grapefruit ];
 
-          "qwen3.8-27b-drafted".hosts = [ grapefruit ];
-          "qwen3.8-27b-drafted2".hosts = [ grapefruit ];
-          "qwen3.8-27b-drafted4".hosts = [ grapefruit ];
-          "qwen3.5-35b-a3b-drafted".hosts = [ grapefruit ];
-          "qwen3.5-122b-a10b-drafted".hosts = [ grapefruit ];
-          "qwen3.6-35b-a3b-drafted".hosts = [ grapefruit ];
-
           "zeta-2.1".hosts = [ grapefruit ];
           "zeta-2".hosts = [ plumMini grapefruit ];
           "sweep-v2-7b".hosts = [ grapefruit ];
@@ -142,31 +135,6 @@ in
             { model = "qwen3.5-122b-a10b"; params = qwen35Think; };
           "qwen3.5-122b-a10b-nothink" =
             { model = "qwen3.5-122b-a10b"; params = qwen35Nothink; };
-
-          "qwen3.8-27b-drafted-think" =
-            { model = "qwen3.8-27b-drafted"; params = qwen36Think; };
-          "qwen3.8-27b-drafted-nothink" =
-            { model = "qwen3.8-27b-drafted"; params = qwen36Nothink; };
-          "qwen3.8-27b-drafted2-think" =
-            { model = "qwen3.8-27b-drafted2"; params = qwen36Think; };
-          "qwen3.8-27b-drafted2-nothink" =
-            { model = "qwen3.8-27b-drafted2"; params = qwen36Nothink; };
-          "qwen3.8-27b-drafted4-think" =
-            { model = "qwen3.8-27b-drafted4"; params = qwen36Think; };
-          "qwen3.8-27b-drafted4-nothink" =
-            { model = "qwen3.8-27b-drafted4"; params = qwen36Nothink; };
-          "qwen3.5-35b-a3b-drafted-think" =
-            { model = "qwen3.5-35b-a3b-drafted"; params = qwen35Think; };
-          "qwen3.5-35b-a3b-drafted-nothink" =
-            { model = "qwen3.5-35b-a3b-drafted"; params = qwen35Nothink; };
-          "qwen3.5-122b-a10b-drafted-think" =
-            { model = "qwen3.5-122b-a10b-drafted"; params = qwen35Think; };
-          "qwen3.5-122b-a10b-drafted-nothink" =
-            { model = "qwen3.5-122b-a10b-drafted"; params = qwen35Nothink; };
-          "qwen3.6-35b-a3b-drafted-think" =
-            { model = "qwen3.6-35b-a3b-drafted"; params = qwen36Think; };
-          "qwen3.6-35b-a3b-drafted-nothink" =
-            { model = "qwen3.6-35b-a3b-drafted"; params = qwen36Nothink; };
 
           "zeta".model = "zeta-2.1";
           "zeta-2".model = "zeta-2";

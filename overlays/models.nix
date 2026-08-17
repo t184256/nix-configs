@@ -94,16 +94,6 @@ in
     name = "Qwen3.5-0.8B-UD-Q4_K_XL.gguf";
     hash = "sha256-MXfr1nr+RDg3TaGeaQvBuYdW9+D+qSQOG+QEM2FWp7U=";
   };
-  qwen35-2b-q4kxl = fetchHF {
-    repo = "unsloth/Qwen3.5-2B-GGUF";
-    name = "Qwen3.5-2B-UD-Q4_K_XL.gguf";
-    hash = "sha256-CvlhZephW+o5oEEY1j8LbTWQiuqFDuSlGqYVHYUbizU=";
-  };
-  qwen35-4b-q4kxl = fetchHF {
-    repo = "unsloth/Qwen3.5-4B-GGUF";
-    name = "Qwen3.5-4B-UD-Q4_K_XL.gguf";
-    hash = "sha256-slLFYQpCyoLSD+KhKBPp0Gnu2JKSkH4mx4PusLyWG8c=";
-  };
   qwen35-35b-a3b-mxfp4 = fetchHF {
     repo = "unsloth/Qwen3.5-35B-A3B-GGUF";
     name = "Qwen3.5-35B-A3B-MXFP4_MOE.gguf";
@@ -114,16 +104,16 @@ in
     name = "Qwen3.6-35B-A3B-MXFP4_MOE.gguf";
     hash = "sha256-L90gmXxNiO4l9w9QDGH4uZk3jZKrBV+dRQ/HDWFxWNM=";
   };
-  # 122B is sharded; llama.cpp takes path to first shard
-  qwen35-122b-a10b-mxfp4 = fetchHFSharded (rec {
-    pname = "qwen35-122b-a10b-mxfp4";
-    repo = "unsloth/Qwen3.5-122B-A10B-GGUF";
+  # 122B variant is sharded; llama.cpp takes path to first shard
+  qwen35-122b-a10b-mtp-mxfp4 = fetchHFSharded (rec {
+    pname = "qwen35-122b-a10b-mtp-mxfp4";
+    repo = "unsloth/Qwen3.5-122B-A10B-MTP-GGUF";
     nameTemplate = "Qwen3.5-122B-A10B-MXFP4_MOE-000{nn}-of-00003.gguf";
     pathTemplate = "MXFP4_MOE/${nameTemplate}";
     shards = [
-      "sha256-Rnyb2S6lGFOc91v1pfv7016aC0DXZsyqZ78SDhIEHfM="
-      "sha256-loJuZephnlAxF2PVYzLs8T8nS004P6OYGyyELVx6Qf0="
-      "sha256-49DFOiNvZiiSiRj/PbgGq0ELKzN9XgQQdvV9kpbOR/U="
+      "sha256-77QSd0skT1ylaLhY9qgD+pktxZIEi4IeD0edeNwRQQY="
+      "sha256-lvs422yZBM1y93dWZ8mZxjC05bgP5F3aNqPeciKhJdM="
+      "sha256-x17qzxk4wGGtW84+Wi3bDvm6pKdhwsIz4SfL/pzLtr8="
     ];
   });
 
