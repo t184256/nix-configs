@@ -1,5 +1,5 @@
-_: prev: let
-  base = prev.pi-coding-agent.overrideAttrs (oa: {
+_: prev: {
+  pi-coding-agent = prev.pi-coding-agent.overrideAttrs (oa: {
     patches = (oa.patches or []) ++ [
       ./compact-01-edit-spacers.patch
       ./compact-02-interactive-spacers.patch
@@ -26,25 +26,4 @@ _: prev: let
       ./success-completion.patch
     ];
   });
-
-  extensions = [ ./no-tail-pipe.ts ];
-
-  mkWrapped = exts: prev.writeShellScriptBin "pi" (
-    let
-      extArgs = builtins.concatStringsSep " "
-        (builtins.map (e: "--extension ${e}") exts);
-    in ''
-      case "$1" in
-        install|remove|uninstall|update|list)
-          exec ${prev.lib.getExe base} "$@"
-          ;;
-        *)
-          exec ${prev.lib.getExe base} ${extArgs} "$@"
-          ;;
-      esac
-    ''
-  );
-in {
-  pi-coding-agent-without-extensions = base;
-  pi-coding-agent = mkWrapped extensions;
 }

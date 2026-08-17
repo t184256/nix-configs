@@ -5,8 +5,8 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 export default function (pi: ExtensionAPI) {
   const TRUNCATION_PATTERNS = [
-    /\|\s*2>&1 \| tail -\b/,
-    /\|\s*2>&1 \| head -\b/,
+    /\|\s*2>&1 tail -\b/,
+    /\|\s*2>&1 head -\b/,
   ];
 
   pi.on("tool_call", async (event) => {

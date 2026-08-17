@@ -87,21 +87,35 @@ let
     defaultProvider = "litellm";
     defaultModel = "qwen3.8-27b-think";
     quietStartup = true;
-    extensions = [ "extensions/llama-cpp-stats.ts" ];
-    packages = ["npm:pi-web-access@0.10.7"];
+    extensions = [
+      "extensions/llama-cpp-stats.ts"
+      "extensions/no-tail-pipe.ts"
+    ];
+    packages = [
+      "npm:pi-web-access@0.10.7"
+      "npm:@ribbons-digital/pi-advisor"
+    ];
   };
 
   # pi-llama-cpp-stats: single .ts file, zero deps (from overlay)
   llamaCppStatsSrc = pkgs.pi-llama-cpp-stats;
 
+  # no-tail-pipe: single .ts file, zero deps (from overlay)
+  noTailPipeSrc = pkgs.no-tail-pipe;
+
   # npm-based extensions, copied into a single node_modules tree (incl. deps)
   piNpmNodeModules = pkgs.runCommand "pi-npm-node-modules" {} ''
-    cp -r ${pkgs.pi-web-access}/lib/node_modules $out
+    mkdir $out
+    cp -r ${pkgs.pi-web-access}/lib/node_modules/* $out
+    cp -r ${pkgs.pi-advisor}/lib/node_modules/* $out
   '';
 
-  # makeJailedAgent puts configPaths last, shadowing any ro-bind in
-  # baseJailOptions. Use add-runtime to inject the ro-binds AFTER
-  # configPaths by appending to $RUNTIME_ARGS.
+  watchdogYml = pkgs.writeText "WATCHDOG.yml" (builtins.toJSON {
+    version = 1;
+    model = "litellm/qwen3.5-122b-a10b-think";
+    effort = "high";
+    defaultEnabled = true;
+  });
   modelsJson = pkgs.writeText "models.json" modelsRaw;
   settingsJson = pkgs.writeText "settings.json" settingsRaw;
   webSearchJson = pkgs.writeText "web-search.json"
@@ -140,7 +154,10 @@ let
       RUNTIME_ARGS+=(--ro-bind-try /etc/pki /etc/pki)  # Fedora hack
       RUNTIME_ARGS+=(--ro-bind ${llamaCppStatsSrc}
                                ~/.pi/agent/extensions/llama-cpp-stats.ts)
+      RUNTIME_ARGS+=(--ro-bind ${noTailPipeSrc}
+                               ~/.pi/agent/extensions/no-tail-pipe.ts)
       RUNTIME_ARGS+=(--ro-bind ${piNpmNodeModules} ~/.pi/agent/npm/node_modules)
+      RUNTIME_ARGS+=(--ro-bind ${watchdogYml} ~/.pi/agent/WATCHDOG.yml)
     '')
   ];
 
@@ -150,7 +167,8 @@ let
     env = { PI_SKIP_VERSION_CHECK = "1"; };
     enableNix = true;
     extraPkgs = with pkgs; [
-      gh xxd
+      pi-coding-agent
+      gh xxd gnutar
     ];
     baseJailOptions = jailedAgentsLib.commonJailOptions ++ extraJailOpts;
   };
@@ -164,9 +182,8 @@ let
 in
 {
   imports = [ ./config/roles.nix ];
-  nixpkgs.overlays = lib.mkIf config.roles.slop [
-    (import ../overlays/pi)
-    (import ../overlays/pi-extensions.nix)
-  ];
+  nixpkgs.overlays = lib.mkIf config.roles.slop
+    ([ (import ../overlays/pi) ]
+     ++ ((import ../.autoimport).asList ../overlays/pi/extensions));
   home.packages = lib.mkIf config.roles.slop [ jailed-pi ];
 }
