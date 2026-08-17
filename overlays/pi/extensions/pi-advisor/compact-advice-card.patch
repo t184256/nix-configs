@@ -1,0 +1,33 @@
+From 7f13ce4fe602e4f33ba2e400e7e6a6ca9acf23be Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Mon, 17 Aug 2026 23:09:07 +0200
+Subject: [PATCH] presentation: compact advice card
+
+---
+ src/presentation.ts | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/presentation.ts b/src/presentation.ts
+index 60e1da6..9f26712 100644
+--- a/src/presentation.ts
++++ b/src/presentation.ts
+@@ -393,7 +393,7 @@ export function renderAdviceCards(
+ 	for (const [index, note] of notes.entries()) {
+ 		if (index > 0) container.addChild(new Spacer(1));
+ 		const color = note.intent === "review" ? severityColor(note.severity) : "accent";
+-		const box = new Box(1, 1, (text) => theme.bg("customMessageBg", text));
++		const box = new Box(0, 0, (text) => theme.bg("customMessageBg", text));
+ 		const label =
+ 			note.intent === "review"
+ 				? note.severity.toUpperCase()
+@@ -402,7 +402,6 @@ export function renderAdviceCards(
+ 					: "MEMORY SUGGESTION";
+ 		const heading = `${theme.fg(color, theme.bold("Advisor"))} ${theme.fg(color, label)}`;
+ 		box.addChild(new Text(heading, 0, 0));
+-		box.addChild(new Spacer(1));
+ 		box.addChild(renderAdviceCardMarkdown(note.note, theme));
+ 		if (note.intent === "memory-suggestion") {
+ 			box.addChild(new Spacer(1));
+-- 
+2.55.0
+

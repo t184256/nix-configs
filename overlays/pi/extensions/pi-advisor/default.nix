@@ -9,6 +9,8 @@ final: prev: {
       sha1 = "a49e9368c9c8f9cf00b71623285930ad5e075991";
     };
 
+    patches = [ ./compact-advice-card.patch ];
+
     # Author didn't ship a lockfile; vendor one
     postPatch = ''
       cp ${./package-lock.json} package-lock.json
