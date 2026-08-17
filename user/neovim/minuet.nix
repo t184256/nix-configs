@@ -28,7 +28,7 @@
             openai_compatible = {
               api_key = get_llm_key,
               end_point = "https://llm.slop.unboiled.info/v1/chat/completions",
-              model = "qwen3.6-27b-think",
+              model = "qwen3.8-27b-think",
               name = "vllm",
               stream = true,
               optional = {
@@ -65,7 +65,7 @@
               openai_compatible = {
                 api_key = get_llm_key,
                 end_point = "https://llm.slop.unboiled.info/v1/chat/completions",
-                model = "qwen3.6-27b-think",
+                model = "qwen3.8-27b-think",
                 name = "vllm",
                 stream = false,
                 optional = {

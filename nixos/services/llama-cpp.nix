@@ -24,8 +24,8 @@ let
     [qwen3.5-0.8b]
     model = ${pkgs.qwen35-08b-q4kxl}
     ${qwen35NoThinkAttrs}
-    [qwen3.6-27b]
-    model = ${pkgs.qwen36-27b-q4kxl}
+    [qwen3.8-27b]
+    model = ${pkgs.qwen38-27b-q4kxl}
     ${qwen35NoThinkAttrs}
     [qwen3.5-35b-a3b]
     model = ${pkgs.qwen35-35b-a3b-mxfp4}
@@ -36,18 +36,15 @@ let
     [qwen3.5-122b-a10b]
     model = ${pkgs.qwen35-122b-a10b-mxfp4}/Qwen3.5-122B-A10B-MXFP4_MOE-00001-of-00003.gguf
     ${qwen35NoThinkAttrs}
-    [qwen3.6-27b-drafted]
-    # 11.63 -> 12.45 =) in geese test
+    [qwen3.8-27b-drafted]
     model = ${pkgs.qwen36-27b-q4kxl}
     model-draft = ${pkgs.qwen35-08b-q4kxl}
     ${qwen35NoThinkAttrs}
-    [qwen3.6-27b-drafted2]
-    # 11.63 -> 12.05
+    [qwen3.8-27b-drafted2]
     model = ${pkgs.qwen36-27b-q4kxl}
     model-draft = ${pkgs.qwen35-2b-q4kxl}
     ${qwen35NoThinkAttrs}
-    [qwen3.6-27b-drafted4]
-    # 11.63 -> 11.29 =(
+    [qwen3.8-27b-drafted4]
     model = ${pkgs.qwen36-27b-q4kxl}
     model-draft = ${pkgs.qwen35-4b-q4kxl}
     ${qwen35NoThinkAttrs}
@@ -67,7 +64,7 @@ let
     model-draft = ${pkgs.qwen35-08b-q4kxl}
     ${qwen35NoThinkAttrs}
     [zeta-2.1]
-    model = ${pkgs.zeta-2_1}
+    model = ${pkgs.zeta_2_1}
     ctx-size = 32768
     ${completionAttrs}
     [sweep-v2-7b]

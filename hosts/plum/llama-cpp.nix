@@ -1,12 +1,12 @@
 { pkgs, ... }:
 
-# Qwen3.6-27B-Q8_0 GGUF + MTP speculative decoding on plum with dual RTX 3090
+# Qwen3.8-27B-Q8_0 GGUF + MTP speculative decoding on plum with dual RTX 3090
 # To disable MTP: drop --spec-type/--spec-draft-n-max and --device-draft/ -ctkd/-ctvd flags
 
 let
   llama-cpp = pkgs.llama-cpp-cuda-vulkan;
-  model = pkgs.qwen36-27b-mtp-q80;
-  mmproj = pkgs.qwen36-27b-mmproj-q80;
+  model = pkgs.qwen38-27b-q80;
+  mmproj = pkgs.qwen38-27b-mmproj-f16;
 in
 
 {
@@ -17,7 +17,7 @@ in
   environment.persistence."/mnt/persist".directories = [ "/var/lib/llama-cpp" ];
 
   systemd.services.llama-cpp = {
-    description = "llama-cpp: Qwen3.6-27B-Q8_0 + MTP";
+    description = "llama-cpp: Qwen3.8-27B-Q8_0 + MTP";
     wantedBy = [ "multi-user.target" ];
     after = [ "multi-user.target" ];
     serviceConfig = {

@@ -71,26 +71,21 @@ in
   inherit nix-hf-hash;
 
   # plum
-  qwen36-27b-q4kxl = fetchHF {
-    repo = "unsloth/Qwen3.6-27B-GGUF";
-    name = "Qwen3.6-27B-UD-Q4_K_XL.gguf";
-    hash = "sha256-/2lB3tUls06xWUlnYsKd0Oxucdwxt01X512HGgPuwlk=";
+  qwen38-27b-q4kxl = fetchHF {
+    repo = "unsloth/Qwen3.8-27B-GGUF";
+    name = "Qwen3.8-27B-UD-Q4_K_XL.gguf";
+    hash = "sha256-vuI4u+s9wKNL3k0N7bruH5jACei7QibwMHAFTBL7E3I=";
   };
-  qwen36-27b-mtp-q4kxl = fetchHF {
-    repo = "unsloth/Qwen3.6-27B-MTP-GGUF";
-    name = "Qwen3.6-27B-UD-Q4_K_XL.gguf";
-    hash = "sha256-QIVmXuNtgqZyojikPw5WQ/Lw458te9XTc/DvEOz1MJU=";
-  };
-  qwen36-27b-mmproj-q80 = fetchHF {
-    repo = "ggml-org/Qwen3.6-27B-MTP-GGUF";
-    name = "mmproj-Qwen3.6-27B-Q8_0.gguf";
-    hash = "sha256-71A19mnxNFIb7MXdGwplSX+3I2vtLeHN8Raq50WJtjs=";
+  qwen38-27b-mmproj-f16 = fetchHF {
+    repo = "unsloth/Qwen3.8-27B-GGUF";
+    name = "mmproj-F16.gguf";
+    hash = "sha256-y7hBqe4GNrLsFy9buN8uqN/rAekP58YSZYHWYqC05D4=";
   };
 
-  qwen36-27b-mtp-q80 = fetchHF {
-    repo = "unsloth/Qwen3.6-27B-MTP-GGUF";
-    name = "Qwen3.6-27B-Q8_0.gguf";
-    hash = "sha256-lAjcs1bMBhoFwTnlZHy94GmP+YDGpp9/whTpmJ+Gz6g=";
+  qwen38-27b-q80 = fetchHF {
+    repo = "unsloth/Qwen3.8-27B-GGUF";
+    name = "Qwen3.8-27B-Q8_0.gguf";
+    hash = "sha256-poD0SgaSDl1ol3SCN4IAaqOsyNuVdQMjNzskE5tn40g=";
   };
 
   # grapefruit

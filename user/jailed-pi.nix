@@ -44,12 +44,12 @@ let
             contextWindow = 262144;
             cost = { input = 0.028; output = 0.28;
                      cacheRead = 0; cacheWrite = 0; }; }
-          { id = "qwen3.6-27b-think"; reasoning = true;
+          { id = "qwen3.8-27b-think"; reasoning = true;
             input = [ "text" "image" ];
             contextWindow = 262144;
             cost = { input = 0.017; output = 0.59;
                      cacheRead = 0; cacheWrite = 0; }; }
-          { id = "qwen3.6-27b-nothink";
+          { id = "qwen3.8-27b-nothink";
             input = [ "text" "image" ];
             contextWindow = 262144;
             cost = { input = 0.017; output = 0.59;
@@ -66,13 +66,13 @@ let
           maxTokensField = "max_tokens";
         };
         models = [
-          { id = "qwen3.6-27b-think"; reasoning = true;
+          { id = "qwen3.8-27b-think"; reasoning = true;
             input = [ "text" "image" ];
             contextWindow = 262144;
             cost = { input = 0; output = 0;
                      cacheRead = 0; cacheWrite = 0; };
             samplingParams = { return_progress = true; }; }
-          { id = "qwen3.6-27b-nothink";
+          { id = "qwen3.8-27b-nothink";
             input = [ "text" "image" ];
             contextWindow = 262144;
             cost = { input = 0; output = 0;
@@ -85,7 +85,7 @@ let
 
   settingsRaw = builtins.toJSON {
     defaultProvider = "litellm";
-    defaultModel = "qwen3.6-27b-think";
+    defaultModel = "qwen3.8-27b-think";
     quietStartup = true;
     extensions = [ "extensions/llama-cpp-stats.ts" ];
     packages = ["npm:pi-web-access@0.10.7"];
