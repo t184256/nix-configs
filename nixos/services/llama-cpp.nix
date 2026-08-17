@@ -20,27 +20,35 @@ let
     [*]
     mmap = off
     flash-attn = on
+    cache-type-k = q8_0
+    cache-type-v = q8_0
+    cache-type-k-draft = q8_0
+    cache-type-v-draft = q8_0
 
     [qwen3.5-0.8b]
-    model = ${pkgs.qwen35-08b-q4kxl}
+    model = ${pkgs.qwen35-08b-mtp-q4kxl}
+    spec-type = draft-mtp
+    spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
     [qwen3.8-27b]
     model = ${pkgs.qwen38-27b-q4kxl}
+    spec-type = draft-mtp
+    spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
     [qwen3.5-35b-a3b]
-    model = ${pkgs.qwen35-35b-a3b-mxfp4}
+    model = ${pkgs.qwen35-35b-a3b-mtp-mxfp4}
+    spec-type = draft-mtp
+    spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
     [qwen3.6-35b-a3b]
-    model = ${pkgs.qwen36-35b-a3b-mxfp4}
+    model = ${pkgs.qwen36-35b-a3b-mtp-mxfp4}
+    spec-type = draft-mtp
+    spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
     [qwen3.5-122b-a10b]
     model = ${pkgs.qwen35-122b-a10b-mtp-mxfp4}/Qwen3.5-122B-A10B-MXFP4_MOE-00001-of-00003.gguf
     spec-type = draft-mtp
     spec-draft-n-max = 2
-    cache-type-k = q8_0
-    cache-type-v = q8_0
-    cache-type-k-draft = q8_0
-    cache-type-v-draft = q8_0
     ${qwen35NoThinkAttrs}
     [zeta-2.1]
     model = ${pkgs.zeta_2_1}

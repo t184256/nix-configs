@@ -89,20 +89,20 @@ in
   };
 
   # grapefruit
-  qwen35-08b-q4kxl = fetchHF {
-    repo = "unsloth/Qwen3.5-0.8B-GGUF";
+  qwen35-08b-mtp-q4kxl = fetchHF {
+    repo = "unsloth/Qwen3.5-0.8B-MTP-GGUF";
     name = "Qwen3.5-0.8B-UD-Q4_K_XL.gguf";
-    hash = "sha256-MXfr1nr+RDg3TaGeaQvBuYdW9+D+qSQOG+QEM2FWp7U=";
+    hash = "sha256-LanGuoL/59KgG9/r1DV2YlguSKfzbocIZhIHqe3QIvQ=";
   };
-  qwen35-35b-a3b-mxfp4 = fetchHF {
-    repo = "unsloth/Qwen3.5-35B-A3B-GGUF";
+  qwen35-35b-a3b-mtp-mxfp4 = fetchHF {
+    repo = "unsloth/Qwen3.5-35B-A3B-MTP-GGUF";
     name = "Qwen3.5-35B-A3B-MXFP4_MOE.gguf";
-    hash = "sha256-DxNaWRWQMPRxBHerxvmSLS8TVSyFv/c23qrvcQI813A=";
+    hash = "sha256-CBEOTHfkBgQCcBtpt3CJlMfrTqFvWWZLf8tTKLn9EK0=";
   };
-  qwen36-35b-a3b-mxfp4 = fetchHF {
-    repo = "unsloth/Qwen3.6-35B-A3B-GGUF";
+  qwen36-35b-a3b-mtp-mxfp4 = fetchHF {
+    repo = "unsloth/Qwen3.6-35B-A3B-MTP-GGUF";
     name = "Qwen3.6-35B-A3B-MXFP4_MOE.gguf";
-    hash = "sha256-L90gmXxNiO4l9w9QDGH4uZk3jZKrBV+dRQ/HDWFxWNM=";
+    hash = "sha256-4aSSXS6hMldtqpy5gLEQK5cNkZ2JaTa3tuaB71vD0/Y=";
   };
   # 122B variant is sharded; llama.cpp takes path to first shard
   qwen35-122b-a10b-mtp-mxfp4 = fetchHFSharded (rec {
