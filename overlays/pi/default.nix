@@ -39,6 +39,8 @@ let
 
     ./success-completion.patch
 
+    ./fullscreen-clipboard-paste.patch
+
     ./fullscreen-scrollbar-away.patch
   ];
   overrides-fresh = oa: {

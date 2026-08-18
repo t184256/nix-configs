@@ -30,6 +30,7 @@
       set -g message-command-style bg=white,fg=black
       set -g status off
       set -g set-clipboard on
+      set -g get-clipboard request
       set -g default-shell ${pkgs.my-xonsh}/bin/xonsh
       set -g display-time 1000
       set-window-option -g visual-bell on
@@ -56,6 +57,8 @@
   ''; };
 
   home.file.".tmux-hopper.conf".text = ''
+    set -g set-clipboard on
+    set -g get-clipboard request
     set -ga terminal-overrides ",*256col*:Tc"
     set-option -sa terminal-features ',alacritty:RGB'
     set-option -ga terminal-features ',alacritty:usstyle,font0,font1'

@@ -1,0 +1,74 @@
+diff --git a/input.c b/input.c
+index ae503e5..5ebf488 100644
+--- a/input.c
++++ b/input.c
+@@ -67,6 +67,7 @@ struct input_request {
+ 	enum input_end_type		 end;
+ 
+ 	int				 idx;
++	char				 clip; /* OSC 52 clipboard target. */
+ 	void				*data;
+ 
+ 	TAILQ_ENTRY(input_request)	 entry;
+@@ -155,7 +156,7 @@ static struct input_request *input_make_request(struct input_ctx *,
+ 		    enum input_request_type);
+ static void	input_free_request(struct input_request *);
+ static int	input_add_request(struct input_ctx *, enum input_request_type,
+-		    int);
++		    int, char);
+ static int	input_split(struct input_ctx *);
+ static int	input_get(struct input_ctx *, u_int, int, int);
+ static void	input_set_state(struct input_ctx *,
+@@ -2930,7 +2931,7 @@ input_osc_4(struct input_ctx *ictx, const char *p)
+ 				s = next;
+ 				continue;
+ 			}
+-			input_add_request(ictx, INPUT_REQUEST_PALETTE, idx);
++			input_add_request(ictx, INPUT_REQUEST_PALETTE, idx, 0);
+ 			s = next;
+ 			continue;
+ 		}
+@@ -3213,7 +3214,8 @@ input_osc_52_reply(struct input_ctx *ictx, char clip)
+ 			input_reply_clipboard(ev, buf, len, "\033\\", clip);
+ 		return;
+ 	}
+-	input_add_request(ictx, INPUT_REQUEST_CLIPBOARD, ictx->input_end);
++	input_add_request(ictx, INPUT_REQUEST_CLIPBOARD, ictx->input_end,
++	    clip);
+ }
+ 
+ /*
+@@ -3435,7 +3437,8 @@ input_free_request(struct input_request *ir)
+ 
+ /* Add a request. */
+ static int
+-input_add_request(struct input_ctx *ictx, enum input_request_type type, int idx)
++input_add_request(struct input_ctx *ictx, enum input_request_type type, int idx,
++    char clip)
+ {
+ 	struct window_pane	*wp = ictx->wp;
+ 	struct window		*w;
+@@ -3465,6 +3468,7 @@ input_add_request(struct input_ctx *ictx, enum input_request_type type, int idx)
+ 	ir = input_make_request(ictx, type);
+ 	ir->c = c;
+ 	ir->idx = idx;
++	ir->clip = clip;
+ 	ir->end = ictx->input_end;
+ 	TAILQ_INSERT_TAIL(&c->input_requests, ir, centry);
+ 
+@@ -3473,9 +3477,13 @@ input_add_request(struct input_ctx *ictx, enum input_request_type type, int idx)
+ 		xsnprintf(s, sizeof s, "\033]4;%d;?\033\\", idx);
+ 		tty_puts(&c->tty, s);
+ 		break;
+-	case INPUT_REQUEST_CLIPBOARD:
+-		tty_putcode_ss(&c->tty, TTYC_MS, "", "?");
++	case INPUT_REQUEST_CLIPBOARD: {
++		char			 clipstr[2];
++
++		xsnprintf(clipstr, sizeof clipstr, "%c", ir->clip);
++		tty_putcode_ss(&c->tty, TTYC_MS, clipstr, "?");
+ 		break;
++	}
+ 	case INPUT_REQUEST_QUEUE:
+ 		break;
+ 	}

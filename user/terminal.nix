@@ -28,6 +28,7 @@ let
     colors.primary = { background = "#000000"; foreground = "#ffffff"; };
     bell = { animation = "EaseOutExpo"; duration = 100; color = "#7f7f7f"; };
     selection.save_to_clipboard = true;
+    terminal.osc52 = "CopyPaste";
     general = {
       live_config_reload = false;
     };
