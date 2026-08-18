@@ -159,6 +159,7 @@ let
       experimental-features = nix-command flakes
     '')
     (comb.add-runtime ''
+      RUNTIME_ARGS+=(--ro-bind ~/.agents ~/.agents)
       RUNTIME_ARGS+=(--ro-bind ${modelsJson} ~/.pi/agent/models.json)
       RUNTIME_ARGS+=(--ro-bind ${settingsJson} ~/.pi/agent/settings.json)
       RUNTIME_ARGS+=(--ro-bind ${webSearchJson} ~/.pi/web-search.json)
