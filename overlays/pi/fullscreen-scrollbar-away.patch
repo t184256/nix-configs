@@ -1,0 +1,90 @@
+From 392e86c77199ed7e5266c6d028aed7b3b2de89a7 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Tue, 18 Aug 2026 22:04:22 +0000
+Subject: [PATCH] tui, modes/interactive: add "away" fullscreen scrollbar mode
+
+---
+ packages/coding-agent/docs/settings.md                        | 2 +-
+ packages/coding-agent/src/core/settings-manager.ts            | 2 +-
+ .../src/modes/interactive/components/settings-selector.ts     | 2 +-
+ packages/coding-agent/test/settings-selector.test.ts          | 4 ++--
+ packages/tui/src/components/scroll-view.ts                    | 3 ++-
+ 5 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/packages/coding-agent/docs/settings.md b/packages/coding-agent/docs/settings.md
+index 5851608..8b74853 100644
+--- a/packages/coding-agent/docs/settings.md
++++ b/packages/coding-agent/docs/settings.md
+@@ -67,7 +67,7 @@ Use `/trust` in interactive mode to save a project trust decision for future ses
+ | `showHardwareCursor` | boolean | `false` | Show the terminal cursor while TUI positions it for IME support |
+ | `tuiMode` | string | `"regular"` | Interactive TUI mode: `"regular"` or experimental `"fullscreen"`. Changes from `/settings` apply immediately; `--tui-mode` overrides this setting at startup |
+ | `fullscreenExitOutput` | string | `"transcript"` | Fullscreen exit output: `"transcript"` prints the final transcript and resume hint, while `"resume-hint"` restores the previous screen and prints only the resume hint. Has no effect in regular TUI mode |
+-| `fullscreenScrollbar` | string | `"auto"` | Fullscreen transcript scrollbar: `"auto"` shows it temporarily while scrolling, `"always"` reserves the rightmost column and keeps it visible, and `"hidden"` hides it. Has no effect in regular TUI mode |
++| `fullscreenScrollbar` | string | `"auto"` | Fullscreen transcript scrollbar: `"auto"` shows it temporarily while scrolling, `"always"` reserves the rightmost column and keeps it visible, `"away"` shows it only while scrolled away from the end of the transcript, and `"hidden"` hides it. Has no effect in regular TUI mode |
+ 
+ For VS Code, include `--wait` so pi resumes after the editor exits:
+ 
+diff --git a/packages/coding-agent/src/core/settings-manager.ts b/packages/coding-agent/src/core/settings-manager.ts
+index 9a744f0..61578ac 100644
+--- a/packages/coding-agent/src/core/settings-manager.ts
++++ b/packages/coding-agent/src/core/settings-manager.ts
+@@ -1150,7 +1150,7 @@ export class SettingsManager {
+ 
+ 	getFullscreenScrollbar(): ScrollViewScrollbar {
+ 		const mode = this.settings.fullscreenScrollbar;
+-		return mode === "always" || mode === "hidden" ? mode : "auto";
++		return mode === "always" || mode === "away" || mode === "hidden" ? mode : "auto";
+ 	}
+ 
+ 	setFullscreenScrollbar(mode: ScrollViewScrollbar): void {
+diff --git a/packages/coding-agent/src/modes/interactive/components/settings-selector.ts b/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
+index 20c6b75..d48d34e 100644
+--- a/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
++++ b/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
+@@ -651,7 +651,7 @@ export class SettingsSelectorComponent extends Container {
+ 				label: "Fullscreen scrollbar",
+ 				description: "Scrollbar behavior in fullscreen mode; has no effect in regular mode",
+ 				currentValue: config.fullscreenScrollbar,
+-				values: ["auto", "always", "hidden"],
++				values: ["auto", "always", "away", "hidden"],
+ 			},
+ 			{
+ 				id: "theme",
+diff --git a/packages/coding-agent/test/settings-selector.test.ts b/packages/coding-agent/test/settings-selector.test.ts
+index e658223..0fa7053 100644
+--- a/packages/coding-agent/test/settings-selector.test.ts
++++ b/packages/coding-agent/test/settings-selector.test.ts
+@@ -37,7 +37,7 @@ describe("SettingsSelectorComponent", () => {
+ 
+ 		cycle("Fullscreen exit output", 2);
+ 		expect(onExitOutputChange.mock.calls.flat()).toEqual(["resume-hint", "transcript"]);
+-		cycle("Fullscreen scrollbar", 3);
+-		expect(onScrollbarChange.mock.calls.flat()).toEqual(["always", "hidden", "auto"]);
++		cycle("Fullscreen scrollbar", 4);
++		expect(onScrollbarChange.mock.calls.flat()).toEqual(["always", "away", "hidden", "auto"]);
+ 	});
+ });
+diff --git a/packages/tui/src/components/scroll-view.ts b/packages/tui/src/components/scroll-view.ts
+index a9a50f0..e01818c 100644
+--- a/packages/tui/src/components/scroll-view.ts
++++ b/packages/tui/src/components/scroll-view.ts
+@@ -1,7 +1,7 @@
+ import { LAYOUT_NODE, type ScrollLayoutNode } from "../layout-node.ts";
+ import { type Component, Container } from "../tui.ts";
+ 
+-export type ScrollViewScrollbar = "hidden" | "auto" | "always";
++export type ScrollViewScrollbar = "hidden" | "auto" | "always" | "away";
+ 
+ export interface ScrollViewOptions {
+ 	axis?: "vertical";
+@@ -70,6 +70,7 @@ export class ScrollView extends Container {
+ 
+ 	get isScrollbarVisible(): boolean {
+ 		if (this.scrollbar === "always") return this.currentViewportHeight > 0;
++		if (this.scrollbar === "away") return this.contentHeight > this.currentViewportHeight && !this.followingEnd;
+ 		return (
+ 			this.scrollbar === "auto" && this.contentHeight > this.currentViewportHeight && this.transientScrollbarVisible
+ 		);
+-- 
+2.55.0
+

@@ -38,6 +38,8 @@ let
     ./compact-22-fullscreen-editor-minsize.patch
 
     ./success-completion.patch
+
+    ./fullscreen-scrollbar-away.patch
   ];
   overrides-fresh = oa: {
     version = newerVer;

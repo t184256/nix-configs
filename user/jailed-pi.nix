@@ -100,6 +100,7 @@ let
     defaultProvider = "litellm";
     defaultModel = "qwen3.8-27b-think";
     tuiMode = "fullscreen";
+    fullscreenScrollbar = "away";
     quietStartup = true;
     extensions = [
       "extensions/llama-cpp-stats.ts"
