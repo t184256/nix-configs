@@ -6,6 +6,25 @@ let
   jailedAgentsLib = inputs.jailed-agents.lib.${pkgs.system};
   comb = jailedAgentsLib.internals.jail.combinators;
 
+  qwen38Effort = {
+    thinkingLevelMap = { # only low/medium/xhigh actually work, map to l/m/h
+      minimal = null;
+      low = "low";
+      medium = "medium";
+      high = "xhigh";
+      xhigh = null;
+      max = null;
+    };
+    compat = {
+      thinkingFormat = "chat-template";
+      chatTemplateKwargs = {
+        enable_thinking = { "$var" = "thinking.enabled"; };
+        preserve_thinking = true;
+        reasoning_effort = { "$var" = "thinking.effort"; omitWhenOff = true; };
+      };
+    };
+  };
+
   modelsRaw = builtins.toJSON {
     providers = {
       litellm = {
@@ -36,11 +55,12 @@ let
             contextWindow = 262144;
             cost = { input = 0.028; output = 0.28;
                      cacheRead = 0; cacheWrite = 0; }; }
-          { id = "qwen3.8-27b-think"; reasoning = true;
+          ({ id = "qwen3.8-27b-think"; reasoning = true;
             input = [ "text" "image" ];
             contextWindow = 262144;
             cost = { input = 0.017; output = 0.59;
                      cacheRead = 0; cacheWrite = 0; }; }
+            // qwen38Effort)
           { id = "qwen3.8-27b-nothink";
             input = [ "text" "image" ];
             contextWindow = 262144;
@@ -58,12 +78,13 @@ let
           maxTokensField = "max_tokens";
         };
         models = [
-          { id = "qwen3.8-27b-think"; reasoning = true;
+          ({ id = "qwen3.8-27b-think"; reasoning = true;
             input = [ "text" "image" ];
             contextWindow = 262144;
             cost = { input = 0; output = 0;
                      cacheRead = 0; cacheWrite = 0; };
             samplingParams = { return_progress = true; }; }
+            // qwen38Effort)
           { id = "qwen3.8-27b-nothink";
             input = [ "text" "image" ];
             contextWindow = 262144;
