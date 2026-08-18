@@ -29,6 +29,7 @@
       set -g message-style bg=white,fg=black
       set -g message-command-style bg=white,fg=black
       set -g status off
+      set -g set-clipboard on
       set -g default-shell ${pkgs.my-xonsh}/bin/xonsh
       set -g display-time 1000
       set-window-option -g visual-bell on
