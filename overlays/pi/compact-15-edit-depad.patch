@@ -1,28 +1,28 @@
-From 0d29c8bc3945c9ec2a967dd95e1a3425a4b1cef9 Mon Sep 17 00:00:00 2001
+From 096981d7107537fc1fc33054899c2a4b870fda58 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Sat, 20 Jun 2026 01:06:22 +0000
-Subject: [PATCH 15/22] tui: remove editor borders
+Subject: [PATCH 15/23] tui: remove editor borders
 
 ---
  packages/tui/src/components/editor.ts | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/packages/tui/src/components/editor.ts b/packages/tui/src/components/editor.ts
-index 706324c77..9ce5be241 100644
+index 54eb4455..37456688 100644
 --- a/packages/tui/src/components/editor.ts
 +++ b/packages/tui/src/components/editor.ts
-@@ -521,7 +521,7 @@ export class Editor implements Component, Focusable {
- 				result.push(this.borderColor(truncateToWidth(indicator, width)));
- 			}
+@@ -527,7 +527,7 @@ export class Editor implements Component, Focusable {
+ 			const border = createScrollBorder("↑", this.scrollOffset, width);
+ 			result.push(this.borderColor(border));
  		} else {
 -			result.push(horizontal.repeat(width));
 +			// no top border
  		}
  
  		// Render each visible layout line
-@@ -579,7 +579,7 @@ export class Editor implements Component, Focusable {
- 			const remaining = width - visibleWidth(indicator);
- 			result.push(this.borderColor(indicator + "─".repeat(Math.max(0, remaining))));
+@@ -584,7 +584,7 @@ export class Editor implements Component, Focusable {
+ 			const border = createScrollBorder("↓", linesBelow, width);
+ 			result.push(this.borderColor(border));
  		} else {
 -			result.push(horizontal.repeat(width));
 +			// no bottom border

@@ -1,14 +1,14 @@
-From 7ec804e117efc197d26c34cbcbb6b752a40638ca Mon Sep 17 00:00:00 2001
-From: Sloppy <sloppy@unboiled.info>
+From da9e6a8ef3c2592bc84519a45e20ccbd9470d706 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
 Date: Sat, 20 Jun 2026 00:14:28 +0000
-Subject: [PATCH 14/22] tui: depad loader spinner
+Subject: [PATCH 14/23] tui: depad loader spinner
 
 ---
  packages/tui/src/components/loader.ts | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/packages/tui/src/components/loader.ts b/packages/tui/src/components/loader.ts
-index 4a93eb08f..d333bcd22 100644
+index 4a93eb08..d333bcd2 100644
 --- a/packages/tui/src/components/loader.ts
 +++ b/packages/tui/src/components/loader.ts
 @@ -32,7 +32,7 @@ export class Loader extends Text {

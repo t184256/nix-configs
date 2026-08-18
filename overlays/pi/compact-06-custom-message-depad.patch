@@ -1,17 +1,17 @@
-From 940f902399a75c07dafe5908e0e70aa993b04777 Mon Sep 17 00:00:00 2001
+From c02ab79fec8508a4a148deb8ae2294bdc4ae4636 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:37:16 +0000
-Subject: [PATCH 06/22] modes/interactive/components/custom-message: depad
+Subject: [PATCH 06/23] modes/interactive/components/custom-message: depad
 
 ---
  .../src/modes/interactive/components/custom-message.ts          | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/custom-message.ts b/packages/coding-agent/src/modes/interactive/components/custom-message.ts
-index a8fffc6f3..3465dac87 100644
+index b5ee9265..67e9459a 100644
 --- a/packages/coding-agent/src/modes/interactive/components/custom-message.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/custom-message.ts
-@@ -30,7 +30,7 @@ export class CustomMessageComponent extends Container {
+@@ -33,7 +33,7 @@ export class CustomMessageComponent extends Container {
  		this.addChild(new Spacer(1));
  
  		// Create box with purple background (used for default rendering)

@@ -1,17 +1,17 @@
-From 2400274d451ec3ebb11620af074092e908df652a Mon Sep 17 00:00:00 2001
+From cd67e3539f525ebc9e15e1fc093d4d52b191cd4f Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:37:13 +0000
-Subject: [PATCH 16/22] modes/interactive/components/tool-execution: depad
+Subject: [PATCH 16/23] modes/interactive/components/tool-execution: depad
 
 ---
  .../src/modes/interactive/components/tool-execution.ts          | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-index 38f9f4648..f7b931c33 100644
+index b339fe36..46750235 100644
 --- a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-@@ -65,7 +65,7 @@ export class ToolExecutionComponent extends Container {
+@@ -68,7 +68,7 @@ export class ToolExecutionComponent extends Container {
  		// Always create all shell variants. contentBox is used for default renderer-based composition.
  		// selfRenderContainer is used when the tool renders its own framing.
  		// contentText is reserved for generic fallback rendering when no tool definition exists.

@@ -1,17 +1,17 @@
-From 759f6a942d88f9fcb6d276d377e588383c8dbf85 Mon Sep 17 00:00:00 2001
+From a14c81bf31f2612cb3a8de3981fcaaec42830976 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:55:50 +0000
-Subject: [PATCH 10/22] tools: remove leading newlines
+Subject: [PATCH 10/23] tools: remove leading newlines
 
 ---
  packages/coding-agent/src/core/tools/bash.ts | 12 ++++++------
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agent/src/core/tools/bash.ts
-index b0bd50224..26488cb5e 100644
+index 9c745df5..4fdae2ca 100644
 --- a/packages/coding-agent/src/core/tools/bash.ts
 +++ b/packages/coding-agent/src/core/tools/bash.ts
-@@ -237,7 +237,7 @@ function rebuildBashResultRenderComponent(
+@@ -268,7 +268,7 @@ function rebuildBashResultRenderComponent(
  			.join("\n");
  
  		if (options.expanded) {
@@ -20,7 +20,7 @@ index b0bd50224..26488cb5e 100644
  		} else {
  			component.addChild({
  				render: (width: number) => {
-@@ -251,9 +251,9 @@ function rebuildBashResultRenderComponent(
+@@ -282,9 +282,9 @@ function rebuildBashResultRenderComponent(
  						const hint =
  							theme.fg("muted", `... (${state.cachedSkipped} earlier lines,`) +
  							` ${keyHint("app.tools.expand", "to expand")}${theme.fg("muted", ")")}`;
@@ -32,7 +32,7 @@ index b0bd50224..26488cb5e 100644
  				},
  				invalidate: () => {
  					state.cachedWidth = undefined;
-@@ -278,13 +278,13 @@ function rebuildBashResultRenderComponent(
+@@ -309,13 +309,13 @@ function rebuildBashResultRenderComponent(
  				);
  			}
  		}
@@ -48,7 +48,7 @@ index b0bd50224..26488cb5e 100644
  	}
  }
  
-@@ -392,7 +392,7 @@ export function createBashToolDefinition(
+@@ -426,7 +426,7 @@ export function createBashToolDefinition(
  				return { text, details };
  			};
  

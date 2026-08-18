@@ -1,17 +1,17 @@
-From 46b757f13713beb0f8910542b3de3377942a1328 Mon Sep 17 00:00:00 2001
-From: Sloppy <sloppy@unboiled.info>
+From 4116401e7162777ab8a5d1d4e05d7b9a10359500 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
 Date: Sat, 20 Jun 2026 00:07:11 +0000
-Subject: [PATCH 11/22] core/tools/edit: depad
+Subject: [PATCH 11/23] core/tools/edit: depad
 
 ---
  packages/coding-agent/src/core/tools/edit.ts | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agent/src/core/tools/edit.ts
-index f25116e46..348ddf4f9 100644
+index f6371ebe..23fba1a0 100644
 --- a/packages/coding-agent/src/core/tools/edit.ts
 +++ b/packages/coding-agent/src/core/tools/edit.ts
-@@ -145,7 +145,7 @@ type EditCallRenderComponent = Box & {
+@@ -156,7 +156,7 @@ type EditCallRenderComponent = Box & {
  };
  
  function createEditCallRenderComponent(): EditCallRenderComponent {

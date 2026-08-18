@@ -1,7 +1,7 @@
-From c936f3505563865fe3ac5454b1ef185e9a78fc16 Mon Sep 17 00:00:00 2001
+From 4d59987ffefaa93b94ea144b4a1cc5165beb9c4b Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 23:48:43 +0000
-Subject: [PATCH 13/22] modes/interactive/components/footer: compact model
+Subject: [PATCH 13/23] modes/interactive/components/footer: compact model
  display
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH 13/22] modes/interactive/components/footer: compact model
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
-index 132234c5e..b99343eea 100644
+index 768f4f8c..baeee7a0 100644
 --- a/packages/coding-agent/src/modes/interactive/components/footer.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
 @@ -179,18 +179,18 @@ export class FooterComponent implements Component {

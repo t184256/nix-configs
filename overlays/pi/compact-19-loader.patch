@@ -1,26 +1,26 @@
-From eb337003b528e22669945a5e473d177b8e330906 Mon Sep 17 00:00:00 2001
-From: Sloppy <sloppy@unboiled.info>
+From 63c20d1eb99e326008de5986da1a924b75e97d58 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:57:03 +0000
-Subject: [PATCH 19/22] modes/interactive/components/assistant-message: depad
+Subject: [PATCH 19/23] modes/interactive/components/assistant-message: depad
 
 ---
  .../modes/interactive/components/assistant-message.ts  | 10 +++++-----
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
-index 71daf0dbb..fede10c0e 100644
+index d108df6a..7656ce8b 100644
 --- a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
-@@ -100,7 +100,7 @@ export class AssistantMessageComponent extends Container {
- 			if (content.type === "text" && content.text.trim()) {
+@@ -108,7 +108,7 @@ export class AssistantMessageComponent extends Container {
  				// Assistant text messages with no background - trim the text
  				// Set paddingY=0 to avoid extra spacing before tool executions
--				this.contentContainer.addChild(new Markdown(content.text.trim(), this.outputPad, 0, this.markdownTheme));
-+				this.contentContainer.addChild(new Markdown(content.text.trim(), 0, 0, this.markdownTheme));
- 			} else if (content.type === "thinking") {
- 				const thinkingBlocks: string[] = [];
- 				for (; i < message.content.length; i++) {
-@@ -128,12 +128,12 @@ export class AssistantMessageComponent extends Container {
+ 				this.contentContainer.addChild(
+-					new Markdown(content.text.trim(), this.outputPad, 0, this.markdownTheme, undefined, {
++					new Markdown(content.text.trim(), 0, 0, this.markdownTheme, undefined, {
+ 						transform: createMarkdownTransform("assistant", this.isStreaming, this.markdownTransformers),
+ 					}),
+ 				);
+@@ -139,14 +139,14 @@ export class AssistantMessageComponent extends Container {
  				if (this.hideThinkingBlock) {
  					// Show one static label for each run of thinking blocks when hidden.
  					this.contentContainer.addChild(
@@ -30,12 +30,14 @@ index 71daf0dbb..fede10c0e 100644
  				} else {
  					// Render each run of thinking blocks as one Markdown section.
  					this.contentContainer.addChild(
--						new Markdown(thinkingBlocks.join("\n\n"), this.outputPad, 0, this.markdownTheme, {
-+						new Markdown(thinkingBlocks.join("\n\n"), 0, 0, this.markdownTheme, {
- 							color: (text: string) => theme.fg("thinkingText", text),
- 							italic: true,
- 						}),
-@@ -169,11 +169,11 @@ export class AssistantMessageComponent extends Container {
+ 						new Markdown(
+ 							thinkingBlocks.join("\n\n"),
+-							this.outputPad,
++							0,
+ 							0,
+ 							this.markdownTheme,
+ 							{
+@@ -186,11 +186,11 @@ export class AssistantMessageComponent extends Container {
  						? message.errorMessage
  						: "Operation aborted";
  				// no spacer

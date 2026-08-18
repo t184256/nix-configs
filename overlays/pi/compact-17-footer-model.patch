@@ -1,7 +1,7 @@
-From 7d03bcd2ba0357334a8231bfc4e780de00c460c4 Mon Sep 17 00:00:00 2001
+From 3c85a86beb421135bead4e612fde647fccf81fe1 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:50:13 +0000
-Subject: [PATCH 17/22] modes/interactive/components/bash-execution: remove
+Subject: [PATCH 17/23] modes/interactive/components/bash-execution: remove
  spacer
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH 17/22] modes/interactive/components/bash-execution: remove
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-index 8c7a38a4f..1d8abfece 100644
+index 8c7a38a4..1d8abfec 100644
 --- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 @@ -2,7 +2,7 @@

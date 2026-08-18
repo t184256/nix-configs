@@ -99,6 +99,7 @@ let
   settingsRaw = builtins.toJSON {
     defaultProvider = "litellm";
     defaultModel = "qwen3.8-27b-think";
+    tuiMode = "fullscreen";
     quietStartup = true;
     extensions = [
       "extensions/llama-cpp-stats.ts"

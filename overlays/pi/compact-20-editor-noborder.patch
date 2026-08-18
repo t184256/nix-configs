@@ -1,14 +1,14 @@
-From 77a4be025706e118326892c7d9bf1f4cb2073948 Mon Sep 17 00:00:00 2001
-From: Sloppy <sloppy@unboiled.info>
+From 3543d15053699351e95e8af15c0a6b88bba7de32 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:58:35 +0000
-Subject: [PATCH 20/22] modes/interactive/components/footer: single line
+Subject: [PATCH 20/23] modes/interactive/components/footer: single line
 
 ---
  .../modes/interactive/components/footer.ts    | 29 ++++---------------
  1 file changed, 5 insertions(+), 24 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
-index b99343eea..fcc6d28fc 100644
+index baeee7a0..f4ba75ba 100644
 --- a/packages/coding-agent/src/modes/interactive/components/footer.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
 @@ -116,13 +116,13 @@ export class FooterComponent implements Component {

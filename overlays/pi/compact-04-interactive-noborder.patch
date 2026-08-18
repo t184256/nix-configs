@@ -1,17 +1,17 @@
-From b9385fe54a3b88e771f2a9cbaa07d44da1d752a1 Mon Sep 17 00:00:00 2001
-From: Sloppy <sloppy@unboiled.info>
+From 0041c2327983f65c41f8a3c6e6923fe22c03eeb2 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:51:23 +0000
-Subject: [PATCH 04/22] modes/interactive/interactive-mode: remove borders
+Subject: [PATCH 04/23] modes/interactive/interactive-mode: remove borders
 
 ---
  .../src/modes/interactive/interactive-mode.ts | 31 +++++++++----------
  1 file changed, 15 insertions(+), 16 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index a4912c7a8..925f7d09b 100644
+index f38503f7..e4155fd7 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -651,7 +651,7 @@ export class InteractiveMode {
+@@ -765,7 +765,7 @@ export class InteractiveMode {
  		if (this.chatContainer.children.length > 0) {
  		// no spacer
  		}
@@ -20,7 +20,7 @@ index a4912c7a8..925f7d09b 100644
  		if (this.settingsManager.getCollapseChangelog()) {
  			const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
  			const latestVersion = versionMatch ? versionMatch[1] : this.version;
-@@ -665,7 +665,7 @@ export class InteractiveMode {
+@@ -779,7 +779,7 @@ export class InteractiveMode {
  			);
  		// no spacer
  		}
@@ -28,8 +28,8 @@ index a4912c7a8..925f7d09b 100644
 +		// no border
  	}
  
- 	async init(): Promise<void> {
-@@ -3891,21 +3891,21 @@ export class InteractiveMode {
+ 	private mountInteractiveTui(tui: TuiMainScreen | TuiAltScreen, components: readonly Component[]): void {
+@@ -4153,21 +4153,21 @@ export class InteractiveMode {
  		const note = release.note?.trim();
  
  		// no spacer
@@ -54,7 +54,7 @@ index a4912c7a8..925f7d09b 100644
  		this.ui.requestRender();
  	}
  
-@@ -3915,15 +3915,15 @@ export class InteractiveMode {
+@@ -4177,15 +4177,15 @@ export class InteractiveMode {
  		const packageLines = packages.map((pkg) => `- ${pkg}`).join("\n");
  
  		// no spacer
@@ -73,7 +73,7 @@ index a4912c7a8..925f7d09b 100644
  		this.ui.requestRender();
  	}
  
-@@ -5309,18 +5309,17 @@ export class InteractiveMode {
+@@ -5731,18 +5731,17 @@ export class InteractiveMode {
  		this.resetExtensionUI();
  
  		const reloadBox = new Container();
@@ -95,7 +95,7 @@ index a4912c7a8..925f7d09b 100644
  
  		const previousEditor = this.editor;
  		this.editorContainer.clear();
-@@ -5698,11 +5697,11 @@ export class InteractiveMode {
+@@ -6112,11 +6111,11 @@ export class InteractiveMode {
  				: "No changelog entries found.";
  
  		// no spacer
@@ -109,7 +109,7 @@ index a4912c7a8..925f7d09b 100644
  		this.ui.requestRender();
  	}
  
-@@ -5829,11 +5828,11 @@ export class InteractiveMode {
+@@ -6243,11 +6242,11 @@ export class InteractiveMode {
  		}
  
  		// no spacer

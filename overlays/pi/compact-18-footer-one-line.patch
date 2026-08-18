@@ -1,7 +1,7 @@
-From 346ad1b5e3af6195ce50f7c5f95b531ffb2ebe8b Mon Sep 17 00:00:00 2001
-From: Sloppy <sloppy@unboiled.info>
+From 00fba71d4948edb88bd87ac7f91b7fdddd7d774e Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:56:28 +0000
-Subject: [PATCH 18/22] modes/interactive/components/assistant-message: remove
+Subject: [PATCH 18/23] modes/interactive/components/assistant-message: remove
  spacers
 
 ---
@@ -9,17 +9,17 @@ Subject: [PATCH 18/22] modes/interactive/components/assistant-message: remove
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
-index 6c9a2a404..71daf0dbb 100644
+index 0afaeb13..d108df6a 100644
 --- a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
 @@ -1,5 +1,5 @@
  import type { AssistantMessage } from "@earendil-works/pi-ai";
 -import { Container, Markdown, type MarkdownTheme, Spacer, Text } from "@earendil-works/pi-tui";
 +import { Container, Markdown, type MarkdownTheme, Text } from "@earendil-works/pi-tui";
+ import type { MarkdownTransformer } from "../../../core/extensions/types.ts";
  import { getMarkdownTheme, theme } from "../theme/theme.ts";
- 
- const OSC133_ZONE_START = "\x1b]133;A\x07";
-@@ -91,7 +91,7 @@ export class AssistantMessageComponent extends Container {
+ import { createMarkdownTransform } from "./markdown-transform.ts";
+@@ -98,7 +98,7 @@ export class AssistantMessageComponent extends Container {
  		);
  
  		if (hasVisibleContent) {
@@ -28,7 +28,7 @@ index 6c9a2a404..71daf0dbb 100644
  		}
  
  		// Render content in order
-@@ -140,7 +140,7 @@ export class AssistantMessageComponent extends Container {
+@@ -164,7 +164,7 @@ export class AssistantMessageComponent extends Container {
  					);
  				}
  				if (hasVisibleContentAfter) {
@@ -37,16 +37,16 @@ index 6c9a2a404..71daf0dbb 100644
  				}
  			}
  		}
-@@ -151,7 +151,7 @@ export class AssistantMessageComponent extends Container {
+@@ -175,7 +175,7 @@ export class AssistantMessageComponent extends Container {
  		const hasToolCalls = message.content.some((c) => c.type === "toolCall");
  		this.hasToolCalls = hasToolCalls;
  		if (message.stopReason === "length") {
 -			this.contentContainer.addChild(new Spacer(1));
 +			// no spacer
  			this.contentContainer.addChild(
- 				new Text(
- 					theme.fg(
-@@ -168,11 +168,11 @@ export class AssistantMessageComponent extends Container {
+ 				new Text(theme.fg("error", "Response was truncated before completion."), this.outputPad, 0),
+ 			);
+@@ -185,11 +185,11 @@ export class AssistantMessageComponent extends Container {
  					message.errorMessage && message.errorMessage !== "Request was aborted"
  						? message.errorMessage
  						: "Operation aborted";

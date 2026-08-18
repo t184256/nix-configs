@@ -1,14 +1,14 @@
-From b630e87f51764161f3a878b21cf24574ffb6ff14 Mon Sep 17 00:00:00 2001
+From 34ad1719151312c09b305b94ed9891264b1bc8d7 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:50:24 +0000
-Subject: [PATCH 08/22] modes/interactive/components/bash-execution: depad
+Subject: [PATCH 08/23] modes/interactive/components/bash-execution: depad
 
 ---
  .../src/modes/interactive/components/bash-execution.ts    | 8 ++++----
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-index b46a9d0b9..387819ddd 100644
+index b46a9d0b..387819dd 100644
 --- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 @@ -48,7 +48,7 @@ export class BashExecutionComponent extends Container {

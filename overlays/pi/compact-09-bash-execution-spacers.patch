@@ -1,7 +1,7 @@
-From 9ac6a3eb98d325213c446c943e19464981b9079b Mon Sep 17 00:00:00 2001
+From 25870d32a6d6c2cac8f92c979d4819d87eedfeb3 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:09:44 +0000
-Subject: [PATCH 09/22] modes/interactive/components/bash-execution: remove
+Subject: [PATCH 09/23] modes/interactive/components/bash-execution: remove
  leading newlines
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH 09/22] modes/interactive/components/bash-execution: remove
  1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-index 387819ddd..8c7a38a4f 100644
+index 387819dd..8c7a38a4 100644
 --- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 @@ -143,17 +143,16 @@ export class BashExecutionComponent extends Container {

@@ -1,0 +1,25 @@
+From 5fc1c9e8069e3b03972b366e804efc58b43c8a5d Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Tue, 18 Aug 2026 08:39:21 +0000
+Subject: [PATCH 23/23] modes/interactive: fullscreen editor slot: minimum one line
+
+---
+ packages/coding-agent/src/modes/interactive/interactive-mode.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
+index e4155fd7..1a05d306 100644
+--- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
++++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
+@@ -886,7 +886,7 @@ export class InteractiveMode {
+ 			{ component: this.pendingMessagesContainer, shrink: 1, minSize: 0 },
+ 			{ component: this.statusContainer, shrink: 1, minSize: 0 },
+ 			{ component: this.widgetContainerAbove, shrink: 1, minSize: 0 },
+-			{ component: this.editorContainer, shrink: 1, minSize: 3 },
++			{ component: this.editorContainer, shrink: 1, minSize: 1 },
+ 			{ component: this.widgetContainerBelow, shrink: 1, minSize: 0 },
+ 			{ component: this.footerContainer, shrink: 1, minSize: 1 },
+ 		]);
+-- 
+2.55.0
+

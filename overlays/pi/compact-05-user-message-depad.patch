@@ -1,17 +1,17 @@
-From d5452fa62961783aca8c4c469e8d660bf225469d Mon Sep 17 00:00:00 2001
-From: Sloppy <sloppy@unboiled.info>
+From 3856519b302f8a16cd7f0b7fbd32f5b252fbb8dd Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:54:26 +0000
-Subject: [PATCH 05/22] modes/interactive/components/user-message: depad
+Subject: [PATCH 05/23] modes/interactive/components/user-message: depad
 
 ---
  .../src/modes/interactive/components/user-message.ts            | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/user-message.ts b/packages/coding-agent/src/modes/interactive/components/user-message.ts
-index 74b54fd76..402fe7aaf 100644
+index 009389df..9af0e126 100644
 --- a/packages/coding-agent/src/modes/interactive/components/user-message.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/user-message.ts
-@@ -28,7 +28,7 @@ export class UserMessageComponent extends Container {
+@@ -37,7 +37,7 @@ export class UserMessageComponent extends Container {
  
  	private rebuild(): void {
  		this.clear();

@@ -1,14 +1,14 @@
-From 7181385cab3b9d70328e9d9db75941b1890cadda Mon Sep 17 00:00:00 2001
+From 21689750a286b5f5b7e2191edefaa753281acf43 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:37:29 +0000
-Subject: [PATCH 01/22] src/core/tools/edit: remove spacers
+Subject: [PATCH 01/23] src/core/tools/edit: remove spacers
 
 ---
  packages/coding-agent/src/core/tools/edit.ts | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agent/src/core/tools/edit.ts
-index feaa7176f..f25116e46 100644
+index 45281c25..f6371ebe 100644
 --- a/packages/coding-agent/src/core/tools/edit.ts
 +++ b/packages/coding-agent/src/core/tools/edit.ts
 @@ -1,5 +1,5 @@
@@ -18,7 +18,7 @@ index feaa7176f..f25116e46 100644
  import { constants } from "fs";
  import { access as fsAccess, readFile as fsReadFile, writeFile as fsWriteFile } from "fs/promises";
  import { type Static, Type } from "typebox";
-@@ -259,7 +259,7 @@ function buildEditCallComponent(
+@@ -270,7 +270,7 @@ function buildEditCallComponent(
  
  	const body =
  		"error" in component.preview ? theme.fg("error", component.preview.error) : renderDiff(component.preview.diff);
@@ -27,7 +27,7 @@ index feaa7176f..f25116e46 100644
  	component.addChild(new Text(body, 0, 0));
  	return component;
  }
-@@ -425,7 +425,7 @@ export function createEditToolDefinition(
+@@ -431,7 +431,7 @@ export function createEditToolDefinition(
  			if (!output) {
  				return component;
  			}

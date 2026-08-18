@@ -1,30 +1,17 @@
-From 6ad4b50a7f28590f5c52fca6693a3aad1f6aa914 Mon Sep 17 00:00:00 2001
-From: Sloppy <sloppy@unboiled.info>
+From 6f8cef23c12b9694ab22a7b864fcc81819624834 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 19:05:16 +0000
-Subject: [PATCH 22/22] Show completion duration in bash tool output
+Subject: [PATCH 22/23] Show completion duration in bash tool output
 
 ---
- packages/ai/src/types.ts                     | 1 +
  packages/coding-agent/src/core/tools/bash.ts | 9 +++++++--
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/packages/ai/src/types.ts b/packages/ai/src/types.ts
-index aeaf18c67..f083ee7ad 100644
---- a/packages/ai/src/types.ts
-+++ b/packages/ai/src/types.ts
-@@ -298,6 +298,7 @@ export interface SimpleStreamOptions extends StreamOptions {
- 	reasoning?: ThinkingLevel;
- 	/** Custom token budgets for thinking levels (token-based providers only) */
- 	thinkingBudgets?: ThinkingBudgets;
-+	thinkingBudgetTokens?: number;
- }
- 
- // Generic StreamFunction with typed options.
 diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agent/src/core/tools/bash.ts
-index 26488cb5e..c4b707e3b 100644
+index 4fdae2ca..76d18ae6 100644
 --- a/packages/coding-agent/src/core/tools/bash.ts
 +++ b/packages/coding-agent/src/core/tools/bash.ts
-@@ -47,6 +47,7 @@ export type BashToolInput = Static<typeof bashSchema>;
+@@ -53,6 +53,7 @@ export type BashToolInput = Static<typeof bashSchema>;
  export interface BashToolDetails {
  	truncation?: TruncationResult;
  	fullOutputPath?: string;
@@ -32,7 +19,7 @@ index 26488cb5e..c4b707e3b 100644
  }
  
  /**
-@@ -281,7 +282,7 @@ function rebuildBashResultRenderComponent(
+@@ -312,7 +313,7 @@ function rebuildBashResultRenderComponent(
  		component.addChild(new Text(theme.fg("warning", `[${warnings.join(". ")}]`), 0, 0));
  	}
  
@@ -41,7 +28,7 @@ index 26488cb5e..c4b707e3b 100644
  		const label = options.isPartial ? "Elapsed" : "Took";
  		const endTime = endedAt ?? Date.now();
  		component.addChild(new Text(theme.fg("muted", `${label} ${formatDuration(endTime - startedAt)}`), 0, 0));
-@@ -395,6 +396,7 @@ export function createBashToolDefinition(
+@@ -429,6 +430,7 @@ export function createBashToolDefinition(
  			const appendStatus = (text: string, status: string) => `${text ? `${text}` : ""}[${status}]`;
  
  			try {
@@ -49,7 +36,7 @@ index 26488cb5e..c4b707e3b 100644
  				let exitCode: number | null;
  				try {
  					const result = await ops.exec(spawnContext.command, spawnContext.cwd, {
-@@ -422,7 +424,10 @@ export function createBashToolDefinition(
+@@ -456,7 +458,10 @@ export function createBashToolDefinition(
  				if (exitCode !== 0 && exitCode !== null) {
  					throw new Error(appendStatus(outputText, `Command exited with code ${exitCode}`));
  				}

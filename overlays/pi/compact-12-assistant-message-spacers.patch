@@ -1,7 +1,7 @@
-From 87c1fd24e784167a9073a8b1de319e062e1e2a82 Mon Sep 17 00:00:00 2001
+From 81f6ce5f34a9e6dd90275c5f7c6aa0105abc1b6f Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 23:46:53 +0000
-Subject: [PATCH 12/22] modes/interactive/components/footer: drop (auto)
+Subject: [PATCH 12/23] modes/interactive/components/footer: drop (auto)
  indicator
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH 12/22] modes/interactive/components/footer: drop (auto)
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
-index 44cf886b3..132234c5e 100644
+index 26c9f279..768f4f8c 100644
 --- a/packages/coding-agent/src/modes/interactive/components/footer.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
 @@ -146,7 +146,7 @@ export class FooterComponent implements Component {
