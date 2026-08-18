@@ -134,6 +134,13 @@ let
   settingsJson = pkgs.writeText "settings.json" settingsRaw;
   webSearchJson = pkgs.writeText "web-search.json"
     (builtins.toJSON { workflow = "none"; });
+  keybindingsJson = pkgs.writeText "keybindings.json" (builtins.toJSON {
+    "tui.altScreen.top" = [ ];  # restore 'Home' jumping within the prompt
+    "tui.altScreen.bottom" = [ ];  # restore 'End' jumping within the prompt
+    "tui.altScreen.search" = "ctrl+s";
+    "tui.altScreen.searchNext" = [ "down" "enter" "ctrl+g" ];  # down for next
+    "tui.altScreen.searchPrevious" = [ "up" "ctrl+shift+g" ];  # up for previous
+  });
   nixRegistry = pkgs.writeText "registry.json" (builtins.toJSON {
     version = 2;
     flakes = [
@@ -150,7 +157,7 @@ let
 
     You only have the most basic tools installed.
     `nix shell nixpkgs#python3 nixpkgs#file --command <command> <arguments>`
-    if you need more. Command and arguments must not be quoted.
+    if you need more. Command and arguments must not be quoted together.
   '';
 
   extraJailOpts = [
@@ -164,6 +171,7 @@ let
       RUNTIME_ARGS+=(--ro-bind ${modelsJson} ~/.pi/agent/models.json)
       RUNTIME_ARGS+=(--ro-bind ${settingsJson} ~/.pi/agent/settings.json)
       RUNTIME_ARGS+=(--ro-bind ${webSearchJson} ~/.pi/web-search.json)
+      RUNTIME_ARGS+=(--ro-bind ${keybindingsJson} ~/.pi/agent/keybindings.json)
       RUNTIME_ARGS+=(--ro-bind ${agentsMd} ~/.pi/agent/AGENTS.md)
       RUNTIME_ARGS+=(--ro-bind ${nixRegistry} ~/.config/nix/registry.json)
       RUNTIME_ARGS+=(--ro-bind-try /etc/pki /etc/pki)  # Fedora hack
