@@ -83,6 +83,9 @@ let
   ];
 in
 {
+  nixpkgs.overlays = [
+    (import ../../overlays/llama-cpp/default.nix)
+  ];
   services.llama-cpp = {
     enable = true;
     #package = pkgs.llama-cpp-vulkan;
