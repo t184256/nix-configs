@@ -39,6 +39,7 @@ in
           --image-max-tokens 16384 \
           --jinja \
           --reasoning off \
+          --chat-template-kwargs '{"reasoning_effort":"medium"}' \
           --parallel 2 \
           --kv-unified \
           --reasoning-preserve \
