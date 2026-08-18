@@ -35,11 +35,6 @@ let
     spec-type = draft-mtp
     spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
-    [qwen3.5-35b-a3b]
-    model = ${pkgs.qwen35-35b-a3b-mtp-mxfp4}
-    spec-type = draft-mtp
-    spec-draft-n-max = 2
-    ${qwen35NoThinkAttrs}
     [qwen3.6-35b-a3b]
     model = ${pkgs.qwen36-35b-a3b-mtp-mxfp4}
     spec-type = draft-mtp
