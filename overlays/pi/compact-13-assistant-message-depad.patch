@@ -23,7 +23,7 @@ index 768f4f8c..baeee7a0 100644
  			const thinkingLevel = state.thinkingLevel || "off";
 -			rightSideWithoutProvider =
 -				thinkingLevel === "off" ? `${modelName} • thinking off` : `${modelName} • ${thinkingLevel}`;
-+			const abbrev = thinkingLevel === "off" ? "off" : thinkingLevel.slice(0, 1);
++			const abbrev = thinkingLevel === "off" ? "0" : thinkingLevel.slice(0, 1).toUpperCase();
 +			rightSideWithoutProvider = `${modelName} ${abbrev}`;
  		}
  

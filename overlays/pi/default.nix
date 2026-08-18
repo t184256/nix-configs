@@ -36,6 +36,7 @@ let
     ./compact-20-editor-noborder.patch
     ./compact-21-editor-background.patch
     ./compact-22-fullscreen-editor-minsize.patch
+    ./compact-23-footer-preserve-model.patch
 
     ./success-completion.patch
 

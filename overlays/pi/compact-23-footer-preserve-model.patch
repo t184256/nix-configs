@@ -1,0 +1,45 @@
+From 3febd85cde8ce19ab36e5340a6b3b634ca85f565 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Wed, 19 Aug 2026 00:43:32 +0200
+Subject: [PATCH] modes/interactive/components/footer: keep model name when
+ truncating
+
+---
+ .../modes/interactive/components/footer.ts    | 20 ++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
+index ad2d155..23c6c8f 100644
+--- a/packages/coding-agent/src/modes/interactive/components/footer.ts
++++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
+@@ -206,16 +206,18 @@ export class FooterComponent implements Component {
+ 			const padding = " ".repeat(width - statsLeftWidth - rightSideWidth);
+ 			statsLine = statsLeft + padding + rightSide;
+ 		} else {
+-			// Need to truncate right side
+-			const availableForRight = width - statsLeftWidth - minPadding;
+-			if (availableForRight > 0) {
+-				const truncatedRight = truncateToWidth(rightSide, availableForRight, "");
+-				const truncatedRightWidth = visibleWidth(truncatedRight);
+-				const padding = " ".repeat(Math.max(0, width - statsLeftWidth - truncatedRightWidth));
+-				statsLine = statsLeft + padding + truncatedRight;
++			// Keep the model name intact, truncate stats instead
++			const availableForLeft = width - rightSideWidth - minPadding;
++			if (availableForLeft > 1) {
++				// truncateToWidth ends with a reset code, which would drop the dim
++				// wrapper, so append our own ellipsis and re-dim everything after it
++				const truncatedLeft = truncateToWidth(statsLeft, availableForLeft - 1, "");
++				const truncatedLeftWidth = visibleWidth(truncatedLeft);
++				const padding = " ".repeat(Math.max(0, width - truncatedLeftWidth - 1 - rightSideWidth));
++				statsLine = truncatedLeft + theme.fg("dim", `…${padding}${rightSide}`);
+ 			} else {
+-				// Not enough space for right side at all
+-				statsLine = statsLeft;
++				// Not enough space for stats at all
++				statsLine = theme.fg("dim", truncateToWidth(rightSide, width, ""));
+ 			}
+ 		}
+ 
+-- 
+2.55.0
+
