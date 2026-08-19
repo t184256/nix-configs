@@ -197,6 +197,7 @@ let
     (comb.write-text (comb.noescape "~/.config/nix/nix.conf") ''
       experimental-features = nix-command flakes
     '')
+    (comb.ro-bind "${pkgs.coreutils}/bin/env" "/usr/bin/env")
     (comb.add-runtime ''
       RUNTIME_ARGS+=(--ro-bind ~/.agents ~/.agents)
       RUNTIME_ARGS+=(--ro-bind ${modelsJson} ~/.pi/agent/models.json)
