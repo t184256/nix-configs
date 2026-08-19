@@ -1,4 +1,8 @@
 # TODO: try jj-specific https://github.com/anglesideangle/jjinn
+# TODO: give it access to KVM
+# TODO: give it access to podman through something like kata-containers
+# TODO: let it run fingertip
+# TODO: let it run lightweight nixos VMs built from this configuration
 
 { pkgs, lib, inputs, config, ... }:
 
