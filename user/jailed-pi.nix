@@ -199,6 +199,10 @@ let
     '')
     (comb.ro-bind "${pkgs.coreutils}/bin/env" "/usr/bin/env")
     (comb.add-runtime ''
+      mkdir -p ~/.pi ~/.agents
+      if [ ! -d ~/.agents/skills ]; then
+        git clone git@git.slop.unboiled.info:monk/skills ~/.agents/
+      fi
       RUNTIME_ARGS+=(--ro-bind ~/.agents ~/.agents)
       RUNTIME_ARGS+=(--ro-bind ${modelsJson} ~/.pi/agent/models.json)
       RUNTIME_ARGS+=(--ro-bind ${settingsJson} ~/.pi/agent/settings.json)
