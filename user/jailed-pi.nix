@@ -191,33 +191,38 @@ let
     whether to proceed with that or not.
   '';
 
-  extraJailOpts = [
-    (comb.fwd-env "LLAMA_KEY")
-    (comb.fwd-env "PWD")
-    (comb.write-text (comb.noescape "~/.config/nix/nix.conf") ''
+  # https://alexdav.id/projects/jail-nix/combinators/
+  # https://git.sr.ht/~alexdavid/jail.nix
+  extraJailOpts = with comb; [
+    (fwd-env "LLAMA_KEY")
+    (fwd-env "PWD")
+    (write-text (noescape "~/.config/nix/nix.conf") ''
       experimental-features = nix-command flakes
     '')
-    (comb.ro-bind "${pkgs.coreutils}/bin/env" "/usr/bin/env")
-    (comb.add-runtime ''
+    (ro-bind "${pkgs.coreutils}/bin/env" "/usr/bin/env")
+    (ro-bind (noescape "~/.agents") (noescape "~/.agents"))
+    (ro-bind nixRegistry (noescape "~/.config/nix/registry.json"))
+    (try-ro-bind "/etc/pki" "/etc/pki")  # Fedora hack
+    # Runs on the host before the jail starts.
+    (add-runtime ''
       mkdir -p ~/.pi ~/.agents
       if [ ! -d ~/.agents/skills ]; then
         git clone git@git.slop.unboiled.info:monk/skills ~/.agents/
       fi
-      RUNTIME_ARGS+=(--ro-bind ~/.agents ~/.agents)
-      RUNTIME_ARGS+=(--ro-bind ${modelsJson} ~/.pi/agent/models.json)
-      RUNTIME_ARGS+=(--ro-bind ${settingsJson} ~/.pi/agent/settings.json)
-      RUNTIME_ARGS+=(--ro-bind ${webSearchJson} ~/.pi/web-search.json)
-      RUNTIME_ARGS+=(--ro-bind ${keybindingsJson} ~/.pi/agent/keybindings.json)
-      RUNTIME_ARGS+=(--ro-bind ${agentsMd} ~/.pi/agent/AGENTS.md)
-      RUNTIME_ARGS+=(--ro-bind ${nixRegistry} ~/.config/nix/registry.json)
-      RUNTIME_ARGS+=(--ro-bind-try /etc/pki /etc/pki)  # Fedora hack
-      RUNTIME_ARGS+=(--ro-bind ${llamaCppStatsSrc}
-                               ~/.pi/agent/extensions/llama-cpp-stats.ts)
-      RUNTIME_ARGS+=(--ro-bind ${noTailPipeSrc}
-                               ~/.pi/agent/extensions/no-tail-pipe.ts)
-      RUNTIME_ARGS+=(--ro-bind ${piNpmNodeModules} ~/.pi/agent/npm/node_modules)
-      RUNTIME_ARGS+=(--ro-bind ${watchdogYml} ~/.pi/agent/WATCHDOG.yml)
     '')
+  ]
+  # deferred so these layer on top of ~/.pi from makeJailedPi
+  ++ map (defer) [
+    (ro-bind modelsJson (noescape "~/.pi/agent/models.json"))
+    (ro-bind settingsJson (noescape "~/.pi/agent/settings.json"))
+    (ro-bind webSearchJson (noescape "~/.pi/web-search.json"))
+    (ro-bind keybindingsJson (noescape "~/.pi/agent/keybindings.json"))
+    (ro-bind agentsMd (noescape "~/.pi/agent/AGENTS.md"))
+    (ro-bind llamaCppStatsSrc
+      (noescape "~/.pi/agent/extensions/llama-cpp-stats.ts"))
+    (ro-bind noTailPipeSrc (noescape "~/.pi/agent/extensions/no-tail-pipe.ts"))
+    (ro-bind piNpmNodeModules (noescape "~/.pi/agent/npm/node_modules"))
+    (ro-bind watchdogYml (noescape "~/.pi/agent/WATCHDOG.yml"))
   ];
 
   jailedPi = jailedAgentsLib.makeJailedPi {
