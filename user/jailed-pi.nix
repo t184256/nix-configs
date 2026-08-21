@@ -207,7 +207,7 @@ let
     (add-runtime ''
       mkdir -p ~/.pi ~/.agents
       if [ ! -d ~/.agents/skills ]; then
-        git clone git@git.slop.unboiled.info:monk/skills ~/.agents/
+        git clone git@git.slop.unboiled.info:monk/skills ~/.agents/skills
       fi
     '')
   ]
