@@ -1,5 +1,4 @@
 # TODO: try jj-specific https://github.com/anglesideangle/jjinn
-# TODO: give it access to KVM
 # TODO: give it access to podman through something like kata-containers
 # TODO: let it run fingertip
 # TODO: let it run lightweight nixos VMs built from this configuration
@@ -210,6 +209,7 @@ let
         git clone git@git.slop.unboiled.info:monk/skills ~/.agents/skills
       fi
     '')
+    (unsafe-add-raw-args "--dev-bind-try /dev/kvm /dev/kvm")
   ]
   # deferred so these layer on top of ~/.pi from makeJailedPi
   ++ map (defer) [
