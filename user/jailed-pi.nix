@@ -1,5 +1,4 @@
 # TODO: try jj-specific https://github.com/anglesideangle/jjinn
-# TODO: give it access to podman through something like kata-containers
 # TODO: let it run fingertip
 # TODO: let it run lightweight nixos VMs built from this configuration
 
@@ -156,12 +155,51 @@ let
     ];
   });
 
+  # podman machine QEMU provider looks for helper binaries in
+  # /usr/libexec/podman, not on $PATH
+  podmanHelpers = pkgs.runCommand "podman-machine-helpers" { } ''
+    mkdir $out
+    ln -s ${pkgs.gvproxy}/bin/gvproxy $out/
+    ln -s ${pkgs.virtiofsd}/bin/virtiofsd $out/
+    ln -s ${pkgs.qemu_kvm}/bin/qemu-system-x86_64 $out/
+    ln -s ${pkgs.qemu_kvm}/bin/qemu-img $out/
+  '';
+
+  # Wraps podman: auto-inits/starts the VM if it isn't running
+  podmanWrapper = pkgs.writeShellScriptBin "podman" ''
+    set -euo pipefail
+    export PATH="${pkgs.openssh}/bin:$PATH" # is needed on $PATH
+    REAL=${pkgs.podman}/bin/podman
+    if [ "$#" -lt 2 ] || [ "$1" != "machine" ] || \
+        ( [ "$2" != "stop" ] && [ "$2" != "rm" ]; ); then
+        if ! "$REAL" machine list --format '{{.Running}}' 2>/dev/null \
+            | grep -qx true; then
+          if "$REAL" machine list --format '{{.Default}}' 2>/dev/null \
+            | grep -qx true; then
+            "$REAL" machine start  # defaults to podman-machine-default
+          else
+            "$REAL" machine init --now -m 4096 --disk-size 12 \
+              podman-machine-default
+          fi
+      fi
+    fi
+    export CONTAINER_CONNECTION=podman-machine-default
+    exec "$REAL" "$@"
+  '';
+
   agentsMd = pkgs.writeText "AGENTS.md" ''
     ## Nix Environment
 
     You only have the most basic tools installed.
     `nix shell nixpkgs#python3 nixpkgs#file --command <command> <arguments>`
     if you need more. Command and arguments must not be quoted together.
+
+    ## Podman (VM-backed)
+
+    It is possible to use containers via `podman`, but it is a wrapper that
+    auto-inits/starts a QEMU/KVM, user-mode networking VM on first use
+    (state is lost for resumed sessions) and then runs containers inside VM.
+    `podman run -it fedora /usr/bin/echo hello` should work.
 
     ## Source code exploration
 
@@ -210,6 +248,9 @@ let
       fi
     '')
     (unsafe-add-raw-args "--dev-bind-try /dev/kvm /dev/kvm")
+    # podman machine: user-mode networking via gvproxy, no tun needed;
+    # state lives on tmpfs ~ and is recreated each session
+    (ro-bind podmanHelpers "/usr/libexec/podman")
   ]
   # deferred so these layer on top of ~/.pi from makeJailedPi
   ++ map (defer) [
@@ -233,6 +274,7 @@ let
     extraPkgs = with pkgs; [
       pi-coding-agent
       gh xxd gnutar
+      podmanWrapper
     ];
     baseJailOptions = jailedAgentsLib.commonJailOptions ++ extraJailOpts;
   };
