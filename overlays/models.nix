@@ -74,7 +74,7 @@ in
   qwen38-27b-q4kxl = fetchHF {
     repo = "unsloth/Qwen3.8-27B-GGUF";
     name = "Qwen3.8-27B-UD-Q4_K_XL.gguf";
-    hash = "sha256-vuI4u+s9wKNL3k0N7bruH5jACei7QibwMHAFTBL7E3I=";
+    hash = "sha256-PyJweQA63SURQ35bHpSBLjYzhSJb9qm0ewBUpyvIsB4=";
   };
   qwen38-27b-mmproj-f16 = fetchHF {
     repo = "unsloth/Qwen3.8-27B-GGUF";
