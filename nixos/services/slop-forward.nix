@@ -187,7 +187,22 @@ in
         mkForward "http://192.168.99.52:8000";
       "ctl.slop.unboiled.info" =
         mkForward "http://192.168.99.53:9988";
-      # pi.slop.unboiled.info — no auth, websockets needed
+      # paseo.slop.unboiled.info - own auth, password-protected
+      "paseo.slop.unboiled.info" = {
+        enableACME = true;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://192.168.99.53:6767";
+          proxyWebsockets = true;
+          extraConfig = ''
+            proxy_read_timeout 1800s;
+            proxy_buffering off;
+            proxy_request_buffering off;
+            client_max_body_size 0;
+          '';
+        };
+      };
+      # pi.slop.unboiled.info - no auth, websockets needed
       "pi.slop.unboiled.info" = {
         enableACME = true;
         forceSSL = true;

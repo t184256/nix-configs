@@ -73,6 +73,7 @@
   networking.firewall.allowedTCPPorts = [
     8787 # slopfest pi bridge
     9988 # ctl
+    6767 # slopfest paseo
   ];
 
   environment.systemPackages = with pkgs; [
