@@ -2,7 +2,7 @@
 
 let
   qwen35NoThinkAttrs = ''
-    ctx-size = 196608
+    ctx-size = 262144
     temp = 0.7
     top-p = 0.8
     top-k = 20
@@ -31,10 +31,21 @@ let
     spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
     [qwen3.8-27b]
-    model = ${pkgs.qwen38-27b-q4kxl}
+    # Q8_0: near-lossless; fits with room to spare (weights ~29 GB +
+    # 4 full-ctx q8_0 KV slots ~34 GiB << 128 GiB unified)
+    model = ${pkgs.qwen38-27b-q80}
+    # vision, same as plum
+    mmproj = ${pkgs.qwen38-27b-mmproj-f16}
+    image-max-tokens = 16384
     spec-type = draft-mtp
     spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
+    # exposed as `batch` via slop-forward.nix: concurrent unattended
+    # sessions, KV cache cached in system RAM so idle slots don't
+    # evict each other
+    parallel = 4
+    kv-unified = 1
+    cache-ram = 65536
     [qwen3.6-35b-a3b]
     model = ${pkgs.qwen36-35b-a3b-mtp-mxfp4}
     spec-type = draft-mtp
@@ -75,7 +86,6 @@ let
     "--models-dir" "/var/lib/llama"
     "--models-preset" effectiveConfig
     "--models-max" "1"
-    "--parallel" "1"
     "-ngl" "999"
     "--no-mmap"
     "--jinja"
