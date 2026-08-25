@@ -110,7 +110,7 @@ let
     ];
     packages = [
       "npm:pi-web-access@0.10.7"
-      "npm:@ribbons-digital/pi-advisor"
+      #"npm:@ribbons-digital/pi-advisor"  # disabled for now
     ];
   };
 
@@ -124,15 +124,16 @@ let
   piNpmNodeModules = pkgs.runCommand "pi-npm-node-modules" {} ''
     mkdir $out
     cp -r ${pkgs.pi-web-access}/lib/node_modules/* $out
-    cp -r ${pkgs.pi-advisor}/lib/node_modules/* $out
+    #cp -r ${pkgs.pi-advisor}/lib/node_modules/* $out  # disabled for now
   '';
 
-  watchdogYml = pkgs.writeText "WATCHDOG.yml" (builtins.toJSON {
-    version = 1;
-    model = "litellm/qwen3.5-122b-a10b-think";
-    effort = "high";
-    defaultEnabled = true;
-  });
+  # pi-advisor disabled for now
+  #watchdogYml = pkgs.writeText "WATCHDOG.yml" (builtins.toJSON {
+  #  version = 1;
+  #  model = "litellm/qwen3.5-122b-a10b-think";
+  #  effort = "high";
+  #  defaultEnabled = true;
+  #});
   modelsJson = pkgs.writeText "models.json" modelsRaw;
   settingsJson = pkgs.writeText "settings.json" settingsRaw;
   webSearchJson = pkgs.writeText "web-search.json"
@@ -263,7 +264,8 @@ let
       (noescape "~/.pi/agent/extensions/llama-cpp-stats.ts"))
     (ro-bind noTailPipeSrc (noescape "~/.pi/agent/extensions/no-tail-pipe.ts"))
     (ro-bind piNpmNodeModules (noescape "~/.pi/agent/npm/node_modules"))
-    (ro-bind watchdogYml (noescape "~/.pi/agent/WATCHDOG.yml"))
+    # pi-advisor disabled for now
+    #(ro-bind watchdogYml (noescape "~/.pi/agent/WATCHDOG.yml"))
   ];
 
   jailedPi = jailedAgentsLib.makeJailedPi {
