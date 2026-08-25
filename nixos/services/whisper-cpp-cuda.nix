@@ -33,6 +33,8 @@ in
     serviceConfig = {
       User = "whisper-cpp";
       Group = "whisper-cpp";
+      Restart = "on-failure";
+      RestartSec = 2;
       Environment = [
         "LD_LIBRARY_PATH=/run/opengl-driver/lib:${cudatoolkit}/lib:${cudatoolkit}/lib/stubs"
         "CUDA_HOME=${cudatoolkit}"
@@ -42,7 +44,7 @@ in
         "${whisperCpp}/bin/whisper-server" +
         " --host 192.168.99.53 --port 11112 --language auto --flash-attn" +
         " --inference-path /v1/audio/transcriptions --convert" +
-        " --best-of 8 --beam-size 8" +
+        " --best-of 4 --beam-size 4" +
         " --model ${model}";
       CapabilityBoundingSet = "";
       LockPersonality = true;
