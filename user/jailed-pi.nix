@@ -68,6 +68,19 @@ let
             contextWindow = 262144;
             cost = { input = 0.017; output = 0.59;
                      cacheRead = 0; cacheWrite = 0; }; }
+          # interactive: plum's qwen3.8-27b; batch: grapefruit's
+          ({ id = "interactive"; reasoning = true;
+            input = [ "text" "image" ];
+            contextWindow = 262144;
+            cost = { input = 0.017; output = 0.59;
+                     cacheRead = 0; cacheWrite = 0; }; }
+            // qwen38Effort)
+          ({ id = "batch"; reasoning = true;
+            input = [ "text" "image" ];
+            contextWindow = 262144;
+            cost = { input = 0.017; output = 0.59;
+                     cacheRead = 0; cacheWrite = 0; }; }
+            // qwen38Effort)
         ];
       };
       plum = {
@@ -100,7 +113,7 @@ let
 
   settingsRaw = builtins.toJSON {
     defaultProvider = "litellm";
-    defaultModel = "qwen3.8-27b-think";
+    defaultModel = "interactive";
     tuiMode = "fullscreen";
     fullscreenScrollbar = "away";
     quietStartup = true;
