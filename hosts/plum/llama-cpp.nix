@@ -6,6 +6,7 @@ let
   llama-cpp = pkgs.llama-cpp-cuda-vulkan;
   model = pkgs.qwen38-27b-q80;
   mmproj = pkgs.qwen38-27b-mmproj-f16;
+  chat-template = pkgs.qwen-sharp-chat-template;
 in
 
 {
@@ -35,6 +36,7 @@ in
           -ngl 9999 \
           -fa on \
           -m ${model} \
+          --chat-template-file ${chat-template} \
           --mmproj ${mmproj} \
           --image-max-tokens 16384 \
           --jinja \

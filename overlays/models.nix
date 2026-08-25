@@ -82,6 +82,14 @@ in
     hash = "sha256-y7hBqe4GNrLsFy9buN8uqN/rAekP58YSZYHWYqC05D4=";
   };
 
+  # Qwen Sharp chat template (v22.4.0) — terseness + thinking retention,
+  # pass to llama-server via --chat-template-file
+  qwen-sharp-chat-template = fetchHF {
+    repo = "peculiar-ragdoll/Qwen-Sharp-Chat-Templates";
+    name = "chat_template.jinja";
+    hash = "sha256-GA5wFXWbK2tXV01sLKXC0Z6ysFpKr/qAhm9x6xofrRo=";
+  };
+
   qwen38-27b-q80 = fetchHF {
     repo = "unsloth/Qwen3.8-27B-GGUF";
     name = "Qwen3.8-27B-Q8_0.gguf";
