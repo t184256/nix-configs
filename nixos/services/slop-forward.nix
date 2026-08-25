@@ -37,26 +37,29 @@ let
     if __name__ == "__main__":
         Server(("", 0), Handler).serve_forever()
   '';
-  mkForward = address: {
+  mkForward = address: extraLocation: extraLocations: {
     enableACME = true;
     forceSSL = true;
-    locations."/" = {
-      proxyPass = address;
-      extraConfig = ''
-        auth_request /custom-auth;
-        proxy_read_timeout 1800s;
-        proxy_buffering off;
-        proxy_request_buffering off;
-        client_max_body_size 0;
-      '';
-    };
-    locations."/custom-auth" = {
-      proxyPass = "http://unix:/run/custom-auth.sock:/";
-      extraConfig = ''
-        proxy_pass_request_body off;
-        proxy_set_header Content-Length "";
-        proxy_set_header X-Original-URI $request_uri;
-      '';
+    locations = {
+      "/" = {
+        proxyPass = address;
+        extraConfig = ''
+          auth_request /custom-auth;
+          proxy_read_timeout 1800s;
+          proxy_buffering off;
+          proxy_request_buffering off;
+          client_max_body_size 0;
+        '';
+      } // extraLocation;
+    } // extraLocations // {
+      "/custom-auth" = {
+        proxyPass = "http://unix:/run/custom-auth.sock:/";
+        extraConfig = ''
+          proxy_pass_request_body off;
+          proxy_set_header Content-Length "";
+          proxy_set_header X-Original-URI $request_uri;
+        '';
+      };
     };
   };
 in
@@ -180,43 +183,56 @@ in
   services.nginx = {
     virtualHosts = {
       "llm.slop.unboiled.info" =
-        mkForward "http://127.0.0.1:11110";
+        mkForward "http://127.0.0.1:11110" {} {};
       "whisper.slop.unboiled.info" =
-        mkForward "http://192.168.99.53:11112";
+        mkForward "http://192.168.99.53:11112" {} {};
       "goose.slop.unboiled.info" =
-        mkForward "http://192.168.99.52:8000";
+        mkForward "http://192.168.99.52:8000" {} {};
       "ctl.slop.unboiled.info" =
-        mkForward "http://192.168.99.53:9988";
-      # paseo.slop.unboiled.info - own auth, password-protected
-      "paseo.slop.unboiled.info" = {
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://192.168.99.53:6767";
-          proxyWebsockets = true;
-          extraConfig = ''
-            proxy_read_timeout 1800s;
-            proxy_buffering off;
-            proxy_request_buffering off;
-            client_max_body_size 0;
-          '';
-        };
-      };
-      # pi.slop.unboiled.info - no auth, websockets needed
-      "pi.slop.unboiled.info" = {
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://192.168.99.53:8787";
-          proxyWebsockets = true;
-          extraConfig = ''
-            proxy_read_timeout 1800s;
-            proxy_buffering off;
-            proxy_request_buffering off;
-            client_max_body_size 0;
-          '';
-        };
-      };
+        mkForward "http://192.168.99.53:9988" {} {};
+      # `Authorization: Bearer ...` / `Sec-WebSocket-Key`
+      "paseo.slop.unboiled.info" =  # belt and suspenders, my auth + header auth
+        let
+          proxied = { proxyPass = "http://192.168.99.53:6767"; };
+        in
+          mkForward "http://192.168.99.53:6767" { proxyWebsockets = true; } {
+              # --- ungated: static content only ---
+              # index.html and root-level files
+              #"= /" = proxied;
+              "= /manifest.json" = proxied;
+              "= /metadata.json" = proxied;
+              "= /favicon.ico" = proxied;
+              "= /apple-touch-icon.png" = proxied;
+              "^~ /_expo/" = proxied;
+              "^~ /assets/" = proxied;
+              # extension-less client-side routes: the daemon answers these
+              # with index.html or a real static file, never dynamic content
+              "~ ^/(?!api(/|$)|ws(/|$)|mcp(/|$)|public(/|$))[^./]+(/[^./]+)*$" =
+                proxied;
+              # anchor navigation can't attach headers; the daemon guards this
+              # route with a single-use download token instead
+              "^~ /api/files/download" = proxied;
+
+              # --- gated (default deny) ---
+              "/ws" = proxied // {
+                proxyWebsockets = true;
+                extraConfig = ''
+                  auth_request /custom-auth;
+                  proxy_read_timeout 1800s;
+                  proxy_buffering off;
+                  proxy_request_buffering off;
+                '';
+              };
+              "^~ /api/" = proxied // {
+                extraConfig = ''
+                  auth_request /custom-auth;
+                  client_max_body_size 0;
+                '';
+              };
+            };
+      # `Authorization: Bearer ...` / `X-Bridge-Token`
+      "pi.slop.unboiled.info" =  # belt and suspenders
+        mkForward "http://192.168.99.53:8787" { proxyWebsockets = true; } {};
     };
   };
 
