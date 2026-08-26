@@ -19,6 +19,13 @@
     kernelParams = [ "iommu=pt" "pcie_aspm=off" ];
   };
 
+  # dedicated subvolume for the btrfs swapfile (see configuration.nix)
+  fileSystems."/var/swap" = {
+    device = "/dev/mapper/root";
+    fsType = "btrfs";
+    options = [ "noatime" "subvol=/swap" ];
+  };
+
   fileSystems."/mnt/persist".neededForBoot = true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

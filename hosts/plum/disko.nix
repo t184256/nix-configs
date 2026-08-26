@@ -57,6 +57,10 @@ in
                       mountpoint = "/mnt/persist";
                       mountOptions = [ "noatime" ];
                     };
+                    "/swap" = {
+                      mountpoint = "/var/swap";
+                      mountOptions = [ "noatime" ];
+                    };
                   };
                 };
               };

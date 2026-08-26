@@ -42,6 +42,10 @@
 
   hardware.nvidia.open = true;
 
+  # real swap for llama.cpp
+  zramSwap = { enable = false; };
+  swapDevices = [ { device = "/var/swap/swapfile"; size = 65536; } ];
+
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
