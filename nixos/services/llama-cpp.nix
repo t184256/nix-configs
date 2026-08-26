@@ -40,10 +40,8 @@ let
     spec-type = draft-mtp
     spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
-    # exposed as `batch` via slop-forward.nix: concurrent unattended
-    # sessions, KV cache cached in system RAM so idle slots don't
-    # evict each other
-    parallel = 4
+    # #27572, #27148
+    parallel = 1
     kv-unified = 1
     cache-ram = 65536
     [qwen3.6-35b-a3b]
