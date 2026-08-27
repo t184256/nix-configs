@@ -23,7 +23,7 @@ in {
         openai = openai-slim;
       }).overrideAttrs (old: {
         patches = (old.patches or []) ++ [
-          ./litellm/14295-cancel-on-disconnect.patch
+          ./litellm/35773-fastapi-get-flat-params.patch
           ./litellm/custom-openai-extra-body.patch
           ./litellm/prompt-progress-passthrough.patch
         ];
@@ -31,7 +31,7 @@ in {
           (prev.lib.filter (d: !(prev.lib.elem d.pname unneeded))
             old.propagatedBuildInputs)
           ++ [ prev.python3Packages.email-validator ];
-        pythonImportsCheck = [ "litellm" ];
+        pythonImportsCheck = [ "litellm" "litellm.proxy.proxy_server" ];
       });
   };
   litellm-slim = final.python3Packages.litellm;

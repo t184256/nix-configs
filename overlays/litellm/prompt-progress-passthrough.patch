@@ -1,8 +1,8 @@
 diff --git a/litellm/litellm_core_utils/streaming_handler.py b/litellm/litellm_core_utils/streaming_handler.py
-index f3274151e5..e6f1c3f27d 100644
+index 68465d0..674781a 100644
 --- a/litellm/litellm_core_utils/streaming_handler.py
 +++ b/litellm/litellm_core_utils/streaming_handler.py
-@@ -1092,6 +1092,24 @@ class CustomStreamWrapper:
+@@ -986,6 +986,24 @@ class CustomStreamWrapper:
          else:
              if hasattr(model_response, "usage"):
                  self.chunks.append(model_response)
@@ -26,4 +26,4 @@ index f3274151e5..e6f1c3f27d 100644
 +                    return model_response
              return
  
-     def _optional_combine_thinking_block_in_choices(
+     def _optional_combine_thinking_block_in_choices(self, model_response: ModelResponseStream) -> None:

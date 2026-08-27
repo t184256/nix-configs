@@ -1,9 +1,12 @@
+diff --git a/litellm/constants.py b/litellm/constants.py
+index 3b91f23..413f0d6 100644
 --- a/litellm/constants.py
 +++ b/litellm/constants.py
-@@ -729,6 +729,7 @@
- openai_compatible_providers: List = [
+@@ -758,6 +758,7 @@ openai_compatible_endpoints: Final[list] = [
+ openai_compatible_providers: Final[list] = [
      "anyscale",
      "groq",
 +    "custom_openai",
      "nvidia_nim",
      "cerebras",
+     "baseten",
