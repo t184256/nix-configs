@@ -37,8 +37,8 @@ let
     # vision, same as plum
     mmproj = ${pkgs.qwen38-27b-mmproj-f16}
     image-max-tokens = 16384
-    spec-type = draft-mtp
-    spec-draft-n-max = 2
+    #spec-type = draft-mtp
+    #spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
     # #27572, #27148
     parallel = 1
