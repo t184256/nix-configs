@@ -114,6 +114,7 @@ _:
      { proto = "tcp"; sourcePort = 2222; destination = "192.168.98.2:22"; }
      { proto = "tcp"; sourcePort = 2223; destination = "192.168.98.3:22"; }
      { proto = "tcp"; sourcePort = 2224; destination = "192.168.98.4:22"; }
+     { proto = "tcp"; sourcePort = 2225; destination = "192.168.98.5:22"; }
      { proto = "tcp"; sourcePort = 47984; destination = "192.168.98.2:47984"; }
      { proto = "tcp"; sourcePort = 47989; destination = "192.168.98.2:47989"; }
      { proto = "tcp"; sourcePort = 47990; destination = "192.168.98.2:47990"; }
