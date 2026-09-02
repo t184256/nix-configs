@@ -1,7 +1,7 @@
 From 2f79f6da985398306cf10477007090f415c66ac9 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 19:01:27 +0000
-Subject: [PATCH 21/23] tui: grey background for editor input field
+Subject: [PATCH 20/23] tui: grey background for editor input field
 
 ---
  packages/tui/src/components/editor.ts | 12 ++++++++----

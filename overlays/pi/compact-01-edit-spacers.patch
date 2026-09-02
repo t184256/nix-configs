@@ -1,7 +1,7 @@
 From 21689750a286b5f5b7e2191edefaa753281acf43 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:37:29 +0000
-Subject: [PATCH] src/core/tools/edit: remove spacers
+Subject: [PATCH 01/23] src/core/tools/edit: remove spacers
 
 ---
  packages/coding-agent/src/core/tools/edit.ts | 6 +++---

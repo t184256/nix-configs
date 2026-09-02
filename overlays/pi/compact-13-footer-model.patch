@@ -1,8 +1,7 @@
 From 4d59987ffefaa93b94ea144b4a1cc5165beb9c4b Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 23:48:43 +0000
-Subject: [PATCH 13/23] modes/interactive/components/footer: compact model
- display
+Subject: [PATCH 13/23] modes/interactive/components/footer: compact model display
 
 ---
  .../src/modes/interactive/components/footer.ts         | 10 +++++-----

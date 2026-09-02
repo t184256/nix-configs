@@ -1,8 +1,7 @@
 From 3febd85cde8ce19ab36e5340a6b3b634ca85f565 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Wed, 19 Aug 2026 00:43:32 +0200
-Subject: [PATCH] modes/interactive/components/footer: keep model name when
- truncating
+Subject: [PATCH 22/23] modes/interactive/components/footer: keep model name when truncating
 
 ---
  .../modes/interactive/components/footer.ts    | 20 ++++++++++---------

@@ -1,8 +1,7 @@
 From 314735577ca74086a348d8699cc4c127e2ea6fde Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:48:31 +0000
-Subject: [PATCH 07/23] modes/interactive/components/tool-execution: remove
- spacers and padding
+Subject: [PATCH 07/23] modes/interactive/components/tool-execution: remove spacers and padding
 
 ---
  .../interactive/components/tool-execution.ts  | 19 +++----------------

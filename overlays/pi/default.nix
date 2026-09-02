@@ -20,23 +20,23 @@ let
     ./compact-04-interactive-noborder.patch
     ./compact-05-user-message-depad.patch
     ./compact-06-custom-message-depad.patch
-    ./compact-07-tool-execution-spacers.patch
-    ./compact-08-tool-execution-depad.patch
-    ./compact-09-bash-execution-spacers.patch
-    ./compact-10-bash-execution-depad.patch
-    ./compact-11-bash-execution-simplify.patch
-    ./compact-12-assistant-message-spacers.patch
-    ./compact-13-assistant-message-depad.patch
-    ./compact-14-tools-bash-newlines.patch
-    ./compact-15-edit-depad.patch
-    ./compact-16-footer-no-auto.patch
-    ./compact-18-footer-one-line.patch
-    ./compact-19-loader.patch
-    ./compact-20-editor-noborder.patch
-    ./compact-21-editor-background.patch
-    ./compact-22-fullscreen-editor-minsize.patch
-    ./compact-23-footer-preserve-model.patch
-    ./compact-24-bash-execution-noborder.patch
+    ./compact-07-tool-execution-spacers-padding.patch
+    ./compact-08-bash-execution-depad.patch
+    ./compact-09-bash-execution-spacers-newlines.patch
+    ./compact-10-tools-bash-newlines.patch
+    ./compact-11-edit-depad.patch
+    ./compact-12-footer-no-auto.patch
+    ./compact-13-footer-model.patch
+    ./compact-14-tui-loader-depad.patch
+    ./compact-15-editor-noborder.patch
+    ./compact-16-tool-execution-depad.patch
+    ./compact-17-assistant-message-spacers.patch
+    ./compact-18-assistant-message-depad.patch
+    ./compact-19-footer-one-line.patch
+    ./compact-20-editor-background.patch
+    ./compact-21-fullscreen-editor-minsize.patch
+    ./compact-22-footer-preserve-model.patch
+    ./compact-23-bash-execution-noborder.patch
 
     ./success-completion.patch
 
