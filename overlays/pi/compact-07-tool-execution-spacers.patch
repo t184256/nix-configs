@@ -5,8 +5,8 @@ Subject: [PATCH 07/23] modes/interactive/components/tool-execution: remove
  spacers and padding
 
 ---
- .../src/modes/interactive/components/tool-execution.ts   | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ .../interactive/components/tool-execution.ts  | 19 +++----------------
+ 1 file changed, 3 insertions(+), 16 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
 index b1420b36..b339fe36 100644
@@ -18,16 +18,15 @@ index b1420b36..b339fe36 100644
  import type { ToolDefinition, ToolRenderContext } from "../../../core/extensions/types.ts";
  import { createAllToolDefinitions, type ToolName } from "../../../core/tools/index.ts";
  import { getTextOutput as getRenderedTextOutput } from "../../../core/tools/render-utils.ts";
-@@ -21,7 +21,7 @@ export class ToolExecutionComponent extends Container {
+@@ -21,7 +21,6 @@ export class ToolExecutionComponent extends Container {
  	private resultRendererComponent?: Component;
  	private rendererState: any = {};
  	private imageComponents: Image[] = [];
 -	private imageSpacers: Spacer[] = [];
-+	private imageSpacers: any[] = [];
  	private toolName: string;
  	private toolCallId: string;
  	private args: any;
-@@ -63,7 +63,7 @@ export class ToolExecutionComponent extends Container {
+@@ -63,7 +62,7 @@ export class ToolExecutionComponent extends Container {
  		this.ui = ui;
  		this.cwd = cwd;
  
@@ -36,7 +35,32 @@ index b1420b36..b339fe36 100644
  
  		// Always create all shell variants. contentBox is used for default renderer-based composition.
  		// selfRenderContainer is used when the tool renders its own framing.
-@@ -349,9 +349,6 @@ export class ToolExecutionComponent extends Container {
+@@ -245,12 +244,7 @@ export class ToolExecutionComponent extends Container {
+ 				lines.push("");
+ 				lines.push(...contentLines);
+ 			}
+-			for (let i = 0; i < this.imageComponents.length; i++) {
+-				const spacer = this.imageSpacers[i];
+-				if (spacer) {
+-					lines.push(...spacer.render(width));
+-				}
+-				const imageComponent = this.imageComponents[i];
++			for (const imageComponent of this.imageComponents) {
+ 				if (imageComponent) {
+ 					lines.push(...imageComponent.render(width));
+ 				}
+@@ -333,10 +327,6 @@ export class ToolExecutionComponent extends Container {
+ 			this.removeChild(img);
+ 		}
+ 		this.imageComponents = [];
+-		for (const spacer of this.imageSpacers) {
+-			this.removeChild(spacer);
+-		}
+-		this.imageSpacers = [];
+ 
+ 		if (this.result) {
+ 			const imageBlocks = this.result.content.filter((c) => c.type === "image");
+@@ -349,9 +339,6 @@ export class ToolExecutionComponent extends Container {
  					const imageMimeType = converted?.mimeType ?? img.mimeType;
  					if (caps.images === "kitty" && imageMimeType !== "image/png") continue;
  

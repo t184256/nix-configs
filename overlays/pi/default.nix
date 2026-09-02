@@ -1,17 +1,17 @@
 _: prev:
 
 let
-  newerVer = "0.84.2";
+  newerVer = "0.84.4";
   freshSrc = prev.fetchFromGitHub {
     owner = "earendil-works";
     repo = "pi";
     tag = "v${newerVer}";
-    hash = "sha256-d29ft9otYxdHRWYIAX8KMHPpppToX9ME5LbPb1rPcYo=";
+    hash = "sha256-7z8OXao1PzmBEepDkIqVqyfQBPHulBlKcGymDYsnMvc=";
   };
-  freshNpmDepsHash = "sha256-6J5Efe+6ptCuR3VZojwYPZO8BBnnZsOQ4OAeB64uYOY=";
+  freshNpmDepsHash = "sha256-35GC3Q4Jf4URvqoEYHeM63x49tTmrth62//PvKm4I7Q=";
   freshModelData = prev.fetchurl {
     url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${newerVer}.tgz";
-    hash = "sha256-AmJ4Wnaw6y7sWWzYp6su4j7vidLvG7EhHE8KGUTaz0E=";
+    hash = "sha256-39PJKc7lpzhxmaCiTfwb4glvHqj1n/uChRmKDtAev5M=";
   };
   localPatches = [
     ./compact-01-edit-spacers.patch
@@ -30,7 +30,6 @@ let
     ./compact-14-tools-bash-newlines.patch
     ./compact-15-edit-depad.patch
     ./compact-16-footer-no-auto.patch
-    ./compact-17-footer-model.patch
     ./compact-18-footer-one-line.patch
     ./compact-19-loader.patch
     ./compact-20-editor-noborder.patch

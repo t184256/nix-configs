@@ -11,7 +11,7 @@ diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agen
 index 9c745df5..4fdae2ca 100644
 --- a/packages/coding-agent/src/core/tools/bash.ts
 +++ b/packages/coding-agent/src/core/tools/bash.ts
-@@ -268,7 +268,7 @@ function rebuildBashResultRenderComponent(
+@@ -274,7 +274,7 @@ function rebuildBashResultRenderComponent(
  			.join("\n");
  
  		if (options.expanded) {
@@ -20,7 +20,7 @@ index 9c745df5..4fdae2ca 100644
  		} else {
  			component.addChild({
  				render: (width: number) => {
-@@ -282,9 +282,9 @@ function rebuildBashResultRenderComponent(
+@@ -288,9 +288,9 @@ function rebuildBashResultRenderComponent(
  						const hint =
  							theme.fg("muted", `... (${state.cachedSkipped} earlier lines,`) +
  							` ${keyHint("app.tools.expand", "to expand")}${theme.fg("muted", ")")}`;
@@ -32,7 +32,7 @@ index 9c745df5..4fdae2ca 100644
  				},
  				invalidate: () => {
  					state.cachedWidth = undefined;
-@@ -309,13 +309,13 @@ function rebuildBashResultRenderComponent(
+@@ -315,13 +315,13 @@ function rebuildBashResultRenderComponent(
  				);
  			}
  		}
@@ -48,7 +48,7 @@ index 9c745df5..4fdae2ca 100644
  	}
  }
  
-@@ -426,7 +426,7 @@ export function createBashToolDefinition(
+@@ -443,7 +443,7 @@ export function createShellToolDefinition(
  				return { text, details };
  			};
  

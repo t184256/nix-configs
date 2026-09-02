@@ -11,7 +11,7 @@ diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/p
 index f38503f7..e4155fd7 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -765,7 +765,7 @@ export class InteractiveMode {
+@@ -806,7 +806,7 @@ export class InteractiveMode {
  		if (this.chatContainer.children.length > 0) {
  		// no spacer
  		}
@@ -20,7 +20,7 @@ index f38503f7..e4155fd7 100644
  		if (this.settingsManager.getCollapseChangelog()) {
  			const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
  			const latestVersion = versionMatch ? versionMatch[1] : this.version;
-@@ -779,7 +779,7 @@ export class InteractiveMode {
+@@ -820,7 +820,7 @@ export class InteractiveMode {
  			);
  		// no spacer
  		}
@@ -29,7 +29,7 @@ index f38503f7..e4155fd7 100644
  	}
  
  	private mountInteractiveTui(tui: TuiMainScreen | TuiAltScreen, components: readonly Component[]): void {
-@@ -4153,21 +4153,21 @@ export class InteractiveMode {
+@@ -4272,21 +4272,21 @@ export class InteractiveMode {
  		const note = release.note?.trim();
  
  		// no spacer
@@ -54,7 +54,7 @@ index f38503f7..e4155fd7 100644
  		this.ui.requestRender();
  	}
  
-@@ -4177,15 +4177,15 @@ export class InteractiveMode {
+@@ -4296,15 +4296,15 @@ export class InteractiveMode {
  		const packageLines = packages.map((pkg) => `- ${pkg}`).join("\n");
  
  		// no spacer
@@ -73,7 +73,7 @@ index f38503f7..e4155fd7 100644
  		this.ui.requestRender();
  	}
  
-@@ -5731,18 +5731,17 @@ export class InteractiveMode {
+@@ -5929,18 +5929,17 @@ export class InteractiveMode {
  		this.resetExtensionUI();
  
  		const reloadBox = new Container();
@@ -95,7 +95,7 @@ index f38503f7..e4155fd7 100644
  
  		const previousEditor = this.editor;
  		this.editorContainer.clear();
-@@ -6112,11 +6111,11 @@ export class InteractiveMode {
+@@ -6239,11 +6238,11 @@ export class InteractiveMode {
  				: "No changelog entries found.";
  
  		// no spacer
@@ -109,7 +109,7 @@ index f38503f7..e4155fd7 100644
  		this.ui.requestRender();
  	}
  
-@@ -6243,11 +6242,11 @@ export class InteractiveMode {
+@@ -6370,11 +6369,11 @@ export class InteractiveMode {
  		}
  
  		// no spacer

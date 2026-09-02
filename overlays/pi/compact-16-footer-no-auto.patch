@@ -11,7 +11,7 @@ diff --git a/packages/coding-agent/src/modes/interactive/components/tool-executi
 index b339fe36..46750235 100644
 --- a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-@@ -68,7 +68,7 @@ export class ToolExecutionComponent extends Container {
+@@ -67,7 +67,7 @@ export class ToolExecutionComponent extends Container {
  		// Always create all shell variants. contentBox is used for default renderer-based composition.
  		// selfRenderContainer is used when the tool renders its own framing.
  		// contentText is reserved for generic fallback rendering when no tool definition exists.

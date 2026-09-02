@@ -12,7 +12,7 @@ diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/
 index ad2d155..23c6c8f 100644
 --- a/packages/coding-agent/src/modes/interactive/components/footer.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
-@@ -206,16 +206,18 @@ export class FooterComponent implements Component {
+@@ -208,16 +208,18 @@ export class FooterComponent implements Component {
  			const padding = " ".repeat(width - statsLeftWidth - rightSideWidth);
  			statsLine = statsLeft + padding + rightSide;
  		} else {

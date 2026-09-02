@@ -15,20 +15,20 @@ diff --git a/packages/coding-agent/docs/settings.md b/packages/coding-agent/docs
 index 5851608..8b74853 100644
 --- a/packages/coding-agent/docs/settings.md
 +++ b/packages/coding-agent/docs/settings.md
-@@ -67,7 +67,7 @@ Use `/trust` in interactive mode to save a project trust decision for future ses
+@@ -68,7 +68,7 @@ Use `/trust` in interactive mode to save a project trust decision for future ses
  | `showHardwareCursor` | boolean | `false` | Show the terminal cursor while TUI positions it for IME support |
  | `tuiMode` | string | `"regular"` | Interactive TUI mode: `"regular"` or experimental `"fullscreen"`. Changes from `/settings` apply immediately; `--tui-mode` overrides this setting at startup |
  | `fullscreenExitOutput` | string | `"transcript"` | Fullscreen exit output: `"transcript"` prints the final transcript and resume hint, while `"resume-hint"` restores the previous screen and prints only the resume hint. Has no effect in regular TUI mode |
 -| `fullscreenScrollbar` | string | `"auto"` | Fullscreen transcript scrollbar: `"auto"` shows it temporarily while scrolling, `"always"` reserves the rightmost column and keeps it visible, and `"hidden"` hides it. Has no effect in regular TUI mode |
 +| `fullscreenScrollbar` | string | `"auto"` | Fullscreen transcript scrollbar: `"auto"` shows it temporarily while scrolling, `"always"` reserves the rightmost column and keeps it visible, `"away"` shows it only while scrolled away from the end of the transcript, and `"hidden"` hides it. Has no effect in regular TUI mode |
+ | `fullscreenCopyOnSelect` | boolean | `true` | Automatically copy selected text in fullscreen mode. When disabled, selections stay highlighted and `Ctrl+X` copies the active selection |
  
  For VS Code, include `--wait` so pi resumes after the editor exits:
- 
 diff --git a/packages/coding-agent/src/core/settings-manager.ts b/packages/coding-agent/src/core/settings-manager.ts
-index 9a744f0..61578ac 100644
+index 3d765ca9..c4b63676 100644
 --- a/packages/coding-agent/src/core/settings-manager.ts
 +++ b/packages/coding-agent/src/core/settings-manager.ts
-@@ -1150,7 +1150,7 @@ export class SettingsManager {
+@@ -1221,7 +1221,7 @@ export class SettingsManager {
  
  	getFullscreenScrollbar(): ScrollViewScrollbar {
  		const mode = this.settings.fullscreenScrollbar;
@@ -41,7 +41,7 @@ diff --git a/packages/coding-agent/src/modes/interactive/components/settings-sel
 index 20c6b75..d48d34e 100644
 --- a/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
-@@ -651,7 +651,7 @@ export class SettingsSelectorComponent extends Container {
+@@ -689,7 +689,7 @@ export class SettingsSelectorComponent extends Container {
  				label: "Fullscreen scrollbar",
  				description: "Scrollbar behavior in fullscreen mode; has no effect in regular mode",
  				currentValue: config.fullscreenScrollbar,
@@ -49,12 +49,12 @@ index 20c6b75..d48d34e 100644
 +				values: ["auto", "always", "away", "hidden"],
  			},
  			{
- 				id: "theme",
+ 				id: "fullscreen-copy-on-select",
 diff --git a/packages/coding-agent/test/settings-selector.test.ts b/packages/coding-agent/test/settings-selector.test.ts
-index e658223..0fa7053 100644
+index c9317893..ac8f2c24 100644
 --- a/packages/coding-agent/test/settings-selector.test.ts
 +++ b/packages/coding-agent/test/settings-selector.test.ts
-@@ -37,7 +37,7 @@ describe("SettingsSelectorComponent", () => {
+@@ -43,8 +43,8 @@ describe("SettingsSelectorComponent", () => {
  
  		cycle("Fullscreen exit output", 2);
  		expect(onExitOutputChange.mock.calls.flat()).toEqual(["resume-hint", "transcript"]);
@@ -62,10 +62,11 @@ index e658223..0fa7053 100644
 -		expect(onScrollbarChange.mock.calls.flat()).toEqual(["always", "hidden", "auto"]);
 +		cycle("Fullscreen scrollbar", 4);
 +		expect(onScrollbarChange.mock.calls.flat()).toEqual(["always", "away", "hidden", "auto"]);
+ 		cycle("Fullscreen copy on select", 2);
+ 		expect(onCopyOnSelectChange.mock.calls.flat()).toEqual([false, true]);
  	});
- });
 diff --git a/packages/tui/src/components/scroll-view.ts b/packages/tui/src/components/scroll-view.ts
-index a9a50f0..e01818c 100644
+index a9a50f02..e01818c0 100644
 --- a/packages/tui/src/components/scroll-view.ts
 +++ b/packages/tui/src/components/scroll-view.ts
 @@ -1,7 +1,7 @@

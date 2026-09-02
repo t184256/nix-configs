@@ -1,6 +1,21 @@
---- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts	2026-08-18 22:10:40.718641762 +0000
-+++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts	2026-08-18 22:12:16.560363940 +0000
-@@ -99,7 +99,7 @@
+From c912de89f0b859179cb06b6c27ac30a6f117cd79 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Wed, 2 Sep 2026 14:45:39 +0000
+Subject: [PATCH] tui, modes/interactive: middle-click paste and terminal
+ clipboard fallback
+
+---
+ .../src/modes/interactive/interactive-mode.ts | 24 ++++++--
+ packages/coding-agent/src/utils/clipboard.ts  | 60 ++++++++++++++-----
+ packages/tui/src/tui-alt-screen.ts            | 27 ++++++++-
+ packages/tui/src/tui.ts                       | 44 ++++++++++++++
+ 4 files changed, 133 insertions(+), 22 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
+index cfba9392..830934ab 100644
+--- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
++++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
+@@ -101,7 +101,7 @@ import type { TruncationResult } from "../../core/tools/truncate.ts";
  import { hasTrustRequiringProjectResources, ProjectTrustStore } from "../../core/trust-manager.ts";
  import { getUsageCostBreakdown } from "../../core/usage-totals.ts";
  import { getChangelogPath, getNewEntries, normalizeChangelogLinks, parseChangelog } from "../../utils/changelog.ts";
@@ -9,11 +24,12 @@
  import { extensionForImageMimeType, readClipboardImage } from "../../utils/clipboard-image.ts";
  import { parseGitUrl } from "../../utils/git.ts";
  import { openBrowser } from "../../utils/open-browser.ts";
-@@ -339,29 +339,39 @@
+@@ -361,31 +361,41 @@ interface InteractiveTuiOptions {
  	logDirectory: string;
  	terminal?: Terminal;
  	onRightClickPaste?: () => void;
 +	onMiddleClickPaste?: () => void;
+ 	fullscreenCopyOnSelect?: boolean;
  }
  
  /** Composition root for selecting the interactive terminal renderer. */
@@ -29,11 +45,12 @@
  			openUrl: openBrowser,
  			onRightClickPaste: options.onRightClickPaste,
 +			onMiddleClickPaste: options.onMiddleClickPaste,
+ 			copyOnSelect: options.fullscreenCopyOnSelect,
  			copySelection: async (text) => {
  				try {
 -					await copyToClipboard(text);
 +					// Mouse selections go to the primary selection, like in
-+				// conventional terminals; middle-click pastes it back.
++					// conventional terminals; middle-click pastes it back.
 +					await copyToClipboard(text, "s");
  					return true;
  				} catch {
@@ -52,23 +69,23 @@
  }
  
  /** Stable reference for components while InteractiveMode replaces the active renderer. */
-@@ -556,6 +566,7 @@
+@@ -581,6 +591,7 @@ export class InteractiveMode {
  			showHardwareCursor: this.settingsManager.getShowHardwareCursor(),
  			logDirectory: getAgentDir(),
  			onRightClickPaste: this.onRightClickPaste,
 +			onMiddleClickPaste: this.onRightClickPaste,
+ 			fullscreenCopyOnSelect: this.settingsManager.getFullscreenCopyOnSelect(),
  		});
  		this.ui = createInteractiveTuiReference(() => this.renderer);
- 		this.ui.setClearOnShrink(this.settingsManager.getClearOnShrink());
-@@ -825,6 +836,7 @@
+@@ -866,6 +877,7 @@ export class InteractiveMode {
  			logDirectory: getAgentDir(),
  			terminal,
  			onRightClickPaste: this.onRightClickPaste,
 +			onMiddleClickPaste: this.onRightClickPaste,
+ 			fullscreenCopyOnSelect: this.settingsManager.getFullscreenCopyOnSelect(),
  		});
  		nextUi.setClearOnShrink(clearOnShrink);
- 		nextUi.onDebug = onDebug;
-@@ -2856,7 +2868,9 @@
+@@ -2934,7 +2946,9 @@ export class InteractiveMode {
  		const handleInput = target?.handleInput;
  		if (!target || !handleInput) return;
  		try {
@@ -79,10 +96,11 @@
  			if (!text || this.renderer.getFocusedComponent() !== target) return;
  			handleInput.call(target, `\x1b[200~${text}\x1b[201~`);
  			this.ui.requestRender();
-diff -ru pi-base/packages/coding-agent/src/utils/clipboard.ts pi-src/packages/coding-agent/src/utils/clipboard.ts
---- a/packages/coding-agent/src/utils/clipboard.ts	2026-08-18 22:10:35.644208965 +0000
-+++ b/packages/coding-agent/src/utils/clipboard.ts	2026-08-18 22:11:14.277360898 +0000
-@@ -23,15 +23,31 @@
+diff --git a/packages/coding-agent/src/utils/clipboard.ts b/packages/coding-agent/src/utils/clipboard.ts
+index c53a382b..9d40657c 100644
+--- a/packages/coding-agent/src/utils/clipboard.ts
++++ b/packages/coding-agent/src/utils/clipboard.ts
+@@ -23,15 +23,31 @@ function isRemoteSession(env: NodeJS.ProcessEnv = process.env): boolean {
  	return Boolean(env.SSH_CONNECTION || env.SSH_CLIENT || env.MOSH_CONNECTION);
  }
  
@@ -116,7 +134,7 @@ diff -ru pi-base/packages/coding-agent/src/utils/clipboard.ts pi-src/packages/co
  type ClipboardReadResult = { ok: true; text: string | null } | { ok: false };
  
  const READ_CLIPBOARD_OPTIONS: ExecFileSyncOptionsWithStringEncoding = {
-@@ -40,37 +56,49 @@
+@@ -40,37 +56,49 @@ const READ_CLIPBOARD_OPTIONS: ExecFileSyncOptionsWithStringEncoding = {
  	timeout: 5000,
  };
  
@@ -179,7 +197,7 @@ diff -ru pi-base/packages/coding-agent/src/utils/clipboard.ts pi-src/packages/co
  	let copied = false;
  
  	const p = platform();
-@@ -165,7 +193,7 @@
+@@ -165,7 +193,7 @@ export async function copyToClipboard(text: string): Promise<void> {
  	}
  
  	if (remote || !copied) {
@@ -188,35 +206,36 @@ diff -ru pi-base/packages/coding-agent/src/utils/clipboard.ts pi-src/packages/co
  		copied = copied || osc52Copied;
  	}
  
-diff -ru pi-base/packages/tui/src/tui-alt-screen.ts pi-src/packages/tui/src/tui-alt-screen.ts
---- a/packages/tui/src/tui-alt-screen.ts	2026-08-18 22:10:35.658312501 +0000
-+++ b/packages/tui/src/tui-alt-screen.ts	2026-08-18 22:11:25.918375487 +0000
-@@ -153,6 +153,8 @@
+diff --git a/packages/tui/src/tui-alt-screen.ts b/packages/tui/src/tui-alt-screen.ts
+index c37689a9..268bbbf3 100644
+--- a/packages/tui/src/tui-alt-screen.ts
++++ b/packages/tui/src/tui-alt-screen.ts
+@@ -156,6 +156,8 @@ export interface TuiAltScreenOptions {
  	openUrl?: (url: string) => void;
  	/** Handle an unmodified secondary-button press for clipboard paste. Currently enabled on Windows only. */
  	onRightClickPaste?: () => void;
 +	/** Handle an unmodified middle-button press for clipboard paste. */
 +	onMiddleClickPaste?: () => void;
+ 	/** Automatically copy selected text to the clipboard on mouse release (default: true). */
+ 	copyOnSelect?: boolean;
  	/**
- 	 * Copy selected text to the system clipboard. Return `true` on success; the caller flashes
- 	 * an error otherwise. When omitted, the selection is copied via an OSC 52 write.
-@@ -197,6 +199,7 @@
+@@ -202,6 +204,7 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
  	private readonly searchCurrentMatchStyle: (text: string) => string;
  	private readonly openUrl?: (url: string) => void;
  	private readonly onRightClickPaste?: () => void;
 +	private readonly onMiddleClickPaste?: () => void;
+ 	private copyOnSelect: boolean;
  	private readonly copySelection?: (text: string) => Promise<boolean>;
  
- 	constructor(
-@@ -220,6 +223,7 @@
+@@ -226,6 +229,7 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
  		this.searchCurrentMatchStyle = options.searchCurrentMatchStyle ?? ((text) => `\x1b[1;7m${text}\x1b[22;27m`);
  		this.openUrl = options.openUrl;
  		this.onRightClickPaste = options.onRightClickPaste;
 +		this.onMiddleClickPaste = options.onMiddleClickPaste;
+ 		this.copyOnSelect = options.copyOnSelect ?? true;
  		this.copySelection = options.copySelection;
  		this.addInputListener((data) => this.handleViewportInput(data));
- 	}
-@@ -567,6 +571,7 @@
+@@ -594,6 +598,7 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
  		const mouseEvent = this.parseSgrMouseEvent(data);
  		if (mouseEvent) {
  			if (this.handleRightClickPaste(mouseEvent)) return { consume: true };
@@ -224,7 +243,7 @@ diff -ru pi-base/packages/tui/src/tui-alt-screen.ts pi-src/packages/tui/src/tui-
  			const handled = this.handleScrollbarMouseEvent(mouseEvent);
  			if (!this.scrollbarDrag) this.updateScrollbarHover(mouseEvent.x, mouseEvent.y);
  			if (!handled) this.handleSelectionMouseEvent(mouseEvent);
-@@ -694,6 +699,24 @@
+@@ -721,6 +726,24 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
  		};
  	}
  
@@ -247,23 +266,24 @@ diff -ru pi-base/packages/tui/src/tui-alt-screen.ts pi-src/packages/tui/src/tui-
 +	}
 +
  	private handleRightClickPaste(event: SgrMouseEvent): boolean {
- 		if (!this.onRightClickPaste || process.platform !== "win32" || event.release || event.button !== 2) {
- 			return false;
-@@ -1085,7 +1108,9 @@
+ 		if (
+ 			!this.onRightClickPaste ||
+@@ -1148,7 +1171,9 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
  			this.flash(ok ? "Copied!" : "Copy failed");
- 			return;
+ 			return ok;
  		}
 -		this.terminal.write(`\x1b]52;c;${Buffer.from(text).toString("base64")}\x07`);
 +		// Selections go to the primary selection (OSC 52 target `s`), matching
 +		// conventional terminal behavior and middle-click paste.
 +		this.terminal.write(`\x1b]52;s;${Buffer.from(text).toString("base64")}\x07`);
  		this.flash("Copied!");
+ 		return true;
  	}
- 
-diff -ru pi-base/packages/tui/src/tui.ts pi-src/packages/tui/src/tui.ts
---- a/packages/tui/src/tui.ts	2026-08-18 22:10:35.658312501 +0000
-+++ b/packages/tui/src/tui.ts	2026-08-18 22:11:38.762391582 +0000
-@@ -333,6 +333,7 @@
+diff --git a/packages/tui/src/tui.ts b/packages/tui/src/tui.ts
+index 5172a9a1..fbcf9561 100644
+--- a/packages/tui/src/tui.ts
++++ b/packages/tui/src/tui.ts
+@@ -333,6 +333,7 @@ export abstract class TuiBase extends Container implements TUI {
  	public terminal: Terminal;
  	private focusedComponent: Component | null = null;
  	private inputListeners = new Set<TuiInputListener>();
@@ -271,7 +291,7 @@ diff -ru pi-base/packages/tui/src/tui.ts pi-src/packages/tui/src/tui.ts
  
  	/** Global callback for debug key (Shift+Ctrl+D). Called before input is forwarded to focused component. */
  	public onDebug?: () => void;
-@@ -756,6 +757,7 @@
+@@ -756,6 +757,7 @@ export abstract class TuiBase extends Container implements TUI {
  			this.terminal.write("\x1b[?2031l");
  		}
  		this.beforeTerminalStop(options);
@@ -279,7 +299,7 @@ diff -ru pi-base/packages/tui/src/tui.ts pi-src/packages/tui/src/tui.ts
  		this.terminal.showCursor();
  		this.terminal.stop();
  		this.afterTerminalStop(options);
-@@ -853,6 +855,11 @@
+@@ -853,6 +855,11 @@ export abstract class TuiBase extends Container implements TUI {
  			return;
  		}
  
@@ -291,7 +311,7 @@ diff -ru pi-base/packages/tui/src/tui.ts pi-src/packages/tui/src/tui.ts
  		// Global debug key handler (Shift+Ctrl+D)
  		if (matchesKey(data, "shift+ctrl+d") && this.onDebug) {
  			this.onDebug();
-@@ -937,6 +944,43 @@
+@@ -937,6 +944,43 @@ export abstract class TuiBase extends Container implements TUI {
  		return true;
  	}
  
@@ -335,3 +355,6 @@ diff -ru pi-base/packages/tui/src/tui.ts pi-src/packages/tui/src/tui.ts
  	private consumeCellSizeResponse(data: string): boolean {
  		// Response format: ESC [ 6 ; height ; width t
  		const match = data.match(/^\x1b\[6;(\d+);(\d+)t$/);
+-- 
+2.55.0
+

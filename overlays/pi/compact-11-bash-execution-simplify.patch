@@ -11,7 +11,7 @@ diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agen
 index f6371ebe..23fba1a0 100644
 --- a/packages/coding-agent/src/core/tools/edit.ts
 +++ b/packages/coding-agent/src/core/tools/edit.ts
-@@ -156,7 +156,7 @@ type EditCallRenderComponent = Box & {
+@@ -174,7 +174,7 @@ type EditCallRenderComponent = Box & {
  };
  
  function createEditCallRenderComponent(): EditCallRenderComponent {

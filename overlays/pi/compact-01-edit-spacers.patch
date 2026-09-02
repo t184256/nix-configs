@@ -1,7 +1,7 @@
 From 21689750a286b5f5b7e2191edefaa753281acf43 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:37:29 +0000
-Subject: [PATCH 01/23] src/core/tools/edit: remove spacers
+Subject: [PATCH] src/core/tools/edit: remove spacers
 
 ---
  packages/coding-agent/src/core/tools/edit.ts | 6 +++---
@@ -18,7 +18,7 @@ index 45281c25..f6371ebe 100644
  import { constants } from "fs";
  import { access as fsAccess, readFile as fsReadFile, writeFile as fsWriteFile } from "fs/promises";
  import { type Static, Type } from "typebox";
-@@ -270,7 +270,7 @@ function buildEditCallComponent(
+@@ -288,7 +288,7 @@ function buildEditCallComponent(
  
  	const body =
  		"error" in component.preview ? theme.fg("error", component.preview.error) : renderDiff(component.preview.diff);
@@ -27,7 +27,7 @@ index 45281c25..f6371ebe 100644
  	component.addChild(new Text(body, 0, 0));
  	return component;
  }
-@@ -431,7 +431,7 @@ export function createEditToolDefinition(
+@@ -449,7 +449,7 @@ export function createEditToolDefinition(
  			if (!output) {
  				return component;
  			}

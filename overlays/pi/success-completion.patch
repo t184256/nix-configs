@@ -11,7 +11,7 @@ diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agen
 index 4fdae2ca..76d18ae6 100644
 --- a/packages/coding-agent/src/core/tools/bash.ts
 +++ b/packages/coding-agent/src/core/tools/bash.ts
-@@ -53,6 +53,7 @@ export type BashToolInput = Static<typeof bashSchema>;
+@@ -54,6 +54,7 @@ export type BashToolInput = Static<typeof bashSchema>;
  export interface BashToolDetails {
  	truncation?: TruncationResult;
  	fullOutputPath?: string;
@@ -19,7 +19,7 @@ index 4fdae2ca..76d18ae6 100644
  }
  
  /**
-@@ -312,7 +313,7 @@ function rebuildBashResultRenderComponent(
+@@ -318,7 +319,7 @@ function rebuildBashResultRenderComponent(
  		component.addChild(new Text(theme.fg("warning", `[${warnings.join(". ")}]`), 0, 0));
  	}
  
@@ -28,7 +28,7 @@ index 4fdae2ca..76d18ae6 100644
  		const label = options.isPartial ? "Elapsed" : "Took";
  		const endTime = endedAt ?? Date.now();
  		component.addChild(new Text(theme.fg("muted", `${label} ${formatDuration(endTime - startedAt)}`), 0, 0));
-@@ -429,6 +430,7 @@ export function createBashToolDefinition(
+@@ -446,6 +447,7 @@ export function createShellToolDefinition(
  			const appendStatus = (text: string, status: string) => `${text ? `${text}` : ""}[${status}]`;
  
  			try {
@@ -36,7 +36,7 @@ index 4fdae2ca..76d18ae6 100644
  				let exitCode: number | null;
  				try {
  					const result = await ops.exec(spawnContext.command, spawnContext.cwd, {
-@@ -456,7 +458,10 @@ export function createBashToolDefinition(
+@@ -473,7 +475,10 @@ export function createShellToolDefinition(
  				if (exitCode !== 0 && exitCode !== null) {
  					throw new Error(appendStatus(outputText, `Command exited with code ${exitCode}`));
  				}

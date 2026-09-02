@@ -5,14 +5,33 @@ Subject: [PATCH 09/23] modes/interactive/components/bash-execution: remove
  leading newlines
 
 ---
- .../src/modes/interactive/components/bash-execution.ts     | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ .../modes/interactive/components/bash-execution.ts   | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 index 387819dd..8c7a38a4 100644
 --- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-@@ -143,17 +143,16 @@ export class BashExecutionComponent extends Container {
+@@ -2,7 +2,7 @@
+  * Component for displaying bash command execution with streaming output.
+  */
+ 
+-import { Container, Loader, Spacer, Text, type TUI } from "@earendil-works/pi-tui";
++import { Container, Loader, Text, type TUI } from "@earendil-works/pi-tui";
+ import {
+ 	DEFAULT_MAX_BYTES,
+ 	DEFAULT_MAX_LINES,
+@@ -37,9 +37,6 @@ export class BashExecutionComponent extends Container {
+ 		const colorKey = excludeFromContext ? "dim" : "bashMode";
+ 		const borderColor = (str: string) => theme.fg(colorKey, str);
+ 
+-		// Add spacer
+-		this.addChild(new Spacer(1));
+-
+ 		// Top border
+ 		this.addChild(new DynamicBorder(borderColor));
+ 
+@@ -143,17 +140,16 @@ export class BashExecutionComponent extends Container {
  			if (this.expanded) {
  				// Show all lines
  				const displayText = availableLines.map((line) => theme.fg("muted", line)).join("\n");
@@ -32,7 +51,7 @@ index 387819dd..8c7a38a4 100644
  							cachedLines = result.visualLines;
  							cachedWidth = width;
  						}
-@@ -199,7 +198,7 @@ export class BashExecutionComponent extends Container {
+@@ -199,7 +195,7 @@ export class BashExecutionComponent extends Container {
  			}
  
  			if (statusParts.length > 0) {
