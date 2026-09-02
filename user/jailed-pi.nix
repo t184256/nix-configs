@@ -19,6 +19,7 @@ let
     };
     compat = {
       thinkingFormat = "chat-template";
+      thinkingTokenBudgetField = "thinking_budget_tokens";
       chatTemplateKwargs = {
         enable_thinking = { "$var" = "thinking.enabled"; };
         preserve_thinking = true;
@@ -116,6 +117,11 @@ let
     defaultModel = "interactive";
     tuiMode = "fullscreen";
     fullscreenScrollbar = "away";
+    thinkingBudgets = {
+      low = 1024;
+      medium = 4096;
+      high = 16384;  # xhigh is mapped to high
+    };
     quietStartup = true;
     extensions = [
       "extensions/llama-cpp-stats.ts"
