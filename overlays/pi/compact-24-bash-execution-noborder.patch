@@ -1,0 +1,90 @@
+From 4c604a430c28051ce7b797d1eb1fed68e234b7e4 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Wed, 2 Sep 2026 15:22:08 +0000
+Subject: [PATCH] modes/interactive/components/bash-execution: remove borders
+ and annotate unterminated output
+
+---
+ .../interactive/components/bash-execution.ts  | 41 +++++++++++++------
+ 1 file changed, 28 insertions(+), 13 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+index dde8a427..72799590 100644
+--- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
++++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
+@@ -11,7 +11,6 @@ import {
+ } from "../../../core/tools/truncate.ts";
+ import { stripAnsi } from "../../../utils/ansi.ts";
+ import { theme } from "../theme/theme.ts";
+-import { DynamicBorder } from "./dynamic-border.ts";
+ import { keyHint, keyText } from "./keybinding-hints.ts";
+ import { truncateToVisualLines } from "./visual-truncate.ts";
+ 
+@@ -33,14 +32,10 @@ export class BashExecutionComponent extends Container {
+ 		super();
+ 		this.command = command;
+ 
+-		// Use dim border for excluded-from-context commands (!! prefix)
++		// Use dim color for excluded-from-context commands (!! prefix)
+ 		const colorKey = excludeFromContext ? "dim" : "bashMode";
+-		const borderColor = (str: string) => theme.fg(colorKey, str);
+ 
+-		// Top border
+-		this.addChild(new DynamicBorder(borderColor));
+-
+-		// Content container (holds dynamic content between borders)
++		// Content container
+ 		this.contentContainer = new Container();
+ 		this.addChild(this.contentContainer);
+ 
+@@ -56,9 +51,6 @@ export class BashExecutionComponent extends Container {
+ 			`Running... (${keyText("tui.select.cancel")} to cancel)`, // Plain text for loader
+ 		);
+ 		this.contentContainer.addChild(this.loader);
+-
+-		// Bottom border
+-		this.addChild(new DynamicBorder(borderColor));
+ 	}
+ 
+ 	/**
+@@ -122,11 +114,34 @@ export class BashExecutionComponent extends Container {
+ 		});
+ 
+ 		// Get the lines to potentially display (after context truncation)
+-		const availableLines = contextTruncation.content ? contextTruncation.content.split("\n") : [];
++		const availableLines: string[] = contextTruncation.content ? contextTruncation.content.split("\n") : [];
++
++		// In terms of strings:
++		//   "" -> "[no output]"
++		//   "ab" -> "ab[no newline at the end of the output]"
++		//   "ab\n"  -> "ab"
++		//   "ab\n\n"-> "ab\n"
++		const hadTrailingNewline =
++			availableLines.length > 1 && availableLines[availableLines.length - 1] === "";
++		if (hadTrailingNewline) {
++			availableLines.pop();
++		}
++		let displayLines: string[];
++		if (availableLines.every((line) => line === "")) {
++			displayLines = [theme.fg("dim", "[no output]")];
++		} else if (!hadTrailingNewline) {
++			const last = availableLines.length - 1;
++			displayLines = [
++				...availableLines.slice(0, last),
++				availableLines[last] + theme.fg("dim", "[no newline at the end of the output]"),
++			];
++		} else {
++			displayLines = availableLines;
++		}
+ 
+ 		// Apply preview truncation based on expanded state
+-		const previewLogicalLines = availableLines.slice(-PREVIEW_LINES);
+-		const hiddenLineCount = availableLines.length - previewLogicalLines.length;
++		const previewLogicalLines = displayLines.slice(-PREVIEW_LINES);
++		const hiddenLineCount = displayLines.length - previewLogicalLines.length;
+ 
+ 		// Rebuild content container
+ 		this.contentContainer.clear();
+-- 
+2.55.0
+
