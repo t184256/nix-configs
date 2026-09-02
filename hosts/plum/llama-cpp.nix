@@ -30,7 +30,7 @@ in
       ];
       ExecStart = ''
         ${llama-cpp}/bin/llama-server \
-          --cache-ram 16384 \
+          --cache-ram 24576 \
           --fit off \
           -c 262144 \
           -ngl 9999 \
