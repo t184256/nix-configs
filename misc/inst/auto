@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ueo pipefail
+set -Eueo pipefail
 
 BASEURL=https://raw.githubusercontent.com/t184256/nix-configs/staging
 if [[ -e /etc/termux/termux.env ]] && [[ $(uname -r) == *X900XXU* ]]; then
@@ -8,11 +8,24 @@ else
     DMI=$(sudo cat /sys/devices/virtual/dmi/id/product_uuid)
     if [[ "$DMI" == 699f2134-bf6f-40f5-b639-ef4d2e04282b ]]; then AUTO=araceae
     elif [[ "$DMI" == 87e941d7-2fe6-4429-85e4-82de0b2342e7 ]]; then AUTO=bayroot
-    elif [[ "$DMI" == 03000200-0400-0500-0006-000700080009 ]]; then AUTO=jujube
-    else
-        echo 'host has not been autodetected' >&2
-        exit 1
+    elif [[ "$DMI" == 03000200-0400-0500-0006-000700080009 ]]; then  # facepalm
+        if [[ -r /sys/class/nvme/nvme0/serial ]]; then  # lower prio than Wi-Fi
+            NVME=$(cut -d' ' -f1 /sys/class/nvme/nvme0/serial 2>/dev/null ||:)
+            if [[ "$NVME" == '671S104NTAVT' ]]; then AUTO=intermezzo
+            elif [[ "$NVME" == 'LAMLCHC21265186' ]]; then AUTO=lychee
+            fi
+        fi
+        if [[ -n "$(ls /sys/class/net/wl*/address 2>/dev/null)" ]]; then
+            WIFI_MAC=$(cat /sys/class/net/wl*/address | head -n1)
+            if [[ "$WIFI_MAC" == '56:c7:b9:48:cd:7e' ]]; then AUTO=intermezzo
+            elif [[ "$WIFI_MAC" == '70:a6:cc:2b:42:88' ]]; then AUTO=lychee
+            fi
+        fi
     fi
+fi
+if [[ ! -v AUTO ]]; then
+    echo 'host has not been autodetected' >&2
+    exit 1
 fi
 
 source <(curl -s "$BASEURL/misc/inst/$AUTO")

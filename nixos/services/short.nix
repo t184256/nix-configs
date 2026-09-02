@@ -15,6 +15,7 @@ let
       ip a | grep inet | grep -vwF 127.0.0.1/8 | grep -vwF 'inet6 ::1/128' ||:
     '';
     t14 = builtins.readFile ../../misc/inst/t14g5;
+    intermezzo = builtins.readFile ../../misc/inst/intermezzo;
   };
   short-scripts-dir = pkgs.linkFarm "short-scripts" (lib.mapAttrsToList
     (name: text: { inherit name; path = mkScript name text; }) scripts

@@ -28,6 +28,7 @@ let
     pistachio = { int = "192.168.99.33"; };
     candlenut = { int = "192.168.99.34"; };
     t14g5 = { int = "192.168.99.42"; };
+    intermezzo = { int = "192.168.99.43"; };
     spondias = { int = "192.168.99.51"; routines = 2; };
     grapefruit = { int = "192.168.99.52"; routines = 4; };
     plum = { int = "192.168.99.53"; routines = 2; };
