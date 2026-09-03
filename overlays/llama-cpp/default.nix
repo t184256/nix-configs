@@ -2,24 +2,25 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "0.3.0";
+  newerVer = "b10786";
   # b-versions like 10408 compare higher that v-versions like 0.3.0,
   # treat them as older
-  isFresh = v:
-    (prev.lib.strings.match "^[0-9]+$" v) == null &&
-    prev.lib.versionAtLeast v newerVer;
+  # isFresh = v:
+  #   (prev.lib.strings.match "^[0-9]+$" v) == null &&
+  #   prev.lib.versionAtLeast v newerVer;
   freshen = prevLlamaCpp:
-    if isFresh prevLlamaCpp.version
-    then prevLlamaCpp
-    else prevLlamaCpp.overrideAttrs overrides-fresh;
+    # if isFresh prevLlamaCpp.version
+    # then prevLlamaCpp
+    # else
+    prevLlamaCpp.overrideAttrs overrides-fresh;
   overrides-fresh = _: {
     name = "llama-cpp-${newerVer}";
     version = newerVer;
     src = prev.fetchFromGitHub {
       owner = "ggml-org";
       repo = "llama.cpp";
-      tag = "v${newerVer}";
-      hash = "sha256-eUHLOgWFy8N4vmrolnUxJYHPmtxmEmNGR4qL46mQs7A=";
+      tag = "${newerVer}";
+      hash = "sha256-y0WvekNed7gjXeXW64LYj5L0a5gWv0/d3cA8njVAYzQ=";
       leaveDotGit = true;
       postFetch = ''
         git -C "$out" rev-parse --short HEAD > $out/COMMIT
