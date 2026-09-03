@@ -27,6 +27,7 @@ in
         "LLAMA_CACHE=/var/lib/llama-cpp/cache"
         "LD_LIBRARY_PATH=/run/opengl-driver/lib"
         "GGML_CUDA_P2P=1"
+        "GGML_CUDA_GRAPH_OPT=1"
       ];
       ExecStart = ''
         ${llama-cpp}/bin/llama-server \
