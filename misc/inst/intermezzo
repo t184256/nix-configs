@@ -86,12 +86,11 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl restart polkit
 sudo systemctl restart pcscd
-# TODO(yubikey): uncomment when the card is plugged in (needed for stage2)
-#gpg --keyserver hkps://keys.openpgp.org --recv-keys b0e9dd20b29f1432
-#gpg --card-status || (sleep 1; sudo systemctl restart pcscd; gpg --card-status)
+gpg --keyserver hkps://keys.openpgp.org --recv-keys b0e9dd20b29f1432
+gpg --card-status || (sleep 1; sudo systemctl restart pcscd; gpg --card-status)
 mkdir -p /tmp/.inst-files
-#cp "$SEED" /tmp/.inst-files/seed.gpg
-#gpg -d /tmp/.inst-files/seed.gpg > /tmp/.inst-files/rclone.conf
+cp "$SEED" /tmp/.inst-files/seed.gpg
+gpg -d /tmp/.inst-files/seed.gpg > /tmp/.inst-files/rclone.conf
 
 
 # (minimal) User interaction:
@@ -214,7 +213,7 @@ sudo dnf5 -y \
     install dnf5 fedora-gpg-keys bash coreutils psmisc passwd \
             glibc-minimal-langpack glibc-langpack-en kernel dracut zstd agetty \
             linux-firmware intel-gpu-firmware iwlwifi-mvm-firmware \
-            systemd systemd-resolved systemd-boot systemd-pam systemd-timesyncd rootfiles \
+            systemd systemd-resolved systemd-boot systemd-pam rootfiles \
             selinux-policy-targeted \
             policycoreutils policycoreutils-python-utils \
             NetworkManager NetworkManager-tui NetworkManager-wifi \
@@ -223,7 +222,7 @@ sudo dnf5 -y \
             mtr ca-certificates git-core wget curl rclone \
             tar cryptsetup parted btrfs-progs e2fsprogs \
             sudo vim-minimal man-db \
-            pcsc-lite opensc gnupg pinentry-tty \
+            pcsc-lite opensc gnupg2 gnupg2-scdaemon pinentry-tty \
             mesa-dri-drivers gdm gnome-session gnome-console pinentry-gnome3 \
             adobe-source-code-pro-fonts  # GNOME default
 sudo tar -C / -cf /tmp/.inst-files/dnf-reinstall.tar \
@@ -245,7 +244,6 @@ $CHROOT systemd-firstboot \
     --timezone=Europe/Prague \
     --hostname="${HOST,,}" \
     --root-shell=/bin/bash
-$CHROOT systemctl enable systemd-timesyncd
 $CHROOT groupadd -g 1000 asosedki
 $CHROOT useradd -g 1000 -u 1000 -M -d /home/asosedki -s /bin/bash asosedki
 $CHROOT usermod -a -G wheel,users,audio,input asosedki
@@ -280,9 +278,7 @@ if [[ -e /mnt/tgt/etc/gdm/custom.conf ]]; then
 fi
 sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/home/asosedki
 sudo install -m 700 -o 1000 -g 1000 -d /mnt/tgt/mnt/persist/ssh
-{ wget -q -O - https://github.com/t184256.keys
-  echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1GejqKcsLIrAReYjM9SeQP03qYyyCQM5zMIa0OcP2o'
-} > /tmp/.inst-files/keys
+wget https://github.com/t184256.keys -O /tmp/.inst-files/keys
 sudo sed 's|.*#PasswordAuthentication .*|PasswordAuthentication no|' \
          -i /mnt/tgt/etc/ssh/sshd_config
 sudo grep -Fx 'PasswordAuthentication no' /mnt/tgt/etc/ssh/sshd_config
@@ -304,9 +300,8 @@ sudo sed 's|liveuser|asosedki|' /usr/share/polkit-1/rules.d/10-pcsc.rules \
     | sudo tee /mnt/tgt/usr/share/polkit-1/rules.d/10-pcsc.rules
 
 # Prepare for stage2:
-# TODO(yubikey): uncomment together with the seed.gpg decryption above
-#sudo install -m 600 -o 1000 -g 1000 /tmp/.inst-files/rclone.conf \
-#                                    /mnt/tgt/mnt/secrets/rclone.conf
+sudo install -m 600 -o 1000 -g 1000 /tmp/.inst-files/rclone.conf \
+                                    /mnt/tgt/mnt/secrets/rclone.conf
 
 sudo tee /mnt/tgt/bin/stage2 <<\EOF
 #!/bin/bash
