@@ -115,15 +115,15 @@ _:
      { proto = "tcp"; sourcePort = 2223; destination = "192.168.98.3:22"; }
      { proto = "tcp"; sourcePort = 2224; destination = "192.168.98.4:22"; }
      { proto = "tcp"; sourcePort = 2225; destination = "192.168.98.5:22"; }
-     { proto = "tcp"; sourcePort = 47984; destination = "192.168.98.2:47984"; }
-     { proto = "tcp"; sourcePort = 47989; destination = "192.168.98.2:47989"; }
-     { proto = "tcp"; sourcePort = 47990; destination = "192.168.98.2:47990"; }
-     { proto = "tcp"; sourcePort = 48010; destination = "192.168.98.2:48010"; }
-     { proto = "udp"; sourcePort = 47998; destination = "192.168.98.2:47998"; }
-     { proto = "udp"; sourcePort = 47999; destination = "192.168.98.2:47999"; }
-     { proto = "udp"; sourcePort = 48000; destination = "192.168.98.2:48000"; }
-     { proto = "udp"; sourcePort = 48002; destination = "192.168.98.2:48002"; }
-     { proto = "udp"; sourcePort = 48010; destination = "192.168.98.2:48010"; }
+     { proto = "tcp"; sourcePort = 47984; destination = "192.168.98.5:47984"; }
+     { proto = "tcp"; sourcePort = 47989; destination = "192.168.98.5:47989"; }
+     { proto = "tcp"; sourcePort = 47990; destination = "192.168.98.5:47990"; }
+     { proto = "tcp"; sourcePort = 48010; destination = "192.168.98.5:48010"; }
+     { proto = "udp"; sourcePort = 47998; destination = "192.168.98.5:47998"; }
+     { proto = "udp"; sourcePort = 47999; destination = "192.168.98.5:47999"; }
+     { proto = "udp"; sourcePort = 48000; destination = "192.168.98.5:48000"; }
+     { proto = "udp"; sourcePort = 48002; destination = "192.168.98.5:48002"; }
+     { proto = "udp"; sourcePort = 48010; destination = "192.168.98.5:48010"; }
     ];
   };
 }
