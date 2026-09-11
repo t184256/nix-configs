@@ -99,6 +99,7 @@ in
         qwen38Nothink = qwen35Nothink;
         # hosts: primary first, fallbacks after
         models = {
+          "qwen3.8-flash-next".hosts = [ grapefruit ];
           "qwen3.8-27b".hosts = [ plum ];  # don't fall back
 
           "qwen3.5-0.8b".hosts = [ grapefruit ];
@@ -113,6 +114,7 @@ in
         };
         aliases = {
           "interactive" = { model = "qwen3.8-27b"; params = qwen38Think; };
+          "batch" = { model = "qwen3.8-flash-next"; params = qwen38Think; };
 
           "default" = { model = "qwen3.8-27b"; params = qwen38Think; };
           "default-think" = { model = "qwen3.8-27b"; params = qwen38Think; };
@@ -142,16 +144,6 @@ in
         };
         # same as interactive, but on grapefruit, where it's slower, but can
         # do multiple slots with ease. explicit entry because of shared name.
-        batchEntry = {
-          model_name = "batch";
-          litellm_params = {
-            model = "custom_openai/qwen3.8-27b";
-            api_base = grapefruit;
-            api_key = "dummy";
-            extra_body = { thinking_budget_tokens = 16384; }
-              // qwen38Think.extra_body;
-          };
-        };
         grapefruitCatchall = {
           model_name = "*";
           litellm_params = {
@@ -183,7 +175,7 @@ in
       in {
         model_list = builtins.concatLists (builtins.attrValues
           (builtins.mapAttrs mkEntries aliases))
-          ++ [ batchEntry grapefruitCatchall ];
+          ++ [ grapefruitCatchall ];
         litellm_settings = {
           fallbacks = builtins.concatLists (builtins.attrValues
             (builtins.mapAttrs mkFallback aliases));

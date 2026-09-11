@@ -25,11 +25,20 @@ let
     cache-type-k-draft = q8_0
     cache-type-v-draft = q8_0
 
-    [qwen3.5-0.8b]
-    model = ${pkgs.qwen35-08b-mtp-q4kxl}
-    spec-type = draft-mtp
-    spec-draft-n-max = 2
-    ${qwen35NoThinkAttrs}
+    [qwen3.8-flash-next]
+    model = ${pkgs.qwen38-flash-next-ud-iq4xs}/Qwen3.8-Flash-Next-UD-IQ4_XS-00001-of-00003.gguf
+    spec-draft-model = ${pkgs.qwen38-flash-next-mtp-q80}
+    spec-type = draft-mtp,ngram-mod
+    spec-draft-n-max = 4
+    spec-draft-p-min = 0.75
+    ctx-size = 262144
+    parallel = 1
+    load-mode = none
+    # to optimize
+    batch-size = 8192
+    ubatch-size = 512
+    threads = 4
+    # todo: enable vision
     [qwen3.8-27b]
     # Q8_0: near-lossless; fits with room to spare (weights ~29 GB +
     # 4 full-ctx q8_0 KV slots ~34 GiB << 128 GiB unified)
@@ -44,16 +53,6 @@ let
     parallel = 1
     kv-unified = 1
     cache-ram = 65536
-    [qwen3.6-35b-a3b]
-    model = ${pkgs.qwen36-35b-a3b-mtp-mxfp4}
-    spec-type = draft-mtp
-    spec-draft-n-max = 2
-    ${qwen35NoThinkAttrs}
-    [qwen3.5-122b-a10b]
-    model = ${pkgs.qwen35-122b-a10b-mtp-mxfp4}/Qwen3.5-122B-A10B-MXFP4_MOE-00001-of-00003.gguf
-    spec-type = draft-mtp
-    spec-draft-n-max = 2
-    ${qwen35NoThinkAttrs}
     [zeta-2.1]
     model = ${pkgs.zeta_2_1}
     ctx-size = 32768
@@ -96,37 +95,7 @@ in
   ];
   services.llama-cpp = {
     enable = true;
-    #package = pkgs.llama-cpp-vulkan;
-    package = pkgs.llama-cpp-rocm-gfx1151;
-    #package = pkgs.llama-cpp.override {
-    #  rocmSupport = true;
-    #  rocmGpuTargets = [ "gfx1151" ];
-    #};  # what's better really depends on the model / ctx
-    #package = (pkgs.llama-cpp.override {
-    #  rocmSupport = true;
-    #  rocmGpuTargets = [ "gfx1151" ];
-    #}).overrideAttrs(_: {
-    #  src = pkgs.fetchFromGitHub {
-    #    owner = "lhl";
-    #    repo = "llama.cpp";
-    #    rev = "a45e1cd6e9f306a4708cb98912b2bd37e8b70fff";
-    #    hash = "sha256-LiXdXNfakeNHM5HAIVtE7uR+T6zRmbBw26sjrRJ8mdg=";
-    #    leaveDotGit = true;
-    #    postFetch = ''
-    #      git -C "$out" rev-parse --short HEAD > $out/COMMIT
-    #      find "$out" -name .git -print0 | xargs -0 rm -rf
-    #    '';
-    #  };
-    #});
-    #package = pkgs.llama-cpp.overrideAttrs(oa: {
-    #  cmakeFlags = oa.cmakeFlags ++ [
-    #    "-DGGML_SYCL=ON"
-    #    "-DGGML_SYCL_F16:BOOL=ON"
-    #  ];
-    #  buildInputs = oa.buildInputs ++ (with pkgs; [
-    #    intel-compute-runtime mkl oneDNN_2
-    #  ]);
-    #});
+    package = pkgs.llama-cpp-engramhalo-gfx1151;
     openFirewall = true;
     settings = {
       host = "192.168.99.52";
@@ -141,19 +110,30 @@ in
   };
 
   systemd.services.llama-cpp.serviceConfig = {
-    ExecStartPre = [ mergeScript ];
+    ExecStartPre = [
+      mergeScript
+      "+/bin/sh -c 'sync && echo 3 > /proc/sys/vm/drop_caches'"
+    ];
     ReadWritePaths = [ "/var/lib/llama" ];
     DynamicUser = lib.mkForce false;
     User = "llama-cpp";
     Group = "llama-cpp";
     # persist shader cache
-    Environment = [ "XDG_CACHE_HOME=/var/lib/llama/.cache" ];
+    Environment = [
+      "XDG_CACHE_HOME=/var/lib/llama/.cache"
+      "HSA_OVERRIDE_GFX_VERSION=11.5.1"
+      "ROCBLAS_USE_HIPBLASLT=1"
+      # sparse-attention gather for Qwen3.8-Flash-Next; keep 0 if any preset
+      # runs with parallel > 1
+      "LLAMA_QSA_GATHER=1"
+    ];
     # omit `-m <model>`
     ExecStart =
       let cfg = config.services.llama-cpp; in lib.mkForce [
           ""
           ("${cfg.package}/bin/llama-server --log-disable " +
-           "--host ${cfg.settings.host} --port ${builtins.toString cfg.settings.port} " +
+          "--host ${cfg.settings.host} " +
+          "--port ${builtins.toString cfg.settings.port} " +
            "${utils.escapeSystemdExecArgs extraFlags}")
         ];
   };

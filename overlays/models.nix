@@ -97,6 +97,25 @@ in
   };
 
   # grapefruit
+  qwen38-flash-next-ud-iq4xs = fetchHFSharded rec {
+    pname = "qwen38-flash-next-ud-iq4xs";
+    repo = "unsloth/Qwen3.8-Flash-Next-GGUF";
+    nameTemplate = "Qwen3.8-Flash-Next-UD-IQ4_XS-000{nn}-of-00003.gguf";
+    pathTemplate = "UD-IQ4_XS/${nameTemplate}";
+    shards = [
+      "sha256-XOiTcHIPi/kIkPQ5NhKCEEwaoUgtQBO7mlCSPnWOcaQ="
+      "sha256-V3o4ojkrQMohk86lAuHZL2C4zTcGddMI4OwhiF2dqqc="
+      "sha256-1GNObYTw67CUC+FckNN5C/ZGTj3qOhzdxWfcDoOtiDM="
+    ];
+  };
+
+  # MTP draft sidecar (Q8_0): ~0.83 acceptance at depth instead of Q4_K_M's 0.62
+  qwen38-flash-next-mtp-q80 = fetchHF {
+    repo = "EasiiX/Qwen3.8-Flash-Next-MTP-Strix-Halo-GGUF";
+    name = "mtp-Qwen3.8-Flash-Next-Q8_0.gguf";
+    hash = "sha256-nbA6aHZwYIKG6ZtWP8yG0O52yN2GP2Syr8C1TrDrl10=";
+  };
+
   qwen35-08b-mtp-q4kxl = fetchHF {
     repo = "unsloth/Qwen3.5-0.8B-MTP-GGUF";
     name = "Qwen3.5-0.8B-UD-Q4_K_XL.gguf";

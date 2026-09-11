@@ -55,4 +55,27 @@ rec {
   }).overrideAttrs (_: {
     name = "llama-cpp-rocm-gfx1102-${newerVer}";
   });
+
+  llama-cpp-engramhalo-gfx1151 = (llama-cpp.override {
+    rocmSupport = true;
+    rocmGpuTargets = [ "gfx1151" ];
+  }).overrideAttrs (oldArgs: {
+    name = "llama-cpp-engramhalo-gfx1151";
+    cmakeFlags = (oldArgs.cmakeFlags or []) ++ [
+      "-DGGML_HIP_FORCE_MMQ=ON"
+      "-DGGML_HIP_ROCWMMA_FATTN=OFF"
+    ];
+    src = prev.fetchFromGitHub {
+      owner = "Aristo94";
+      repo = "EngramHalo.cpp";  # qwen4exp, --tensor-read-lazy
+      rev = "4ff3affc2ac5861f7dda42bcf5ff653c776b816f";  # newer 4e3ff47 is slow
+      hash = "sha256-JDtgXX741amKxHsiB1icFgb/uUpgmilrfURAZTo5TCY=";
+      leaveDotGit = true;
+      postFetch = ''
+        git -C "$out" rev-parse --short HEAD > $out/COMMIT
+        find "$out" -name .git -print0 | xargs -0 rm -rf
+      '';
+    };
+    npmDepsHash = "sha256-2Q7XhaLAArmviOLdQsNbYTfdyDE5pW9lR26cRHEVl9k=";
+  });
 }
