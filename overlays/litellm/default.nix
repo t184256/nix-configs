@@ -23,9 +23,8 @@ in {
         openai = openai-slim;
       }).overrideAttrs (old: {
         patches = (old.patches or []) ++ [
-          ./litellm/35773-fastapi-get-flat-params.patch
-          ./litellm/custom-openai-extra-body.patch
-          ./litellm/prompt-progress-passthrough.patch
+          ./custom-openai-extra-body.patch
+          ./prompt-progress-passthrough.patch
         ];
         propagatedBuildInputs =
           (prev.lib.filter (d: !(prev.lib.elem d.pname unneeded))

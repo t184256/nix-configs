@@ -22,9 +22,9 @@ in {
     boot.loader.systemd-boot.configurationLimit = 5;
     nixpkgs.flake.setNixPath = false;
     nixpkgs.flake.setFlakeRegistry = false;
-    services.journald.extraConfig = ''
-      SystemMaxUse=500M
-      RuntimeMaxUse=12M
-    '';
+    services.journald.settings.Journal = {
+      SystemMaxUse = "500M";
+      RuntimeMaxUse = "12M";
+    };
   };
 }
