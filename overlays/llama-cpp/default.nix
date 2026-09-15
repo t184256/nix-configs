@@ -2,18 +2,18 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "b10786";
+  newerVer = "v0.4.1";
   # b-versions like 10408 compare higher that v-versions like 0.3.0,
   # treat them as older
-  # isFresh = v:
-  #   (prev.lib.strings.match "^[0-9]+$" v) == null &&
-  #   prev.lib.versionAtLeast v newerVer;
+  isFresh = v:
+    (prev.lib.strings.match "^[0-9]+$" v) == null &&
+    prev.lib.versionAtLeast v newerVer;
   freshen = prevLlamaCpp:
-    # if isFresh prevLlamaCpp.version
-    # then prevLlamaCpp
-    # else
+    if isFresh prevLlamaCpp.version
+    then prevLlamaCpp
+    else
     prevLlamaCpp.overrideAttrs overrides-fresh;
-  overrides-fresh = _: {
+  overrides-fresh = oa: {
     name = "llama-cpp-${newerVer}";
     version = newerVer;
     src = prev.fetchFromGitHub {
@@ -28,6 +28,10 @@ let
       '';
     };
     npmDepsHash = "sha256-2Q7XhaLAArmviOLdQsNbYTfdyDE5pW9lR26cRHEVl9k=";
+    patches = (oa.patches or []) ++ [
+      # https://github.com/ggml-org/llama.cpp/pull/20819 persist checkpoints
+      ./20819-persist-checkpoints.patch
+    ];
   };
   cuda-vulkan = (prev.llama-cpp.override {
     cudaSupport = true;
