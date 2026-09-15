@@ -116,6 +116,12 @@ in
     hash = "sha256-nbA6aHZwYIKG6ZtWP8yG0O52yN2GP2Syr8C1TrDrl10=";
   };
 
+  qwen38-flash-next-mmproj-f16 = fetchHF {
+    repo = "unsloth/Qwen3.8-Flash-Next-GGUF";
+    name = "mmproj-F16.gguf";
+    hash = "sha256-H3t/C5hM8GXGBDYMKcgJg2LtYbKQ2w/xLG82C7GoqYA=";
+  };
+
   qwen35-08b-mtp-q4kxl = fetchHF {
     repo = "unsloth/Qwen3.5-0.8B-MTP-GGUF";
     name = "Qwen3.5-0.8B-UD-Q4_K_XL.gguf";

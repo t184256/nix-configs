@@ -27,6 +27,7 @@ let
 
     [qwen3.8-flash-next]
     model = ${pkgs.qwen38-flash-next-ud-iq4xs}/Qwen3.8-Flash-Next-UD-IQ4_XS-00001-of-00003.gguf
+    mmproj = ${pkgs.qwen38-flash-next-mmproj-f16}
     spec-draft-model = ${pkgs.qwen38-flash-next-mtp-q80}
     spec-type = draft-mtp,ngram-mod
     spec-draft-n-max = 4
@@ -38,7 +39,6 @@ let
     batch-size = 8192
     ubatch-size = 512
     threads = 4
-    # todo: enable vision
     [qwen3.8-27b]
     # Q8_0: near-lossless; fits with room to spare (weights ~29 GB +
     # 4 full-ctx q8_0 KV slots ~34 GiB << 128 GiB unified)
