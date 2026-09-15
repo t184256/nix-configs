@@ -53,6 +53,7 @@ let
     parallel = 4
     # 262144 * 4 = 1048576
     ctx-size = 1048576
+    kv-unified-per-slot = 262144
     kv-unified = 1
     cache-ram = 65536
     [zeta-2.1]
@@ -97,7 +98,8 @@ in
   ];
   services.llama-cpp = {
     enable = true;
-    package = pkgs.llama-cpp-engramhalo-gfx1151;
+    #package = pkgs.llama-cpp-engramhalo-gfx1151;
+    package = pkgs.llama-cpp-gfx1151;
     openFirewall = true;
     settings = {
       host = "192.168.99.52";
