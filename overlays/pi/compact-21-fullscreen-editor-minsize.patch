@@ -4,22 +4,22 @@ Date: Tue, 18 Aug 2026 08:39:21 +0000
 Subject: [PATCH 21/23] modes/interactive: fullscreen editor slot: minimum one line
 
 ---
- packages/coding-agent/src/modes/interactive/interactive-mode.ts | 2 +-
+ packages/coding-agent/src/modes/interactive/chat-viewport.ts | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index e4155fd7..1a05d306 100644
---- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-+++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -928,7 +928,7 @@ export class InteractiveMode {
- 			{ component: this.pendingMessagesContainer, shrink: 1, minSize: 0 },
- 			{ component: this.statusContainer, shrink: 1, minSize: 0 },
- 			{ component: this.widgetContainerAbove, shrink: 1, minSize: 0 },
--			{ component: this.editorContainer, shrink: 1, minSize: 3 },
-+			{ component: this.editorContainer, shrink: 1, minSize: 1 },
- 			{ component: this.widgetContainerBelow, shrink: 1, minSize: 0 },
- 			{ component: this.footerContainer, shrink: 1, minSize: 1 },
- 		]);
+diff --git a/packages/coding-agent/src/modes/interactive/chat-viewport.ts b/packages/coding-agent/src/modes/interactive/chat-viewport.ts
+index f3619b1..baab0d8 100644
+--- a/packages/coding-agent/src/modes/interactive/chat-viewport.ts
++++ b/packages/coding-agent/src/modes/interactive/chat-viewport.ts
+@@ -32,7 +32,7 @@ export function createChatViewport(options: ChatViewportOptions): ChatViewport {
+ 		{ component: options.pendingMessages, shrink: 1, minSize: 0 },
+ 		{ component: options.status, shrink: 1, minSize: 0 },
+ 		...(options.widgetsAbove === undefined ? [] : [{ component: options.widgetsAbove, shrink: 1, minSize: 0 }]),
+-		{ component: options.editor, shrink: 1, minSize: 3 },
++		{ component: options.editor, shrink: 1, minSize: 1 },
+ 		...(options.widgetsBelow === undefined ? [] : [{ component: options.widgetsBelow, shrink: 1, minSize: 0 }]),
+ 		{ component: options.footer, shrink: 1, minSize: 1 },
+ 	]);
 -- 
 2.55.0
 

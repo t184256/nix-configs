@@ -8,10 +8,10 @@ Subject: [PATCH 03/23] modes/interactive/interactive-mode: depad
  1 file changed, 27 insertions(+), 27 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index 956d5100..f38503f7 100644
+index b50a4ea..4721370 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -811,12 +811,12 @@ export class InteractiveMode {
+@@ -765,12 +765,12 @@ export class InteractiveMode {
  			const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
  			const latestVersion = versionMatch ? versionMatch[1] : this.version;
  			const condensedText = `Updated to v${latestVersion}. Use ${theme.bold("/changelog")} to view full changelog.`;
@@ -20,14 +20,14 @@ index 956d5100..f38503f7 100644
  		} else {
 -			this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 1, 0));
 +			this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 0, 0));
- 		// no spacer
+ 			// no spacer
  			this.chatContainer.addChild(
 -				new Markdown(this.changelogMarkdown.trim(), 1, 0, this.getMarkdownThemeWithSettings()),
 +				new Markdown(this.changelogMarkdown.trim(), 0, 0, this.getMarkdownThemeWithSettings()),
  			);
- 		// no spacer
+ 			// no spacer
  		}
-@@ -2230,10 +2230,10 @@ export class InteractiveMode {
+@@ -2209,10 +2209,10 @@ export class InteractiveMode {
  			// Wrap string array in a Container with Text components
  			const container = new Container();
  			for (const line of content.slice(0, InteractiveMode.MAX_WIDGET_LINES)) {
@@ -40,7 +40,7 @@ index 956d5100..f38503f7 100644
  			}
  			component = container;
  		} else {
-@@ -2838,7 +2838,7 @@ export class InteractiveMode {
+@@ -2824,7 +2824,7 @@ export class InteractiveMode {
  	 */
  	private showExtensionError(extensionPath: string, error: string, stack?: string): void {
  		const errorMsg = `Extension "${extensionPath}" error: ${error}`;
@@ -49,7 +49,7 @@ index 956d5100..f38503f7 100644
  		this.chatContainer.addChild(errorText);
  		if (stack) {
  			// Show stack trace in dim color, indented
-@@ -2848,7 +2848,7 @@ export class InteractiveMode {
+@@ -2834,7 +2834,7 @@ export class InteractiveMode {
  				.map((line) => theme.fg("dim", `  ${line.trim()}`))
  				.join("\n");
  			if (stackLines) {
@@ -58,7 +58,7 @@ index 956d5100..f38503f7 100644
  			}
  		}
  		this.ui.requestRender();
-@@ -3451,7 +3451,7 @@ export class InteractiveMode {
+@@ -3438,7 +3438,7 @@ export class InteractiveMode {
  						this.showError(event.errorMessage);
  					} else {
  						// no spacer
@@ -67,7 +67,7 @@ index 956d5100..f38503f7 100644
  					}
  				}
  				void this.flushCompactionQueue({ willRetry: event.willRetry });
-@@ -3555,7 +3555,7 @@ export class InteractiveMode {
+@@ -3541,7 +3541,7 @@ export class InteractiveMode {
  			return;
  		}
  
@@ -76,7 +76,7 @@ index 956d5100..f38503f7 100644
  		this.chatContainer.addChild(text);
  		this.lastStatusText = text;
  		this.ui.requestRender();
-@@ -3815,7 +3815,7 @@ export class InteractiveMode {
+@@ -3802,7 +3802,7 @@ export class InteractiveMode {
  		const label = notice.kind === "compaction" ? "Compaction" : "Branch summary";
  		// no spacer
  		this.chatContainer.addChild(
@@ -85,7 +85,7 @@ index 956d5100..f38503f7 100644
  		);
  	}
  
-@@ -3845,7 +3845,7 @@ export class InteractiveMode {
+@@ -3858,7 +3858,7 @@ export class InteractiveMode {
  		}
  		const text = theme.fg("warning", `${label}: ${reBilled}`);
  		// no spacer
@@ -94,7 +94,7 @@ index 956d5100..f38503f7 100644
  	}
  
  	renderInitialMessages(): void {
-@@ -4251,13 +4251,13 @@ export class InteractiveMode {
+@@ -4267,13 +4267,13 @@ export class InteractiveMode {
  
  	showError(errorMessage: string): void {
  		// no spacer
@@ -110,7 +110,7 @@ index 956d5100..f38503f7 100644
  		this.ui.requestRender();
  	}
  
-@@ -4274,7 +4274,7 @@ export class InteractiveMode {
+@@ -4290,7 +4290,7 @@ export class InteractiveMode {
  		// no spacer
  		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
  		this.chatContainer.addChild(
@@ -119,7 +119,7 @@ index 956d5100..f38503f7 100644
  		);
  		if (note) {
  			// no spacer
-@@ -4285,7 +4285,7 @@ export class InteractiveMode {
+@@ -4301,7 +4301,7 @@ export class InteractiveMode {
  			);
  			// no spacer
  		}
@@ -128,7 +128,7 @@ index 956d5100..f38503f7 100644
  		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
  		this.ui.requestRender();
  	}
-@@ -4351,15 +4351,15 @@ export class InteractiveMode {
+@@ -4367,15 +4367,15 @@ export class InteractiveMode {
  			// no spacer
  			for (const message of steeringMessages) {
  				const text = theme.fg("dim", `Steering: ${message}`);
@@ -147,7 +147,7 @@ index 956d5100..f38503f7 100644
  		}
  	}
  
-@@ -6145,7 +6145,7 @@ export class InteractiveMode {
+@@ -6161,7 +6161,7 @@ export class InteractiveMode {
  			const currentName = this.sessionManager.getSessionName();
  			if (currentName) {
  				// no spacer
@@ -156,7 +156,7 @@ index 956d5100..f38503f7 100644
  			} else {
  				this.showWarning("Usage: /name <name>");
  			}
-@@ -6159,7 +6159,7 @@ export class InteractiveMode {
+@@ -6175,7 +6175,7 @@ export class InteractiveMode {
  			this.showWarning(`Session name was normalized from ${JSON.stringify(name)} to ${JSON.stringify(sessionName)}`);
  		}
  		// no spacer
@@ -165,7 +165,7 @@ index 956d5100..f38503f7 100644
  		this.ui.requestRender();
  	}
  
-@@ -6222,7 +6222,7 @@ export class InteractiveMode {
+@@ -6238,7 +6238,7 @@ export class InteractiveMode {
  		}
  
  		// no spacer
@@ -174,7 +174,7 @@ index 956d5100..f38503f7 100644
  		this.ui.requestRender();
  	}
  
-@@ -6240,9 +6240,9 @@ export class InteractiveMode {
+@@ -6256,9 +6256,9 @@ export class InteractiveMode {
  
  		// no spacer
  		this.chatContainer.addChild(new DynamicBorder());
@@ -186,7 +186,7 @@ index 956d5100..f38503f7 100644
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
  	}
-@@ -6371,9 +6371,9 @@ export class InteractiveMode {
+@@ -6387,9 +6387,9 @@ export class InteractiveMode {
  
  		// no spacer
  		this.chatContainer.addChild(new DynamicBorder());
@@ -198,7 +198,7 @@ index 956d5100..f38503f7 100644
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
  	}
-@@ -6386,7 +6386,7 @@ export class InteractiveMode {
+@@ -6402,7 +6402,7 @@ export class InteractiveMode {
  				return;
  			}
  			// no spacer
@@ -207,7 +207,7 @@ index 956d5100..f38503f7 100644
  			this.ui.requestRender();
  		} catch (error: unknown) {
  			await this.handleFatalRuntimeError("Failed to create session", error);
-@@ -6421,7 +6421,7 @@ export class InteractiveMode {
+@@ -6437,7 +6437,7 @@ export class InteractiveMode {
  
  		// no spacer
  		this.chatContainer.addChild(

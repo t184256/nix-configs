@@ -99,7 +99,7 @@ in
   services.llama-cpp = {
     enable = true;
     #package = pkgs.llama-cpp-engramhalo-gfx1151;
-    package = pkgs.llama-cpp-gfx1151;
+    package = pkgs.llama-cpp-rocm-gfx1151;
     openFirewall = true;
     settings = {
       host = "192.168.99.52";

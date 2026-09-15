@@ -4,16 +4,16 @@ Date: Sat, 20 Jun 2026 00:07:11 +0000
 Subject: [PATCH 11/23] core/tools/edit: depad
 
 ---
- packages/coding-agent/src/core/tools/edit.ts | 2 +-
+ packages/coding-agent/src/core/tools/renderers/edit.ts | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/packages/coding-agent/src/core/tools/edit.ts b/packages/coding-agent/src/core/tools/edit.ts
-index f6371ebe..23fba1a0 100644
---- a/packages/coding-agent/src/core/tools/edit.ts
-+++ b/packages/coding-agent/src/core/tools/edit.ts
-@@ -174,7 +174,7 @@ type EditCallRenderComponent = Box & {
+diff --git a/packages/coding-agent/src/core/tools/renderers/edit.ts b/packages/coding-agent/src/core/tools/renderers/edit.ts
+index 192ccc7..791df8e 100644
+--- a/packages/coding-agent/src/core/tools/renderers/edit.ts
++++ b/packages/coding-agent/src/core/tools/renderers/edit.ts
+@@ -36,7 +36,7 @@ type EditCallRenderComponent = Box & {
+ 	settledError?: boolean;
  };
- 
  function createEditCallRenderComponent(): EditCallRenderComponent {
 -	return Object.assign(new Box(1, 1, (text: string) => text), {
 +	return Object.assign(new Box(0, 0, (text: string) => text), {

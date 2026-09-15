@@ -2,22 +2,25 @@ From 314735577ca74086a348d8699cc4c127e2ea6fde Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:48:31 +0000
 Subject: [PATCH 07/23] modes/interactive/components/tool-execution: remove spacers and padding
+ and padding
 
 ---
- .../interactive/components/tool-execution.ts  | 19 +++----------------
- 1 file changed, 3 insertions(+), 16 deletions(-)
+ .../interactive/components/tool-execution.ts   | 18 ++----------------
+ 1 file changed, 2 insertions(+), 16 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-index b1420b36..b339fe36 100644
+index 5355a36..c1d9564 100644
 --- a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-@@ -1,4 +1,4 @@
--import { Box, type Component, Container, getCapabilities, Image, Spacer, Text, type TUI } from "@earendil-works/pi-tui";
-+import { Box, type Component, Container, getCapabilities, Image, Text, type TUI } from "@earendil-works/pi-tui";
- import type { ToolDefinition, ToolRenderContext } from "../../../core/extensions/types.ts";
- import { createAllToolDefinitions, type ToolName } from "../../../core/tools/index.ts";
- import { getTextOutput as getRenderedTextOutput } from "../../../core/tools/render-utils.ts";
-@@ -21,7 +21,6 @@ export class ToolExecutionComponent extends Container {
+@@ -6,7 +6,6 @@ import {
+ 	getCapabilities,
+ 	Image,
+ 	MouseRegion,
+-	Spacer,
+ 	Text,
+ 	type TUI,
+ 	type TuiMouseEvent,
+@@ -54,7 +53,6 @@ export class ToolExecutionComponent extends Container {
  	private resultRendererComponent?: Component;
  	private rendererState: any = {};
  	private imageComponents: Image[] = [];
@@ -25,7 +28,7 @@ index b1420b36..b339fe36 100644
  	private toolName: string;
  	private toolCallId: string;
  	private args: any;
-@@ -63,7 +62,7 @@ export class ToolExecutionComponent extends Container {
+@@ -94,7 +92,7 @@ export class ToolExecutionComponent extends Container {
  		this.ui = ui;
  		this.cwd = cwd;
  
@@ -34,7 +37,7 @@ index b1420b36..b339fe36 100644
  
  		// Always create all shell variants. contentBox is used for default renderer-based composition.
  		// selfRenderContainer is used when the tool renders its own framing.
-@@ -245,12 +244,7 @@ export class ToolExecutionComponent extends Container {
+@@ -268,12 +266,7 @@ export class ToolExecutionComponent extends Container {
  				lines.push("");
  				lines.push(...contentLines);
  			}
@@ -48,7 +51,7 @@ index b1420b36..b339fe36 100644
  				if (imageComponent) {
  					lines.push(...imageComponent.render(width));
  				}
-@@ -333,10 +327,6 @@ export class ToolExecutionComponent extends Container {
+@@ -366,10 +359,6 @@ export class ToolExecutionComponent extends Container {
  			this.removeChild(img);
  		}
  		this.imageComponents = [];
@@ -59,7 +62,7 @@ index b1420b36..b339fe36 100644
  
  		if (this.result) {
  			const imageBlocks = this.result.content.filter((c) => c.type === "image");
-@@ -349,9 +339,6 @@ export class ToolExecutionComponent extends Container {
+@@ -382,9 +371,6 @@ export class ToolExecutionComponent extends Container {
  					const imageMimeType = converted?.mimeType ?? img.mimeType;
  					if (caps.images === "kitty" && imageMimeType !== "image/png") continue;
  

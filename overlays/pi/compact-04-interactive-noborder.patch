@@ -4,32 +4,40 @@ Date: Mon, 27 Jul 2026 18:51:23 +0000
 Subject: [PATCH 04/23] modes/interactive/interactive-mode: remove borders
 
 ---
- .../src/modes/interactive/interactive-mode.ts | 31 +++++++++----------
- 1 file changed, 15 insertions(+), 16 deletions(-)
+ .../src/modes/interactive/interactive-mode.ts | 32 +++++++++----------
+ 1 file changed, 15 insertions(+), 17 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index f38503f7..e4155fd7 100644
+index 4721370..2569546 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -806,7 +806,7 @@ export class InteractiveMode {
+@@ -119,7 +119,6 @@ import { CustomEditor } from "./components/custom-editor.ts";
+ import { CustomEntryComponent } from "./components/custom-entry.ts";
+ import { CustomMessageComponent } from "./components/custom-message.ts";
+ import { DaxnutsComponent } from "./components/daxnuts.ts";
+-import { DynamicBorder } from "./components/dynamic-border.ts";
+ import { EarendilAnnouncementComponent } from "./components/earendil-announcement.ts";
+ import { ExtensionEditorComponent } from "./components/extension-editor.ts";
+ import { ExtensionInputComponent } from "./components/extension-input.ts";
+@@ -760,7 +759,7 @@ export class InteractiveMode {
  		if (this.chatContainer.children.length > 0) {
- 		// no spacer
+ 			// no spacer
  		}
 -		this.chatContainer.addChild(new DynamicBorder());
 +		// no border
  		if (this.settingsManager.getCollapseChangelog()) {
  			const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
  			const latestVersion = versionMatch ? versionMatch[1] : this.version;
-@@ -820,7 +820,7 @@ export class InteractiveMode {
+@@ -774,7 +773,7 @@ export class InteractiveMode {
  			);
- 		// no spacer
+ 			// no spacer
  		}
 -		this.chatContainer.addChild(new DynamicBorder());
 +		// no border
  	}
  
  	private mountInteractiveTui(tui: TuiMainScreen | TuiAltScreen, components: readonly Component[]): void {
-@@ -4272,21 +4272,21 @@ export class InteractiveMode {
+@@ -4288,21 +4287,21 @@ export class InteractiveMode {
  		const note = release.note?.trim();
  
  		// no spacer
@@ -54,7 +62,7 @@ index f38503f7..e4155fd7 100644
  		this.ui.requestRender();
  	}
  
-@@ -4296,15 +4296,15 @@ export class InteractiveMode {
+@@ -4312,15 +4311,15 @@ export class InteractiveMode {
  		const packageLines = packages.map((pkg) => `- ${pkg}`).join("\n");
  
  		// no spacer
@@ -73,7 +81,7 @@ index f38503f7..e4155fd7 100644
  		this.ui.requestRender();
  	}
  
-@@ -5929,18 +5929,17 @@ export class InteractiveMode {
+@@ -5945,18 +5944,17 @@ export class InteractiveMode {
  		this.resetExtensionUI();
  
  		const reloadBox = new Container();
@@ -95,7 +103,7 @@ index f38503f7..e4155fd7 100644
  
  		const previousEditor = this.editor;
  		this.editorContainer.clear();
-@@ -6239,11 +6238,11 @@ export class InteractiveMode {
+@@ -6255,11 +6253,11 @@ export class InteractiveMode {
  				: "No changelog entries found.";
  
  		// no spacer
@@ -109,7 +117,7 @@ index f38503f7..e4155fd7 100644
  		this.ui.requestRender();
  	}
  
-@@ -6370,11 +6369,11 @@ export class InteractiveMode {
+@@ -6386,11 +6384,11 @@ export class InteractiveMode {
  		}
  
  		// no spacer

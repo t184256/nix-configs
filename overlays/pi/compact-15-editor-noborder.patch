@@ -4,31 +4,53 @@ Date: Sat, 20 Jun 2026 01:06:22 +0000
 Subject: [PATCH 15/23] tui: remove editor borders
 
 ---
- packages/tui/src/components/editor.ts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ packages/tui/src/components/editor.ts | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/packages/tui/src/components/editor.ts b/packages/tui/src/components/editor.ts
-index 54eb4455..37456688 100644
+index 42b722f..2a26c4a 100644
 --- a/packages/tui/src/components/editor.ts
 +++ b/packages/tui/src/components/editor.ts
-@@ -527,7 +527,7 @@ export class Editor implements Component, Focusable {
- 			const border = createScrollBorder("↑", this.scrollOffset, width);
- 			result.push(this.borderColor(border));
- 		} else {
--			result.push(horizontal.repeat(width));
-+			// no top border
- 		}
+@@ -496,13 +496,15 @@ export class Editor implements Component, Focusable {
+ 	}
+ 
+ 	protected renderTopBorder(width: number, hiddenLineCount: number): string {
+-		const border = hiddenLineCount > 0 ? createScrollBorder("↑", hiddenLineCount, width) : "─".repeat(width);
+-		return this.borderColor(border);
++		// no top border
++		if (hiddenLineCount === 0) return "";
++		return this.borderColor(createScrollBorder("↑", hiddenLineCount, width));
+ 	}
+ 
+ 	protected renderBottomBorder(width: number, hiddenLineCount: number): string {
+-		const border = hiddenLineCount > 0 ? createScrollBorder("↓", hiddenLineCount, width) : "─".repeat(width);
+-		return this.borderColor(border);
++		// no bottom border
++		if (hiddenLineCount === 0) return "";
++		return this.borderColor(createScrollBorder("↓", hiddenLineCount, width));
+ 	}
+ 
+ 	render(width: number): string[] {
+@@ -548,7 +550,8 @@ export class Editor implements Component, Focusable {
+ 		const rightPadding = leftPadding;
+ 
+ 		// Render top border (with scroll indicator if scrolled down)
+-		result.push(this.renderTopBorder(width, this.scrollOffset));
++		const topBorder = this.renderTopBorder(width, this.scrollOffset);
++		if (topBorder !== "") result.push(topBorder);
  
  		// Render each visible layout line
-@@ -584,7 +584,7 @@ export class Editor implements Component, Focusable {
- 			const border = createScrollBorder("↓", linesBelow, width);
- 			result.push(this.borderColor(border));
- 		} else {
--			result.push(horizontal.repeat(width));
-+			// no bottom border
- 		}
+ 		// Emit hardware cursor marker when focused so TUI can position the
+@@ -600,7 +603,8 @@ export class Editor implements Component, Focusable {
+ 
+ 		// Render bottom border (with scroll indicator if more content below)
+ 		const linesBelow = layoutLines.length - (this.scrollOffset + visibleLines.length);
+-		result.push(this.renderBottomBorder(width, linesBelow));
++		const bottomBorder = this.renderBottomBorder(width, linesBelow);
++		if (bottomBorder !== "") result.push(bottomBorder);
  
  		// Add autocomplete list if active
+ 		this.renderedAutocompleteHeight = 0;
 -- 
 2.55.0
 

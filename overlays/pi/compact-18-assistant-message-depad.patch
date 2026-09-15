@@ -8,10 +8,10 @@ Subject: [PATCH 18/23] modes/interactive/components/assistant-message: depad
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
-index d108df6a..7656ce8b 100644
+index d8f30b3..8d8afe2 100644
 --- a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
-@@ -108,7 +108,7 @@ export class AssistantMessageComponent extends Container {
+@@ -111,7 +111,7 @@ export class AssistantMessageComponent extends Container {
  				// Assistant text messages with no background - trim the text
  				// Set paddingY=0 to avoid extra spacing before tool executions
  				this.contentContainer.addChild(
@@ -20,24 +20,20 @@ index d108df6a..7656ce8b 100644
  						transform: createMarkdownTransform("assistant", this.isStreaming, this.markdownTransformers),
  					}),
  				);
-@@ -139,14 +139,14 @@ export class AssistantMessageComponent extends Container {
- 				if (this.hideThinkingBlock) {
- 					// Show one static label for each run of thinking blocks when hidden.
- 					this.contentContainer.addChild(
--						new Text(theme.italic(theme.fg("thinkingText", this.hiddenThinkingLabel)), this.outputPad, 0),
-+						new Text(theme.italic(theme.fg("thinkingText", this.hiddenThinkingLabel)), 0, 0),
- 					);
- 				} else {
- 					// Render each run of thinking blocks as one Markdown section.
- 					this.contentContainer.addChild(
- 						new Markdown(
+@@ -142,10 +142,10 @@ export class AssistantMessageComponent extends Container {
+ 				const runIndex = thinkingRunIndex++;
+ 				const hidden = this.thinkingVisibilityOverrides.get(runIndex) ?? this.hideThinkingBlock;
+ 				const thinkingComponent = hidden
+-					? new Text(theme.italic(theme.fg("thinkingText", this.hiddenThinkingLabel)), this.outputPad, 0)
++					? new Text(theme.italic(theme.fg("thinkingText", this.hiddenThinkingLabel)), 0, 0)
+ 					: new Markdown(
  							thinkingBlocks.join("\n\n"),
 -							this.outputPad,
 +							0,
  							0,
  							this.markdownTheme,
  							{
-@@ -186,11 +186,11 @@ export class AssistantMessageComponent extends Container {
+@@ -191,11 +191,11 @@ export class AssistantMessageComponent extends Container {
  						? message.errorMessage
  						: "Operation aborted";
  				// no spacer

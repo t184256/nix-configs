@@ -4,22 +4,22 @@ Date: Mon, 27 Jul 2026 18:44:46 +0000
 Subject: [PATCH 02/23] modes/interactive/interactive-mode: remove spacers
 
 ---
- .../src/modes/interactive/interactive-mode.ts | 100 ++++++++----------
- 1 file changed, 47 insertions(+), 53 deletions(-)
+ .../src/modes/interactive/interactive-mode.ts | 103 ++++++++----------
+ 1 file changed, 48 insertions(+), 55 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index 6d5e6b88..956d5100 100644
+index 8db1b80..b50a4ea 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -34,7 +34,6 @@ import {
+@@ -32,7 +32,6 @@ import {
+ 	hyperlink,
  	Markdown,
  	matchesKey,
- 	ProcessTerminal,
 -	Spacer,
  	setCapabilityOverrides,
  	setKeybindings,
  	Text,
-@@ -466,7 +465,6 @@ export class InteractiveMode {
+@@ -419,7 +418,6 @@ export class InteractiveMode {
  	private anthropicSubscriptionWarningShown = false;
  
  	// Status line tracking (for mutating immediately-sequential status updates)
@@ -27,42 +27,42 @@ index 6d5e6b88..956d5100 100644
  	private lastStatusText: Text | undefined = undefined;
  	private managedToolStatusStarted = false;
  
-@@ -806,7 +804,7 @@ export class InteractiveMode {
+@@ -760,7 +758,7 @@ export class InteractiveMode {
  		}
  
  		if (this.chatContainer.children.length > 0) {
 -			this.chatContainer.addChild(new Spacer(1));
-+		// no spacer
++			// no spacer
  		}
  		this.chatContainer.addChild(new DynamicBorder());
  		if (this.settingsManager.getCollapseChangelog()) {
-@@ -816,11 +814,11 @@ export class InteractiveMode {
+@@ -770,11 +768,11 @@ export class InteractiveMode {
  			this.chatContainer.addChild(new Text(condensedText, 1, 0));
  		} else {
  			this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 1, 0));
 -			this.chatContainer.addChild(new Spacer(1));
-+		// no spacer
++			// no spacer
  			this.chatContainer.addChild(
  				new Markdown(this.changelogMarkdown.trim(), 1, 0, this.getMarkdownThemeWithSettings()),
  			);
 -			this.chatContainer.addChild(new Spacer(1));
-+		// no spacer
++			// no spacer
  		}
  		this.chatContainer.addChild(new DynamicBorder());
  	}
-@@ -1011,9 +1009,9 @@ export class InteractiveMode {
+@@ -960,9 +958,9 @@ export class InteractiveMode {
  			);
  
  			// Setup UI layout
 -			this.headerContainer.addChild(new Spacer(1));
-+		// no spacer
++			// no spacer
  			this.headerContainer.addChild(this.builtInHeader);
 -			this.headerContainer.addChild(new Spacer(1));
 +			// no spacer
  		} else {
  			// Minimal header when silenced
  			this.builtInHeader = new Text("", 0, 0);
-@@ -1726,7 +1724,7 @@ export class InteractiveMode {
+@@ -1675,7 +1673,7 @@ export class InteractiveMode {
  				0,
  			);
  			this.loadedResourcesContainer.addChild(section);
@@ -71,7 +71,7 @@ index 6d5e6b88..956d5100 100644
  		};
  
  		const skillsResult = this.session.resourceLoader.getSkills();
-@@ -1771,7 +1769,7 @@ export class InteractiveMode {
+@@ -1720,7 +1718,7 @@ export class InteractiveMode {
  				...this.session.resourceLoader.getAgentsFiles().agentsFiles,
  			];
  			if (contextFiles.length > 0) {
@@ -80,7 +80,7 @@ index 6d5e6b88..956d5100 100644
  				const contextList = contextFiles
  					.map((f) => theme.fg("dim", `  ${this.formatDisplayPath(f.path)}`))
  					.join("\n");
-@@ -1857,7 +1855,7 @@ export class InteractiveMode {
+@@ -1806,7 +1804,7 @@ export class InteractiveMode {
  				this.loadedResourcesContainer.addChild(
  					new Text(`${theme.fg("warning", "[Skill conflicts]")}\n${warningLines}`, 0, 0),
  				);
@@ -89,7 +89,7 @@ index 6d5e6b88..956d5100 100644
  			}
  
  			const promptDiagnostics = promptsResult.diagnostics;
-@@ -1866,7 +1864,7 @@ export class InteractiveMode {
+@@ -1815,7 +1813,7 @@ export class InteractiveMode {
  				this.loadedResourcesContainer.addChild(
  					new Text(`${theme.fg("warning", "[Prompt conflicts]")}\n${warningLines}`, 0, 0),
  				);
@@ -98,7 +98,7 @@ index 6d5e6b88..956d5100 100644
  			}
  
  			const extensionDiagnostics: ResourceDiagnostic[] = [];
-@@ -1889,7 +1887,7 @@ export class InteractiveMode {
+@@ -1838,7 +1836,7 @@ export class InteractiveMode {
  				this.loadedResourcesContainer.addChild(
  					new Text(`${theme.fg("warning", "[Extension issues]")}\n${warningLines}`, 0, 0),
  				);
@@ -107,7 +107,7 @@ index 6d5e6b88..956d5100 100644
  			}
  
  			const themeDiagnostics = themesResult.diagnostics;
-@@ -1898,7 +1896,7 @@ export class InteractiveMode {
+@@ -1847,7 +1845,7 @@ export class InteractiveMode {
  				this.loadedResourcesContainer.addChild(
  					new Text(`${theme.fg("warning", "[Theme conflicts]")}\n${warningLines}`, 0, 0),
  				);
@@ -116,7 +116,7 @@ index 6d5e6b88..956d5100 100644
  			}
  		}
  	}
-@@ -2316,13 +2314,13 @@ export class InteractiveMode {
+@@ -2295,13 +2293,13 @@ export class InteractiveMode {
  
  		if (widgets.size === 0) {
  			if (spacerWhenEmpty) {
@@ -132,7 +132,7 @@ index 6d5e6b88..956d5100 100644
  		}
  		for (const component of widgets.values()) {
  			container.addChild(component);
-@@ -3452,7 +3450,7 @@ export class InteractiveMode {
+@@ -3439,7 +3437,7 @@ export class InteractiveMode {
  					if (event.reason === "manual") {
  						this.showError(event.errorMessage);
  					} else {
@@ -141,7 +141,7 @@ index 6d5e6b88..956d5100 100644
  						this.chatContainer.addChild(new Text(theme.fg("error", event.errorMessage), 1, 0));
  					}
  				}
-@@ -3530,13 +3528,12 @@ export class InteractiveMode {
+@@ -3517,13 +3515,12 @@ export class InteractiveMode {
  	/** Show a managed-tool status update in the chat. */
  	private showManagedToolStatus(status: ToolStatus): void {
  		if (!this.managedToolStatusStarted) {
@@ -157,9 +157,11 @@ index 6d5e6b88..956d5100 100644
  		this.lastStatusText = undefined;
  		this.ui.requestRender();
  	}
-@@ -3552,17 +3549,14 @@ export class InteractiveMode {
+@@ -3537,19 +3534,15 @@ export class InteractiveMode {
+ 	private showStatus(message: string): void {
+ 		const children = this.chatContainer.children;
  		const last = children.length > 0 ? children[children.length - 1] : undefined;
- 		const secondLast = children.length > 1 ? children[children.length - 2] : undefined;
+-		const secondLast = children.length > 1 ? children[children.length - 2] : undefined;
  
 -		if (last && secondLast && last === this.lastStatusText && secondLast === this.lastStatusSpacer) {
 +		if (last && last === this.lastStatusText) {
@@ -176,7 +178,7 @@ index 6d5e6b88..956d5100 100644
  		this.lastStatusText = text;
  		this.ui.requestRender();
  	}
-@@ -3620,14 +3614,14 @@ export class InteractiveMode {
+@@ -3607,14 +3600,14 @@ export class InteractiveMode {
  				break;
  			}
  			case "compactionSummary": {
@@ -193,7 +195,7 @@ index 6d5e6b88..956d5100 100644
  				const component = new BranchSummaryMessageComponent(message, this.getMarkdownThemeWithSettings());
  				component.setExpanded(this.toolOutputExpanded);
  				this.chatContainer.addChild(component);
-@@ -3637,7 +3631,7 @@ export class InteractiveMode {
+@@ -3624,7 +3617,7 @@ export class InteractiveMode {
  				const textContent = this.getUserMessageText(message);
  				if (textContent) {
  					if (this.chatContainer.children.length > 0) {
@@ -202,7 +204,7 @@ index 6d5e6b88..956d5100 100644
  					}
  					const skillBlock = parseSkillBlock(textContent);
  					if (skillBlock) {
-@@ -3650,7 +3644,7 @@ export class InteractiveMode {
+@@ -3637,7 +3630,7 @@ export class InteractiveMode {
  						this.chatContainer.addChild(component);
  						// Render user message separately if present
  						if (skillBlock.userMessage) {
@@ -211,7 +213,7 @@ index 6d5e6b88..956d5100 100644
  							const userComponent = new UserMessageComponent(
  								skillBlock.userMessage,
  								this.getMarkdownThemeWithSettings(),
-@@ -3819,7 +3813,7 @@ export class InteractiveMode {
+@@ -3807,7 +3800,7 @@ export class InteractiveMode {
  		const tokens = usage.input + usage.output + usage.cacheRead + usage.cacheWrite;
  		const cost = usage.cost.total >= 0.01 ? ` (~$${usage.cost.total.toFixed(2)})` : "";
  		const label = notice.kind === "compaction" ? "Compaction" : "Branch summary";
@@ -220,7 +222,16 @@ index 6d5e6b88..956d5100 100644
  		this.chatContainer.addChild(
  			new Text(theme.fg("warning", `${label}: ${formatTokens(tokens)} tokens billed${cost}`), 1, 0),
  		);
-@@ -3850,7 +3844,7 @@ export class InteractiveMode {
+@@ -3832,7 +3825,7 @@ export class InteractiveMode {
+ 			if (dropped.length === 0) continue;
+ 
+ 			const noun = dropped.length === 1 ? "thinking block" : `${dropped.length} thinking blocks`;
+-			this.chatContainer.addChild(new Spacer(1));
++			// no spacer
+ 			this.chatContainer.addChild(
+ 				new Text(theme.fg("warning", `Anthropic dropped ${noun}: ${dropped.join("; ")}`), 1, 0),
+ 			);
+@@ -3864,7 +3857,7 @@ export class InteractiveMode {
  			label = `Cache miss after ${Math.round(miss.idleMs / 60_000)}m idle`;
  		}
  		const text = theme.fg("warning", `${label}: ${reBilled}`);
@@ -229,7 +240,7 @@ index 6d5e6b88..956d5100 100644
  		this.chatContainer.addChild(new Text(text, 1, 0));
  	}
  
-@@ -3877,7 +3871,7 @@ export class InteractiveMode {
+@@ -3891,7 +3884,7 @@ export class InteractiveMode {
  		}
  
  		if (this.chatContainer.children.length > 0) {
@@ -238,7 +249,7 @@ index 6d5e6b88..956d5100 100644
  		}
  		this.chatContainer.addChild(
  			new Text(
-@@ -4256,14 +4250,14 @@ export class InteractiveMode {
+@@ -4273,14 +4266,14 @@ export class InteractiveMode {
  	}
  
  	showError(errorMessage: string): void {
@@ -256,7 +267,7 @@ index 6d5e6b88..956d5100 100644
  		this.ui.requestRender();
  	}
  
-@@ -4277,19 +4271,19 @@ export class InteractiveMode {
+@@ -4294,19 +4287,19 @@ export class InteractiveMode {
  		const changelogLine = theme.fg("muted", "Changelog: ") + changelogLink;
  		const note = release.note?.trim();
  
@@ -279,7 +290,7 @@ index 6d5e6b88..956d5100 100644
  		}
  		this.chatContainer.addChild(new Text(changelogLine, 1, 0));
  		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
-@@ -4301,7 +4295,7 @@ export class InteractiveMode {
+@@ -4318,7 +4311,7 @@ export class InteractiveMode {
  		const updateInstruction = theme.fg("muted", "Package updates are available. Run ") + action;
  		const packageLines = packages.map((pkg) => `- ${pkg}`).join("\n");
  
@@ -288,7 +299,7 @@ index 6d5e6b88..956d5100 100644
  		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
  		this.chatContainer.addChild(
  			new Text(
-@@ -4354,7 +4348,7 @@ export class InteractiveMode {
+@@ -4371,7 +4364,7 @@ export class InteractiveMode {
  		this.pendingMessagesContainer.clear();
  		const { steering: steeringMessages, followUp: followUpMessages } = this.getAllQueuedMessages();
  		if (steeringMessages.length > 0 || followUpMessages.length > 0) {
@@ -297,7 +308,7 @@ index 6d5e6b88..956d5100 100644
  			for (const message of steeringMessages) {
  				const text = theme.fg("dim", `Steering: ${message}`);
  				this.pendingMessagesContainer.addChild(new TruncatedText(text, 1, 0));
-@@ -5261,7 +5255,7 @@ export class InteractiveMode {
+@@ -5278,7 +5271,7 @@ export class InteractiveMode {
  						this.defaultEditor.onEscape = () => {
  							this.session.abortBranchSummary();
  						};
@@ -306,7 +317,7 @@ index 6d5e6b88..956d5100 100644
  						this.showStatusIndicator(new BranchSummaryStatusIndicator(this.ui));
  						showingSummaryIndicator = true;
  						this.ui.requestRender();
-@@ -5937,7 +5931,7 @@ export class InteractiveMode {
+@@ -5954,7 +5947,7 @@ export class InteractiveMode {
  		const reloadBox = new Container();
  		const borderColor = (s: string) => theme.fg("border", s);
  		reloadBox.addChild(new DynamicBorder(borderColor));
@@ -315,7 +326,7 @@ index 6d5e6b88..956d5100 100644
  		reloadBox.addChild(
  			new Text(
  				theme.fg("muted", "Reloading keybindings, extensions, skills, prompts, themes, and context files..."),
-@@ -5945,7 +5939,7 @@ export class InteractiveMode {
+@@ -5962,7 +5955,7 @@ export class InteractiveMode {
  				0,
  			),
  		);
@@ -324,7 +335,7 @@ index 6d5e6b88..956d5100 100644
  		reloadBox.addChild(new DynamicBorder(borderColor));
  
  		const previousEditor = this.editor;
-@@ -6150,7 +6144,7 @@ export class InteractiveMode {
+@@ -6167,7 +6160,7 @@ export class InteractiveMode {
  		if (!name) {
  			const currentName = this.sessionManager.getSessionName();
  			if (currentName) {
@@ -333,7 +344,7 @@ index 6d5e6b88..956d5100 100644
  				this.chatContainer.addChild(new Text(theme.fg("dim", `Session name: ${currentName}`), 1, 0));
  			} else {
  				this.showWarning("Usage: /name <name>");
-@@ -6164,7 +6158,7 @@ export class InteractiveMode {
+@@ -6181,7 +6174,7 @@ export class InteractiveMode {
  		if (sessionName !== name) {
  			this.showWarning(`Session name was normalized from ${JSON.stringify(name)} to ${JSON.stringify(sessionName)}`);
  		}
@@ -342,7 +353,7 @@ index 6d5e6b88..956d5100 100644
  		this.chatContainer.addChild(new Text(theme.fg("dim", `Session name set: ${sessionName ?? name}`), 1, 0));
  		this.ui.requestRender();
  	}
-@@ -6227,7 +6221,7 @@ export class InteractiveMode {
+@@ -6244,7 +6237,7 @@ export class InteractiveMode {
  			}
  		}
  
@@ -351,7 +362,7 @@ index 6d5e6b88..956d5100 100644
  		this.chatContainer.addChild(new Text(info, 1, 0));
  		this.ui.requestRender();
  	}
-@@ -6244,10 +6238,10 @@ export class InteractiveMode {
+@@ -6261,10 +6254,10 @@ export class InteractiveMode {
  						.join("\n\n")
  				: "No changelog entries found.";
  
@@ -364,7 +375,7 @@ index 6d5e6b88..956d5100 100644
  		this.chatContainer.addChild(new Markdown(changelogMarkdown, 1, 1, this.getMarkdownThemeWithSettings()));
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
-@@ -6375,10 +6369,10 @@ export class InteractiveMode {
+@@ -6392,10 +6385,10 @@ export class InteractiveMode {
  			}
  		}
  
@@ -377,7 +388,7 @@ index 6d5e6b88..956d5100 100644
  		this.chatContainer.addChild(new Markdown(hotkeys.trim(), 1, 1, this.getMarkdownThemeWithSettings()));
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
-@@ -6391,7 +6385,7 @@ export class InteractiveMode {
+@@ -6408,7 +6401,7 @@ export class InteractiveMode {
  			if (result.cancelled) {
  				return;
  			}
@@ -386,7 +397,7 @@ index 6d5e6b88..956d5100 100644
  			this.chatContainer.addChild(new Text(`${theme.fg("accent", "✓ New session started")}`, 1, 1));
  			this.ui.requestRender();
  		} catch (error: unknown) {
-@@ -6425,7 +6419,7 @@ export class InteractiveMode {
+@@ -6442,7 +6435,7 @@ export class InteractiveMode {
  		fs.mkdirSync(path.dirname(debugLogPath), { recursive: true });
  		fs.writeFileSync(debugLogPath, debugData);
  
@@ -395,7 +406,7 @@ index 6d5e6b88..956d5100 100644
  		this.chatContainer.addChild(
  			new Text(`${theme.fg("accent", "✓ Debug log written")}\n${theme.fg("muted", debugLogPath)}`, 1, 1),
  		);
-@@ -6433,19 +6427,19 @@ export class InteractiveMode {
+@@ -6450,19 +6443,19 @@ export class InteractiveMode {
  	}
  
  	private handleArminSaysHi(): void {
