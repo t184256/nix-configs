@@ -46,11 +46,13 @@ let
     # vision, same as plum
     mmproj = ${pkgs.qwen38-27b-mmproj-f16}
     image-max-tokens = 16384
-    #spec-type = draft-mtp
-    #spec-draft-n-max = 2
+    spec-type = draft-mtp
+    spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
-    # #27572, #27148
-    parallel = 1
+    # #27572, #27148 and others might cause context leaks between slots, testing
+    parallel = 4
+    # 262144 * 4 = 1048576
+    ctx-size = 1048576
     kv-unified = 1
     cache-ram = 65536
     [zeta-2.1]
