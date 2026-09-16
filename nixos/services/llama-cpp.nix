@@ -49,13 +49,15 @@ let
     spec-type = draft-mtp
     spec-draft-n-max = 2
     ${qwen35NoThinkAttrs}
-    # #27572, #27148 and others might cause context leaks between slots, testing
     parallel = 4
     # 262144 * 4 = 1048576
     ctx-size = 1048576
     kv-unified-per-slot = 262144
     kv-unified = 1
-    cache-ram = 65536
+    # disabled #27148: server_prompt_cache (PR #16391) fuzzy-matches
+    # unrelated cached prompts into reused slots and leaks ctx between requests
+    # #27572 and others might also cause context leaks between slots
+    cache-ram = 0
     [zeta-2.1]
     model = ${pkgs.zeta_2_1}
     ctx-size = 32768
@@ -129,7 +131,7 @@ in
       "ROCBLAS_USE_HIPBLASLT=1"
       # sparse-attention gather for Qwen3.8-Flash-Next; keep 0 if any preset
       # runs with parallel > 1
-      "LLAMA_QSA_GATHER=1"
+      "LLAMA_QSA_GATHER=0"
     ];
     # omit `-m <model>`
     ExecStart =
