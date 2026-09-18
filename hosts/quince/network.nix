@@ -61,6 +61,7 @@ _:
         "34:5a:60:bd:7e:5f,192.168.98.3"
         "f8:75:a4:af:de:92,192.168.98.4"
         "00:01:2e:94:3f:8e,192.168.98.5"
+        "48:21:0b:7e:49:13,192.168.98.9"
         "e4:5f:01:56:2f:1f,192.168.98.20"
       ];
       dhcp-option = [
@@ -115,6 +116,7 @@ _:
      { proto = "tcp"; sourcePort = 2223; destination = "192.168.98.3:22"; }
      { proto = "tcp"; sourcePort = 2224; destination = "192.168.98.4:22"; }
      { proto = "tcp"; sourcePort = 2225; destination = "192.168.98.5:22"; }
+     { proto = "tcp"; sourcePort = 2229; destination = "192.168.98.9:22"; }
      { proto = "tcp"; sourcePort = 47984; destination = "192.168.98.5:47984"; }
      { proto = "tcp"; sourcePort = 47989; destination = "192.168.98.5:47989"; }
      { proto = "tcp"; sourcePort = 47990; destination = "192.168.98.5:47990"; }
