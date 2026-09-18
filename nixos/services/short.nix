@@ -16,18 +16,15 @@ let
     '';
     t14 = builtins.readFile ../../misc/inst/t14g5;
     intermezzo = builtins.readFile ../../misc/inst/intermezzo;
-    csb-r = ''
-      mkdir -p /tmp/csb; cd /tmp/csb
-      sudo dnf -y copr enable copr.devel.redhat.com/asosedki/multicsb
-      sudo dnf -y install --refresh multicsb
-      ls *.iso || multicsb download
-      [ -f csb.pristine.img ] || \
-        multicsb install $(ls -1 csb-fedora-*.iso | tail -n1) csb.pristine.img
-      [ -f csb.1st.img ] || \
-        multicsb first-boot --insecure-keep-keyfile --hardware-values \
-                 --postconfig /usr/libexec/multicsb/example-csb-postconfig \
-                 csb.pristine.img csb.1st.img
-      sudo multicsb $(date +%Y-%m-%d-%H-%M-%S) prime-pivot csb.1st.img
+    csb = ''
+      FORGE=$(grep -m1 -oP '(?<=git clone https://)[^/]+redhat.com' \
+                   /usr/lib/py*/s*/rh_git*/METADATA)
+      wget -O /tmp/.managed.entry-point \
+              "$FORGE/asosedki/managed/-/raw/staging/csb/entry-point"
+      [ "$(sha256sum /tmp/.managed.entry-point | cut -f1 '-d ')" = \
+        1427a53217803db45eb9e367345fcd1eff13830551f8c5ed3cac3eca17fd2791 ]
+      chmod +x /tmp/.managed.entry-point
+      exec /tmp/.managed.entry-point "$@"
     '';
   };
   short-scripts-dir = pkgs.linkFarm "short-scripts" (lib.mapAttrsToList
