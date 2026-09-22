@@ -57,7 +57,8 @@ _:
       server = [];  # no upstream DNS servers needed
       dhcp-authoritative = true;
       dhcp-host = [
-        "c8:53:09:19:d3:6c,192.168.98.2"
+        #"c8:53:09:19:d3:6c,192.168.98.2"  # mainboard
+        "84:47:09:2d:e9:08,192.168.98.2"  # eGPU
         "34:5a:60:bd:7e:5f,192.168.98.3"
         "f8:75:a4:af:de:92,192.168.98.4"
         "00:01:2e:94:3f:8e,192.168.98.5"
