@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Sign a nebula cert for a phone and push an importable YAML config via adb.
+# First add an entry/address to nixos/services/nebula/nodes.nix.
+# usage: misc/nebula-adb HOSTNAME
+set -ueo pipefail
+
+HOSTNAME=$1
+INT_NET=192.168.99.0
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+CA="$SCRIPT_DIR/../nixos/services/nebula/ca"
+NODES_FILE="$SCRIPT_DIR/../nixos/services/nebula/nodes.nix"
+
+command -v adb >/dev/null || { echo "adb not in PATH" >&2; exit 1; }
+adb get-state >/dev/null 2>&1 \
+	|| { echo "no adb device attached" >&2; exit 1; }
+
+INT_IP=$(nix eval --impure --raw --expr "
+  let nodes = import (builtins.toPath \"$NODES_FILE\");
+  in nodes.$HOSTNAME.int
+") || {
+	echo "$HOSTNAME not in $(basename "$NODES_FILE");" >&2
+	echo "add e.g. $HOSTNAME = { int = \"192.168.99.N\"; }; first" >&2
+	exit 1
+}
+
+trap 'rm -rf /tmp/.nebula' EXIT
+mkdir -p /tmp/.nebula
+
+pass show services/unboiled.info/nebula > /tmp/.nebula/ca.key
+
+NEBULA=$(nix build --print-out-paths --no-link 'nixpkgs#nebula')
+"$NEBULA/bin/nebula-cert" sign \
+	-name "$HOSTNAME" \
+	-ip "$INT_IP/24" \
+	-subnets "$INT_NET/24" \
+	-ca-key "/tmp/.nebula/ca.key" \
+	-ca-crt "$CA" \
+	-out-key "/tmp/.nebula/$HOSTNAME.key" \
+	-out-crt "/tmp/.nebula/$HOSTNAME.crt"
+
+# "ext int" pairs for every nixos node with a public address,
+# so the phone can find the network via lighthouse/static map.
+EXTS=$(nix eval --impure --raw --expr "
+  let
+    nodes = import (builtins.toPath \"$NODES_FILE\");
+    all = builtins.map (n: builtins.getAttr n nodes) (builtins.attrNames nodes);
+  in
+  builtins.concatStringsSep \"\\n\"
+    (builtins.filter (e: e != null)
+      (builtins.map
+        (ha: if ha ? ext then \"\${builtins.head ha.ext} \${ha.int}\" else null)
+        all))
+")
+
+YAML="/tmp/.nebula/nebula.yml"
+{
+	echo "pki:"
+	echo "  ca: |"
+	sed 's/^/    /' "$CA"
+	echo "  cert: |"
+	sed 's/^/    /' "/tmp/.nebula/$HOSTNAME.crt"
+	echo "  key: |"
+	sed 's/^/    /' "/tmp/.nebula/$HOSTNAME.key"
+	echo "listen:"
+	echo "  port: 4242"
+	echo "lighthouse:"
+	echo "  hosts:"
+	while read -r ext ip; do
+		echo "    - $ip"
+	done <<< "$EXTS"
+	echo "static_host_map:"
+	while read -r ext ip; do
+		echo "  $ip:"
+		echo "    - $ext:4242"
+	done <<< "$EXTS"
+	echo "firewall:"
+	echo "  inbound:"
+	echo "    - port: any"
+	echo "      host: any"
+	echo "      proto: any"
+	echo "  outbound:"
+	echo "    - port: any"
+	echo "      host: any"
+	echo "      proto: any"
+} > "$YAML"
+
+adb push "$YAML" /sdcard/Download/nebula.yml
+echo "pushed /sdcard/Download/nebula.yml;"
+echo 'in the app: + -> From file -> pick it'
+echo '      then: adb shell rm /sdcard/Download/nebula.yml'
