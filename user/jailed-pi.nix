@@ -214,6 +214,12 @@ let
     `nix shell nixpkgs#python3 nixpkgs#file --command <command> <arguments>`
     if you need more. Command and arguments must not be quoted together.
 
+    Example of the withPackages idiom:
+    `nix shell --impure
+               --expr 'with (import (builtins.getFlake "nixpkgs") {});
+                       python3.withPackages (ps: with ps; [ pyyaml ])'
+               --command python3 <arguments>`
+
     ## Podman (VM-backed)
 
     It is possible to use containers via `podman`, but it is a wrapper that
