@@ -27,7 +27,7 @@ let
     ./compact-11-edit-depad.patch
     ./compact-12-footer-no-auto.patch
     ./compact-13-footer-model.patch
-    ./compact-14-tui-loader-depad.patch
+    ./compact-14-tui-loader-depad-border-status.patch
     ./compact-15-editor-noborder.patch
     ./compact-16-tool-execution-depad.patch
     ./compact-17-assistant-message-spacers.patch

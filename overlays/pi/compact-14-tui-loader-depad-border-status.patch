@@ -1,0 +1,50 @@
+From 9de97b39b8e4d88183c2d456551a60acc9fed93d Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 24 Sep 2026 16:20:10 +0200
+Subject: [PATCH 14/23] tui: depad loader spinner and border status
+
+---
+ .../src/modes/interactive/components/status-indicator.ts      | 4 ++--
+ packages/tui/src/components/loader.ts                         | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/status-indicator.ts b/packages/coding-agent/src/modes/interactive/components/status-indicator.ts
+index 4efeb41..606179f 100644
+--- a/packages/coding-agent/src/modes/interactive/components/status-indicator.ts
++++ b/packages/coding-agent/src/modes/interactive/components/status-indicator.ts
+@@ -39,8 +39,8 @@ export class WorkingStatusIndicator extends StatusIndicator {
+ 	}
+ 
+ 	renderInBorder(width: number): string {
+-		const line = super.render(width + 2)[1] ?? "";
+-		return truncateToWidth(line.startsWith(" ") ? line.slice(1).trimEnd() : line.trimEnd(), width, "");
++		const line = super.render(width)[0] ?? "";
++		return truncateToWidth(line.trimEnd(), width, "");
+ 	}
+ 
+ 	renderSpinnerInBorder(width: number): string {
+diff --git a/packages/tui/src/components/loader.ts b/packages/tui/src/components/loader.ts
+index 0c59e73..70043df 100644
+--- a/packages/tui/src/components/loader.ts
++++ b/packages/tui/src/components/loader.ts
+@@ -32,7 +32,7 @@ export class Loader extends Text {
+ 		message: string = "Loading...",
+ 		indicator?: LoaderIndicatorOptions,
+ 	) {
+-		super("", 1, 0);
++		super("", 0, 0);
+ 		this.ui = ui;
+ 		this.spinnerColorFn = spinnerColorFn;
+ 		this.messageColorFn = messageColorFn;
+@@ -41,7 +41,7 @@ export class Loader extends Text {
+ 	}
+ 
+ 	render(width: number): string[] {
+-		return ["", ...super.render(width)];
++		return super.render(width);
+ 	}
+ 
+ 	start(): void {
+-- 
+2.55.0
+
