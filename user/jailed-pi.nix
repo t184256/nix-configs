@@ -128,7 +128,7 @@ let
       "extensions/no-tail-pipe.ts"
     ];
     packages = [
-      "npm:pi-web-access@0.10.7"
+      "npm:pi-web-access@0.31.0"
       #"npm:@ribbons-digital/pi-advisor"  # disabled for now
     ];
   };
