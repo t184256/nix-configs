@@ -220,6 +220,10 @@ let
                        python3.withPackages (ps: with ps; [ pyyaml ])'
                --command python3 <arguments>`
 
+    nixpkgs is pinned to an already fetched version in
+    `~/.config/nix/registry.json`.
+    If you need a checkout of nixpkgs, this file already points at one.
+
     ## Podman (VM-backed)
 
     It is possible to use containers via `podman`, but it is a wrapper that
