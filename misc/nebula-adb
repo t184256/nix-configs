@@ -69,6 +69,13 @@ YAML="/tmp/.nebula/nebula.yml"
 	while read -r ext ip; do
 		echo "    - $ip"
 	done <<< "$EXTS"
+	# other hosts can only relay to us if we advertise relays here;
+	# without this, peers behind NAT are unreachable from us
+	echo "relay:"
+	echo "  relays:"
+	while read -r ext ip; do
+		echo "    - $ip"
+	done <<< "$EXTS"
 	echo "static_host_map:"
 	while read -r ext ip; do
 		echo "  $ip:"
