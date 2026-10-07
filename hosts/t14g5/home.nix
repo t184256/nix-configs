@@ -26,6 +26,7 @@
     ../../user/fonts.nix
     ../../user/git.nix
     ../../user/htop.nix
+    ../../user/gnhf.nix
     ../../user/jailed-pi.nix
     ../../user/llm-commit-msg.nix
     ../../user/mosh.nix
