@@ -4,7 +4,8 @@ set -xEeuo pipefail; shopt -s inherit_errexit
 # running remotely:
 #   there$ sudo passwd liveuser && sudo systemctl start sshd && ip a
 #   here$ ssh-copy-id liveuser@...
-#   here$ scp misc/inst/t14g5 liveuser@...: && ssh -t liveuser@... ./t14g5
+#   here$ scp misc/inst/intermezzo liveuser@...:
+#   here$ ssh -t liveuser@... ./intermezzo
 
 
 # Goal: Install bare-bones Fedora, wiping the drive clean.

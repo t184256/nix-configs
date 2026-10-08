@@ -14,7 +14,6 @@ let
       id -un
       ip a | grep inet | grep -vwF 127.0.0.1/8 | grep -vwF 'inet6 ::1/128' ||:
     '';
-    t14 = builtins.readFile ../../misc/inst/t14g5;
     intermezzo = builtins.readFile ../../misc/inst/intermezzo;
     csb = ''
       FORGE=$(grep -m1 -oP '(?<=git clone https://)[^/]+redhat.com' \

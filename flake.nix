@@ -174,7 +174,7 @@
       };
     nixosConfigurations = nixpkgs.lib.genAttrs nixosHosts
       (name: mkSystem "x86_64-linux" ./hosts/${name}/configuration.nix);
-    homeConfigurations.t14g5 = home-manager.lib.homeManagerConfiguration {
+    homeConfigurations.intermezzo = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
         system = "x86_64-linux";
         # false as overlays are pulled in where needed
@@ -183,7 +183,7 @@
       };
       modules = [
         nixvim.homeModules.nixvim
-        ./hosts/t14g5/home.nix
+        ./hosts/intermezzo/home.nix
       ];
       extraSpecialArgs = { inherit inputs; };
     };
