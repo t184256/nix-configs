@@ -1,0 +1,30 @@
+From 5e55488447bd03f3a91df29931b17e881e89f953 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 8 Oct 2026 12:27:52 +0200
+Subject: [PATCH 23/24] modes/interactive/components/footer: abbreviate routed
+ model thinking level
+
+---
+ .../coding-agent/src/modes/interactive/components/footer.ts | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
+index 3d6b844..d92d48b 100644
+--- a/packages/coding-agent/src/modes/interactive/components/footer.ts
++++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
+@@ -242,8 +242,10 @@ export class FooterComponent implements Component {
+ 		// A virtual model routes each request; show where the latest response went.
+ 		const routed = this.session.routedModel;
+ 		if (routed) {
+-			const level = routed.thinkingLevel ? ` • ${routed.thinkingLevel}` : "";
+-			rightSideWithoutProvider += ` → ${routed.model.id}${level}`;
++			const abbrev = routed.thinkingLevel
++				? routed.thinkingLevel === "off" ? "0" : routed.thinkingLevel.slice(0, 1).toUpperCase()
++				: "";
++			rightSideWithoutProvider += ` → ${routed.model.id}${abbrev ? ` ${abbrev}` : ""}`;
+ 		}
+ 
+ 		// Prepend the provider without parens if there are multiple providers and there's enough room
+-- 
+2.55.0
+

@@ -1,0 +1,44 @@
+From 83431f4d319dd768cc08acf096409b79d19b094b Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 8 Oct 2026 15:31:41 +0200
+Subject: [PATCH] store command exit code in bash tool details
+
+---
+ packages/coding-agent/src/core/tools/bash.ts | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agent/src/core/tools/bash.ts
+index 3ab6bf89c..8e058b9b6 100644
+--- a/packages/coding-agent/src/core/tools/bash.ts
++++ b/packages/coding-agent/src/core/tools/bash.ts
+@@ -66,6 +66,8 @@ export type BashToolOutput = Static<typeof bashOutputSchema>;
+ export interface BashToolDetails {
+ 	truncation?: TruncationResult;
+ 	fullOutputPath?: string;
++	/** Exit code of the command. Absent for in-progress updates and results that threw (abort, timeout). */
++	exitCode?: number;
+ }
+ 
+ /**
+@@ -400,12 +402,16 @@ export function createShellToolDefinition(
+ 				if (exitCode !== 0) {
+ 					return {
+ 						content: [{ type: "text", text: outputText }],
+-						details,
++						details: { ...details, exitCode },
+ 						structuredContent,
+ 						isError: true,
+ 					};
+ 				}
+-				return { content: [{ type: "text", text: outputText }], details, structuredContent };
++				return {
++					content: [{ type: "text", text: outputText }],
++					details: { ...details, exitCode: 0 },
++					structuredContent,
++				};
+ 			} finally {
+ 				clearUpdateTimer();
+ 			}
+-- 
+2.55.0
+

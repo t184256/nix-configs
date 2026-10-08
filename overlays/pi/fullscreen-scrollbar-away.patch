@@ -1,7 +1,8 @@
-From 392e86c77199ed7e5266c6d028aed7b3b2de89a7 Mon Sep 17 00:00:00 2001
+From adc159afcb531b8aa66563dcbd2a536beaef6d1e Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Tue, 18 Aug 2026 22:04:22 +0000
-Subject: [PATCH] tui, modes/interactive: add "away" fullscreen scrollbar mode
+Subject: [PATCH 26/26] tui, modes/interactive: add "away" fullscreen scrollbar
+ mode
 
 ---
  packages/coding-agent/docs/settings.md                        | 2 +-
@@ -12,23 +13,23 @@ Subject: [PATCH] tui, modes/interactive: add "away" fullscreen scrollbar mode
  5 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/packages/coding-agent/docs/settings.md b/packages/coding-agent/docs/settings.md
-index ee6ba60..e04ed2d 100644
+index 02f46e6..7506621 100644
 --- a/packages/coding-agent/docs/settings.md
 +++ b/packages/coding-agent/docs/settings.md
-@@ -68,7 +68,7 @@ Use `/trust` in interactive mode to save a project trust decision for future ses
- | `showHardwareCursor` | boolean | `false` | Show the terminal cursor while TUI positions it for IME support |
- | `tuiMode` | string | `"regular"` | Interactive TUI mode: `"regular"` or experimental `"fullscreen"`. Changes from `/settings` apply immediately; `--tui-mode` overrides this setting at startup |
- | `fullscreenExitOutput` | string | `"transcript"` | Fullscreen exit output: `"transcript"` prints the final transcript and resume hint, while `"resume-hint"` restores the previous screen and prints only the resume hint. Has no effect in regular TUI mode |
--| `fullscreenScrollbar` | string | `"auto"` | Fullscreen transcript scrollbar: `"auto"` shows it temporarily while scrolling or while the pointer is over its rightmost-column track, `"always"` reserves that column and keeps it visible, and `"hidden"` hides it. Has no effect in regular TUI mode |
-+| `fullscreenScrollbar` | string | `"auto"` | Fullscreen transcript scrollbar: `"auto"` shows it temporarily while scrolling or while the pointer is over its rightmost-column track, `"always"` reserves that column and keeps it visible, `"away"` shows it only while scrolled away from the end of the transcript, and `"hidden"` hides it. Has no effect in regular TUI mode |
- | `fullscreenCopyOnSelect` | boolean | `true` | Automatically copy selected text in fullscreen mode. When disabled, selections stay highlighted and `Ctrl+X` copies the active selection |
- 
- For VS Code, include `--wait` so pi resumes after the editor exits:
+@@ -93,7 +93,7 @@ See [Compaction Reference](compaction.md) for trigger, summarization, and valida
+ | `quietStartup` | boolean \| `"header"` | `false` | `true` hides the startup header and loaded-resource listing. `"header"` keeps the header (version and key hints) but hides the model scope line and loaded-resource listing. |
+ | `tuiMode` | `"regular" \| "fullscreen"` | `"fullscreen"` | Interactive terminal UI mode. |
+ | `fullscreenExitOutput` | `"transcript" \| "resume-hint"` | `"transcript"` | Output printed when fullscreen mode exits. |
+-| `fullscreenScrollbar` | `"auto" \| "always" \| "hidden"` | `"auto"` | Fullscreen transcript scrollbar behavior. |
++| `fullscreenScrollbar` | `"auto" \| "always" \| "away" \| "hidden"` | `"auto"` | Fullscreen transcript scrollbar behavior. `"away"` shows it only while scrolled away from the end of the transcript. |
+ | `fullscreenCopyOnSelect` | boolean | `true` | Copy selected text automatically in fullscreen mode. |
+ | `fullscreenWheelScrollLines` | `"auto"` \| number | `"auto"` | Lines per mouse-wheel event in fullscreen mode, from 1 to 100. `"auto"` moves one line per event in local macOS terminals, which already accelerate wheel and trackpad input; elsewhere, and over SSH, it speeds up fast wheel spins to at most 6 lines per event. Alt+wheel moves five times as far. |
+ | `editorPaddingX` | number | `0` | Horizontal editor padding from 0 to 3 cells. |
 diff --git a/packages/coding-agent/src/core/settings-manager.ts b/packages/coding-agent/src/core/settings-manager.ts
-index 36130fa..a5b8ce3 100644
+index 6593b52..27996cb 100644
 --- a/packages/coding-agent/src/core/settings-manager.ts
 +++ b/packages/coding-agent/src/core/settings-manager.ts
-@@ -1221,7 +1221,7 @@ export class SettingsManager {
+@@ -1367,7 +1367,7 @@ export class SettingsManager {
  
  	getFullscreenScrollbar(): ScrollViewScrollbar {
  		const mode = this.settings.fullscreenScrollbar;
@@ -38,10 +39,10 @@ index 36130fa..a5b8ce3 100644
  
  	setFullscreenScrollbar(mode: ScrollViewScrollbar): void {
 diff --git a/packages/coding-agent/src/modes/interactive/components/settings-selector.ts b/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
-index 3e8363d..239bbda 100644
+index 22fe0f3..a9e19be 100644
 --- a/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
-@@ -693,7 +693,7 @@ export class SettingsSelectorComponent extends Container {
+@@ -721,7 +721,7 @@ export class SettingsSelectorComponent extends Container {
  				label: "Fullscreen scrollbar",
  				description: "Scrollbar behavior in fullscreen mode; has no effect in regular mode",
  				currentValue: config.fullscreenScrollbar,
@@ -51,10 +52,10 @@ index 3e8363d..239bbda 100644
  			{
  				id: "fullscreen-copy-on-select",
 diff --git a/packages/coding-agent/test/settings-selector.test.ts b/packages/coding-agent/test/settings-selector.test.ts
-index ffe201d..b629ef2 100644
+index 669bb6e..2a40777 100644
 --- a/packages/coding-agent/test/settings-selector.test.ts
 +++ b/packages/coding-agent/test/settings-selector.test.ts
-@@ -51,8 +51,8 @@ describe("SettingsSelectorComponent", () => {
+@@ -54,8 +54,8 @@ describe("SettingsSelectorComponent", () => {
  
  		cycle("Fullscreen exit output", 2);
  		expect(onExitOutputChange.mock.calls.flat()).toEqual(["resume-hint", "transcript"]);
@@ -64,7 +65,7 @@ index ffe201d..b629ef2 100644
 +		expect(onScrollbarChange.mock.calls.flat()).toEqual(["always", "away", "hidden", "auto"]);
  		cycle("Fullscreen copy on select", 2);
  		expect(onCopyOnSelectChange.mock.calls.flat()).toEqual([false, true]);
- 	});
+ 		// #9758: custom values from settings.json stay in the cycle.
 diff --git a/packages/tui/src/components/scroll-view.ts b/packages/tui/src/components/scroll-view.ts
 index b8f8a51..ab30188 100644
 --- a/packages/tui/src/components/scroll-view.ts

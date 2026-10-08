@@ -1,17 +1,17 @@
-From 3543d15053699351e95e8af15c0a6b88bba7de32 Mon Sep 17 00:00:00 2001
+From ef8e4c47515f020615f26922cb20665f5bc44b49 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:58:35 +0000
-Subject: [PATCH 19/23] modes/interactive/components/footer: single line
+Subject: [PATCH 18/24] modes/interactive/components/footer: single line
 
 ---
  .../modes/interactive/components/footer.ts    | 29 ++++---------------
  1 file changed, 5 insertions(+), 24 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
-index baeee7a0..f4ba75ba 100644
+index ef66d02..2bbee05 100644
 --- a/packages/coding-agent/src/modes/interactive/components/footer.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
-@@ -116,13 +116,13 @@ export class FooterComponent implements Component {
+@@ -167,13 +167,13 @@ export class FooterComponent implements Component {
  		// Add git branch if available
  		const branch = this.footerData.getGitBranch();
  		if (branch) {
@@ -27,7 +27,7 @@ index baeee7a0..f4ba75ba 100644
  		}
  
  		// Build stats line
-@@ -163,6 +163,8 @@ export class FooterComponent implements Component {
+@@ -214,6 +214,8 @@ export class FooterComponent implements Component {
  			statsParts.push(`${theme.fg("dim", "•")} ${theme.bold(theme.fg("warning", "xp"))}`);
  		}
  
@@ -36,7 +36,7 @@ index baeee7a0..f4ba75ba 100644
  		let statsLeft = statsParts.join(" ");
  
  		// Add model name on the right side, plus thinking level if model supports it
-@@ -219,27 +221,6 @@ export class FooterComponent implements Component {
+@@ -276,27 +278,6 @@ export class FooterComponent implements Component {
  			}
  		}
  

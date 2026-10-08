@@ -1,25 +1,26 @@
-From 0041c2327983f65c41f8a3c6e6923fe22c03eeb2 Mon Sep 17 00:00:00 2001
+From 3a9401a4e0e6bb30ec37a3ea6332368422126a2f Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:51:23 +0000
-Subject: [PATCH 04/23] modes/interactive/interactive-mode: remove borders
+Subject: [PATCH 04/24] modes/interactive/interactive-mode: remove
+ borders
 
 ---
  .../src/modes/interactive/interactive-mode.ts | 32 +++++++++----------
  1 file changed, 15 insertions(+), 17 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index 4721370..2569546 100644
+index c0eb78b8b..e0c8d85da 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -119,7 +119,6 @@ import { CustomEditor } from "./components/custom-editor.ts";
+@@ -142,7 +142,6 @@ import { CompactionSummaryMessageComponent } from "./components/compaction-summa
+ import { CustomEditor } from "./components/custom-editor.ts";
  import { CustomEntryComponent } from "./components/custom-entry.ts";
  import { CustomMessageComponent } from "./components/custom-message.ts";
- import { DaxnutsComponent } from "./components/daxnuts.ts";
 -import { DynamicBorder } from "./components/dynamic-border.ts";
  import { EarendilAnnouncementComponent } from "./components/earendil-announcement.ts";
+ import { playArmin3d, playPiLogo3d } from "./components/easter-egg-3d.lazy.ts";
  import { ExtensionEditorComponent } from "./components/extension-editor.ts";
- import { ExtensionInputComponent } from "./components/extension-input.ts";
-@@ -760,7 +759,7 @@ export class InteractiveMode {
+@@ -851,7 +850,7 @@ export class InteractiveMode {
  		if (this.chatContainer.children.length > 0) {
  			// no spacer
  		}
@@ -28,7 +29,7 @@ index 4721370..2569546 100644
  		if (this.settingsManager.getCollapseChangelog()) {
  			const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
  			const latestVersion = versionMatch ? versionMatch[1] : this.version;
-@@ -774,7 +773,7 @@ export class InteractiveMode {
+@@ -865,7 +864,7 @@ export class InteractiveMode {
  			);
  			// no spacer
  		}
@@ -37,14 +38,14 @@ index 4721370..2569546 100644
  	}
  
  	private mountInteractiveTui(tui: TuiMainScreen | TuiAltScreen, components: readonly Component[]): void {
-@@ -4288,21 +4287,21 @@ export class InteractiveMode {
+@@ -4639,21 +4638,21 @@ export class InteractiveMode {
  		const note = release.note?.trim();
  
  		// no spacer
 -		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
 +		// no border
  		this.chatContainer.addChild(
- 			new Text(`${theme.bold(theme.fg("warning", "Update Available"))}\n${updateInstruction}`, 0, 0),
+ 			new ThemedText(() => `${theme.bold(theme.fg("warning", "Update Available"))}\n${updateInstruction()}`, 0, 0),
  		);
  		if (note) {
  			// no spacer
@@ -56,21 +57,22 @@ index 4721370..2569546 100644
  			);
  			// no spacer
  		}
- 		this.chatContainer.addChild(new Text(changelogLine, 0, 0));
+ 		this.chatContainer.addChild(new ThemedText(changelogLine, 0, 0));
 -		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
 +		// no border
  		this.ui.requestRender();
  	}
  
-@@ -4312,15 +4311,15 @@ export class InteractiveMode {
+@@ -4664,16 +4663,16 @@ export class InteractiveMode {
  		const packageLines = packages.map((pkg) => `- ${pkg}`).join("\n");
  
  		// no spacer
 -		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
 +		// no border
  		this.chatContainer.addChild(
- 			new Text(
- 				`${theme.bold(theme.fg("warning", "Package Updates Available"))}\n${updateInstruction}\n${theme.fg("muted", "Packages:")}\n${packageLines}`,
+ 			new ThemedText(
+ 				() =>
+ 					`${theme.bold(theme.fg("warning", "Package Updates Available"))}\n${updateInstruction()}\n${theme.fg("muted", "Packages:")}\n${packageLines}`,
 -				1,
 +				0,
  				0,
@@ -81,7 +83,7 @@ index 4721370..2569546 100644
  		this.ui.requestRender();
  	}
  
-@@ -5945,18 +5944,17 @@ export class InteractiveMode {
+@@ -6433,18 +6432,17 @@ export class InteractiveMode {
  		this.resetExtensionUI();
  
  		const reloadBox = new Container();
@@ -90,8 +92,8 @@ index 4721370..2569546 100644
 +		// no border
  		// no spacer
  		reloadBox.addChild(
- 			new Text(
- 				theme.fg("muted", "Reloading keybindings, extensions, skills, prompts, themes, and context files..."),
+ 			new ThemedText(
+ 				() => theme.fg("muted", "Reloading keybindings, extensions, skills, prompts, themes, and context files..."),
 -				1,
 +				0,
  				0,
@@ -103,13 +105,13 @@ index 4721370..2569546 100644
  
  		const previousEditor = this.editor;
  		this.editorContainer.clear();
-@@ -6255,11 +6253,11 @@ export class InteractiveMode {
+@@ -6777,11 +6775,11 @@ export class InteractiveMode {
  				: "No changelog entries found.";
  
  		// no spacer
 -		this.chatContainer.addChild(new DynamicBorder());
 +		// no border
- 		this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "What's New")), 0, 0));
+ 		this.chatContainer.addChild(new ThemedText(() => theme.bold(theme.fg("accent", "What's New")), 0, 0));
  		// no spacer
  		this.chatContainer.addChild(new Markdown(changelogMarkdown, 0, 0, this.getMarkdownThemeWithSettings()));
 -		this.chatContainer.addChild(new DynamicBorder());
@@ -117,13 +119,13 @@ index 4721370..2569546 100644
  		this.ui.requestRender();
  	}
  
-@@ -6386,11 +6384,11 @@ export class InteractiveMode {
+@@ -6908,11 +6906,11 @@ export class InteractiveMode {
  		}
  
  		// no spacer
 -		this.chatContainer.addChild(new DynamicBorder());
 +		// no border
- 		this.chatContainer.addChild(new Text(theme.bold(theme.fg("accent", "Keyboard Shortcuts")), 0, 0));
+ 		this.chatContainer.addChild(new ThemedText(() => theme.bold(theme.fg("accent", "Keyboard Shortcuts")), 0, 0));
  		// no spacer
  		this.chatContainer.addChild(new Markdown(hotkeys.trim(), 0, 0, this.getMarkdownThemeWithSettings()));
 -		this.chatContainer.addChild(new DynamicBorder());

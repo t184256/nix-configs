@@ -1,19 +1,24 @@
 _: prev:
 
 let
-  newerVer = "0.85.1";
+  newerVer = "1.1.0";
   freshSrc = prev.fetchFromGitHub {
     owner = "earendil-works";
     repo = "pi";
     tag = "v${newerVer}";
-    hash = "sha256-gU8BSiqqOYt2RRuQONHHGvZeSM5KFQVrwif9bmuUXUc=";
+    hash = "sha256-lwjspkMGrW+8Fl/yBEDEFsHZJA57OKOhmVQmi6zfej4=";
   };
-  freshNpmDepsHash = "sha256-jzlsZIQzfl1FCZZ5//dHFWwMfBZQ4nRD6KB4HHifPqE=";
+  freshNpmDepsHash = "sha256-GOh5WG+rRgzoy/yVHY5PoEKJZGQcEGhISrDDJxkP8W4=";
   freshModelData = prev.fetchurl {
     url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${newerVer}.tgz";
-    hash = "sha256-r30RmGF5RFzm/oizfVfeIvgjwP/TplyuMcVVt/XpklM=";
+    hash = "sha256-bKqzPOxXSA7QLFf+N0KKAwp3zCoGYoFLQ1pc+JMq2Ck=";
   };
   localPatches = [
+    ./rich-exec-suppress-upstream.patch
+    ./rich-exec-exit-code.patch
+    ./rich-exec-openai.patch
+    ./rich-exec-tui.patch
+
     ./compact-01-edit-spacers.patch
     ./compact-02-interactive-spacers.patch
     ./compact-03-interactive-depad.patch
@@ -21,27 +26,26 @@ let
     ./compact-05-user-message-depad.patch
     ./compact-06-custom-message-depad.patch
     ./compact-07-tool-execution-spacers-padding.patch
-    ./compact-08-bash-execution-depad.patch
-    ./compact-09-bash-execution-spacers-newlines.patch
-    ./compact-10-tools-bash-newlines.patch
-    ./compact-11-edit-depad.patch
-    ./compact-12-footer-no-auto.patch
-    ./compact-13-footer-model.patch
-    ./compact-14-tui-loader-depad-border-status.patch
-    ./compact-15-editor-noborder.patch
-    ./compact-16-tool-execution-depad.patch
-    ./compact-17-assistant-message-spacers.patch
-    ./compact-18-assistant-message-depad.patch
-    ./compact-19-footer-one-line.patch
-    ./compact-20-editor-background.patch
-    ./compact-21-fullscreen-editor-minsize.patch
-    ./compact-22-footer-preserve-model.patch
-    ./compact-23-bash-execution-noborder.patch
+    ./compact-08-bash-execution-spacers-newlines.patch
+    ./compact-09-tools-bash-newlines.patch
+    ./compact-10-edit-depad.patch
+    ./compact-11-footer-no-auto.patch
+    ./compact-12-footer-model.patch
+    ./compact-13-tui-loader-depad-border-status.patch
+    ./compact-14-editor-noborder.patch
+    ./compact-15-tool-execution-depad.patch
+    ./compact-16-assistant-message-spacers.patch
+    ./compact-17-assistant-message-depad.patch
+    ./compact-18-footer-one-line.patch
+    ./compact-19-editor-background.patch
+    ./compact-20-fullscreen-editor-minsize.patch
+    ./compact-21-footer-preserve-model.patch
+    ./compact-22-bash-execution-noborder.patch
+    ./compact-23-footer-routed-model.patch
+    ./compact-24-bash-spacers.patch
 
-    ./success-completion.patch
-
+    ./clipboard-primary-selection.patch
     ./fullscreen-clipboard-paste.patch
-
     ./fullscreen-scrollbar-away.patch
   ];
   overrides-fresh = oa: {
@@ -65,18 +69,13 @@ let
       outputHash = freshNpmDepsHash;
       patches = localPatches;
     });
-    # The build/install phases changed between 0.83.0 and 0.84.2.
-    # Remove when nixpkgs catches up to 0.84.2.
+    # Build workspace dependencies in order, then the coding-agent, using the
+    # model catalog supplied via modelData instead of fetching it during build.
+    # Remove when nixpkgs catches up to 1.1.0.
     buildPhase = ''
       runHook preBuild
 
-      npx tsgo -p packages/tui/tsconfig.build.json
-      npx tsgo -p packages/telemetry/tsconfig.build.json
-      npx tsgo -p packages/ai/tsconfig.build.json
-      npx tsgo -p packages/agent/tsconfig.build.json
-      npx tsgo -p packages/protocol/tsconfig.build.json
-      npx tsgo -p packages/client/tsconfig.build.json
-      npm run build --workspace=packages/coding-agent
+      npm run build:offline
 
       runHook postBuild
     '';
@@ -88,9 +87,12 @@ let
       local nm="$out/lib/node_modules/pi-monorepo/node_modules"
 
       # Replace workspace deps needed at runtime with real copies
-      for ws in @earendil-works/pi-ai:packages/ai \
+      for ws in @earendil-works/chord:packages/chord \
+                @earendil-works/pi-ai:packages/ai \
                 @earendil-works/pi-agent-core:packages/agent \
                 @earendil-works/pi-client:packages/client \
+                @earendil-works/pi-codemode:packages/codemode \
+                @earendil-works/pi-mcp:packages/mcp \
                 @earendil-works/pi-protocol:packages/protocol \
                 @earendil-works/pi-telemetry:packages/telemetry \
                 @earendil-works/pi-tui:packages/tui; do

@@ -1,0 +1,34 @@
+From cd3e1e6c64557d82943382ec6eb4eca7272a4dbc Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 8 Oct 2026 12:27:52 +0200
+Subject: [PATCH 24/24] core/tools/renderers/bash: remove all spacers
+
+---
+ packages/coding-agent/src/core/tools/renderers/bash.ts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/coding-agent/src/core/tools/renderers/bash.ts b/packages/coding-agent/src/core/tools/renderers/bash.ts
+index b613bb5d3..06f75a264 100644
+--- a/packages/coding-agent/src/core/tools/renderers/bash.ts
++++ b/packages/coding-agent/src/core/tools/renderers/bash.ts
+@@ -6,7 +6,7 @@
+  * tool definition, so the tool's public shape is unchanged.
+  */
+ 
+-import { Container, Spacer, Text } from "@earendil-works/pi-tui";
++import { Container, Text } from "@earendil-works/pi-tui";
+ import { keyHint } from "../../../modes/interactive/components/keybinding-hints.ts";
+ import { VisualLinePreview } from "../../../modes/interactive/components/visual-truncate.ts";
+ import { theme } from "../../../modes/interactive/theme/theme.ts";
+@@ -71,7 +71,7 @@ function rebuildBashResultRenderComponent(
+ 		if (options.expanded) {
+ 			component.addChild(new Text(styledOutput, 0, 0));
+ 		} else {
+-			component.addChild(new Spacer(1));
++			// no spacer
+ 			component.addChild(
+ 				new VisualLinePreview({
+ 					text: styledOutput,
+-- 
+2.55.0
+

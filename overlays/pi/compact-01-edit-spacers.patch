@@ -1,14 +1,14 @@
-From 21689750a286b5f5b7e2191edefaa753281acf43 Mon Sep 17 00:00:00 2001
+From e0d38de7907bf7ea42cc26917ab5d9098ac3979a Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:37:29 +0000
-Subject: [PATCH 01/23] src/core/tools/renderers/edit: remove spacers
+Subject: [PATCH 01/24] src/core/tools/renderers/edit: remove spacers
 
 ---
  packages/coding-agent/src/core/tools/renderers/edit.ts | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/packages/coding-agent/src/core/tools/renderers/edit.ts b/packages/coding-agent/src/core/tools/renderers/edit.ts
-index 6db5556..192ccc7 100644
+index ca75dc3e9..4e75f797f 100644
 --- a/packages/coding-agent/src/core/tools/renderers/edit.ts
 +++ b/packages/coding-agent/src/core/tools/renderers/edit.ts
 @@ -6,7 +6,7 @@
@@ -20,7 +20,7 @@ index 6db5556..192ccc7 100644
  import { renderDiff } from "../../../modes/interactive/components/diff.ts";
  import type { Theme } from "../../../modes/interactive/theme/theme.ts";
  import type { ToolDefinition } from "../../extensions/types.ts";
-@@ -144,7 +144,7 @@ function buildEditCallComponent(
+@@ -146,7 +146,7 @@ function buildEditCallComponent(
  
  	const body =
  		"error" in component.preview ? theme.fg("error", component.preview.error) : renderDiff(component.preview.diff);
@@ -29,13 +29,13 @@ index 6db5556..192ccc7 100644
  	component.addChild(new Text(body, 0, 0));
  	return component;
  }
-@@ -231,7 +231,7 @@ export const editRenderers: Pick<ToolDefinition<any, any>, "renderCall" | "rende
+@@ -245,7 +245,7 @@ export const editRenderers: Pick<ToolDefinition<any, any>, "renderCall" | "rende
  		if (!output) {
  			return component;
  		}
 -		component.addChild(new Spacer(1));
 +		// no spacer
- 		component.addChild(new Text(output, 1, 0));
+ 		component.addChild(new Text(output, context.outputPad, 0));
  		return component;
  	},
 -- 

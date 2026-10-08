@@ -1,14 +1,14 @@
-From 25870d32a6d6c2cac8f92c979d4819d87eedfeb3 Mon Sep 17 00:00:00 2001
+From feb4b4208e643ac6e8089f923071587c90b4d7cb Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:09:44 +0000
-Subject: [PATCH 09/23] modes/interactive/components/bash-execution: remove spacers and leading newlines
+Subject: [PATCH 08/24] modes/interactive/components/bash-execution: remove spacers and leading newlines
 
 ---
  .../modes/interactive/components/bash-execution.ts   | 12 ++++--------
  1 file changed, 4 insertions(+), 8 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-index 387819dd..8c7a38a4 100644
+index 2c789bf5b..ada9da6e2 100644
 --- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 @@ -2,7 +2,7 @@
@@ -20,9 +20,9 @@ index 387819dd..8c7a38a4 100644
  import {
  	DEFAULT_MAX_BYTES,
  	DEFAULT_MAX_LINES,
-@@ -37,9 +37,6 @@ export class BashExecutionComponent extends Container {
- 		const colorKey = excludeFromContext ? "dim" : "bashMode";
- 		const borderColor = (str: string) => theme.fg(colorKey, str);
+@@ -39,9 +39,6 @@ export class BashExecutionComponent extends Container {
+ 		this.outputPad = outputPad;
+ 		const borderColor = (str: string) => theme.fg(this.colorKey, str);
  
 -		// Add spacer
 -		this.addChild(new Spacer(1));
@@ -30,12 +30,12 @@ index 387819dd..8c7a38a4 100644
  		// Top border
  		this.addChild(new DynamicBorder(borderColor));
  
-@@ -143,17 +140,16 @@ export class BashExecutionComponent extends Container {
+@@ -146,17 +143,16 @@ export class BashExecutionComponent extends Container {
  			if (this.expanded) {
  				// Show all lines
  				const displayText = availableLines.map((line) => theme.fg("muted", line)).join("\n");
--				this.contentContainer.addChild(new Text(`\n${displayText}`, 0, 0));
-+				this.contentContainer.addChild(new Text(displayText, 0, 0));
+-				this.contentContainer.addChild(new Text(`\n${displayText}`, this.outputPad, 0));
++				this.contentContainer.addChild(new Text(displayText, this.outputPad, 0));
  			} else {
  				// Use shared visual truncation utility with width-aware caching
  				const styledOutput = previewLogicalLines.map((line) => theme.fg("muted", line)).join("\n");
@@ -45,17 +45,17 @@ index 387819dd..8c7a38a4 100644
  				this.contentContainer.addChild({
  					render: (width: number) => {
  						if (cachedLines === undefined || cachedWidth !== width) {
--							const result = truncateToVisualLines(styledInput, PREVIEW_LINES, width, 1);
-+							const result = truncateToVisualLines(styledOutput, PREVIEW_LINES, width, 0);
+-							const result = truncateToVisualLines(styledInput, PREVIEW_LINES, width, this.outputPad);
++							const result = truncateToVisualLines(styledOutput, PREVIEW_LINES, width, this.outputPad);
  							cachedLines = result.visualLines;
  							cachedWidth = width;
  						}
-@@ -199,7 +195,7 @@ export class BashExecutionComponent extends Container {
+@@ -202,7 +198,7 @@ export class BashExecutionComponent extends Container {
  			}
  
  			if (statusParts.length > 0) {
--				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, 0, 0));
-+				this.contentContainer.addChild(new Text(statusParts.join("\n"), 0, 0));
+-				this.contentContainer.addChild(new Text(`\n${statusParts.join("\n")}`, this.outputPad, 0));
++				this.contentContainer.addChild(new Text(statusParts.join("\n"), this.outputPad, 0));
  			}
  		}
  	}

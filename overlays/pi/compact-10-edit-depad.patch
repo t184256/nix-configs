@@ -1,7 +1,7 @@
-From 4116401e7162777ab8a5d1d4e05d7b9a10359500 Mon Sep 17 00:00:00 2001
+From 8c0c8029b1ff6107215b401951c622df085dab47 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Sat, 20 Jun 2026 00:07:11 +0000
-Subject: [PATCH 11/23] core/tools/edit: depad
+Subject: [PATCH 10/24] core/tools/edit: depad
 
 ---
  packages/coding-agent/src/core/tools/renderers/edit.ts | 2 +-

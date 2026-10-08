@@ -1,0 +1,33 @@
+From 864a611a061c31d107d10a1c3ea81d217bea8386 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 8 Oct 2026 12:31:45 +0200
+Subject: [PATCH] utils/clipboard: write the primary selection with Linux
+ clipboard tools when requested
+
+---
+ packages/coding-agent/src/utils/clipboard.ts | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/packages/coding-agent/src/utils/clipboard.ts b/packages/coding-agent/src/utils/clipboard.ts
+index f6fdfe8..544662d 100644
+--- a/packages/coding-agent/src/utils/clipboard.ts
++++ b/packages/coding-agent/src/utils/clipboard.ts
+@@ -140,9 +140,13 @@ export async function copyToClipboard(text: string, target: ClipboardTarget = "c
+ 		else if (p === "win32") commands.push(["clip", []]);
+ 		else {
+ 			if (env.TERMUX_VERSION) commands.push(["termux-clipboard-set", []]);
+-			if (env.WAYLAND_DISPLAY) commands.push(["wl-copy", []]);
++			if (env.WAYLAND_DISPLAY) commands.push(["wl-copy", target === "s" ? ["--selection", "primary"] : []]);
+ 			if (env.DISPLAY) {
+-				commands.push(["xclip", ["-selection", "clipboard"]], ["xsel", ["--clipboard", "--input"]]);
++				const selection = target === "s" ? "primary" : "clipboard";
++				commands.push(
++					["xclip", ["-selection", selection]],
++					target === "s" ? ["xsel", ["--primary", "--input"]] : ["xsel", ["--clipboard", "--input"]],
++				);
+ 			}
+ 		}
+ 		for (const [command, args] of commands) {
+-- 
+2.55.0
+

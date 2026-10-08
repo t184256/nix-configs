@@ -1,0 +1,60 @@
+From a1af8641aed4a9fae8843aeb78762508f82372a2 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 8 Oct 2026 13:51:27 +0200
+Subject: [PATCH] append exit code and duration metadata to tool results sent
+ via OpenAI completions
+
+---
+ packages/ai/src/api/openai-completions.ts         | 15 ++++++++++++++-
+ .../openai-completions-tool-result-images.test.ts |  2 +-
+ 2 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/packages/ai/src/api/openai-completions.ts b/packages/ai/src/api/openai-completions.ts
+index 96cb23a..7b3dd6d 100644
+--- a/packages/ai/src/api/openai-completions.ts
++++ b/packages/ai/src/api/openai-completions.ts
+@@ -1190,6 +1190,19 @@ function addCacheControlToTextContent(
+ 	return false;
+ }
+ 
++function formatToolResultDuration(ms: number): string {
++	return ms < 10_000 ? `${Math.round(ms)}ms` : `${Math.round(ms / 1000)}s`;
++}
++
++/** Append execution metadata (exit code / duration) to the tool results. */
++function formatToolResultMeta(msg: ToolResultMessage): string {
++	const exitCode = (msg.details as { exitCode?: number } | undefined)?.exitCode;
++	const status =
++		exitCode !== undefined ? `exited with code ${exitCode}` : msg.isError ? "failed" : "completed successfully";
++	const duration = msg.durationMs !== undefined ? ` in ${formatToolResultDuration(msg.durationMs)}` : "";
++	return `\n[${status}${duration}]`;
++}
++
+ export function convertMessages(
+ 	model: Model<"openai-completions">,
+ 	context: TranscriptContext,
+@@ -1423,7 +1436,7 @@ export function convertMessages(
+ 				// Some providers require the 'name' field in tool results
+ 				const toolResultMsg: ChatCompletionToolMessageParam = {
+ 					role: "tool",
+-					content: sanitizeSurrogates(toolResultText),
++					content: sanitizeSurrogates(toolResultText + formatToolResultMeta(toolMsg)),
+ 					tool_call_id: toolMsg.toolCallId,
+ 				};
+ 				if (compat.requiresToolResultName && toolMsg.toolName) {
+diff --git a/packages/ai/test/openai-completions-tool-result-images.test.ts b/packages/ai/test/openai-completions-tool-result-images.test.ts
+index 4d30386..46ee426 100644
+--- a/packages/ai/test/openai-completions-tool-result-images.test.ts
++++ b/packages/ai/test/openai-completions-tool-result-images.test.ts
+@@ -175,7 +175,7 @@ describe("openai-completions convertMessages", () => {
+ 		const messages = convertMessages(model, context, compat);
+ 		const toolMessage = messages.find((m) => m.role === "tool") as { role: "tool"; content: string } | undefined;
+ 		expect(toolMessage).toBeTruthy();
+-		expect(toolMessage?.content).toBe("(no tool output)");
++		expect(toolMessage?.content).toBe("(no tool output)\n[completed successfully]");
+ 		expect(toolMessage?.content).not.toContain("see attached image");
+ 	});
+ });
+-- 
+2.55.0
+

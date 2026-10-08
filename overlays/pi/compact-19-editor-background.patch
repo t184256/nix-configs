@@ -1,17 +1,17 @@
-From 2f79f6da985398306cf10477007090f415c66ac9 Mon Sep 17 00:00:00 2001
+From b20b62bfe4ba2a381c51a407e3cba3cdf0ebacf3 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 19:01:27 +0000
-Subject: [PATCH 20/23] tui: grey background for editor input field
+Subject: [PATCH 19/24] tui: grey background for editor input field
 
 ---
  packages/tui/src/components/editor.ts | 12 ++++++++----
  1 file changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/packages/tui/src/components/editor.ts b/packages/tui/src/components/editor.ts
-index 37456688..f2575dce 100644
+index e00ac61..6978606 100644
 --- a/packages/tui/src/components/editor.ts
 +++ b/packages/tui/src/components/editor.ts
-@@ -18,6 +18,10 @@ import { SelectList, type SelectListLayoutOptions, type SelectListTheme } from "
+@@ -27,6 +27,10 @@ import { SelectList, type SelectListLayoutOptions, type SelectListTheme } from "
  const graphemeSegmenter = getGraphemeSegmenter();
  const wordSegmenter = getWordSegmenter();
  
@@ -22,7 +22,7 @@ index 37456688..f2575dce 100644
  /** Regex matching paste markers like `[paste #1 +123 lines]` or `[paste #2 1234 chars]`. */
  const PASTE_MARKER_REGEX = /\[paste #(\d+)( (\+\d+ lines|\d+ chars))?\]/g;
  
-@@ -555,12 +559,12 @@ export class Editor implements Component, Focusable {
+@@ -590,12 +594,12 @@ export class Editor implements Component, Focusable {
  					const afterGraphemes = [...this.segment(after, "grapheme")];
  					const firstGrapheme = afterGraphemes[0]?.segment || "";
  					const restAfter = after.slice(firstGrapheme.length);
@@ -37,7 +37,7 @@ index 37456688..f2575dce 100644
  					displayText = before + marker + cursor;
  					lineVisibleWidth = lineVisibleWidth + 1;
  					// If cursor overflows content width into the padding, flag it
-@@ -575,7 +579,7 @@ export class Editor implements Component, Focusable {
+@@ -610,7 +614,7 @@ export class Editor implements Component, Focusable {
  			const lineRightPadding = cursorInPadding ? rightPadding.slice(1) : rightPadding;
  
  			// Render the line (no side borders, just horizontal lines above and below)
@@ -46,7 +46,7 @@ index 37456688..f2575dce 100644
  		}
  
  		// Render bottom border (with scroll indicator if more content below)
-@@ -593,7 +597,7 @@ export class Editor implements Component, Focusable {
+@@ -626,7 +630,7 @@ export class Editor implements Component, Focusable {
  			for (const line of autocompleteResult) {
  				const lineWidth = visibleWidth(line);
  				const linePadding = " ".repeat(Math.max(0, contentWidth - lineWidth));

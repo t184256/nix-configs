@@ -1,17 +1,18 @@
-From 3febd85cde8ce19ab36e5340a6b3b634ca85f565 Mon Sep 17 00:00:00 2001
+From 4ed5867033ec6ed9a804f1c76c0f30a255c1aec0 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Wed, 19 Aug 2026 00:43:32 +0200
-Subject: [PATCH 22/23] modes/interactive/components/footer: keep model name when truncating
+Subject: [PATCH 21/24] modes/interactive/components/footer: keep model name
+ when truncating
 
 ---
  .../modes/interactive/components/footer.ts    | 20 ++++++++++---------
  1 file changed, 11 insertions(+), 9 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
-index ad2d155..23c6c8f 100644
+index 2bbee05..3d6b844 100644
 --- a/packages/coding-agent/src/modes/interactive/components/footer.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
-@@ -208,16 +208,18 @@ export class FooterComponent implements Component {
+@@ -265,16 +265,18 @@ export class FooterComponent implements Component {
  			const padding = " ".repeat(width - statsLeftWidth - rightSideWidth);
  			statsLine = statsLeft + padding + rightSide;
  		} else {

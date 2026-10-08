@@ -1,52 +1,40 @@
-From a14c81bf31f2612cb3a8de3981fcaaec42830976 Mon Sep 17 00:00:00 2001
+From 52d6f8556a4c72d395190646dd9ce1599f8c723e Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:55:50 +0000
-Subject: [PATCH 10/23] tools: remove leading newlines
+Subject: [PATCH 09/24] tools: remove leading newlines
 
 ---
- packages/coding-agent/src/core/tools/bash.ts           |  2 +-
- packages/coding-agent/src/core/tools/renderers/bash.ts | 10 +++++-----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ packages/coding-agent/src/core/tools/bash.ts           | 2 +-
+ packages/coding-agent/src/core/tools/renderers/bash.ts | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agent/src/core/tools/bash.ts
-index d8866ae..6f88996 100644
+index 8e058b9b6..dcc93d40c 100644
 --- a/packages/coding-agent/src/core/tools/bash.ts
 +++ b/packages/coding-agent/src/core/tools/bash.ts
-@@ -334,7 +334,7 @@ export function createShellToolDefinition(
+@@ -357,7 +357,7 @@ export function createShellToolDefinition(
  				return { text, details };
  			};
  
 -			const appendStatus = (text: string, status: string) => `${text ? `${text}\n\n` : ""}${status}`;
 +			const appendStatus = (text: string, status: string) => `${text ? `${text}` : ""}[${status}]`;
+ 			const startedAt = performance.now();
  
  			try {
- 				let exitCode: number | null;
 diff --git a/packages/coding-agent/src/core/tools/renderers/bash.ts b/packages/coding-agent/src/core/tools/renderers/bash.ts
-index 01e170a..95bfd8d 100644
+index 8bc8687f6..b613bb5d3 100644
 --- a/packages/coding-agent/src/core/tools/renderers/bash.ts
 +++ b/packages/coding-agent/src/core/tools/renderers/bash.ts
-@@ -70,7 +70,7 @@ function rebuildBashResultRenderComponent(
- 			.join("\n");
+@@ -69,7 +69,7 @@ function rebuildBashResultRenderComponent(
+ 		const styledOutput = lines.join("\n");
  
  		if (options.expanded) {
 -			component.addChild(new Text(`\n${styledOutput}`, 0, 0));
 +			component.addChild(new Text(styledOutput, 0, 0));
  		} else {
- 			component.addChild({
- 				render: (width: number) => {
-@@ -84,9 +84,9 @@ function rebuildBashResultRenderComponent(
- 						const hint =
- 							theme.fg("muted", `... (${state.cachedSkipped} earlier lines,`) +
- 							` ${keyHint("app.tools.expand", "to expand")}${theme.fg("muted", ")")}`;
--						return ["", truncateToWidth(hint, width, "..."), ...(state.cachedLines ?? [])];
-+						return [truncateToWidth(hint, width, "..."), ...(state.cachedLines ?? [])];
- 					}
--					return ["", ...(state.cachedLines ?? [])];
-+					return [...(state.cachedLines ?? [])];
- 				},
- 				invalidate: () => {
- 					state.cachedWidth = undefined;
-@@ -111,13 +111,13 @@ function rebuildBashResultRenderComponent(
+ 			component.addChild(new Spacer(1));
+ 			component.addChild(
+@@ -99,7 +99,7 @@ function rebuildBashResultRenderComponent(
  				);
  			}
  		}
@@ -54,7 +42,9 @@ index 01e170a..95bfd8d 100644
 +		component.addChild(new Text(theme.fg("warning", `[${warnings.join(". ")}]`), 0, 0));
  	}
  
- 	if (startedAt !== undefined) {
+ 	// A final result's recorded duration wins: it is monotonic and survives reloads. The renderer's own clock is the
+@@ -116,7 +116,7 @@ function rebuildBashResultRenderComponent(
+ 	} else if (startedAt !== undefined) {
  		const label = options.isPartial ? "Elapsed" : "Took";
  		const endTime = endedAt ?? Date.now();
 -		component.addChild(new Text(`\n${theme.fg("muted", `${label} ${formatDuration(endTime - startedAt)}`)}`, 0, 0));

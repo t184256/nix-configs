@@ -117,6 +117,7 @@ let
     defaultModel = "interactive";
     tuiMode = "fullscreen";
     fullscreenScrollbar = "away";
+    outputPad = 0;  # denser transcript
     thinkingBudgets = {
       low = 1024;
       medium = 4096;

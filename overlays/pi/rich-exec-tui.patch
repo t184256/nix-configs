@@ -1,0 +1,61 @@
+From 8105310eeb3a1f4447d4362d9e5ab7a40d7b3fcb Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 8 Oct 2026 13:51:27 +0200
+Subject: [PATCH] show explicit completion status with duration in bash tool
+ results
+
+---
+ .../src/core/tools/renderers/bash.ts          | 23 ++++++++++++++-----
+ 1 file changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/packages/coding-agent/src/core/tools/renderers/bash.ts b/packages/coding-agent/src/core/tools/renderers/bash.ts
+index 1c47224b1..a8b642951 100644
+--- a/packages/coding-agent/src/core/tools/renderers/bash.ts
++++ b/packages/coding-agent/src/core/tools/renderers/bash.ts
+@@ -49,7 +49,9 @@ function rebuildBashResultRenderComponent(
+ ): void {
+ 	component.clear();
+ 
+-	let output = getTextOutput(result as any, showImages).trim();
++	const rawOutput = getTextOutput(result as any, showImages);
++	const hadTrailingNewline = rawOutput.endsWith("\n");
++	let output = rawOutput.trim();
+ 	const truncation = result.details?.truncation;
+ 	const fullOutputPath = result.details?.fullOutputPath;
+ 	if (!options.isPartial && truncation?.truncated && fullOutputPath && output.endsWith("]")) {
+@@ -60,10 +62,12 @@ function rebuildBashResultRenderComponent(
+ 	}
+ 
+ 	if (output) {
+-		const styledOutput = output
+-			.split("\n")
+-			.map((line) => theme.fg("toolOutput", line))
+-			.join("\n");
++		const lines = output.split("\n").map((line) => theme.fg("toolOutput", line));
++		// The (no output) placeholder is not real output, so it gets no annotation.
++		if (output !== "(no output)" && !hadTrailingNewline) {
++			lines[lines.length - 1] += theme.fg("dim", "[no newline at the end of the output]");
++		}
++		const styledOutput = lines.join("\n");
+ 
+ 		if (options.expanded) {
+ 			component.addChild(new Text(`\n${styledOutput}`, 0, 0));
+@@ -102,7 +106,14 @@ function rebuildBashResultRenderComponent(
+ 	// A final result's recorded duration wins: it is monotonic and survives reloads. The renderer's own clock is the
+ 	// fallback for live progress and for results stored without one.
+ 	if (!options.isPartial && durationMs !== undefined) {
+-		component.addChild(new Text(`\n${theme.fg("muted", `Took ${formatDuration(durationMs)}`)}`, 0, 0));
++		const exitCode = result.details?.exitCode;
++		const label =
++			exitCode === 0
++				? `Command completed successfully in ${formatDuration(durationMs)}`
++				: exitCode !== undefined
++					? `Command exited with code ${exitCode} in ${formatDuration(durationMs)}`
++					: `Took ${formatDuration(durationMs)}`;
++		component.addChild(new Text(theme.fg("muted", `[${label}]`), 0, 0));
+ 	} else if (startedAt !== undefined) {
+ 		const label = options.isPartial ? "Elapsed" : "Took";
+ 		const endTime = endedAt ?? Date.now();
+-- 
+2.55.0
+

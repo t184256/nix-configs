@@ -1,0 +1,50 @@
+From 653c7f46eac10714d1c9bffebdd708636d2a5680 Mon Sep 17 00:00:00 2001
+From: Alexander Sosedkin <monk@unboiled.info>
+Date: Thu, 8 Oct 2026 15:31:17 +0200
+Subject: [PATCH] core/tools/bash: keep exit status out of recorded output text
+
+---
+ packages/coding-agent/src/core/tools/bash.ts | 2 +-
+ packages/coding-agent/test/tools.test.ts     | 6 ++----
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agent/src/core/tools/bash.ts
+index 4620e2464..3ab6bf89c 100644
+--- a/packages/coding-agent/src/core/tools/bash.ts
++++ b/packages/coding-agent/src/core/tools/bash.ts
+@@ -399,7 +399,7 @@ export function createShellToolDefinition(
+ 				};
+ 				if (exitCode !== 0) {
+ 					return {
+-						content: [{ type: "text", text: appendStatus(outputText, `Command exited with code ${exitCode}`) }],
++						content: [{ type: "text", text: outputText }],
+ 						details,
+ 						structuredContent,
+ 						isError: true,
+diff --git a/packages/coding-agent/test/tools.test.ts b/packages/coding-agent/test/tools.test.ts
+index ae1644396..27704bbfc 100644
+--- a/packages/coding-agent/test/tools.test.ts
++++ b/packages/coding-agent/test/tools.test.ts
+@@ -501,7 +501,7 @@ describe("Coding Agent Tools", () => {
+ 		it("should report non-zero exit codes as error results with structured content", async () => {
+ 			const result = await bashTool.execute("test-call-9", { command: "echo out; exit 3" });
+ 			expect(result.isError).toBe(true);
+-			expect(getTextOutput(result)).toBe("out\n\n\nCommand exited with code 3");
++			expect(getTextOutput(result)).toBe("out\n");
+ 			expect(result.structuredContent).toEqual({
+ 				output: "out\n",
+ 				truncated: false,
+@@ -569,9 +569,7 @@ describe("Coding Agent Tools", () => {
+ 						command: `printf 'before-kill\\n'; kill -${signal} $$`,
+ 					});
+ 					expect(result.isError).toBe(true);
+-					expect(getTextOutput(result)).toMatch(
+-						new RegExp(`before-kill\\s+Command exited with code ${exitCode}$`),
+-					);
++					expect(getTextOutput(result)).toMatch(new RegExp(`before-kill\\s*$`));
+ 				}
+ 			},
+ 		);
+-- 
+2.55.0
+

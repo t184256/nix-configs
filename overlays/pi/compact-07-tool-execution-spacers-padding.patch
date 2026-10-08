@@ -1,34 +1,36 @@
-From 314735577ca74086a348d8699cc4c127e2ea6fde Mon Sep 17 00:00:00 2001
+From 80a2d313e96e0ca5e7da4df3200e95c0f1adbd6c Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:48:31 +0000
-Subject: [PATCH 07/23] modes/interactive/components/tool-execution: remove spacers and padding
- and padding
+Subject: [PATCH 07/24] modes/interactive/components/tool-execution: remove
+ spacers and padding
 
 ---
- .../interactive/components/tool-execution.ts   | 18 ++----------------
- 1 file changed, 2 insertions(+), 16 deletions(-)
+ .../interactive/components/tool-execution.ts  | 19 +++----------------
+ 1 file changed, 3 insertions(+), 16 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-index 5355a36..c1d9564 100644
+index ac5615d..7bd34b5 100644
 --- a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-@@ -6,7 +6,6 @@ import {
+@@ -5,8 +5,8 @@ import {
  	getCapabilities,
  	Image,
  	MouseRegion,
 -	Spacer,
  	Text,
++
  	type TUI,
  	type TuiMouseEvent,
-@@ -54,7 +53,6 @@ export class ToolExecutionComponent extends Container {
- 	private resultRendererComponent?: Component;
- 	private rendererState: any = {};
+ } from "@earendil-works/pi-tui";
+@@ -39,7 +39,6 @@ export class ToolExecutionComponent extends Container {
  	private imageComponents: Image[] = [];
+ 	/** Inputs of imageComponents, so updateDisplay can reuse images and keep their converted PNG data. */
+ 	private imageSources: Array<{ data: string; mimeType: string; widthCells: number }> = [];
 -	private imageSpacers: Spacer[] = [];
  	private toolName: string;
  	private toolCallId: string;
  	private args: any;
-@@ -94,7 +92,7 @@ export class ToolExecutionComponent extends Container {
+@@ -78,7 +77,7 @@ export class ToolExecutionComponent extends Container {
  		this.ui = ui;
  		this.cwd = cwd;
  
@@ -37,7 +39,7 @@ index 5355a36..c1d9564 100644
  
  		// Always create all shell variants. contentBox is used for default renderer-based composition.
  		// selfRenderContainer is used when the tool renders its own framing.
-@@ -268,12 +266,7 @@ export class ToolExecutionComponent extends Container {
+@@ -228,12 +227,7 @@ export class ToolExecutionComponent extends Container {
  				lines.push("");
  				lines.push(...contentLines);
  			}
@@ -51,10 +53,10 @@ index 5355a36..c1d9564 100644
  				if (imageComponent) {
  					lines.push(...imageComponent.render(width));
  				}
-@@ -366,10 +359,6 @@ export class ToolExecutionComponent extends Container {
- 			this.removeChild(img);
+@@ -329,19 +323,12 @@ export class ToolExecutionComponent extends Container {
  		}
  		this.imageComponents = [];
+ 		this.imageSources = [];
 -		for (const spacer of this.imageSpacers) {
 -			this.removeChild(spacer);
 -		}
@@ -62,16 +64,15 @@ index 5355a36..c1d9564 100644
  
  		if (this.result) {
  			const imageBlocks = this.result.content.filter((c) => c.type === "image");
-@@ -382,9 +371,6 @@ export class ToolExecutionComponent extends Container {
- 					const imageMimeType = converted?.mimeType ?? img.mimeType;
- 					if (caps.images === "kitty" && imageMimeType !== "image/png") continue;
- 
+ 			const caps = getCapabilities();
+ 			for (const img of imageBlocks) {
+ 				if (caps.images && this.showImages && img.data && img.mimeType) {
 -					const spacer = new Spacer(1);
 -					this.addChild(spacer);
 -					this.imageSpacers.push(spacer);
- 					const imageComponent = new Image(
- 						imageData,
- 						imageMimeType,
+ 					const source = { data: img.data, mimeType: img.mimeType, widthCells: this.imageWidthCells };
+ 					const index = this.imageComponents.length;
+ 					const previous = previousSources[index];
 -- 
 2.55.0
 
