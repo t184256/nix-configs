@@ -1,20 +1,6 @@
 self: super:
 
 rec {
-  luajit = super.luajit.override {
-    packageOverrides = luaself: luaprev: {
-      #neotest = luaprev.neotest.overrideAttrs (oa: {
-      #  doCheck = false;
-      #});
-      lush-nvim = luaprev.lush-nvim.overrideAttrs (oa: {
-      postInstall = ''
-        rm -vf $out/lush.nvim-*/lush.nvim/scm-1/examples/lush-template/README.md
-      '';
-      });
-    };
-  };
-  luajitPackages = luajit.pkgs;
-
   vimPlugins = super.vimPlugins.extend ( final: prev: {
     neogit = prev.neogit.overrideAttrs (oa: {
       postPatch = (oa.postPatch or "") + ''
