@@ -159,6 +159,7 @@ let
   webSearchJson = pkgs.writeText "web-search.json"
     (builtins.toJSON { workflow = "none"; });
   keybindingsJson = pkgs.writeText "keybindings.json" (builtins.toJSON {
+    "app.message.dequeue" = "ctrl+q";
     "tui.altScreen.top" = [ ];  # restore 'Home' jumping within the prompt
     "tui.altScreen.bottom" = [ ];  # restore 'End' jumping within the prompt
     "tui.altScreen.search" = "ctrl+s";
