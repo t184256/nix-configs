@@ -3,10 +3,6 @@
 {
   networking.hostName = "plum";
 
-  nixpkgs.overlays = [
-    (import ../../overlays/llama-cpp/default.nix)
-  ];
-
   imports = [
     ../../nixos/profiles/2024.nix
     ./disko.nix

@@ -18,7 +18,8 @@ let
 
   generatedConfig = pkgs.writeText "llama-preset-generated.ini" ''
     [*]
-    mmap = off
+    # new name for mmap = off:
+    load-mode = none
     flash-attn = on
     cache-type-k = q8_0
     cache-type-v = q8_0
@@ -89,15 +90,12 @@ let
     "--models-preset" effectiveConfig
     "--models-max" "1"
     "-ngl" "999"
-    "--no-mmap"
     "--jinja"
     "--offline"
+    "--log-disable"
   ];
 in
 {
-  nixpkgs.overlays = [
-    (import ../../overlays/llama-cpp/default.nix)
-  ];
   services.llama-cpp = {
     enable = true;
     #package = pkgs.llama-cpp-engramhalo-gfx1151;
@@ -137,7 +135,7 @@ in
     ExecStart =
       let cfg = config.services.llama-cpp; in lib.mkForce [
           ""
-          ("${cfg.package}/bin/llama-server --log-disable " +
+          ("${cfg.package}/bin/llama-server " +
           "--host ${cfg.settings.host} " +
           "--port ${builtins.toString cfg.settings.port} " +
            "${utils.escapeSystemdExecArgs extraFlags}")

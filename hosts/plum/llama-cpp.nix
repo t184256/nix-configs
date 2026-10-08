@@ -10,10 +10,6 @@ let
 in
 
 {
-  nixpkgs.overlays = [
-    (import ../../overlays/llama-cpp/default.nix)
-  ];
-
   environment.persistence."/mnt/persist".directories = [ "/var/lib/llama-cpp" ];
 
   systemd.services.llama-cpp = {
