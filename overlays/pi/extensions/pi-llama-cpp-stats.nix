@@ -4,8 +4,8 @@
 final: prev: {
   pi-llama-cpp-stats = prev.runCommand "pi-llama-cpp-stats-patched"
     { src = prev.fetchurl {
-        url = "https://cdn.jsdelivr.net/npm/pi-llama-cpp-stats@0.1.6/index.ts";
-        hash = "sha256-XJds2Qky22Md3ZNMFlvy7sOfPYnJ3Kx5ogfKgO8dBGE=";
+        url = "https://cdn.jsdelivr.net/npm/pi-llama-cpp-stats@0.1.7/index.ts";
+        hash = "sha256-kVAi2hhQrOyEObz9LjpU8AkdsFckPL2NUVhm3+AZ1tI=";
       }; }
     ''
       cp $src $out
