@@ -14,6 +14,8 @@ let
     hash = "sha256-bKqzPOxXSA7QLFf+N0KKAwp3zCoGYoFLQ1pc+JMq2Ck=";
   };
   localPatches = [
+    ./9709-bandaid.patch
+
     ./rich-exec-suppress-upstream.patch
     ./rich-exec-exit-code.patch
     ./rich-exec-openai.patch
