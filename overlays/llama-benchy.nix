@@ -19,7 +19,7 @@ _: prev:
     dependencies = with prev.python3.pkgs; [
       openai tokenizers transformers tabulate numpy requests aiohttp pydantic
     ];
-    pythonRuntimeDepsCheckHook = "";  # skip because of 'asyncio'
+    dontCheckRuntimeDeps = 1;  # skip because of asyncio
     doCheck = false;
   };
 }
