@@ -1,13 +1,7 @@
-{ inputs, pkgs, ... }:
+{ pkgs, ... }:
 
 let
-  pkgsCuda = import inputs.nixpkgs {
-    system = pkgs.system;
-    config = { cudaSupport = true; rocmSupport = false; allowUnfree = true; };
-    overlays = [ (import ../../overlays/models.nix) ];
-  };
-
-  whisperCpp = pkgsCuda.whisper-cpp.overrideAttrs (old: {
+  whisperCpp = pkgs.whisper-cpp.overrideAttrs (old: {
     # RTX 3090 = Ampere sm_86; Ryzen 7600 = Zen 3 (znver3)
     cmakeFlags = (old.cmakeFlags or []) ++ [
       "-DGGML_CPU_ALL_VARIANTS=OFF"
@@ -16,14 +10,16 @@ let
     CFLAGS = old.CFLAGS or "" + " -march=znver3";
     CXXFLAGS = old.CXXFLAGS or "" + " -march=znver3";
   });
-  cudatoolkit = pkgsCuda.cudaPackages.cudatoolkit;
+  cudatoolkit = pkgs.cudaPackages.cudatoolkit;
 
-  #model = pkgsCuda.whisper-distil-large-v35;
-  #model = pkgsCuda.whisper-large-turbo-q8_0;
-  model = pkgsCuda.whisper-large-q5_0;
+  #model = pkgs.whisper-distil-large-v35;
+  #model = pkgs.whisper-large-turbo-q8_0;
+  model = pkgs.whisper-large-q5_0;
 in
 
 {
+  nixpkgs.config.cudaSupport = true;
+
   systemd.services.whisper-cpp = {
     description = "whisper-cpp server (CUDA)";
     wants = [ "network-online.target" ];
