@@ -23,9 +23,9 @@ let
   '';
 
   # path defaults to name; set explicitly when the file lives in a subdir
-  fetchHF = { repo, name, hash, path ? name }: prev.fetchurl {
+  fetchHF = { repo, name, hash, path ? name, rev ? "main" }: prev.fetchurl {
     inherit name hash;
-    url = "https://huggingface.co/${repo}/resolve/main/${path}";
+    url = "https://huggingface.co/${repo}/resolve/${rev}/${path}";
   };
 
   # Full HuggingFace model directory (safetensors + config + tokenizer).
