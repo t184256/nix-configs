@@ -15,4 +15,9 @@ _: super:
           hash = "sha256-WZAkpJIPzAbqXawNiM3JqE9tJzxrNs/2dGAWVMwLpN4=";
         };
       });
+
+  # otherwise Sass::Eval::fallback_impl gets inlined and dlopen fails
+  akkoma-admin-fe = super.akkoma-admin-fe.overrideAttrs (oa: {
+    CXXFLAGS = "-fkeep-inline-functions";
+  });
 }

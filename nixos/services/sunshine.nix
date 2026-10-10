@@ -47,7 +47,7 @@ let
                            stdout=subprocess.PIPE, encoding='utf-8')
       while True:
           line = f.stdout.readline()
-          if 'Info: Trying encoder [vaapi]' in line:  # requires info level
+          if 'Trying encoder [' in line:  # requires info level
               if state():
                   print('no wiggling required', file=sys.stderr)
               else:

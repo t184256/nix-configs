@@ -36,6 +36,7 @@ self: super:
         };
       });
       patches = (oa.patches or []) ++ [ ./unicode-input.patch ];
+      buildInputs = oa.buildInputs ++ [ super.libappindicator ];
       # Apollo bundles its own build-deps with x264/x265; don't override
       # FFMPEG_PREPARED_BINARIES from sunshine's cmakeFlags.
       cmakeFlags = builtins.filter

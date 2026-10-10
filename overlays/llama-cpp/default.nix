@@ -28,7 +28,13 @@ let
       '';
     };
     npmDepsHash = "sha256-a17M+L3nLdRnN6WMB6imPFmwqG2g8uv+gwN0XTAUrf8=";
-    patches = (oa.patches or []) ++ [
+    patches = (prev.lib.remove
+      (prev.fetchpatch { # #30034 is already in b11491
+        url = "https://github.com/ggml-org/llama.cpp/commit/" +
+              "07ccce23cf7fe3c84e13d810accff672b1d966bf.patch";
+        hash = "sha256-KtsPcveFM51fY1hDWntiqCW/KHoWLv05Gmnhd1U/9Zs=";
+      })
+      (oa.patches or [])) ++ [
       # https://github.com/ggml-org/llama.cpp/pull/20819 persist checkpoints
       ./20819-persist-checkpoints.patch
     ];
