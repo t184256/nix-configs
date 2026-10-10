@@ -87,7 +87,7 @@ in
   qwen-sharp-chat-template = fetchHF {
     repo = "peculiar-ragdoll/Qwen-Sharp-Chat-Templates";
     name = "chat_template.jinja";
-    hash = "sha256-GA5wFXWbK2tXV01sLKXC0Z6ysFpKr/qAhm9x6xofrRo=";
+    hash = "sha256-zf85+ya2DckPqikucmZVxrIfYttJeEbgLkxLurlCqEo=";
   };
 
   qwen38-27b-q80 = fetchHF {
