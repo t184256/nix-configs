@@ -1,10 +1,12 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
   withLang = lang: builtins.elem lang config.language-support;
 in
 {
   nixpkgs.overlays = [ (import ../../overlays/vim-plugins.nix) ];
+
+  programs.nixvim.nixpkgs.source = inputs.nixpkgs;  # silence a stupid warning
 
   imports = [
     ../config/language-support.nix
