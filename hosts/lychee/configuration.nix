@@ -68,7 +68,7 @@
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
   home-manager.users.monk.home.packages = with pkgs; [
-    alacritty freerdp openvpn
+    freerdp openvpn
   ];
   home-manager.users.monk.programs.aider-chat.enable = true;
 
