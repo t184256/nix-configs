@@ -23,7 +23,7 @@ let
     name=''${2:-''${basename%.git}}
     mkdir "$name.tmp"
     cd "$name.tmp"
-    git clone --bare "$url" .bare --reference-if-able "~/code/$basename"
+    git clone --bare "$url" .bare --reference-if-able ~/code/"$basename"
     echo "gitdir: ./.bare" > .git
     git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
     git fetch origin
@@ -46,7 +46,7 @@ in
       alias.sw = "switch";
       alias.ff = "pull --ff-only";
       alias.tree = "log --graph --oneline '--exclude=refs/notes/*' --all";
-      alias.mr = "!sh -c 'git fetch $2 merge-requests/$3/head:mr-$2-$3 && git checkout mr-$2-$3'";
+      alias.mr = ''!f() { git fetch "$1" "merge-requests/$2/head:mr-$1-$2" && git checkout "mr-$1-$2"; }; f'';
       alias.difft = "!GIT_EXTERNAL_DIFF='difft --display inline' git diff";
       diff.algorithm = "patience";
       init.defaultBranch = "main";
