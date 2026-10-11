@@ -5,7 +5,7 @@
 { pkgs, lib, inputs, config, ... }:
 
 let
-  jailedAgentsLib = inputs.jailed-agents.lib.${pkgs.system};
+  jailedAgentsLib = inputs.jailed-agents.lib.${pkgs.stdenv.hostPlatform.system};
   comb = jailedAgentsLib.internals.jail.combinators;
 
   qwen38Effort = {
