@@ -40,8 +40,8 @@
           SuspectedFingerprinting = true;
           Fingerprinting = true;
         };
-        RequestedLocales = [ "en-GB" "en-US" "en" "ru-RU" "ru" "cz-CZ" "cz" ];
-        languagePacks = [ "en-GB" "en-US" "en" "ru-RU" "ru" "cz-CZ" "cz" ];
+        RequestedLocales = [ "en-GB" "en-US" "en" "ru-RU" "ru" "cs-CZ" "cs" ];
+        languagePacks = [ "en-GB" "en-US" "en" "ru-RU" "ru" "cs-CZ" "cs" ];
         # TODO: ExtensionSettings?
       };
       profiles.default = {
