@@ -45,8 +45,8 @@ let
       rev = version;
       hash = "sha256-rV85jle5R8je7iR8uZaXEdDuQEh2lf/Eoht+9k6bpC4=";
     };
-    postUnpack = "cp README.md plugin/";
-    sourceRoot = "plugin";
+    postUnpack = "cp source/README.md source/plugin/";
+    sourceRoot = "source/plugin";
     build-system = [ prev.python3Packages.hatchling ];
     doCheck = false;
     pythonImportsCheck = [ "yt_dlp_plugins" ];
