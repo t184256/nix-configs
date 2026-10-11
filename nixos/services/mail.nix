@@ -11,7 +11,7 @@
     x509.useACMEHost = "unboiled.info";
     enableManageSieve = true;
     localDnsResolver = false;  # I have a DNS server on the same host
-    loginAccounts = {
+    accounts = {
         "monk@unboiled.info" = {
             hashedPasswordFile = "/mnt/secrets/mail/monk";
             aliases = [
