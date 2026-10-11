@@ -108,18 +108,31 @@ in
       "sha256-1GNObYTw67CUC+FckNN5C/ZGTj3qOhzdxWfcDoOtiDM="
     ];
   };
-
-  # MTP draft sidecar (Q8_0): ~0.83 acceptance at depth instead of Q4_K_M's 0.62
-  qwen38-flash-next-mtp-q80 = fetchHF {
-    repo = "EasiiX/Qwen3.8-Flash-Next-MTP-Strix-Halo-GGUF";
+  qwen38-flash-next-ud-q4kxl = fetchHFSharded rec {  # for gufo
+    pname = "qwen38-flash-next-ud-iq4xs";
+    repo = "unsloth/Qwen3.8-Flash-Next-GGUF";
+    nameTemplate = "Qwen3.8-Flash-Next-UD-Q4_K_XL-000{nn}-of-00004.gguf";
+    pathTemplate = "UD-Q4_K_XL/${nameTemplate}";
+    shards = [
+      "sha256-REgYYhazr0zFWLvOLDIT8BYI+Piy5SZ6l2eXHdPsgII="
+      "sha256-PzQvHBWARz8e6U3dWyggbowHpw+ho2b1nR1skikZpsk="
+      "sha256-VnWPQCacrVzZsNPW+64PQPbVvm3knkqzktvoMVfZy9M="
+      "sha256-dTvaSLmLpPFjYTSpCpZ94bLTkIojbAJuRkd3NC5TUQo="
+    ];
+  };
+  qwen38-flash-next-mtp-q80 = fetchHF {  # for gufo, MTP sidecar
+    repo = "unsloth/Qwen3.8-Flash-Next-GGUF";
     name = "mtp-Qwen3.8-Flash-Next-Q8_0.gguf";
-    hash = "sha256-nbA6aHZwYIKG6ZtWP8yG0O52yN2GP2Syr8C1TrDrl10=";
+    path = "MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf";
+    hash = "sha256-X/VAl0BqkFzzpyTHCRJM6w4+ECNe6GIpiWnpHJb6luY=";
   };
 
-  qwen38-flash-next-mmproj-f16 = fetchHF {
+  # gufo's vision loader requires BF16 tensors (mmproj-F16 is rejected);
+  # see docs/models/qwen3.8-flash-next/README.md in the gufo repo
+  qwen38-flash-next-mmproj-bf16 = fetchHF {
     repo = "unsloth/Qwen3.8-Flash-Next-GGUF";
-    name = "mmproj-F16.gguf";
-    hash = "sha256-H3t/C5hM8GXGBDYMKcgJg2LtYbKQ2w/xLG82C7GoqYA=";
+    name = "mmproj-BF16.gguf";
+    hash = "sha256-LniPjFEdgJPHtDy4ey/X4UIoNAMYBX+PsgyG3y7+I1U=";
   };
 
   qwen35-08b-mtp-q4kxl = fetchHF {

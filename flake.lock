@@ -23,6 +23,27 @@
         "type": "github"
       }
     },
+    "audio-cpp": {
+      "inputs": {
+        "nixpkgs": [
+          "gufo",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789940897,
+        "narHash": "sha256-+9tVcd+0TkDxg7JRU7M06Lvm20sXEbuerm62uhm6JKA=",
+        "owner": "0xShug0",
+        "repo": "audio.cpp",
+        "rev": "e3de8e3f3cbfac55ffa58df71426c41550a8598b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "0xShug0",
+        "repo": "audio.cpp",
+        "type": "github"
+      }
+    },
     "autosync-voice": {
       "inputs": {
         "flake-utils": [
@@ -258,6 +279,27 @@
       "original": {
         "owner": "hercules-ci",
         "repo": "gitignore.nix",
+        "type": "github"
+      }
+    },
+    "gufo": {
+      "inputs": {
+        "audio-cpp": "audio-cpp",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791658965,
+        "narHash": "sha256-P2cN2XV72dXigMaUz1xfvkVpttZ/HktcmSwVHZa+Aqk=",
+        "owner": "gufo-org",
+        "repo": "gufo",
+        "rev": "d0f7c3a023a11af81161264eeb24e9a97aa7498a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gufo-org",
+        "repo": "gufo",
         "type": "github"
       }
     },
@@ -708,6 +750,7 @@
         "flake-utils": "flake-utils",
         "git-hooks": "git-hooks",
         "gitignore": "gitignore",
+        "gufo": "gufo",
         "home-manager": "home-manager",
         "impermanence": "impermanence",
         "input-utils": "input-utils",

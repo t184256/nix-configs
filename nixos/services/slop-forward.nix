@@ -73,7 +73,7 @@ in
       let
         plum = "http://192.168.99.53:11111/v1";
         plumMini = "http://192.168.99.53:11113/v1";
-        grapefruit = "http://192.168.99.52:11111";
+        grapefruit = "http://192.168.99.52:11111/v1";
         qwen35Think = {
           temperature = 0.6;
           top_p = 0.95;
@@ -114,6 +114,7 @@ in
         };
         aliases = {
           "interactive" = { model = "qwen3.8-27b"; params = qwen38Think; };
+          "batch" = { model = "qwen3.8-flash-next"; params = qwen38Think; };
 
           "default" = { model = "qwen3.8-27b"; params = qwen38Think; };
           "default-think" = { model = "qwen3.8-27b"; params = qwen38Think; };
@@ -128,6 +129,10 @@ in
             { model = "qwen3.8-27b"; params = qwen38Think; };
           "qwen3.8-27b-nothink" =
             { model = "qwen3.8-27b"; params = qwen38Nothink; };
+          "qwen3.8-flash-next-think" =
+            { model = "qwen3.8-flash-next"; params = qwen38Think; };
+          "qwen3.8-flash-next-nothink" =
+            { model = "qwen3.8-flash-next"; params = qwen38Nothink; };
           "qwen3.6-35b-a3b-think" =
             { model = "qwen3.6-35b-a3b"; params = qwen36Think; };
           "qwen3.6-35b-a3b-nothink" =
@@ -143,16 +148,16 @@ in
         };
         # same as interactive, but on grapefruit, where it's slower, but can
         # do multiple slots with ease. explicit entry because of shared name.
-        batchEntry = {
-          model_name = "batch";
-          litellm_params = {
-            model = "custom_openai/qwen3.8-27b";
-            api_base = grapefruit;
-            api_key = "dummy";
-            extra_body = { thinking_budget_tokens = 16384; }
-              // qwen38Think.extra_body;
-          };
-        };
+        #batchEntry = {
+        #  model_name = "batch";
+        #  litellm_params = {
+        #    model = "custom_openai/qwen3.8-27b";
+        #    api_base = grapefruit;
+        #    api_key = "dummy";
+        #    extra_body = { thinking_budget_tokens = 16384; }
+        #      // qwen38Think.extra_body;
+        #  };
+        #};
         grapefruitCatchall = {
           model_name = "*";
           litellm_params = {
@@ -184,7 +189,10 @@ in
       in {
         model_list = builtins.concatLists (builtins.attrValues
           (builtins.mapAttrs mkEntries aliases))
-          ++ [ batchEntry grapefruitCatchall ];
+          ++ [
+            #batchEntry
+            grapefruitCatchall
+          ];
         litellm_settings = {
           fallbacks = builtins.concatLists (builtins.attrValues
             (builtins.mapAttrs mkFallback aliases));

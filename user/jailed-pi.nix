@@ -109,6 +109,25 @@ let
             samplingParams = { return_progress = true; }; }
         ];
       };
+      grapefruit = {
+        baseUrl = "http://192.168.99.52:11111/v1";
+        api = "openai-completions";
+        apiKey = "dummy";
+        compat = {
+          thinkingFormat = "qwen-chat-template";
+          supportsDeveloperRole = false;
+          maxTokensField = "max_tokens";
+        };
+        models = [
+          ({ id = "qwen3.8-flash-next"; reasoning = true;
+            input = [ "text" "image" ];
+            contextWindow = 262144;
+            cost = { input = 0; output = 0;
+                     cacheRead = 0; cacheWrite = 0; };
+            samplingParams = { return_progress = true; }; }
+            // qwen38Effort)
+        ];
+      };
     };
   };
 

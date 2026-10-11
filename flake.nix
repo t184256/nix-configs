@@ -85,6 +85,9 @@
       };
     };
 
+    gufo.url = "github:gufo-org/gufo";
+    gufo.inputs.nixpkgs.follows = "nixpkgs";
+
     alacritty-autoresizing = {
       url = "github:t184256/alacritty-autoresizing";
       inputs.nixpkgs.follows = "nixpkgs";
