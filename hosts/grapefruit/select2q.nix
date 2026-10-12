@@ -11,10 +11,18 @@ let
     import evdev
     from evdev import ecodes as ec
 
-    gamepad, *_ = [d for d in (evdev.InputDevice(f)
-                   for f in evdev.list_devices())
-                   if d.name == 'Wireless Controller']
-    print(f'bound to {gamepad}', flush=True)
+    import time
+
+    while True:
+        gamepads = [d for d in (evdev.InputDevice(f)
+                       for f in evdev.list_devices())
+                       if d.name == 'Wireless Controller']
+        if gamepads:
+            gamepad, *_ = gamepads
+            print(f'bound to {gamepad}', flush=True)
+            break
+        else:
+            time.sleep(5)
 
     ui = evdev.UInput(name='select2q', events={ec.EV_KEY: [ec.KEY_Q]})
 
