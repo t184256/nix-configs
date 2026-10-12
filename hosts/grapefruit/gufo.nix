@@ -36,7 +36,8 @@ let
 
     extraArgs = [
       "--mmproj" (toString pkgs.qwen38-flash-next-mmproj-bf16)
-      #"--kv-quant" "q8"  # untested
+      # https://github.com/gufo-org/gufo/pull/561#issuecomment-6128381655
+      #"--kv-quant" "q8"
     ];
 
     # no explicit sampling options: gufo auto-selects for thinking on and off
