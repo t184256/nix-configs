@@ -17,6 +17,7 @@
     ../../nixos/services/whisper-cpp.nix
     #../../nixos/services/syncthing.nix
     ./gufo.nix
+    ./select2q.nix
   ];
 
   boot.loader = {
