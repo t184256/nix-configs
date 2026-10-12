@@ -3,8 +3,26 @@
 # Qwen3.8-Flash-Next (UD-Q4_K_XL + shared-Q8 MTP), gfx1151-only:
 # ~1500-1600 pp, ~32-37 tg to 256k context
 let
+  gufo = inputs.gufo.packages.x86_64-linux.default.overrideAttrs (final: prev: {
+    # --kv-quant q8
+    # https://github.com/gufo-org/gufo/pull/561.patch as of 2026-10-12
+    patches = (prev.patches or []) ++ [ (pkgs.fetchpatch {
+      url =
+        "https://github.com/dardeaw/gufo/commit/" +
+        "e644a92f2487cb85a78d64c60b3709dbea0caa91.patch";
+      hash = "sha256-bevyN4C4Hys49CvkeS2KyhdY0rEK9LQl6NTE3sJitQY=";
+    }) ];
+    # make unset ("auto") effort neutral, so I can leave it on auto
+    postPatch = ''
+      ${prev.postPatch or ""}
+      substituteInPlace src/models/qwen/chat_template.cpp \
+      --replace-fail 'reasoning.effort.value_or(ReasoningEffort::kXHigh)' \
+                     'reasoning.effort.value_or(ReasoningEffort::kMedium)'
+    '';
+  });
   gufoServe = inputs.gufo.lib.mkGufoServe {
     system = "x86_64-linux";
+    inherit gufo;
     modality = "llm";
     host = "192.168.99.52";
     port = 11111;
@@ -15,9 +33,11 @@ let
     servedModelName = "qwen3.8-flash-next";
     context = 262144;
     speculative = "mtp";
-    reasoningEffort = "medium";
 
-    extraArgs = [ "--mmproj" (toString pkgs.qwen38-flash-next-mmproj-bf16) ];
+    extraArgs = [
+      "--mmproj" (toString pkgs.qwen38-flash-next-mmproj-bf16)
+      #"--kv-quant" "q8"  # untested
+    ];
 
     # no explicit sampling options: gufo auto-selects for thinking on and off
 
@@ -26,6 +46,7 @@ let
     #cacheDisk = "/var/lib/gufo";
     #cacheDiskStagingBytes = 4 * 1024 * 1024 * 1024;  # cap at ~128k context
     #cacheDiskBytes = 17 * 1024 * 1024 * 1024;  # ~4 snapshots
+    # TODO: wait for a saner cache implementation, offload to an HDD box
   };
 in
 {
