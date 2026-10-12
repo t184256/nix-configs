@@ -11,7 +11,11 @@ final: prev: {
       sha256 = "sha256-AvTxZ7UVa6XXS+9O/flAq85v7ZunXDArWnx62VJC2Gw=";
     };
 
-    patches = [ ./compact-advice-card.patch ];
+    patches = [
+      ./compact-advice-card.patch
+      ./do-not-force-model.patch
+      ./do-not-write-config.patch
+    ];
 
     # no runtime deps, no buildNpmPackage, install by copying
     dontBuild = true;

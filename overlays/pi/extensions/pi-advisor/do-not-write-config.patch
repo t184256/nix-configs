@@ -1,0 +1,34 @@
+diff --git a/dist/index.js b/dist/index.js
+index e9ba932..5a6bdfd 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -5599,29 +5599,6 @@ var registerCommandLifecycle = (runtime, activateAdvisor) => {
+       notify(ctx, `Advisor activation failed: ${message}`, "error");
+     }
+   });
+-  runtime.pi.on("model_select", (event, ctx) => {
+-    if (!runtime.suppressModelSelectionSync) {
+-      runtime.updateSameModelNotice(ctx, event.model);
+-    }
+-    if (event.source !== "set" || runtime.suppressModelSelectionSync || isMarkedSubagent()) {
+-      return;
+-    }
+-    const selected = `${event.model.provider}/${event.model.id}`;
+-    if (!runtime.flowEnabled()) {
+-      runtime.pendingExecutorModelRef = selected;
+-      return;
+-    }
+-    runtime.pendingExecutorModelRef = undefined;
+-    if (selected === executorRef) {
+-      return;
+-    }
+-    const persisted = getPersistedModelRefs();
+-    setExecutorRef(selected);
+-    saveConfig(ctx, {
+-      persistAdvisor: Boolean(persisted.advisor),
+-      persistExecutor: true
+-    });
+-  });
+   runtime.pi.on("session_shutdown", (_event, ctx) => {
+     if (ctx.hasUI) {
+       ctx.ui.setStatus("advisor-usage", undefined);
