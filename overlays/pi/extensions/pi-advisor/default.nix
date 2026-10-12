@@ -1,23 +1,24 @@
-# @ribbons-digital/pi-advisor v0.3.0: automatic async secondary review
+# philipbrembeck/pi-advisor v0.13.1: automatic async secondary review
 final: prev: {
-  pi-advisor = prev.buildNpmPackage {
+  pi-advisor = prev.stdenv.mkDerivation {
     pname = "pi-advisor";
-    version = "0.3.0";
+    version = "0.13.1";
 
-    src = prev.fetchurl {
-      url = "https://registry.npmjs.org/@ribbons-digital/pi-advisor/-/pi-advisor-0.3.0.tgz";
-      sha1 = "a49e9368c9c8f9cf00b71623285930ad5e075991";
+    src = prev.fetchFromGitHub {
+      owner = "philipbrembeck";
+      repo = "pi-advisor";
+      rev = "v0.13.1";
+      sha256 = "sha256-AvTxZ7UVa6XXS+9O/flAq85v7ZunXDArWnx62VJC2Gw=";
     };
 
     patches = [ ./compact-advice-card.patch ];
 
-    # Author didn't ship a lockfile; vendor one
-    postPatch = ''
-      cp ${./package-lock.json} package-lock.json
+    # no runtime deps, no buildNpmPackage, install by copying
+    dontBuild = true;
+    installPhase = ''
+      mkdir -p $out/lib/node_modules/pi-advisor-flow
+      cp -r dist extensions package.json CHANGELOG.md LICENSE README.md \
+        $out/lib/node_modules/pi-advisor-flow/
     '';
-
-    npmDepsHash = "sha256-K0P/Z1FYcf1ANtRTP3qyPARm7ifcmKt0ZPajsiNwYxA=";
-    npmDepsFetcherVersion = 2;
-    dontNpmBuild = true;
   };
 }

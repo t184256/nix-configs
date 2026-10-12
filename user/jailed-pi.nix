@@ -149,7 +149,7 @@ let
     ];
     packages = [
       "npm:pi-web-access@0.37.0"
-      #"npm:@ribbons-digital/pi-advisor"  # disabled for now
+      "npm:pi-advisor-flow@0.13.1"
     ];
   };
 
@@ -163,16 +163,21 @@ let
   piNpmNodeModules = pkgs.runCommand "pi-npm-node-modules" {} ''
     mkdir $out
     cp -r ${pkgs.pi-web-access}/lib/node_modules/* $out
-    #cp -r ${pkgs.pi-advisor}/lib/node_modules/* $out  # disabled for now
+    cp -r ${pkgs.pi-advisor}/lib/node_modules/* $out
   '';
 
-  # pi-advisor disabled for now
-  #watchdogYml = pkgs.writeText "WATCHDOG.yml" (builtins.toJSON {
-  #  version = 1;
-  #  model = "litellm/qwen3.5-122b-a10b-think";
-  #  effort = "high";
-  #  defaultEnabled = true;
-  #});
+  # pi-advisor: batch reviews interactive (and only it); both are local
+  advisorJson = pkgs.writeText "advisor.json" (builtins.toJSON {
+    executor = "litellm/interactive";
+    advisor = "litellm/batch";
+    advisorModelWhitelist = [ "litellm/interactive" ];
+    contextMaxChars = 9007199254740991;  # ALL, for KV cache reuse
+    alwaysOn = true;  # activate the flow on session start instead of /advisor
+    advisorEffort = "medium";  # high is ridiculously slow
+    advisorGitContext = "full";
+    #gateFailureMode = "warn-and-continue";  # let's see how deep contexts work
+    # TODO: use Jev/Laya for autoquerying
+  });
   modelsJson = pkgs.writeText "models.json" modelsRaw;
   settingsJson = pkgs.writeText "settings.json" settingsRaw;
   webSearchJson = pkgs.writeText "web-search.json"
@@ -307,6 +312,7 @@ let
   ++ map (defer) [
     (ro-bind modelsJson (noescape "~/.pi/agent/models.json"))
     (ro-bind settingsJson (noescape "~/.pi/agent/settings.json"))
+    (ro-bind advisorJson (noescape "~/.pi/agent/advisor.json"))
     (ro-bind webSearchJson (noescape "~/.pi/web-search.json"))
     (ro-bind keybindingsJson (noescape "~/.pi/agent/keybindings.json"))
     (ro-bind agentsMd (noescape "~/.pi/agent/AGENTS.md"))
@@ -314,8 +320,6 @@ let
       (noescape "~/.pi/agent/extensions/llama-cpp-stats.ts"))
     (ro-bind noTailPipeSrc (noescape "~/.pi/agent/extensions/no-tail-pipe.ts"))
     (ro-bind piNpmNodeModules (noescape "~/.pi/agent/npm/node_modules"))
-    # pi-advisor disabled for now
-    #(ro-bind watchdogYml (noescape "~/.pi/agent/WATCHDOG.yml"))
   ];
 
   jailedPi = jailedAgentsLib.makeJailedPi {
