@@ -123,8 +123,8 @@ in
       tmpdir=$(mktemp -d)
       trap 'chmod -R u+w "$tmpdir"; rm -rf "$tmpdir"' EXIT INT TERM HUP
 
-      name1="''${1//\/:}.patch"
-      name2="''${2//\/:}.patch"
+      name1="''${1//\//:}.patch"
+      name2="''${2//\//:}.patch"
       git format-patch --stdout "$1" > "$tmpdir/$name1"
       chmod -w "$tmpdir/$name1"
       git format-patch --stdout "$2" > "$tmpdir/$name2"
