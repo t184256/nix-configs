@@ -1,17 +1,33 @@
 { inputs, pkgs, ... }:
 
 # Qwen3.8-Flash-Next (UD-Q4_K_XL + shared-Q8 MTP), gfx1151-only:
-# ~1500-1600 pp, ~32-37 tg to 256k context
+
+# bench-gufo --think:
+# target      pp      ttft   pp tps   decode tps    gen
+#    256     257    0.470s      547         43.4    505
+#   8192    8193    5.971s     1372         45.5    519
+#  16384   16385   11.138s     1471         46.6    442
+#  32768   32769   21.458s     1527         43.4    551
+#  65536   65537   41.893s     1564         47.1    541
+# 131072  131073   84.945s     1543         45.9    382
+# 196608  196609  130.213s     1510         46.2    421
+# 261088  261089  177.080s     1474         44.6    351
+
+# bench-gufo --think:
+# target      pp      ttft   pp tps   decode tps    gen
+#    256     259    0.624s      416         42.7    298
+#   8192    8195    6.257s     1310         38.0    302
+#  16384   16387   10.879s     1506         37.5    716
+#  32768   32771   21.350s     1535         37.8    553
+#  65536   65539   41.861s     1566         35.9    426
+# 131072  131076   84.996s     1542         38.8    206
+# 196608  196611  130.473s     1507         37.3    183
+# 261088  261091  176.716s     1477         37.9    929
+
 let
+  # TODO: try https://github.com/gufo-org/gufo/pull/561 --kv-quant q8 later
   gufo = inputs.gufo.packages.x86_64-linux.default.overrideAttrs (final: prev: {
-    # --kv-quant q8
-    # https://github.com/gufo-org/gufo/pull/561.patch as of 2026-10-12
-    patches = (prev.patches or []) ++ [ (pkgs.fetchpatch {
-      url =
-        "https://github.com/dardeaw/gufo/commit/" +
-        "e644a92f2487cb85a78d64c60b3709dbea0caa91.patch";
-      hash = "sha256-bevyN4C4Hys49CvkeS2KyhdY0rEK9LQl6NTE3sJitQY=";
-    }) ];
+    patches = (prev.patches or []) ++ [ ./gufo-pr591-src.patch ];
     # make unset ("auto") effort neutral, so I can leave it on auto
     postPatch = ''
       ${prev.postPatch or ""}
@@ -35,7 +51,7 @@ let
     speculative = "mtp";
 
     extraArgs = [
-      "--mmproj" (toString pkgs.qwen38-flash-next-mmproj-bf16)
+      "--mmproj" "${pkgs.qwen38-flash-next-mmproj-bf16}"
       # https://github.com/gufo-org/gufo/pull/561#issuecomment-6128381655
       #"--kv-quant" "q8"
     ];
@@ -72,6 +88,19 @@ in
   };
 
   networking.firewall.allowedTCPPorts = [ 11111 ];
+
+  # bench-gufo [--think|--nothink] [llama-benchy args...]
+  environment.systemPackages = [
+    (pkgs.writeShellScriptBin "bench-gufo" ''
+      exec ${pkgs.llama-benchy-nice}/bin/llama-benchy-nice \
+        --base-url http://192.168.99.52:11111/v1 \
+        --model qwen3.8-flash-next \
+        --tokenizer qwen3.8 \
+        --pp 256 8192 16384 32768 65536 131072 196608 262144 \
+        --tg 1024 --runs 5 --no-cache \
+        "$@"
+    '')
+  ];
 
   #environment.persistence."/mnt/persist".directories = [
   #  { directory = "/var/lib/gufo"; user = "gufo"; group = "gufo"; }

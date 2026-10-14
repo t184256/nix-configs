@@ -290,11 +290,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791796111,
-        "narHash": "sha256-hFq5ebQf0vuAmJHmQau38ss/wWMF0C4jEH74pHsvAgo=",
+        "lastModified": 1791962575,
+        "narHash": "sha256-aLEIgxH7V0eHBGJRGuoTzeGbIvlqRRhjCvbelAwXZnM=",
         "owner": "gufo-org",
         "repo": "gufo",
-        "rev": "956f3d62386a80d327aea9610310fef105c31b95",
+        "rev": "942999e727fde9c1dc59a48eadd03fd72acf8e16",
         "type": "github"
       },
       "original": {

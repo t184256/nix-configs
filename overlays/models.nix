@@ -128,11 +128,18 @@ in
   };
 
   # gufo's vision loader requires BF16 tensors (mmproj-F16 is rejected);
-  # see docs/models/qwen3.8-flash-next/README.md in the gufo repo
+
   qwen38-flash-next-mmproj-bf16 = fetchHF {
     repo = "unsloth/Qwen3.8-Flash-Next-GGUF";
     name = "mmproj-BF16.gguf";
     hash = "sha256-LniPjFEdgJPHtDy4ey/X4UIoNAMYBX+PsgyG3y7+I1U=";
+  };
+
+  # shared by all Qwen3.8 models (identical tokenizer.json, verified)
+  qwen38-tokenizer = fetchHF {
+    repo = "Qwen/Qwen3.8-Flash-Next";
+    name = "tokenizer.json";
+    hash = "sha256-CZf0EMV6H05TsJ5L6PShctkO3ZVkNo+whHAwk3IpufM=";
   };
 
   qwen35-08b-mtp-q4kxl = fetchHF {
