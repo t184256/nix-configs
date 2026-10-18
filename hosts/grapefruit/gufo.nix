@@ -84,6 +84,7 @@ in
       Group = "gufo";
       Restart = "on-failure";
       RestartSec = "30s";
+      MemorySwapMax = 0;  # let's just not
       ExecStart = [ gufoServe ];
     };
   };
