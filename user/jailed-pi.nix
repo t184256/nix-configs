@@ -143,11 +143,11 @@ let
     cp -r ${pkgs.pi-advisor}/lib/node_modules/* $out
   '';
 
-  # pi-advisor: batch reviews interactive (and only it); both are local
+  # pi-advisor: batch reviews interactive and mini, not itself
   advisorJson = pkgs.writeText "advisor.json" (builtins.toJSON {
     executor = "litellm/interactive";
     advisor = "litellm/batch";
-    advisorModelWhitelist = [ "litellm/interactive" ];
+    advisorModelWhitelist = [ "litellm/interactive" "litellm/mini" ];
     contextMaxChars = 9007199254740991;  # ALL, for KV cache reuse
     alwaysOn = true;  # activate the flow on session start instead of /advisor
     advisorEffort = "medium";  # high is ridiculously slow
@@ -158,7 +158,10 @@ let
   modelsJson = pkgs.writeText "models.json" modelsRaw;
   settingsJson = pkgs.writeText "settings.json" settingsRaw;
   webSearchJson = pkgs.writeText "web-search.json"
-    (builtins.toJSON { workflow = "none"; });
+    (builtins.toJSON {
+      workflow = "none";
+      summaryModel = "litellm/mini";
+    });
   keybindingsJson = pkgs.writeText "keybindings.json" (builtins.toJSON {
     "app.message.dequeue" = "ctrl+q";
     "tui.altScreen.top" = [ ];  # restore 'Home' jumping within the prompt
