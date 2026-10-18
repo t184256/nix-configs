@@ -40,48 +40,25 @@ let
           maxTokensField = "max_tokens";
         };
         models = map (m: m // { samplingParams = { return_progress = true; }; }) [
-          { id = "qwen3.6-35b-a3b-think"; reasoning = true;
-            supportsDeveloperRole = true;
-            contextWindow = 262144;
-            cost = { input = 0.011; output = 0.12;
-                     cacheRead = 0; cacheWrite = 0; }; }
-          { id = "qwen3.6-35b-a3b-nothink";
-            supportsDeveloperRole = true;
-            contextWindow = 262144;
-            cost = { input = 0.011; output = 0.12;
-                     cacheRead = 0; cacheWrite = 0; }; }
-          { id = "qwen3.5-122b-a10b-think"; reasoning = true;
-            contextWindow = 262144;
-            cost = { input = 0.028; output = 0.28;
-                     cacheRead = 0; cacheWrite = 0; }; }
-          { id = "qwen3.5-122b-a10b-nothink";
-            contextWindow = 262144;
-            cost = { input = 0.028; output = 0.28;
-                     cacheRead = 0; cacheWrite = 0; }; }
           ({ id = "qwen3.8-27b-think"; reasoning = true;
             input = [ "text" "image" ];
-            contextWindow = 262144;
-            cost = { input = 0.017; output = 0.59;
-                     cacheRead = 0; cacheWrite = 0; }; }
+            contextWindow = 262144; }
             // qwen38Effort)
           { id = "qwen3.8-27b-nothink";
             input = [ "text" "image" ];
-            contextWindow = 262144;
-            cost = { input = 0.017; output = 0.59;
-                     cacheRead = 0; cacheWrite = 0; }; }
+            contextWindow = 262144; }
           # interactive: plum's qwen3.8-27b; batch: grapefruit's
           ({ id = "interactive"; reasoning = true;
             input = [ "text" "image" ];
-            contextWindow = 262144;
-            cost = { input = 0.017; output = 0.59;
-                     cacheRead = 0; cacheWrite = 0; }; }
+            contextWindow = 262144; }
             // qwen38Effort)
           ({ id = "batch"; reasoning = true;
             input = [ "text" "image" ];
-            contextWindow = 262144;
-            cost = { input = 0.017; output = 0.59;
-                     cacheRead = 0; cacheWrite = 0; }; }
+            contextWindow = 262144; }
             // qwen38Effort)
+          # LFM2.5-8B-A2B on grapefruit's mini unit: fast, 128000
+          # trained 128000; thinking is template-side, so no qwen38Effort here
+          { id = "mini"; input = [ "text" ]; contextWindow = 128000; }
         ];
       };
       plum = {

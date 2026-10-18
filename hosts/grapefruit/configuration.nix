@@ -11,12 +11,11 @@
     ./network.nix
     ./performance.nix
     ../../nixos/services/apollo.nix
-    #../../nixos/services/llama-cpp.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/nps.nix  # rather condition on interactive or something
-    ../../nixos/services/whisper-cpp.nix
     #../../nixos/services/syncthing.nix
     ./gufo.nix
+    ./llama-cpp-mini.nix
     ./select2q.nix
   ];
 

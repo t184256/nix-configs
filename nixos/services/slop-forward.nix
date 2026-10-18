@@ -74,8 +74,9 @@ in
         plum = "http://192.168.99.53:11111/v1";
         plumMini = "http://192.168.99.53:11113/v1";
         grapefruit = "http://192.168.99.52:11111/v1";
+        grapefruitMini = "http://192.168.99.52:11113/v1";
         cocoa = "http://192.168.99.7:11113/v1";
-        qwen35Think = {
+        qwen38Think = {
           temperature = 0.6;
           top_p = 0.95;
           presence_penalty = 1.5;
@@ -85,7 +86,7 @@ in
             chat_template_kwargs.preserve_thinking = true;
           };
         };
-        qwen35Nothink = {
+        qwen38Nothink = {
           temperature = 0.7;
           top_p = 0.8;
           presence_penalty = 1.5;
@@ -94,40 +95,24 @@ in
             chat_template_kwargs.enable_thinking = false;
           };
         };
-        qwen36Think = qwen35Think;
-        qwen36Nothink = qwen35Nothink;
-        qwen38Think = qwen35Think;
-        qwen38Nothink = qwen35Nothink;
         # hosts: primary first, fallbacks after
         models = {
           "qwen3.8-flash-next".hosts = [ grapefruit ];
-          "qwen3.8-27b".hosts = [ plum ];  # don't fall back
-
-          "qwen3.5-0.8b".hosts = [ grapefruit ];
-          "qwen3.6-35b-a3b".hosts = [ grapefruit ];
-          "qwen3.5-122b-a10b".hosts = [ grapefruit ];
-
+          "qwen3.8-27b".hosts = [ plum ];
+          "LFM2.5-8B-A2B".hosts = [ grapefruitMini ];
           "d1-3B".hosts = [ cocoa ];
-
-          "zeta-2.1".hosts = [ grapefruit ];
-          "zeta-2".hosts = [ plumMini grapefruit ];
-          "sweep-v2-7b".hosts = [ grapefruit ];
-          "sweep-1.5b".hosts = [ grapefruit ];
-          "sweep-0.5b".hosts = [ grapefruit ];
         };
         aliases = {
           "interactive" = { model = "qwen3.8-27b"; params = qwen38Think; };
           "batch" = { model = "qwen3.8-flash-next"; params = qwen38Think; };
+          "mini".model = "LFM2.5-8B-A2B";
 
-          "default" = { model = "qwen3.8-27b"; params = qwen38Think; };
-          "default-think" = { model = "qwen3.8-27b"; params = qwen38Think; };
+          "default" = { model = "qwen3.8-flash-next"; params = qwen38Think; };
+          "default-think" =
+            { model = "qwen3.8-flash-next"; params = qwen38Think; };
           "default-nothink" =
-            { model = "qwen3.8-27b"; params = qwen38Nothink; };
+            { model = "qwen3.8-flash-next"; params = qwen38Nothink; };
 
-          "qwen3.5-0.8b-think" =
-            { model = "qwen3.5-0.8b"; params = qwen35Think; };
-          "qwen3.5-0.8b-nothink" =
-            { model = "qwen3.5-0.8b"; params = qwen35Nothink; };
           "qwen3.8-27b-think" =
             { model = "qwen3.8-27b"; params = qwen38Think; };
           "qwen3.8-27b-nothink" =
@@ -136,42 +121,9 @@ in
             { model = "qwen3.8-flash-next"; params = qwen38Think; };
           "qwen3.8-flash-next-nothink" =
             { model = "qwen3.8-flash-next"; params = qwen38Nothink; };
-          "qwen3.6-35b-a3b-think" =
-            { model = "qwen3.6-35b-a3b"; params = qwen36Think; };
-          "qwen3.6-35b-a3b-nothink" =
-            { model = "qwen3.6-35b-a3b"; params = qwen36Nothink; };
-          "qwen3.5-122b-a10b-think" =
-            { model = "qwen3.5-122b-a10b"; params = qwen35Think; };
-          "qwen3.5-122b-a10b-nothink" =
-            { model = "qwen3.5-122b-a10b"; params = qwen35Nothink; };
 
-          # chat only; real decisions go to /v1/systemone, bypassing litellm
           # decisions go to /v1/systemone, bypassing litellm
           "decision".model = "d1-3B";
-
-          "zeta".model = "zeta-2.1";
-          "zeta-2".model = "zeta-2";
-          "sweep".model = "sweep-v2-7b";
-        };
-        # same as interactive, but on grapefruit, where it's slower, but can
-        # do multiple slots with ease. explicit entry because of shared name.
-        #batchEntry = {
-        #  model_name = "batch";
-        #  litellm_params = {
-        #    model = "custom_openai/qwen3.8-27b";
-        #    api_base = grapefruit;
-        #    api_key = "dummy";
-        #    extra_body = { thinking_budget_tokens = 16384; }
-        #      // qwen38Think.extra_body;
-        #  };
-        #};
-        grapefruitCatchall = {
-          model_name = "*";
-          litellm_params = {
-            model = "custom_openai/*";
-            api_base = grapefruit;
-            api_key = "dummy";
-          };
         };
         mkModel = clientName: api_base: backendName: extra: {
           model_name = clientName;
@@ -195,11 +147,7 @@ in
           else [ { "${clientName}" = [ "fb-${clientName}" ]; } ];
       in {
         model_list = builtins.concatLists (builtins.attrValues
-          (builtins.mapAttrs mkEntries aliases))
-          ++ [
-            #batchEntry
-            grapefruitCatchall
-          ];
+          (builtins.mapAttrs mkEntries aliases));
         litellm_settings = {
           fallbacks = builtins.concatLists (builtins.attrValues
             (builtins.mapAttrs mkFallback aliases));

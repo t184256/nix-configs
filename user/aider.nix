@@ -3,26 +3,10 @@
 let
   ctx196k = 196608;
   ctx256k = 262144;
-
-  consumptionW = 100; # Electricity-based cost model, assuming 100W consumption
-  USDperWs = 5.0e-8; # 0.15 USD/KWh = 0.15 / (3600 * 1000) USD/Ws = ~5e-8 USD/Ws
-  tpsCost = tps: consumptionW * USDperWs / tps; # 100W * 5e-8 USD/Ws
-
-  tps32k = {  # benchmarked at 32k context
-    "qwen3.6-35b-a3b" = { input_tps = 3000; output_tps = 100; };  # plum
-    "qwen3.8-27b" = { input_tps = 1100; output_tps = 30; };  # plum
-    "qwen3.5-122b-a10b" = { input_tps = 280; output_tps = 29; };  # grapefruit
-  };
+  ctx128k = 128000;
 
   mkModel = extra: ctx: name:
-    let
-      fullName = "hosted_vllm/${name}";
-      t = tps32k."${name}" or null;
-      costAttrs = if t != null then {
-        input_cost_per_token = tpsCost t.input_tps;
-        output_cost_per_token = tpsCost t.output_tps;
-      } else {};
-    in {
+    let fullName = "hosted_vllm/${name}"; in {
       alias = "${name}:${fullName}";
       settings = {
         name = fullName;
@@ -37,20 +21,20 @@ let
         #mode = "chat";
         #supports_function_calling = true;
         #supports_tool_choice = true;
-      } // costAttrs;
+      };
     };
 
   # sampling params injected by LiteLLM, don't override here
-  mkQwenPlum = mkModel {} ctx196k;
-  mkQwenGrapefruit = mkModel {} ctx256k;
+  mkPlum = mkModel {} ctx196k;
+  mkGrapefruit = mkModel {} ctx256k;
+  mkMini = mkModel {} ctx128k;
 
+  # only what slop-forward actually serves (litellm has no catchall anymore)
   models = {
-    "qwen3.6-35b-a3b-nothink" = mkQwenPlum;
-    "qwen3.6-35b-a3b-think" = mkQwenPlum;
-    "qwen3.8-27b-nothink" = mkQwenPlum;
-    "qwen3.8-27b-think" = mkQwenPlum;
-    "qwen3.5-122b-a10b-nothink" = mkQwenGrapefruit;
-    "qwen3.5-122b-a10b-think" = mkQwenGrapefruit;
+    "default" = mkGrapefruit;      # qwen3.8-flash-next, thinking on
+    "qwen3.8-27b-nothink" = mkPlum;
+    "qwen3.8-27b-think" = mkPlum;
+    "mini" = mkMini;               # LFM2.5-8B-A2B, grapefruit's mini unit
   };
 
   modelSettings = builtins.toJSON (
@@ -76,12 +60,9 @@ in
     enable = lib.mkDefault false;
     package = null;
     settings = {
-      model = "qwen3.8-27b-think";
-      editor-model = "qwen3.8-27b-nothink";
-      weak-model = "qwen3.8-27b-nothink";
-      #model = "qwen3.5-122b-a10b-think";
-      #editor-model = "qwen3.6-35b-a3b-nothink";
-      #weak-model = "qwen3.6-35b-a3b-nothink";
+      model = "default";
+      editor-model = "mini";
+      weak-model = "mini";
       architect = true;
       alias = builtins.attrValues (
         builtins.mapAttrs (n: mk: (mk n).alias) models
