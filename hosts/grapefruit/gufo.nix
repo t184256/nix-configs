@@ -25,9 +25,10 @@
 # 261088  261091  176.716s     1477         37.9    929
 
 let
-  # TODO: try https://github.com/gufo-org/gufo/pull/561 --kv-quant q8 later
   gufo = inputs.gufo.packages.x86_64-linux.default.overrideAttrs (final: prev: {
-    patches = (prev.patches or []) ++ [ ./gufo-pr591-src.patch ];
+    patches = (prev.patches or []) ++ [
+      #./gufo-pr608.patch  # --kv-quant q8 + more q8 stuff
+    ];
     # make unset ("auto") effort neutral, so I can leave it on auto
     postPatch = ''
       ${prev.postPatch or ""}

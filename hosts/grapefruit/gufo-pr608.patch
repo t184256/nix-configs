@@ -1,0 +1,2644 @@
+From ba1e9784429d555ce9295cb6bfb9d622ed16f8d6 Mon Sep 17 00:00:00 2001
+From: dardeaw <dardeaw@users.noreply.github.com>
+Date: Mon, 12 Oct 2026 14:43:00 +0800
+Subject: [PATCH 01/10] feat(qwen-flash): add Q8 KV cache precision mode
+
+---
+ src/cli/serve/inference_backend.cpp           |   4 +-
+ src/cli/serve/inference_backend.hpp           |   3 +-
+ src/cli/serve/serve.cpp                       |  11 +-
+ src/models/qwen38_flash_next/engine.cpp       |   5 +
+ src/models/qwen38_flash_next/engine.hpp       |   2 +
+ .../qwen38_flash_next/kernels/rocm/batch.cpp  |   2 +
+ .../kernels/rocm/executor.cpp                 | 268 +++++--
+ .../kernels/rocm/executor.hpp                 |  12 +-
+ .../kernels/rocm/kernels.hip.cpp              | 667 +++++++++++++++++-
+ .../kernels/rocm/kernels.hpp                  |  39 +
+ 10 files changed, 950 insertions(+), 63 deletions(-)
+
+diff --git a/src/cli/serve/inference_backend.cpp b/src/cli/serve/inference_backend.cpp
+index 05eb8bd02..e58dbcde7 100644
+--- a/src/cli/serve/inference_backend.cpp
++++ b/src/cli/serve/inference_backend.cpp
+@@ -3188,7 +3188,8 @@ bool InferenceBackend::load(const std::string& model_path, std::string* error,
+                             const TextSpeculativeConfig& speculative_config,
+                             const TextDiskCacheConfig& disk_cache_config,
+                             const std::string& vision_model_path,
+-                            TextRunnerRamCacheOptions ram_cache_config) {
++                            TextRunnerRamCacheOptions ram_cache_config,
++                            const std::string& kv_cache_quant) {
+ #if defined(ENGINE_ENABLE_HIP)
+   TextDiskCacheConfig resolved_disk_cache_config = disk_cache_config;
+   std::string load_error;
+@@ -3310,6 +3311,7 @@ bool InferenceBackend::load(const std::string& model_path, std::string* error,
+             .vision_model_path = vision_model_path,
+             .decode_concurrency = static_cast<std::uint32_t>(
+                 std::clamp<std::size_t>(session_count, 1, 8)),
++            .kv_cache_quant = kv_cache_quant,
+         },
+         &load_error);
+     if (model == nullptr) {
+diff --git a/src/cli/serve/inference_backend.hpp b/src/cli/serve/inference_backend.hpp
+index 16415c9c2..09fc297b9 100644
+--- a/src/cli/serve/inference_backend.hpp
++++ b/src/cli/serve/inference_backend.hpp
+@@ -81,7 +81,8 @@ class InferenceBackend final : public TextGenerationBackend {
+             const TextSpeculativeConfig& speculative_config = {},
+             const TextDiskCacheConfig& disk_cache_config = {},
+             const std::string& vision_model_path = {},
+-            TextRunnerRamCacheOptions ram_cache_config = {});
++            TextRunnerRamCacheOptions ram_cache_config = {},
++            const std::string& kv_cache_quant = "f16");
+ 
+ #if defined(ENGINE_ENABLE_HIP)
+   /// Installs a previously loaded model without duplicating mapped weights.
+diff --git a/src/cli/serve/serve.cpp b/src/cli/serve/serve.cpp
+index 97e39d6d7..b1ca54e50 100644
+--- a/src/cli/serve/serve.cpp
++++ b/src/cli/serve/serve.cpp
+@@ -1141,6 +1141,7 @@ int RunServe(std::span<const char* const> args) {
+     std::string vision_model_path;
+     std::size_t draft_tokens = 7;
+     std::size_t min_draft_tokens = 1;
++    std::string kv_cache_quant = "f16";
+     std::size_t prefill_chunk_tokens =
+         server::kDefaultDecodeActivePrefillTokens;
+     std::size_t max_pending_requests = 16;
+@@ -1220,6 +1221,9 @@ int RunServe(std::span<const char* const> args) {
+     llm_parser.AddOption("", "--min-draft-tokens", "N",
+                          "Adaptive draft floor (default: 1)", "Speculative",
+                          &min_draft_tokens);
++    llm_parser.AddOption("", "--kv-quant", "MODE",
++                         "KV cache precision: f16 or q8 (default: f16)",
++                         "Model", &kv_cache_quant);
+     llm_parser.AddOption(
+         "", "--prefill-chunk", "N",
+         "Maximum prompt tokens between active decode rounds (default: 512)",
+@@ -1376,6 +1380,10 @@ int RunServe(std::span<const char* const> args) {
+       std::cerr << "Error: " << exception.what() << '\n';
+       return 2;
+     }
++    if (kv_cache_quant != "f16" && kv_cache_quant != "q8") {
++      std::cerr << "Error: --kv-quant must be f16 or q8\n";
++      return 2;
++    }
+     if (speculative_config.backend == server::TextSpeculativeBackend::kDFlash &&
+         (dflash_model_path.empty() || min_draft_tokens != 1)) {
+       std::cerr << "Error: DFlash2 requires --dflash-model and "
+@@ -1432,7 +1440,8 @@ int RunServe(std::span<const char* const> args) {
+             .model_artifact_fingerprint = {},
+         },
+         vision_model_path,
+-        server::TextRunnerRamCacheOptions{.capacity_bytes = cache_ram_bytes});
++        server::TextRunnerRamCacheOptions{.capacity_bytes = cache_ram_bytes},
++        kv_cache_quant);
+     loading.stop();
+     if (!load_ok) {
+       std::cerr << "Error loading model '" << model << "': " << err << "\n";
+diff --git a/src/models/qwen38_flash_next/engine.cpp b/src/models/qwen38_flash_next/engine.cpp
+index a9b6183ee..1c2ea4aff 100644
+--- a/src/models/qwen38_flash_next/engine.cpp
++++ b/src/models/qwen38_flash_next/engine.cpp
+@@ -77,6 +77,10 @@ std::shared_ptr<Model> Model::Load(const std::string& model_path,
+     AssignError(error_msg, "decode concurrency must be between one and eight");
+     return nullptr;
+   }
++  if (options.kv_cache_quant != "f16" && options.kv_cache_quant != "q8") {
++    AssignError(error_msg, "kv cache quant must be f16 or q8");
++    return nullptr;
++  }
+   if (options.max_draft_tokens == 0) {
+     AssignError(error_msg, "draft token limit must be positive");
+     return nullptr;
+@@ -166,6 +170,7 @@ std::shared_ptr<Model> Model::Load(const std::string& model_path,
+                 exec.max_batch, std::uint64_t{options.max_draft_tokens} + 1))
+           : 1;
+   exec.max_speculative = exec.max_logit_rows;
++  exec.kv_cache_int8 = (options.kv_cache_quant == "q8");
+   m->executor_ =
+       rocm::Executor::Create(*m->device_, m->ngram_.get(), exec, error_msg);
+   if (!m->executor_) {
+diff --git a/src/models/qwen38_flash_next/engine.hpp b/src/models/qwen38_flash_next/engine.hpp
+index 3d157b18a..d6321eb55 100644
+--- a/src/models/qwen38_flash_next/engine.hpp
++++ b/src/models/qwen38_flash_next/engine.hpp
+@@ -50,6 +50,8 @@ struct ModelOptions {
+   /// Fixed serving capacity used by the calibrated MTP cost model. Keeping
+   /// it independent of scheduler timing preserves seeded request replay.
+   std::uint32_t decode_concurrency = 1;
++  /// KV cache precision: "f16" (default) or "q8" (per-row symmetric INT8).
++  std::string kv_cache_quant = "f16";
+ };
+ 
+ class Session;
+diff --git a/src/models/qwen38_flash_next/kernels/rocm/batch.cpp b/src/models/qwen38_flash_next/kernels/rocm/batch.cpp
+index a6c8b35cb..176e19725 100644
+--- a/src/models/qwen38_flash_next/kernels/rocm/batch.cpp
++++ b/src/models/qwen38_flash_next/kernels/rocm/batch.cpp
+@@ -318,6 +318,8 @@ bool Executor::MtpForwardBatch(std::span<const MtpBatchItem> items,
+       attention.rope = session.vision_input_.rope();
+       attention.k_cache = session.mtp_.k_cache;
+       attention.v_cache = session.mtp_.v_cache;
++      attention.k_cache_q8 = session.mtp_.k_cache_q8;
++      attention.v_cache_q8 = session.mtp_.v_cache_q8;
+       attention.index_k = session.mtp_.index_k;
+       attention.block_k = session.mtp_.block_k;
+       const bool sparse = session.mtp_.position + n > c.indexer_top_k;
+diff --git a/src/models/qwen38_flash_next/kernels/rocm/executor.cpp b/src/models/qwen38_flash_next/kernels/rocm/executor.cpp
+index be76edc23..a32eee49d 100644
+--- a/src/models/qwen38_flash_next/kernels/rocm/executor.cpp
++++ b/src/models/qwen38_flash_next/kernels/rocm/executor.cpp
+@@ -11,6 +11,7 @@
+ #include <cstddef>
+ #include <cstdlib>
+ #include <cstring>
++#include <functional>
+ #include <memory>
+ #include <stdexcept>
+ #include <string_view>
+@@ -1217,6 +1218,7 @@ std::unique_ptr<Session> Executor::CreateSession(core::SessionMode mode,
+     return nullptr;
+   }
+   s->max_context_ = max_context;
++  s->kv_cache_int8_ = options_.kv_cache_int8;
+   // Before sparse attention starts, pooling can lag by indexer_top_k
+   // rows. Afterwards only an incomplete block precedes the current batch.
+   // Completed block keys remain in block_k; their raw rows are dead.
+@@ -1237,12 +1239,24 @@ std::unique_ptr<Session> Executor::CreateSession(core::SessionMode mode,
+       l.state = Alloc<float>(a, state_elems, error_msg, &s->allocated_bytes_);
+     } else {
+       auto& at = s->attention_[il];
+-      at.k_cache =
+-          Alloc<__half>(a, static_cast<std::size_t>(max_context) * kv_row,
+-                        error_msg, &s->allocated_bytes_);
+-      at.v_cache =
+-          Alloc<__half>(a, static_cast<std::size_t>(max_context) * kv_row,
+-                        error_msg, &s->allocated_bytes_);
++      if (s->kv_cache_int8_) {
++        // Q8_0 blocked rows; scales live inside the blocks.
++        const std::size_t kv_q8_row =
++            (static_cast<std::size_t>(kv_row) + 31) / 32 * 34;
++        at.k_cache_q8 = Alloc<std::int8_t>(
++            a, static_cast<std::size_t>(max_context) * kv_q8_row, error_msg,
++            &s->allocated_bytes_);
++        at.v_cache_q8 = Alloc<std::int8_t>(
++            a, static_cast<std::size_t>(max_context) * kv_q8_row, error_msg,
++            &s->allocated_bytes_);
++      } else {
++        at.k_cache =
++            Alloc<__half>(a, static_cast<std::size_t>(max_context) * kv_row,
++                          error_msg, &s->allocated_bytes_);
++        at.v_cache =
++            Alloc<__half>(a, static_cast<std::size_t>(max_context) * kv_row,
++                          error_msg, &s->allocated_bytes_);
++      }
+       at.index_k = Alloc<float>(
+           a, static_cast<std::size_t>(s->index_capacity_) * c.indexer_head_dim,
+           error_msg, &s->allocated_bytes_);
+@@ -1263,12 +1277,24 @@ std::unique_ptr<Session> Executor::CreateSession(core::SessionMode mode,
+     s->mtp_.target_hidden = Alloc<float>(
+         a, static_cast<std::size_t>(options_.max_speculative) * c.HcDim(),
+         error_msg, &s->allocated_bytes_);
+-    s->mtp_.k_cache =
+-        Alloc<__half>(a, static_cast<std::size_t>(max_context) * kv_row,
+-                      error_msg, &s->allocated_bytes_);
+-    s->mtp_.v_cache =
+-        Alloc<__half>(a, static_cast<std::size_t>(max_context) * kv_row,
+-                      error_msg, &s->allocated_bytes_);
++    if (s->kv_cache_int8_) {
++      // Q8_0 blocked rows; scales live inside the blocks.
++      const std::size_t mtp_kv_q8_row =
++          (static_cast<std::size_t>(kv_row) + 31) / 32 * 34;
++      s->mtp_.k_cache_q8 = Alloc<std::int8_t>(
++          a, static_cast<std::size_t>(max_context) * mtp_kv_q8_row, error_msg,
++          &s->allocated_bytes_);
++      s->mtp_.v_cache_q8 = Alloc<std::int8_t>(
++          a, static_cast<std::size_t>(max_context) * mtp_kv_q8_row, error_msg,
++          &s->allocated_bytes_);
++    } else {
++      s->mtp_.k_cache =
++          Alloc<__half>(a, static_cast<std::size_t>(max_context) * kv_row,
++                        error_msg, &s->allocated_bytes_);
++      s->mtp_.v_cache =
++          Alloc<__half>(a, static_cast<std::size_t>(max_context) * kv_row,
++                        error_msg, &s->allocated_bytes_);
++    }
+     s->mtp_.index_k =
+         Alloc<float>(a, std::size_t{s->index_capacity_} * c.indexer_head_dim,
+                      error_msg, &s->allocated_bytes_);
+@@ -1429,8 +1455,14 @@ std::size_t Executor::SessionBytes(
+       std::size_t{c.ssm_num_v_heads} * c.ssm_head_dim * c.ssm_head_dim;
+   const std::size_t ple =
+       c.ple_layer >= 0 ? std::size_t{c.PleConvHistory()} * c.HcDim() : 0;
++  const std::size_t kv_elem = options_.kv_cache_int8 ? 1 : sizeof(__half);
++  // Q8_0 blocks (llama.cpp): 32 int8 + fp16 scale = 34 bytes per block.
++  const std::size_t kv_q8_row =
++      (std::size_t{c.AttentionKvDim()} + 31) / 32 * 34;
+   const std::size_t kv =
+-      2 * std::size_t{max_context} * c.AttentionKvDim() * sizeof(__half);
++      options_.kv_cache_int8
++          ? 2 * std::size_t{max_context} * kv_q8_row
++          : 2 * std::size_t{max_context} * c.AttentionKvDim() * sizeof(__half);
+   const std::size_t index =
+       std::size_t{IndexerCapacity(c, options_.max_batch, max_context)} *
+           c.indexer_head_dim * sizeof(float) +
+@@ -2372,11 +2404,19 @@ bool Executor::Attention(const DeviceLayer& l, Session::AttentionState& s,
+         c.rotary_dim == 64;
+     if (fused_projection) {
+       PrepareHalfInput(x, n_tokens, l.attn_qkv.cols);
+-      prepared = AttentionF16Gemm(
+-          l.attn_qkv.data, static_cast<const __half*>(s_.x_half),
+-          l.attn_q_norm.f32(), l.attn_k_norm.f32(), s_.q, s_.attn_gate,
+-          s.k_cache, s.v_cache, n_tokens, pos, c.rope_theta, c.rms_eps, stream_,
+-          s.rope);
++      if (options_.kv_cache_int8) {
++        prepared = AttentionQ8Gemm(
++            l.attn_qkv.data, static_cast<const __half*>(s_.x_half),
++            l.attn_q_norm.f32(), l.attn_k_norm.f32(), s_.q, s_.attn_gate,
++            s.k_cache_q8, s.v_cache_q8, n_tokens, pos, c.rope_theta, c.rms_eps,
++            stream_, s.rope);
++      } else {
++        prepared = AttentionF16Gemm(
++            l.attn_qkv.data, static_cast<const __half*>(s_.x_half),
++            l.attn_q_norm.f32(), l.attn_k_norm.f32(), s_.q, s_.attn_gate,
++            s.k_cache, s.v_cache, n_tokens, pos, c.rope_theta, c.rms_eps,
++            stream_, s.rope);
++      }
+       if (!prepared) {
+         AssignError(error_msg, "fused attention projection failed");
+         return false;
+@@ -2386,11 +2426,19 @@ bool Executor::Attention(const DeviceLayer& l, Session::AttentionState& s,
+           !Dense(l.attn_qkv, x, s_.qg, n_tokens, error_msg)) {
+         return false;
+       }
+-      prepared = PrepareAttention(
+-          s_.qg, l.attn_qkv.rows, l.attn_q_norm.f32(), l.attn_k_norm.f32(),
+-          s_.q, s_.attn_gate, s.k_cache, s.v_cache, n_tokens, c.num_heads,
+-          c.num_kv_heads, c.head_dim, c.rotary_dim, pos, c.rope_theta,
+-          c.rms_eps, stream_, s.rope, prefill_phase);
++      if (options_.kv_cache_int8) {
++        prepared = PrepareAttentionQ8(
++            s_.qg, l.attn_qkv.rows, l.attn_q_norm.f32(), l.attn_k_norm.f32(),
++            s_.q, s_.attn_gate, s.k_cache_q8, s.v_cache_q8, n_tokens,
++            c.num_heads, c.num_kv_heads, c.head_dim, c.rotary_dim, pos,
++            c.rope_theta, c.rms_eps, stream_, s.rope, prefill_phase);
++      } else {
++        prepared = PrepareAttention(
++            s_.qg, l.attn_qkv.rows, l.attn_q_norm.f32(), l.attn_k_norm.f32(),
++            s_.q, s_.attn_gate, s.k_cache, s.v_cache, n_tokens, c.num_heads,
++            c.num_kv_heads, c.head_dim, c.rotary_dim, pos, c.rope_theta,
++            c.rms_eps, stream_, s.rope, prefill_phase);
++      }
+       if (!prepared) {
+         UnpackQGate(s_.qg, l.attn_qkv.rows, s_.q, s_.attn_gate, s_.k, s_.v,
+                     n_tokens, c.num_heads, c.head_dim, kv_row, stream_);
+@@ -2417,8 +2465,15 @@ bool Executor::Attention(const DeviceLayer& l, Session::AttentionState& s,
+          c.rope_theta, stream_, s.rope);
+     Rope(s_.k, n_tokens, c.num_kv_heads, c.head_dim, c.rotary_dim, pos,
+          c.rope_theta, stream_, s.rope);
+-    StoreKv(s_.k, s.k_cache, n_tokens, kv_row, pos, stream_);
+-    StoreKv(s_.v, s.v_cache, n_tokens, kv_row, pos, stream_);
++    if (options_.kv_cache_int8) {
++      QuantizeKvRowsQ8(s_.k, kv_row, c.head_dim, s.k_cache_q8, kv_row,
++                       c.num_kv_heads, c.head_dim, n_tokens, pos, stream_);
++      QuantizeKvRowsQ8(s_.v, kv_row, c.head_dim, s.v_cache_q8, kv_row,
++                       c.num_kv_heads, c.head_dim, n_tokens, pos, stream_);
++    } else {
++      StoreKv(s_.k, s.k_cache, n_tokens, kv_row, pos, stream_);
++      StoreKv(s_.v, s.v_cache, n_tokens, kv_row, pos, stream_);
++    }
+   }
+ 
+   // Raw keys survive only until pooling. The ring holds the initial
+@@ -2494,6 +2549,62 @@ bool Executor::Attention(const DeviceLayer& l, Session::AttentionState& s,
+   // batch that crosses it, so each position's key sweep (and its rounding)
+   // does not depend on where the prefill chunks fall. The sparse part goes
+   // first: it is the launch that can be refused.
++  // Q8 wide-batch attention via transient F16 staging + tensor cores.
++  // Staging traffic is ~1-2% (prefix read once per chunk); any failure
++  // returns false for the scalar kernel. Narrow (decode) never calls this.
++  std::function<bool(std::uint32_t, std::uint32_t, bool)> wmma_q8 =
++      [&](std::uint32_t first, std::uint32_t rows, bool last) {
++        if (first == 0 && rows == n_tokens && checkpoint_tokens != 0 &&
++            checkpoint_tokens < n_tokens) {
++          // Mirror the F16 checkpoint split (both parts non-last); the
++          // first/rows guard keeps the recursion to one level.
++          return wmma_q8(0, checkpoint_tokens, false) &&
++                 wmma_q8(checkpoint_tokens, n_tokens - checkpoint_tokens,
++                         false);
++        }
++        const std::uint32_t pos0 = start_pos + first;
++        const std::uint32_t need = pos0 + rows;
++        if (need == 0)
++          return false;
++        const std::size_t row_bytes = std::size_t(kv_row) * sizeof(__half);
++        __half* stage_k = nullptr;
++        __half* stage_v = nullptr;
++        bool ok = false;
++        if (hipMalloc(reinterpret_cast<void**>(&stage_k),
++                      std::size_t(need) * row_bytes) == hipSuccess &&
++            hipMalloc(reinterpret_cast<void**>(&stage_v),
++                      std::size_t(need) * row_bytes) == hipSuccess &&
++            rocm::DequantizeQ8KVRows(s.k_cache_q8, stage_k, s.v_cache_q8,
++                                     stage_v, need, kv_row, stream_)) {
++          const auto at = [&](std::uint32_t row) {
++            return std::size_t{first + row} * c.AttentionQDim();
++          };
++          const std::uint32_t dense_rows =
++              mask != nullptr && pos0 < c.indexer_top_k
++                  ? std::min(rows, c.indexer_top_k - pos0)
++                  : 0;
++          ok = (dense_rows == rows ||
++                WmmaCausalAttention(
++                    s_.q + at(dense_rows), s_.attn_gate + at(dense_rows),
++                    stage_k, stage_v,
++                    mask ? mask + std::size_t{first + dense_rows} * mask_words_
++                         : nullptr,
++                    mask_words_, s_.ctx + at(dense_rows), rows - dense_rows,
++                    pos0 + dense_rows, c.num_heads, c.num_kv_heads, c.head_dim,
++                    c.compress_ratio, stream_, last)) &&
++               (dense_rows == 0 || (last && dense_rows != rows) ||
++                WmmaCausalAttention(s_.q + at(0), s_.attn_gate + at(0), stage_k,
++                                    stage_v, nullptr, mask_words_,
++                                    s_.ctx + at(0), dense_rows, pos0,
++                                    c.num_heads, c.num_kv_heads, c.head_dim,
++                                    c.compress_ratio, stream_, last));
++        }
++        if (stage_k != nullptr)
++          (void)hipFree(stage_k);
++        if (stage_v != nullptr)
++          (void)hipFree(stage_v);
++        return ok;
++      };
+   const auto attend = [&](std::uint32_t first, std::uint32_t rows, bool last) {
+     const std::uint32_t pos = start_pos + first;
+     const std::uint32_t dense_rows = mask != nullptr && pos < c.indexer_top_k
+@@ -2517,7 +2628,8 @@ bool Executor::Attention(const DeviceLayer& l, Session::AttentionState& s,
+                                 dense_rows, pos, c.num_heads, c.num_kv_heads,
+                                 c.head_dim, c.compress_ratio, stream_, last));
+   };
+-  if (checkpoint_tokens != 0 && checkpoint_tokens < n_tokens) {
++  if (!options_.kv_cache_int8 && checkpoint_tokens != 0 &&
++      checkpoint_tokens < n_tokens) {
+     // Sparse tiles compact the union of their queries' selected keys.
+     // Keep the checkpoint's query grouping identical to a pass ending there.
+     if (!attend(0, checkpoint_tokens, false) ||
+@@ -2528,17 +2640,30 @@ bool Executor::Attention(const DeviceLayer& l, Session::AttentionState& s,
+     return !project_output ||
+            Dense(l.attn_out, s_.ctx, out, n_tokens, error_msg);
+   }
+-  if (MatrixRows(n_tokens) && attend(0, n_tokens, last_only)) {
++  if (!options_.kv_cache_int8 && MatrixRows(n_tokens) &&
++      attend(0, n_tokens, last_only)) {
+     return !project_output ||
+            Dense(l.attn_out, s_.ctx, out, n_tokens, error_msg);
+   }
+   // Narrow batches split each row's key tiles over kAttnSplits blocks so a
+   // decode step at depth fills the device.
+   const bool split = !MatrixRows(n_tokens);
+-  rocm::Attention(s_.q, s.k_cache, s.v_cache, mask, mask_words_, s_.ctx,
+-                  split ? s_.attn_partials : nullptr, kAttnSplits, n_tokens,
+-                  pos, c.num_heads, c.num_kv_heads, c.head_dim,
+-                  c.compress_ratio, stream_);
++  if (options_.kv_cache_int8) {
++    // Wide batches ride the tensor cores via transient F16 staging;
++    // narrow (decode) keeps the scalar kernel (memory-bound, Q8 wins).
++    const bool wmma = !split && wmma_q8(0, n_tokens, last_only);
++    if (!wmma) {
++      rocm::AttentionQ8(s_.q, s.k_cache_q8, s.v_cache_q8, mask, mask_words_,
++                        s_.ctx, split ? s_.attn_partials : nullptr, kAttnSplits,
++                        n_tokens, pos, c.num_heads, c.num_kv_heads, c.head_dim,
++                        c.compress_ratio, stream_);
++    }
++  } else {
++    rocm::Attention(s_.q, s.k_cache, s.v_cache, mask, mask_words_, s_.ctx,
++                    split ? s_.attn_partials : nullptr, kAttnSplits, n_tokens,
++                    pos, c.num_heads, c.num_kv_heads, c.head_dim,
++                    c.compress_ratio, stream_);
++  }
+   const std::uint32_t q_dim = c.AttentionQDim();
+   const std::size_t ctx_count = static_cast<std::size_t>(n_tokens) * q_dim;
+   // A decode batch's output projection reads the gate's Q8_1 rows.
+@@ -3273,7 +3398,7 @@ bool Executor::Rollback(Session& session, std::uint32_t keep,
+ }
+ 
+ constexpr std::array<char, 8> kSnapshotMagic{'Q', 'F', 'N', 'S',
+-                                             'N', 'A', 'P', '5'};
++                                             'N', 'A', 'P', '6'};
+ 
+ /// Fixed header ahead of the section bytes. It carries every geometry
+ /// value the section sizes derive from, so a payload of another artifact
+@@ -3285,6 +3410,8 @@ struct SnapshotHeader {
+   std::uint32_t conv_elems;
+   std::uint32_t state_elems;
+   std::uint32_t kv_row;
++  std::uint32_t kv_elem_bytes;
++  std::uint32_t kv_heads;
+   std::uint32_t indexer_head_dim;
+   std::uint32_t compress_ratio;
+   std::uint32_t hc_dim;
+@@ -3313,6 +3440,8 @@ SnapshotHeader MakeSnapshotHeader(const Config& c, bool has_mtp,
+   h.conv_elems = (c.ssm_conv_kernel - 1) * c.SsmConvChannels();
+   h.state_elems = c.ssm_num_v_heads * c.ssm_head_dim * c.ssm_head_dim;
+   h.kv_row = c.AttentionKvDim();
++  h.kv_elem_bytes = session.kv_cache_int8() ? 1 : sizeof(__half);
++  h.kv_heads = c.num_kv_heads;
+   h.indexer_head_dim = c.indexer_head_dim;
+   h.compress_ratio = c.compress_ratio;
+   h.hc_dim = c.HcDim();
+@@ -3330,7 +3459,8 @@ bool SameGeometry(const SnapshotHeader& h, const SnapshotHeader& mine) {
+   return h.magic == mine.magic && h.num_layers == mine.num_layers &&
+          h.full_attention_interval == mine.full_attention_interval &&
+          h.conv_elems == mine.conv_elems && h.state_elems == mine.state_elems &&
+-         h.kv_row == mine.kv_row &&
++         h.kv_row == mine.kv_row && h.kv_elem_bytes == mine.kv_elem_bytes &&
++         h.kv_heads == mine.kv_heads &&
+          h.indexer_head_dim == mine.indexer_head_dim &&
+          h.compress_ratio == mine.compress_ratio && h.hc_dim == mine.hc_dim &&
+          h.ple_elems == mine.ple_elems && h.has_mtp == mine.has_mtp;
+@@ -3375,8 +3505,13 @@ std::uint64_t Executor::WalkSnapshot(const SnapshotHeader& h,
+               std::uint64_t{h.ple_elems} * sizeof(float), "PLE history")) {
+     return 0;
+   }
+-  const std::uint64_t kv_bytes =
+-      std::uint64_t{h.position} * h.kv_row * sizeof(__half);
++  const std::uint64_t kv_elem =
++      h.kv_elem_bytes != 0 ? h.kv_elem_bytes : sizeof(__half);
++  // Q8_0 blocked rows (llama.cpp: 34 bytes per 32-elem block).
++  const std::uint64_t kv_row_bytes =
++      h.kv_elem_bytes == 1 ? (std::uint64_t{h.kv_row} + 31) / 32 * 34
++                           : std::uint64_t{h.kv_row} * kv_elem;
++  const std::uint64_t kv_bytes = std::uint64_t{h.position} * kv_row_bytes;
+   const std::uint64_t index_row_bytes =
+       std::uint64_t{h.indexer_head_dim} * sizeof(float);
+   const std::uint32_t index_begin = h.blocks * h.compress_ratio;
+@@ -3386,10 +3521,15 @@ std::uint64_t Executor::WalkSnapshot(const SnapshotHeader& h,
+   for (std::uint32_t il = 0; il < h.num_layers; ++il) {
+     if (((il + 1) % h.full_attention_interval) == 0) {
+       const auto* at = attention(il);
+-      if (!region(at != nullptr ? at->k_cache : nullptr, kv_bytes, "K cache",
+-                  std::uint64_t{h.kv_row} * sizeof(__half)) ||
+-          !region(at != nullptr ? at->v_cache : nullptr, kv_bytes, "V cache",
+-                  std::uint64_t{h.kv_row} * sizeof(__half))) {
++      const bool q8 = h.kv_elem_bytes == 1;
++      if (!region(
++              q8 ? static_cast<void*>(at != nullptr ? at->k_cache_q8 : nullptr)
++                 : static_cast<void*>(at != nullptr ? at->k_cache : nullptr),
++              kv_bytes, "K cache", kv_row_bytes) ||
++          !region(
++              q8 ? static_cast<void*>(at != nullptr ? at->v_cache_q8 : nullptr)
++                 : static_cast<void*>(at != nullptr ? at->v_cache : nullptr),
++              kv_bytes, "V cache", kv_row_bytes)) {
+         return 0;
+       }
+       // Serialize only unpooled rows, in chronological order. The physical
+@@ -3436,15 +3576,25 @@ std::uint64_t Executor::WalkSnapshot(const SnapshotHeader& h,
+             "draft pooled keys",
+             std::uint64_t{h.indexer_head_dim} * sizeof(__half), true, true))
+       return 0;
++    const std::uint64_t mtp_row_bytes =
++        h.kv_elem_bytes == 1 ? (std::uint64_t{h.kv_row} + 31) / 32 * 34
++                             : std::uint64_t{h.kv_row} * kv_elem;
+     const std::uint64_t mtp_kv_bytes =
+-        std::uint64_t{h.mtp_position} * h.kv_row * sizeof(__half);
+-    if (!region(mtp != nullptr ? mtp->k_cache : nullptr, mtp_kv_bytes,
+-                "draft K cache", std::uint64_t{h.kv_row} * sizeof(__half),
+-                true) ||
+-        !region(mtp != nullptr ? mtp->v_cache : nullptr, mtp_kv_bytes,
+-                "draft V cache", std::uint64_t{h.kv_row} * sizeof(__half),
+-                true) ||
++        std::uint64_t{h.mtp_position} * mtp_row_bytes;
++    const bool mtp_q8 = h.kv_elem_bytes == 1;
++    if (!region(
++            mtp_q8
++                ? static_cast<void*>(mtp != nullptr ? mtp->k_cache_q8 : nullptr)
++                : static_cast<void*>(mtp != nullptr ? mtp->k_cache : nullptr),
++            mtp_kv_bytes, "draft K cache", mtp_row_bytes, true) ||
+         !region(
++            mtp_q8
++                ? static_cast<void*>(mtp != nullptr ? mtp->v_cache_q8 : nullptr)
++                : static_cast<void*>(mtp != nullptr ? mtp->v_cache : nullptr),
++            mtp_kv_bytes, "draft V cache", mtp_row_bytes, true)) {
++      return 0;
++    }
++    if (!region(
+             mtp != nullptr ? mtp->h : nullptr,
+             h.mtp_residual_valid ? std::uint64_t{h.hc_dim} * sizeof(float) : 0,
+             "draft residual") ||
+@@ -4206,6 +4356,8 @@ bool Executor::MtpBody(Session& session, std::uint32_t n, std::uint32_t pos,
+   attn.rope = session.vision_input_.rope();
+   attn.k_cache = session.mtp_.k_cache;
+   attn.v_cache = session.mtp_.v_cache;
++  attn.k_cache_q8 = session.mtp_.k_cache_q8;
++  attn.v_cache_q8 = session.mtp_.v_cache_q8;
+   attn.index_k = session.mtp_.index_k;
+   attn.block_k = session.mtp_.block_k;
+   // The draft block's attention runs at its own position.
+@@ -4238,12 +4390,24 @@ bool Executor::MtpBody(Session& session, std::uint32_t n, std::uint32_t pos,
+     kv.data = static_cast<std::uint8_t*>(kv.data) +
+               std::size_t{2} * c.AttentionQDim() * layout.RowBytes();
+     kv.rows = 2 * c.AttentionKvDim();
+-    if (!DenseBatch(kv, s_.mixed, s_.qg, n, error_msg) ||
+-        !PrepareAttention(s_.qg, kv.rows, nullptr, l.attn_k_norm.f32(), nullptr,
+-                          nullptr, attn.k_cache, attn.v_cache, n, 0,
+-                          c.num_kv_heads, c.head_dim, c.rotary_dim,
+-                          &session.control_->mtp_position, c.rope_theta,
+-                          c.rms_eps, stream_, attn.rope)) {
++    if (!DenseBatch(kv, s_.mixed, s_.qg, n, error_msg)) {
++      AssignError(error_msg, "MTP cache projection failed");
++      return false;
++    }
++    if (options_.kv_cache_int8) {
++      if (!PrepareAttentionQ8(s_.qg, kv.rows, nullptr, l.attn_k_norm.f32(),
++                              nullptr, nullptr, attn.k_cache_q8,
++                              attn.v_cache_q8, n, 0, c.num_kv_heads, c.head_dim,
++                              c.rotary_dim, &session.control_->mtp_position,
++                              c.rope_theta, c.rms_eps, stream_, attn.rope)) {
++        AssignError(error_msg, "MTP cache projection failed");
++        return false;
++      }
++    } else if (!PrepareAttention(s_.qg, kv.rows, nullptr, l.attn_k_norm.f32(),
++                                 nullptr, nullptr, attn.k_cache, attn.v_cache,
++                                 n, 0, c.num_kv_heads, c.head_dim, c.rotary_dim,
++                                 &session.control_->mtp_position, c.rope_theta,
++                                 c.rms_eps, stream_, attn.rope)) {
+       AssignError(error_msg, "MTP cache projection failed");
+       return false;
+     }
+diff --git a/src/models/qwen38_flash_next/kernels/rocm/executor.hpp b/src/models/qwen38_flash_next/kernels/rocm/executor.hpp
+index 46de56948..86ad4e406 100644
+--- a/src/models/qwen38_flash_next/kernels/rocm/executor.hpp
++++ b/src/models/qwen38_flash_next/kernels/rocm/executor.hpp
+@@ -105,6 +105,7 @@ class Session {
+   Session& operator=(const Session&) = delete;
+ 
+   [[nodiscard]] bool mtp_enabled() const noexcept { return mtp_enabled_; }
++  [[nodiscard]] bool kv_cache_int8() const noexcept { return kv_cache_int8_; }
+   [[nodiscard]] std::uint32_t position() const noexcept { return position_; }
+   [[nodiscard]] std::uint32_t max_context() const noexcept {
+     return max_context_;
+@@ -145,8 +146,10 @@ class Session {
+   };
+   struct AttentionState {
+     const qwen::vision::DeviceRope* rope{nullptr};
+-    __half* k_cache{nullptr};  ///< [max_context][kv_heads*d]
+-    __half* v_cache{nullptr};  ///< [max_context][kv_heads*d]
++    __half* k_cache{nullptr};          ///< [max_context][kv_heads*d]
++    __half* v_cache{nullptr};          ///< [max_context][kv_heads*d]
++    std::int8_t* k_cache_q8{nullptr};  ///< Q8_0 blocks (q8)
++    std::int8_t* v_cache_q8{nullptr};  ///< Q8_0 blocks (q8)
+     float* index_k{nullptr};   ///< [index_capacity_][indexer_dim] raw ring
+     __half* block_k{nullptr};  ///< [max_context/ratio][indexer_dim]
+   };
+@@ -162,6 +165,8 @@ class Session {
+   struct MtpState {
+     __half* k_cache{nullptr};
+     __half* v_cache{nullptr};
++    std::int8_t* k_cache_q8{nullptr};  ///< (q8 mode)
++    std::int8_t* v_cache_q8{nullptr};  ///< (q8 mode)
+     float* index_k{nullptr};
+     __half* block_k{nullptr};
+     std::uint32_t blocks{0};
+@@ -181,6 +186,7 @@ class Session {
+   qwen::vision::DeviceInput vision_input_;
+   std::uint32_t max_context_{0};
+   bool mtp_enabled_{false};
++  bool kv_cache_int8_{false};        ///< Q8 KV cache mode (Phase 2)
+   std::uint32_t index_capacity_{0};  ///< power-of-two raw indexer ring rows
+   std::uint32_t position_{0};
+   ContinuationHooks* continuation_hooks_{nullptr};
+@@ -235,6 +241,8 @@ class Executor {
+     std::uint32_t max_logit_rows{1};
+     /// Longest speculative batch; bounds the recurrent snapshot storage.
+     std::uint32_t max_speculative{1};
++    /// INT8 KV cache (per-row symmetric); false keeps the FP16 path.
++    bool kv_cache_int8{false};
+   };
+ 
+   ~Executor();
+diff --git a/src/models/qwen38_flash_next/kernels/rocm/kernels.hip.cpp b/src/models/qwen38_flash_next/kernels/rocm/kernels.hip.cpp
+index 1e262a8be..2b5897676 100644
+--- a/src/models/qwen38_flash_next/kernels/rocm/kernels.hip.cpp
++++ b/src/models/qwen38_flash_next/kernels/rocm/kernels.hip.cpp
+@@ -2372,6 +2372,162 @@ __global__ void PrepareAttentionKernel(
+   }
+ }
+ 
++// Q8 twin of PrepareAttentionKernel: identical RMS/RoPE/q/gate math, but K
++// rows go to INT8 + per-(token,head) scales. V rows are quantized by
++// QuantizeKvRowsQ8 over the packed projections; q/gate are unchanged.
++template<std::uint32_t kHeadsPerBlock>
++__global__ void PrepareAttentionQ8Kernel(
++    const float* __restrict__ packed, std::uint32_t stride,
++    const float* __restrict__ q_gamma, const float* __restrict__ k_gamma,
++    float* __restrict__ q, float* __restrict__ gate,
++    std::int8_t* __restrict__ k_cache, std::int8_t* __restrict__ v_cache,
++    std::uint32_t heads, std::uint32_t kv_heads, std::uint32_t d,
++    std::uint32_t rotary, const std::uint32_t* start_pos, float theta,
++    float eps, const qwen::vision::DeviceRope* rope) {
++  __shared__ float partial[kHeadsPerBlock][8];
++  __shared__ float norm[kHeadsPerBlock][256];
++  const std::uint32_t t = blockIdx.x, first = blockIdx.y * kHeadsPerBlock,
++                      tid = threadIdx.x;
++  const std::uint32_t lane = tid % 32, wave = tid / 32;
++  const std::uint32_t live = min(kHeadsPerBlock, heads + kv_heads - first);
++  const std::size_t width = std::size_t(heads) * d,
++                    kv_width = std::size_t(kv_heads) * d;
++  const std::uint32_t ppos = *start_pos + t;
++  const float* row = packed + std::size_t(t) * stride;
++  float values[kHeadsPerBlock];
++#pragma unroll
++  for (std::uint32_t j = 0; j < kHeadsPerBlock; ++j) {
++    const std::uint32_t h = first + j;
++    const bool query = h < heads;
++    const std::uint32_t head = query ? h : h - heads;
++    values[j] = j < live && tid < d
++                    ? row[(query ? head * 2 * d : 2 * width + head * d) + tid]
++                    : 0.0f;
++    float ss = values[j] * values[j];
++    // Match the separate RMS kernel's rounded square before its reduction.
++    asm volatile("" : "+v"(ss));
++    ss = WaveSum(ss);
++    if (lane == 0)
++      partial[j][wave] = ss;
++  }
++  __syncthreads();
++#pragma unroll
++  for (std::uint32_t j = 0; j < kHeadsPerBlock; ++j) {
++    if (j >= live)
++      continue;
++    const std::uint32_t h = first + j;
++    const bool query = h < heads;
++    const std::uint32_t head = query ? h : h - heads;
++    float total = 0.0f;
++    for (int w = 0; w < static_cast<int>(blockDim.x / warpSize); ++w)
++      total += partial[j][w];
++    const float scale = rsqrtf(total / static_cast<float>(d) + eps);
++    const float* gamma = query ? q_gamma : k_gamma;
++    if (tid < d) {
++      norm[j][tid] = values[j] * scale * (gamma != nullptr ? gamma[tid] : 1.0f);
++      if (query)
++        gate[std::size_t(t) * width + head * d + tid] =
++            row[head * 2 * d + d + tid];
++      // NOTE (q8): K/V cache stores deferred to the quantize phases below.
++    }
++  }
++  __syncthreads();
++  const std::uint32_t half = rotary / 2;
++  float sine = 0.0f, cosine = 0.0f;
++  if (tid < half) {
++    const float freq = powf(
++        theta, -2.0f * static_cast<float>(tid) / static_cast<float>(rotary));
++    sincosf(qwen::vision::RopePosition(rope, *start_pos + t, tid) * freq, &sine,
++            &cosine);
++  }
++// Phase 1: rotate K rows, stash back into norm.
++#pragma unroll
++  for (std::uint32_t j = 0; j < kHeadsPerBlock; ++j) {
++    if (j >= live)
++      continue;
++    const std::uint32_t h = first + j;
++    const bool query = h < heads;
++    const std::uint32_t head = query ? h : h - heads;
++    if (tid < half) {
++      const float a = norm[j][tid], b = norm[j][tid + half];
++      const float lo = __fmaf_rn(a, cosine, -__fmul_rn(b, sine)),
++                  hi = __fmaf_rn(a, sine, __fmul_rn(b, cosine));
++      if (query) {
++        q[std::size_t(t) * width + head * d + tid] = lo;
++        q[std::size_t(t) * width + head * d + tid + half] = hi;
++      } else {
++        norm[j][tid] = lo;
++        norm[j][tid + half] = hi;
++      }
++    }
++    if (tid >= rotary && tid < d) {
++      if (query)
++        q[std::size_t(t) * width + head * d + tid] = norm[j][tid];
++      // else: tail already staged in norm.
++    }
++  }
++  __syncthreads();
++// Phase 2: per-(token,head) scale + INT8 store.
++#pragma unroll
++  for (std::uint32_t j = 0; j < kHeadsPerBlock; ++j) {
++    if (j >= live)
++      continue;
++    const std::uint32_t h = first + j;
++    if (h < heads)
++      continue;
++    const std::uint32_t head = h - heads;
++    float mx = tid < d ? fabsf(norm[j][tid]) : 0.0f;
++    mx = BlockMax(mx, partial[j]);
++    const float sc = mx > 0.0f ? mx / 127.0f : 1.0f;
++    if (tid < d) {
++      float qv = norm[j][tid] / sc;
++      qv = qv > 127.0f ? 127.0f : (qv < -127.0f ? -127.0f : qv);
++      // Q8_0 blocked layout; the row scale repeats per 32-block.
++      const std::uint32_t head_blocks = (d + 31) / 32;
++      const std::uint32_t row_blocks =
++          static_cast<std::uint32_t>((kv_width + 31) / 32);
++      std::int8_t* out = k_cache + std::size_t(ppos) * row_blocks * 34 +
++                         std::size_t(head) * head_blocks * 34;
++      out[(tid / 32) * 34 + (tid % 32)] = static_cast<std::int8_t>(rintf(qv));
++      if (tid < head_blocks) {
++        *reinterpret_cast<__half*>(out + std::size_t(tid) * 34 + 32) =
++            __float2half(sc);
++      }
++    }
++  }
++  __syncthreads();
++// Phase 3: V rows (raw packed values, no norm/RoPE) -> Q8_0 blocks.
++#pragma unroll
++  for (std::uint32_t j = 0; j < kHeadsPerBlock; ++j) {
++    if (j >= live)
++      continue;
++    const std::uint32_t h = first + j;
++    if (h < heads)
++      continue;
++    const std::uint32_t head = h - heads;
++    const float* vrow = row + 2 * width + kv_width + std::size_t(head) * d;
++    float mx = 0.0f;
++    for (std::uint32_t i = tid; i < d; i += blockDim.x)
++      mx = fmaxf(mx, fabsf(vrow[i]));
++    mx = BlockMax(mx, partial[j]);
++    const float sc = mx > 0.0f ? mx / 127.0f : 1.0f;
++    const std::uint32_t head_blocks = (d + 31) / 32;
++    const std::uint32_t row_blocks =
++        static_cast<std::uint32_t>((kv_width + 31) / 32);
++    std::int8_t* out = v_cache + std::size_t(ppos) * row_blocks * 34 +
++                       std::size_t(head) * head_blocks * 34;
++    for (std::uint32_t i = tid; i < d; i += blockDim.x) {
++      float qv = vrow[i] / sc;
++      qv = qv > 127.0f ? 127.0f : (qv < -127.0f ? -127.0f : qv);
++      out[(i / 32) * 34 + (i % 32)] = static_cast<std::int8_t>(rintf(qv));
++    }
++    if (tid < head_blocks) {
++      *reinterpret_cast<__half*>(out + std::size_t(tid) * 34 + 32) =
++          __float2half(sc);
++    }
++  }
++}
++
+ __global__ void RopeKernel(float* x, std::uint32_t heads, std::uint32_t d,
+                            std::uint32_t rotary_dim,
+                            const std::uint32_t* start_pos, float theta,
+@@ -2404,6 +2560,41 @@ __global__ void StoreKvKernel(const float* src, __half* cache,
+   }
+ }
+ 
++// Per-(token,head) symmetric INT8 quantize of float rows.
++// src row (t,h) = src + t*src_tok_stride + h*src_head_stride, length d.
++// dst[(start_pos+t)*kv_width + h*d + i], scales[(start_pos+t)*kv_heads + h].
++__global__ void QuantizeKvRowsQ8Kernel(
++    const float* __restrict__ src, std::uint32_t src_tok_stride,
++    std::uint32_t src_head_stride, std::int8_t* __restrict__ dst,
++    std::uint32_t kv_width, std::uint32_t kv_heads, std::uint32_t d,
++    std::uint32_t n_tokens, const std::uint32_t* start_pos) {
++  const std::uint32_t t = blockIdx.x, h = blockIdx.y;
++  const std::uint32_t tid = threadIdx.x;
++  const float* row =
++      src + std::size_t(t) * src_tok_stride + std::size_t(h) * src_head_stride;
++  float mx = 0.0f;
++  for (std::uint32_t i = tid; i < d; i += blockDim.x)
++    mx = fmaxf(mx, fabsf(row[i]));
++  __shared__ float smax[32];
++  mx = BlockMax(mx, smax);
++  const float sc = mx > 0.0f ? mx / 127.0f : 1.0f;
++  const std::uint32_t ppos = *start_pos + t;
++  // Q8_0 blocked layout; the row scale repeats in every 32-block.
++  const std::uint32_t row_blocks = (kv_width + 31) / 32;
++  const std::uint32_t head_blocks = (d + 31) / 32;
++  std::int8_t* out = dst + std::size_t(ppos) * row_blocks * 34 +
++                     std::size_t(h) * head_blocks * 34;
++  for (std::uint32_t i = tid; i < d; i += blockDim.x) {
++    float q = row[i] / sc;
++    q = q > 127.0f ? 127.0f : (q < -127.0f ? -127.0f : q);
++    out[(i / 32) * 34 + (i % 32)] = static_cast<std::int8_t>(rintf(q));
++  }
++  if (tid < head_blocks) {
++    *reinterpret_cast<__half*>(out + std::size_t(tid) * 34 + 32) =
++        __float2half(sc);
++  }
++}
++
+ __global__ void StoreRowsKernel(const float* src, float* dst,
+                                 std::uint32_t row_dim,
+                                 const std::uint32_t* start_pos,
+@@ -3046,6 +3237,292 @@ __global__ void AttentionKernel(const float* q, const __half* k_cache,
+   }
+ }
+ 
++__global__ void AttentionKernelQ8(
++    const float* q, const std::int8_t* k_cache, const std::int8_t* v_cache,
++    const std::uint32_t* mask, std::uint32_t mask_words, float* out,
++    float* partials, const std::uint32_t* start_pos, std::uint32_t heads,
++    std::uint32_t kv_heads, std::uint32_t d, std::uint32_t ratio) {
++  constexpr std::uint32_t kTile = 256;
++  constexpr std::uint32_t kWindow = 1024;  // blocks compacted per pass
++  const std::uint32_t split = blockIdx.z;
++  const std::uint32_t splits = gridDim.z;
++  __shared__ float qs[256];
++  __shared__ float p[kTile];
++  __shared__ float shared[32];
++  __shared__ std::uint32_t keys[kTile];
++  // Room for one carried partial tile at the model's ratio of 4 (under a
++  // tile's worth of blocks). A whole tile of keys would push the kernel past
++  // 16 KiB of LDS and cost a resident block per CU on multi-row calls; below
++  // ratio 4 a partial tile too big to carry is attended in its window.
++  constexpr std::uint32_t kCarry = kTile / 4;
++  __shared__ std::uint32_t list[kWindow + kCarry];
++  __shared__ std::uint32_t wave_total[8];
++  const std::uint32_t h = blockIdx.x;
++  const std::uint32_t t = blockIdx.y;
++  const std::uint32_t pos = *start_pos + t;
++  const std::uint32_t kvh = h / (heads / kv_heads);
++  const std::uint32_t n_kv = pos + 1;
++  const std::uint32_t tail_start = (n_kv / ratio) * ratio;
++  const std::uint32_t* words =
++      mask == nullptr ? nullptr
++                      : mask + static_cast<std::size_t>(t) * mask_words;
++  const float scale = rsqrtf(static_cast<float>(d));
++  const std::uint32_t i = threadIdx.x;
++  const std::uint32_t lane = i & 31u;
++  const std::uint32_t wave = i >> 5u;
++  qs[i] = i < d ? q[(static_cast<std::size_t>(t) * heads + h) * d + i] : 0.0f;
++  __syncthreads();
++  float m = -INFINITY;
++  float l = 0.0f;
++  // Every wave accumulates its own 32 keys of each tile into a partial
++  // context row (eight dims per lane); the partials are summed at the end.
++  float acc[8] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
++  // Q8_0 blocked rows: (kv_heads*d/32) blocks of 34 bytes.
++  const std::size_t kv_stride =
++      static_cast<std::size_t>(kv_heads) * d / 32 * 34;
++  const std::int8_t* k_head = k_cache + kvh * (d / 32 * 34);
++  const std::int8_t* v_head = v_cache + kvh * (d / 32 * 34);
++
++  // Rows are read eight contiguous halves per lane, one 16-byte load, so a
++  // wave reads a whole 256-wide row at once. A wave issues the rows of
++  // `kBatch` consecutive keys of its 32 before using any, so their loads
++  // overlap instead of each waiting out its own latency. Empty lanes read
++  // the last key's row and are never used; a batch with no key at all is
++  // skipped (returns false).
++  constexpr std::uint32_t kBatch = 8;
++  const auto load_batch_q8 = [&](const std::int8_t* head, std::uint32_t base,
++                                 uint64_t* rows, float* sc8) {
++    bool any = false;
++#pragma unroll
++    for (std::uint32_t b = 0; b < kBatch; ++b) {
++      any = any || keys[base + b] < n_kv;
++    }
++    if (!any) {
++      return false;
++    }
++#pragma unroll
++    for (std::uint32_t b = 0; b < kBatch; ++b) {
++      const std::uint32_t j = min(keys[base + b], n_kv - 1);
++      // Q8_0 block holding this lane’s 8 dims; fp16 scale trails it.
++      // The 8-byte chunk may straddle 8-alignment (34-byte blocks), so
++      // memcpy lets the compiler emit safe loads; the scale is 2-aligned.
++      const std::int8_t* blk =
++          head + (static_cast<std::size_t>(j) * kv_stride) + (lane / 4) * 34;
++      __builtin_memcpy(&rows[b], blk + ((lane * 8) % 32),
++                       sizeof(std::uint64_t));
++      sc8[b] = static_cast<float>(*reinterpret_cast<const __half*>(blk + 32));
++    }
++    return true;
++  };
++  const auto unpack8q = [](const uint64_t& packed, float sc, float* out8) {
++    const auto* q8 = reinterpret_cast<const std::int8_t*>(&packed);
++#pragma unroll
++    for (std::uint32_t j = 0; j < 8; ++j) {
++      out8[j] = static_cast<float>(q8[j]) * sc;
++    }
++  };
++
++  // One tile: lane i holds key position keys[i] (n_kv marks an empty lane).
++  // Scores: wave w takes keys 32w..32w+31, a wave-wide dot product per key.
++  // Values: the same split, eight dims per lane.
++  const auto tile_step = [&]() {
++    float qv[8];
++#pragma unroll
++    for (std::uint32_t j = 0; j < 8; ++j) {
++      qv[j] = qs[(lane * 8) + j];
++    }
++    float s_mine = -INFINITY;
++    for (std::uint32_t k0 = 0; k0 < 32; k0 += kBatch) {
++      uint64_t rows[kBatch];
++      float ksc[kBatch];
++      if (!load_batch_q8(k_head, (wave * 32) + k0, rows, ksc)) {
++        continue;
++      }
++#pragma unroll
++      for (std::uint32_t b = 0; b < kBatch; ++b) {
++        const std::uint32_t ju = keys[(wave * 32) + k0 + b];
++        const std::uint32_t j = min(ju, n_kv - 1);
++        float kv[8];
++        unpack8q(rows[b], ksc[b], kv);
++        // The lane's eight products in the order fast-math has always
++        // summed them, spelled out so the scores stay bitwise.
++        float dot = qv[7] * kv[7];
++        dot = fmaf(qv[3], kv[3], dot);
++        dot = fmaf(qv[5], kv[5], dot);
++        dot = fmaf(qv[1], kv[1], dot);
++        dot = fmaf(qv[6], kv[6], dot);
++        dot = fmaf(qv[2], kv[2], dot);
++        dot = fmaf(qv[4], kv[4], dot);
++        dot = fmaf(qv[0], kv[0], dot);
++        dot = WaveSum(dot);
++        if (lane == k0 + b) {
++          s_mine = ju < n_kv ? dot * scale : -INFINITY;
++        }
++      }
++    }
++    const float tile_max = BlockMax(s_mine, shared);
++    const float m_new = fmaxf(m, tile_max);
++    const float rescale = m == -INFINITY ? 0.0f : __expf(m - m_new);
++    const float pj = s_mine == -INFINITY ? 0.0f : __expf(s_mine - m_new);
++    p[i] = pj;
++    const float tile_sum = BlockSum(pj, shared);
++    l = l * rescale + tile_sum;
++#pragma unroll
++    for (std::uint32_t x = 0; x < 8; ++x) {
++      acc[x] *= rescale;
++    }
++    m = m_new;
++    __syncthreads();
++    for (std::uint32_t k0 = 0; k0 < 32; k0 += kBatch) {
++      uint64_t rows[kBatch];
++      float vsc[kBatch];
++      if (!load_batch_q8(v_head, (wave * 32) + k0, rows, vsc)) {
++        continue;
++      }
++#pragma unroll
++      for (std::uint32_t b = 0; b < kBatch; ++b) {
++        const float w = p[(wave * 32) + k0 + b];
++        if (w != 0.0f) {
++          const std::uint32_t jv = min(keys[(wave * 32) + k0 + b], n_kv - 1);
++          float vv[8];
++          unpack8q(rows[b], vsc[b], vv);
++#pragma unroll
++          for (std::uint32_t x = 0; x < 8; ++x) {
++            acc[x] = fmaf(w, vv[x], acc[x]);
++          }
++        }
++      }
++    }
++    __syncthreads();
++  };
++
++  if (words == nullptr) {
++    for (std::uint32_t tile = split * kTile; tile < n_kv;
++         tile += kTile * splits) {
++      keys[i] = tile + i < n_kv ? tile + i : n_kv;
++      __syncthreads();
++      tile_step();
++    }
++  } else {
++    const std::uint32_t n_complete = tail_start / ratio;
++    const std::uint32_t lane = i & 31u;
++    const std::uint32_t wave = i >> 5u;
++    // Tiles are cut from the running compacted list, not per window: the
++    // budget's ~512 selected blocks make the same eight full tiles at any
++    // depth, dealt round-robin over the splits. Cut per window, a deep
++    // context scattered them into dozens of mostly empty tiles, and every
++    // window holding fewer than one tile's blocks landed on split 0 alone,
++    // so decode attention grew with the context instead of the budget.
++    const std::uint32_t per_tile = kTile / ratio;
++    std::uint32_t carry = 0;    // compacted blocks not yet cut into a tile
++    std::uint32_t tile_no = 0;  // tiles cut so far (the same in every split)
++    for (std::uint32_t w0 = 0; w0 < n_complete; w0 += kWindow) {
++      // Thread i owns blocks w0 + 4i .. +3 of the window: flag the selected
++      // ones and compact their indices with a block-wide exclusive scan,
++      // appending after the carried-over blocks.
++      // The four blocks share one mask word: read it once.
++      std::uint32_t flags = 0;
++      std::uint32_t count = 0;
++      const std::uint32_t b0 = w0 + (i * 4);
++      const std::uint32_t word = b0 < n_complete ? words[b0 / 32] : 0u;
++      for (std::uint32_t k = 0; k < 4; ++k) {
++        const std::uint32_t b = b0 + k;
++        const bool set = b < n_complete && ((word >> (b % 32)) & 1u);
++        flags |= (set ? 1u : 0u) << k;
++        count += set ? 1u : 0u;
++      }
++      std::uint32_t incl = count;
++      for (std::uint32_t off = 1; off < 32; off <<= 1) {
++        const std::uint32_t v = __shfl_up(incl, off);
++        incl += lane >= off ? v : 0u;
++      }
++      if (lane == 31) {
++        wave_total[wave] = incl;
++      }
++      __syncthreads();
++      std::uint32_t base = 0;
++      for (std::uint32_t w = 0; w < wave; ++w) {
++        base += wave_total[w];
++      }
++      std::uint32_t total = 0;
++      for (std::uint32_t w = 0; w < 8; ++w) {
++        total += wave_total[w];
++      }
++      std::uint32_t slot = carry + base + incl - count;
++      for (std::uint32_t k = 0; k < 4; ++k) {
++        if ((flags >> k) & 1u) {
++          list[slot++] = w0 + (i * 4) + k;
++        }
++      }
++      __syncthreads();
++      const std::uint32_t n = carry + total;
++      std::uint32_t t0 = 0;
++      for (; t0 < n; t0 += per_tile, ++tile_no) {
++        const std::uint32_t len = min(per_tile, n - t0);
++        if (len < per_tile && len <= kCarry) {
++          break;  // carried into the next window
++        }
++        if (tile_no % splits != split) {
++          continue;
++        }
++        const std::uint32_t entry = i / ratio;
++        keys[i] = entry < len ? (list[t0 + entry] * ratio) + (i % ratio) : n_kv;
++        __syncthreads();
++        tile_step();
++      }
++      // Move the partial tile's blocks to the front for the next window.
++      carry = t0 < n ? n - t0 : 0;
++      if (t0 > 0) {
++        const std::uint32_t moved = i < carry ? list[t0 + i] : 0u;
++        __syncthreads();
++        if (i < carry) {
++          list[i] = moved;
++        }
++      }
++      __syncthreads();
++    }
++    if (carry > 0 && tile_no % splits == split) {
++      const std::uint32_t entry = i / ratio;
++      keys[i] = entry < carry ? (list[entry] * ratio) + (i % ratio) : n_kv;
++      __syncthreads();
++      tile_step();
++    }
++    // The incomplete tail block is always visible.
++    if (tail_start < n_kv && split == 0) {
++      keys[i] = tail_start + i < n_kv ? tail_start + i : n_kv;
++      __syncthreads();
++      tile_step();
++    }
++  }
++  // Sum the eight wave partials: wave w's lane holds dims 8*lane..+7.
++  __shared__ float red[8][256];
++#pragma unroll
++  for (std::uint32_t x = 0; x < 8; ++x) {
++    red[wave][(lane * 8) + x] = acc[x];
++  }
++  __syncthreads();
++  float total = 0.0f;
++  for (std::uint32_t w = 0; w < 8; ++w) {
++    total += red[w][i];
++  }
++  if (splits == 1) {
++    if (i < d) {
++      out[(static_cast<std::size_t>(t) * heads + h) * d + i] = total / l;
++    }
++    return;
++  }
++  float* part =
++      partials +
++      ((static_cast<std::size_t>(t) * heads + h) * splits + split) * (d + 2);
++  if (i < d) {
++    part[2 + i] = total;
++  }
++  if (i == 0) {
++    part[0] = m;
++    part[1] = l;
++  }
++}
++
+ /// grid (heads, queries): merges the split partials of one row with the
+ /// usual log-sum-exp rescaling.
+ __global__ void AttentionMergeKernel(const float* partials, float* out,
+@@ -5939,6 +6416,8 @@ struct AttentionProjectionOutput {
+   float theta;
+   float eps;
+   const qwen::vision::DeviceRope* rope;
++  std::int8_t* keys_q8{nullptr};    ///< Q8_0 blocks (fused Q8 path)
++  std::int8_t* values_q8{nullptr};  ///< Q8_0 blocks (fused Q8 path)
+ };
+ 
+ /// Dense F16 WMMA GEMM over Q8_0 or F16 weights: block = BM rows x BN tokens,
+@@ -6349,13 +6828,59 @@ __launch_bounds__(256) __global__ void DenseF16GEMMKernel(
+               attention.query[tok * width + head * dim + col] = v[c];
+             else if (gate)
+               attention.gate[tok * width + head * dim + col] = v[c];
+-            else if (key)
+-              attention.keys[std::size_t(*attention.position + tok) * kvwidth +
+-                             head * dim + col] = __float2half_rn(v[c]);
+-            else
+-              attention
+-                  .values[std::size_t(*attention.position + tok) * kvwidth +
++            else if (key) {
++              if (attention.keys_q8 != nullptr) {
++                // Fused Q8_0: the wave's lanes hold block c (lane l = elem l),
++                // so the per-block max is a wave-local shuffle reduction.
++                float amax = fabsf(v[c]);
++                amax = fmaxf(amax, XorLane(amax, 16));
++                amax = fmaxf(amax, XorLane(amax, 8));
++                amax = fmaxf(amax, XorLane(amax, 4));
++                amax = fmaxf(amax, XorLane(amax, 2));
++                amax = fmaxf(amax, XorLane(amax, 1));
++                const float dd = amax > 0.0F ? amax / 127.0F : 1.0F;
++                int qi = static_cast<int>(rintf(v[c] / dd));
++                qi = qi > 127 ? 127 : (qi < -127 ? -127 : qi);
++                std::int8_t* blk =
++                    attention.keys_q8 +
++                    (std::size_t(*attention.position + tok) * 16 + head * 8 +
++                     c) *
++                        34;
++                blk[lane_id] = static_cast<std::int8_t>(qi);
++                if (lane_id == 0)
++                  *reinterpret_cast<__half*>(blk + 32) = __float2half(dd);
++              } else {
++                attention
++                    .keys[std::size_t(*attention.position + tok) * kvwidth +
+                           head * dim + col] = __float2half_rn(v[c]);
++              }
++            } else {
++              if (attention.values_q8 != nullptr) {
++                // Fused Q8_0: the wave's lanes hold block c (lane l = elem l),
++                // so the per-block max is a wave-local shuffle reduction.
++                float amax = fabsf(v[c]);
++                amax = fmaxf(amax, XorLane(amax, 16));
++                amax = fmaxf(amax, XorLane(amax, 8));
++                amax = fmaxf(amax, XorLane(amax, 4));
++                amax = fmaxf(amax, XorLane(amax, 2));
++                amax = fmaxf(amax, XorLane(amax, 1));
++                const float dd = amax > 0.0F ? amax / 127.0F : 1.0F;
++                int qi = static_cast<int>(rintf(v[c] / dd));
++                qi = qi > 127 ? 127 : (qi < -127 ? -127 : qi);
++                std::int8_t* blk =
++                    attention.values_q8 +
++                    (std::size_t(*attention.position + tok) * 16 + head * 8 +
++                     c) *
++                        34;
++                blk[lane_id] = static_cast<std::int8_t>(qi);
++                if (lane_id == 0)
++                  *reinterpret_cast<__half*>(blk + 32) = __float2half(dd);
++              } else {
++                attention
++                    .values[std::size_t(*attention.position + tok) * kvwidth +
++                            head * dim + col] = __float2half_rn(v[c]);
++              }
++            }
+           }
+         }
+       }
+@@ -6594,6 +7119,30 @@ bool AttentionF16Gemm(const void* weights, const __half* input,
+   return true;
+ }
+ 
++// Q8 twin of the fused projection: identical GEMM + norm + RoPE math,
++// K/V rows land directly as Q8_0 blocks (no s_.qg staging traffic).
++bool AttentionQ8Gemm(const void* weights, const __half* input,
++                     const float* q_gamma, const float* k_gamma, float* query,
++                     float* gate, std::int8_t* keys, std::int8_t* values,
++                     std::uint32_t n_tokens, const std::uint32_t* position,
++                     float theta, float eps, hipStream_t stream,
++                     const qwen::vision::DeviceRope* rope) {
++  if (n_tokens < 1024 || weights == nullptr || input == nullptr ||
++      q_gamma == nullptr || k_gamma == nullptr || query == nullptr ||
++      gate == nullptr || keys == nullptr || values == nullptr ||
++      position == nullptr)
++    return false;
++  const AttentionProjectionOutput output{q_gamma, k_gamma, query,    gate,
++                                         nullptr, nullptr, position, theta,
++                                         eps,     rope,    keys,     values};
++  hipLaunchKernelGGL(
++      (DenseF16GEMMKernel<256, 128, 1, 8, 1, 4, false, false, true>),
++      dim3((n_tokens + 127) / 128, 52), dim3(kThreads), 0, stream, weights,
++      input, nullptr, n_tokens, 13312, 2560, nullptr, nullptr, nullptr, nullptr,
++      nullptr, output);
++  return true;
++}
++
+ bool HcMixF16Gemm(const void* up, const __half* low_rank, const __half* xn,
+                   const float* inject_w, float* mixed, __half* mixed_half,
+                   void* mixed_q8, float* inject, std::uint32_t n_tokens,
+@@ -7043,6 +7592,78 @@ bool PrepareAttention(const float* packed, std::uint32_t stride,
+   return true;
+ }
+ 
++bool PrepareAttentionQ8(const float* packed, std::uint32_t stride,
++                        const float* q_gamma, const float* k_gamma, float* q,
++                        float* gate, std::int8_t* k_cache, std::int8_t* v_cache,
++                        std::uint32_t n_tokens, std::uint32_t heads,
++                        std::uint32_t kv_heads, std::uint32_t d,
++                        std::uint32_t rotary_dim,
++                        const std::uint32_t* start_pos, float theta, float eps,
++                        hipStream_t stream,
++                        const qwen::vision::DeviceRope* rope, bool prefill) {
++  if (d == 0 || d > 256 || rotary_dim == 0 || rotary_dim > d ||
++      rotary_dim % 2 != 0 || kv_heads == 0 ||
++      stride < static_cast<std::size_t>(2) * (heads + kv_heads) * d) {
++    return false;
++  }
++  if (n_tokens == 0)
++    return true;
++  if (!prefill && n_tokens < 32) {
++    hipLaunchKernelGGL((PrepareAttentionQ8Kernel<1>),
++                       dim3(n_tokens, heads + kv_heads), dim3(kThreads), 0,
++                       stream, packed, stride, q_gamma, k_gamma, q, gate,
++                       k_cache, v_cache, heads, kv_heads, d, rotary_dim,
++                       start_pos, theta, eps, rope);
++  } else {
++    hipLaunchKernelGGL((PrepareAttentionQ8Kernel<4>),
++                       dim3(n_tokens, (heads + kv_heads + 3) / 4),
++                       dim3(kThreads), 0, stream, packed, stride, q_gamma,
++                       k_gamma, q, gate, k_cache, v_cache, heads, kv_heads, d,
++                       rotary_dim, start_pos, theta, eps, rope);
++  }
++  return true;
++}
++
++// Dual-buffer dequant (one launch for K+V staging; halves launches).
++__global__ void DequantizeQ8KVRowsKernel(
++    const std::int8_t* __restrict__ src_k, __half* __restrict__ dst_k,
++    const std::int8_t* __restrict__ src_v, __half* __restrict__ dst_v,
++    std::uint32_t row_blocks, std::uint32_t d, std::uint32_t n_rows) {
++  const std::uint32_t r = blockIdx.x;
++  const std::uint32_t b = blockIdx.y;
++  const std::uint32_t l = threadIdx.x;
++  if (r >= n_rows)
++    return;
++  const std::uint32_t base = b * 32;
++  const std::uint32_t n = base + 32 <= d ? 32 : (base < d ? d - base : 0);
++  if (l >= n)
++    return;
++  const std::size_t blk_off = (std::size_t(r) * row_blocks + b) * 34;
++  const std::int8_t* kb = src_k + blk_off;
++  const std::int8_t* vb = src_v + blk_off;
++  const float sk = __half2float(*reinterpret_cast<const __half*>(kb + 32));
++  const float sv = __half2float(*reinterpret_cast<const __half*>(vb + 32));
++  const std::size_t out_off = std::size_t(r) * d + base + l;
++  dst_k[out_off] = __float2half(static_cast<float>(kb[l]) * sk);
++  dst_v[out_off] = __float2half(static_cast<float>(vb[l]) * sv);
++}
++
++bool DequantizeQ8KVRows(const std::int8_t* src_k, __half* dst_k,
++                        const std::int8_t* src_v, __half* dst_v,
++                        std::uint32_t n_rows, std::uint32_t row_elems,
++                        hipStream_t stream) {
++  if (src_k == nullptr || dst_k == nullptr || src_v == nullptr ||
++      dst_v == nullptr || n_rows == 0 || row_elems == 0)
++    return false;
++  const std::uint32_t blocks = (row_elems + 31) / 32;
++  if (blocks == 0)
++    return false;
++  hipLaunchKernelGGL(DequantizeQ8KVRowsKernel, dim3(n_rows, blocks), dim3(32),
++                     0, stream, src_k, dst_k, src_v, dst_v, blocks, row_elems,
++                     n_rows);
++  return true;
++}
++
+ void Rope(float* x, std::uint32_t n_tokens, std::uint32_t heads,
+           std::uint32_t d, std::uint32_t rotary_dim,
+           const std::uint32_t* start_pos, float theta, hipStream_t stream,
+@@ -7058,6 +7679,19 @@ void StoreKv(const float* src, __half* cache, std::uint32_t n_tokens,
+                      src, cache, row_dim, start_pos);
+ }
+ 
++void QuantizeKvRowsQ8(const float* src, std::uint32_t src_tok_stride,
++                      std::uint32_t src_head_stride, std::int8_t* dst,
++                      std::uint32_t kv_width, std::uint32_t kv_heads,
++                      std::uint32_t d, std::uint32_t n_tokens,
++                      const std::uint32_t* start_pos, hipStream_t stream) {
++  if (n_tokens == 0 || kv_heads == 0 || d == 0)
++    return;
++  hipLaunchKernelGGL(QuantizeKvRowsQ8Kernel, dim3(n_tokens, kv_heads),
++                     dim3(kThreads), 0, stream, src, src_tok_stride,
++                     src_head_stride, dst, kv_width, kv_heads, d, n_tokens,
++                     start_pos);
++}
++
+ void StoreRows(const float* src, float* dst, std::uint32_t n_tokens,
+                std::uint32_t row_dim, const std::uint32_t* start_pos,
+                std::uint32_t capacity, hipStream_t stream) {
+@@ -7124,6 +7758,27 @@ void Attention(const float* q, const __half* k_cache, const __half* v_cache,
+   }
+ }
+ 
++void AttentionQ8(const float* q, const std::int8_t* k_cache,
++                 const std::int8_t* v_cache, const std::uint32_t* mask,
++                 std::uint32_t mask_words, float* out, float* partials,
++                 std::uint32_t splits, std::uint32_t n_tokens,
++                 const std::uint32_t* start_pos, std::uint32_t heads,
++                 std::uint32_t kv_heads, std::uint32_t d, std::uint32_t ratio,
++                 hipStream_t stream) {
++  if (d != 256) {
++    return;
++  }
++  const std::uint32_t z = partials != nullptr ? std::max(splits, 1u) : 1u;
++  hipLaunchKernelGGL(AttentionKernelQ8, dim3(heads, n_tokens, z),
++                     dim3(kThreads), 0, stream, q, k_cache, v_cache, mask,
++                     mask_words, out, partials, start_pos, heads, kv_heads, d,
++                     ratio);
++  if (z > 1) {
++    hipLaunchKernelGGL(AttentionMergeKernel, dim3(heads, n_tokens),
++                       dim3(kThreads), 0, stream, partials, out, heads, d, z);
++  }
++}
++
+ bool WmmaCausalAttention(const float* q, const float* gate,
+                          const __half* k_cache, const __half* v_cache,
+                          const std::uint32_t* mask, std::uint32_t mask_words,
+diff --git a/src/models/qwen38_flash_next/kernels/rocm/kernels.hpp b/src/models/qwen38_flash_next/kernels/rocm/kernels.hpp
+index ef16c861a..fed477c9f 100644
+--- a/src/models/qwen38_flash_next/kernels/rocm/kernels.hpp
++++ b/src/models/qwen38_flash_next/kernels/rocm/kernels.hpp
+@@ -414,6 +414,16 @@ bool PrepareAttention(const float* packed, std::uint32_t stride,
+                       const qwen::vision::DeviceRope* rope = nullptr,
+                       bool prefill = false);
+ 
++/// Q8 twin of PrepareAttention: identical math, K rows to Q8_0 blocks.
++/// V rows are quantized separately via QuantizeKvRowsQ8 over packed rows.
++bool PrepareAttentionQ8(
++    const float* packed, std::uint32_t stride, const float* q_gamma,
++    const float* k_gamma, float* q, float* gate, std::int8_t* k_cache,
++    std::int8_t* v_cache, std::uint32_t n_tokens, std::uint32_t heads,
++    std::uint32_t kv_heads, std::uint32_t d, std::uint32_t rotary_dim,
++    const std::uint32_t* start_pos, float theta, float eps, hipStream_t stream,
++    const qwen::vision::DeviceRope* rope = nullptr, bool prefill = false);
++
+ /// NEOX partial rotary on x [t][heads][d] at positions start_pos + t.
+ /// Positions are read from device memory (`start_pos` points at the
+ /// session's control block) so a captured decode graph replays at any
+@@ -428,6 +438,13 @@ void Rope(float* x, std::uint32_t n_tokens, std::uint32_t heads,
+ void StoreKv(const float* src, __half* cache, std::uint32_t n_tokens,
+              std::uint32_t row_dim, const std::uint32_t* start_pos,
+              hipStream_t stream);
++
++/// Symmetric INT8 quantize of float rows into Q8_0 blocks (see .hip).
++void QuantizeKvRowsQ8(const float* src, std::uint32_t src_tok_stride,
++                      std::uint32_t src_head_stride, std::int8_t* dst,
++                      std::uint32_t kv_width, std::uint32_t kv_heads,
++                      std::uint32_t d, std::uint32_t n_tokens,
++                      const std::uint32_t* start_pos, hipStream_t stream);
+ /// Stores raw indexer rows in a power-of-two ring of `capacity` rows.
+ void StoreRows(const float* src, float* dst, std::uint32_t n_tokens,
+                std::uint32_t row_dim, const std::uint32_t* start_pos,
+@@ -472,6 +489,28 @@ void Attention(const float* q, const __half* k_cache, const __half* v_cache,
+                const std::uint32_t* start_pos, std::uint32_t heads,
+                std::uint32_t kv_heads, std::uint32_t d, std::uint32_t ratio,
+                hipStream_t stream);
++/// Fused Q/K/V projection + norm + RoPE + Q8_0 KV store for wide batches
++/// (mirrors AttentionF16Gemm; skips the s_.qg staging traffic in Q8 mode).
++bool AttentionQ8Gemm(const void* weights, const __half* input,
++                     const float* q_gamma, const float* k_gamma, float* query,
++                     float* gate, std::int8_t* keys, std::int8_t* values,
++                     std::uint32_t n_tokens, const std::uint32_t* position,
++                     float theta, float eps, hipStream_t stream,
++                     const qwen::vision::DeviceRope* rope);
++
++/// Dual-buffer Q8_0 -> F16 (one launch for K+V staging).
++bool DequantizeQ8KVRows(const std::int8_t* src_k, __half* dst_k,
++                        const std::int8_t* src_v, __half* dst_v,
++                        std::uint32_t n_rows, std::uint32_t row_elems,
++                        hipStream_t stream);
++/// Q8 twin: Q8_0 blocked INT8 caches, fused dequant on read.
++void AttentionQ8(const float* q, const std::int8_t* k_cache,
++                 const std::int8_t* v_cache, const std::uint32_t* mask,
++                 std::uint32_t mask_words, float* out, float* partials,
++                 std::uint32_t splits, std::uint32_t n_tokens,
++                 const std::uint32_t* start_pos, std::uint32_t heads,
++                 std::uint32_t kv_heads, std::uint32_t d, std::uint32_t ratio,
++                 hipStream_t stream);
+ 
+ /// Fused causal attention on the WMMA cores for wide batches: scores, online
+ /// softmax, PV and the sigmoid output gate in one launch. `mask` follows
+
+From d45231aad444b56606d7c4dc44f07dca087297b3 Mon Sep 17 00:00:00 2001
+From: dardeaw <dardeaw@users.noreply.github.com>
+Date: Wed, 14 Oct 2026 00:51:50 +0800
+Subject: [PATCH 02/10] perf(qwen-flash): split Q8/F16 epilogue in
+ DenseF16GEMMKernel at compile time
+
+The inline Q8 branches perturbed F16 codegen (VGPR/occupancy), costing 6-7% prefill on the F16 path vs main (reviewer report on #566). A kQ8Out template bool selects the arms with if constexpr; the F16 instantiation is the untouched pre-Q8 body. Only AttentionQ8Gemm uses kQ8Out=true. Measured virgin: F16 1400/1490/1433 -> 1512/1640/1564 (main: 1490/1607/1547); Q8 unchanged 1385/1457/1382 -> 1372/1458/1384.
+---
+ .../kernels/rocm/kernels.hip.cpp                 | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/src/models/qwen38_flash_next/kernels/rocm/kernels.hip.cpp b/src/models/qwen38_flash_next/kernels/rocm/kernels.hip.cpp
+index 2b5897676..f07534538 100644
+--- a/src/models/qwen38_flash_next/kernels/rocm/kernels.hip.cpp
++++ b/src/models/qwen38_flash_next/kernels/rocm/kernels.hip.cpp
+@@ -6430,7 +6430,8 @@ struct AttentionProjectionOutput {
+ /// skip decoding and use the same ordered K16 products. y is [batch][m].
+ template<int BM, int BN, int BK, int WM, int WN, int kRowGroup = 1,
+          bool kHcMix = false, bool kSsmConv = false, bool kAttention = false,
+-         bool kHalfWeights = false, bool kBf16 = false, bool kStrided = false>
++         bool kHalfWeights = false, bool kBf16 = false, bool kStrided = false,
++         bool kQ8Out = false>
+ __launch_bounds__(256) __global__ void DenseF16GEMMKernel(
+     const void* __restrict__ w, const __half* __restrict__ x,
+     float* __restrict__ y, std::size_t batch, std::size_t m, std::size_t k,
+@@ -6829,6 +6830,10 @@ __launch_bounds__(256) __global__ void DenseF16GEMMKernel(
+             else if (gate)
+               attention.gate[tok * width + head * dim + col] = v[c];
+             else if (key) {
++              // Compile-time Q8/F16 split: the F16 arm is the untouched
++              // pre-Q8 body, so its codegen (VGPR/occupancy) cannot drift
++              // from main. Only AttentionQ8Gemm instantiates kQ8Out.
++              if constexpr (kQ8Out) {
+               if (attention.keys_q8 != nullptr) {
+                 // Fused Q8_0: the wave's lanes hold block c (lane l = elem l),
+                 // so the per-block max is a wave-local shuffle reduction.
+@@ -6849,12 +6854,17 @@ __launch_bounds__(256) __global__ void DenseF16GEMMKernel(
+                 blk[lane_id] = static_cast<std::int8_t>(qi);
+                 if (lane_id == 0)
+                   *reinterpret_cast<__half*>(blk + 32) = __float2half(dd);
++                }
+               } else {
+                 attention
+                     .keys[std::size_t(*attention.position + tok) * kvwidth +
+                           head * dim + col] = __float2half_rn(v[c]);
+               }
+             } else {
++              // Compile-time Q8/F16 split: the F16 arm is the untouched
++              // pre-Q8 body, so its codegen (VGPR/occupancy) cannot drift
++              // from main. Only AttentionQ8Gemm instantiates kQ8Out.
++              if constexpr (kQ8Out) {
+               if (attention.values_q8 != nullptr) {
+                 // Fused Q8_0: the wave's lanes hold block c (lane l = elem l),
+                 // so the per-block max is a wave-local shuffle reduction.
+@@ -6875,6 +6885,7 @@ __launch_bounds__(256) __global__ void DenseF16GEMMKernel(
+                 blk[lane_id] = static_cast<std::int8_t>(qi);
+                 if (lane_id == 0)
+                   *reinterpret_cast<__half*>(blk + 32) = __float2half(dd);
++                }
+               } else {
+                 attention
+                     .values[std::size_t(*attention.position + tok) * kvwidth +
+@@ -7136,7 +7147,8 @@ bool AttentionQ8Gemm(const void* weights, const __half* input,
+                                          nullptr, nullptr, position, theta,
+                                          eps,     rope,    keys,     values};
+   hipLaunchKernelGGL(
+-      (DenseF16GEMMKernel<256, 128, 1, 8, 1, 4, false, false, true>),
++      (DenseF16GEMMKernel<256, 128, 1, 8, 1, 4, false, false, true,
++                          false, false, false, true>),
+       dim3((n_tokens + 127) / 128, 52), dim3(kThreads), 0, stream, weights,
+       input, nullptr, n_tokens, 13312, 2560, nullptr, nullptr, nullptr, nullptr,
+       nullptr, output);
+
+From 98c8d4464d1a7f9ee6773dd09d16116fb53638a3 Mon Sep 17 00:00:00 2001
+From: dardeaw <dardeaw@local>
+Date: Thu, 15 Oct 2026 02:58:16 +0800
+Subject: [PATCH 03/10] fix(qwen-flash): include KV precision in snapshot
+ identity
+
+Bump kSnapshotPayloadVersion 16->17 and add kv_quant=q8|f16 to the
+QwenFlashNext compatibility identity so pre-existing snapshots are
+refused cleanly and q8/f16 checkpoints never match each other.
+SameGeometry was only a second line of defense; cross-mode entries
+could previously collide in the identity.
+---
+ src/cli/serve/inference_backend.cpp     | 16 +++++++++++-----
+ src/models/qwen38_flash_next/engine.hpp |  3 +++
+ 2 files changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/src/cli/serve/inference_backend.cpp b/src/cli/serve/inference_backend.cpp
+index e58dbcde7..1b6acafc6 100644
+--- a/src/cli/serve/inference_backend.cpp
++++ b/src/cli/serve/inference_backend.cpp
+@@ -234,7 +234,7 @@ std::vector<std::uint8_t> DeepSeekCompatibilityIdentity(
+ std::vector<std::uint8_t> QwenFlashNextCompatibilityIdentity(
+     std::string_view artifact_fingerprint, std::string_view mtp_fingerprint,
+     bool has_mtp, std::uint32_t max_context, std::uint32_t max_draft_tokens,
+-    std::uint32_t decode_concurrency) {
++    std::uint32_t decode_concurrency, bool kv_cache_int8 = false) {
+   if (!IsSha256Hex(artifact_fingerprint)) {
+     throw std::invalid_argument(
+         "Qwen3.8-Flash-Next disk cache requires an artifact fingerprint");
+@@ -259,6 +259,7 @@ std::vector<std::uint8_t> QwenFlashNextCompatibilityIdentity(
+            << '\n'
+            << "context_tokens=" << max_context << '\n'
+            << "position_policy=absolute-v1\n"
++           << "kv_quant=" << (kv_cache_int8 ? "q8" : "f16") << "\n"
+            << "adapters=none\n";
+   if (has_mtp) {
+     identity << "draft_backend=qfn-mtp-v1\n"
+@@ -2425,11 +2426,13 @@ class QwenFlashNextTextRunner final : public HipTextModelRunner {
+                           std::uint32_t max_context, bool use_mtp,
+                           std::uint32_t max_draft_tokens,
+                           std::string artifact_fingerprint = {},
+-                          std::string mtp_fingerprint = {})
++                          std::string mtp_fingerprint = {},
++                          bool kv_cache_int8 = false)
+       : model_(std::move(model)),
+         max_context_(max_context),
+         use_mtp_(use_mtp),
+-        max_draft_tokens_(max_draft_tokens) {
++        max_draft_tokens_(max_draft_tokens),
++        kv_cache_int8_(kv_cache_int8) {
+     // The typed in-process API owns an immutable loaded model but need not
+     // supply file fingerprints when disk caching is disabled. Its model
+     // lifetime is an exact process-local identity; durable caches still
+@@ -2439,7 +2442,7 @@ class QwenFlashNextTextRunner final : public HipTextModelRunner {
+           .compatibility_identity = QwenFlashNextCompatibilityIdentity(
+               artifact_fingerprint, use_mtp_ ? mtp_fingerprint : std::string{},
+               use_mtp_, max_context_, max_draft_tokens_,
+-              model_->DecodeConcurrency()),
++              model_->DecodeConcurrency(), kv_cache_int8_),
+           .payload_version =
+               models::qwen38_flash_next::Session::kSnapshotPayloadVersion,
+       };
+@@ -3067,6 +3070,7 @@ class QwenFlashNextTextRunner final : public HipTextModelRunner {
+   std::uint32_t max_context_;
+   bool use_mtp_;
+   std::uint32_t max_draft_tokens_;
++  bool kv_cache_int8_ = false;
+   std::optional<TextRunnerPersistenceDescriptor> persistence_;
+   cache::Identity component_identity_;
+ };
+@@ -3673,12 +3677,14 @@ bool InferenceBackend::load(
+     new_state->sampling_defaults.model = sampling::TextModelPreset::kQwen38;
+     new_state->sampling_defaults.supplied = {};
+     new_state->supports_images = model->VisionEncoder() != nullptr;
++    const bool kv_cache_int8 = model->KvCacheInt8();
+     auto runner = std::make_shared<QwenFlashNextTextRunner>(
+         std::move(model), max_context,
+         speculative_config.backend == TextSpeculativeBackend::kMtp,
+         speculative_config.max_draft_tokens,
+         disk_cache_config.model_artifact_fingerprint,
+-        disk_cache_config.draft_model_artifact_fingerprint);
++        disk_cache_config.draft_model_artifact_fingerprint,
++        kv_cache_int8);
+     new_state->model_id = runner->Descriptor().model_id;
+     new_state->max_context = max_context;
+     std::optional<TextRunnerDiskCacheOptions> runner_disk_cache;
+diff --git a/src/models/qwen38_flash_next/engine.hpp b/src/models/qwen38_flash_next/engine.hpp
+index d6321eb55..9ab92b3d5 100644
+--- a/src/models/qwen38_flash_next/engine.hpp
++++ b/src/models/qwen38_flash_next/engine.hpp
+@@ -88,6 +88,9 @@ class Model final : public std::enable_shared_from_this<Model> {
+   [[nodiscard]] std::uint32_t DecodeConcurrency() const noexcept {
+     return options_.decode_concurrency;
+   }
++  [[nodiscard]] bool KvCacheInt8() const noexcept {
++    return options_.kv_cache_quant == "q8";
++  }
+   [[nodiscard]] std::string ModelName() const;
+   [[nodiscard]] const Config& config() const noexcept;
+   [[nodiscard]] const tokenization::QwenTokenizer& tokenizer() const noexcept {
+
+From 3b8d18e864a03c1b23b86253a585cb553358f121 Mon Sep 17 00:00:00 2001
+From: dardeaw <dardeaw@users.noreply.github.com>
+Date: Thu, 15 Oct 2026 14:02:26 +0800
+Subject: [PATCH 04/10] feat(qwen-flash): teach the component cache Q8 KV
+ geometry
+
+ContinuationLayout takes a kv_int8 flag so K/V (and draft K/V)
+components use Q8_0 blocked row bytes; ContinuationAdapter forwards the
+model's KV precision, includes it in the component identity (F16 and Q8
+snapshots must not mix), and RowData resolves the allocated cache pair
+by presence, as the slot facade's precision flag is not always
+populated.
+---
+ .../continuation_adapter.cpp                  | 23 +++++++++++++++----
+ .../qwen38_flash_next/continuation_layout.cpp | 16 +++++++------
+ .../qwen38_flash_next/continuation_layout.hpp |  2 +-
+ 3 files changed, 28 insertions(+), 13 deletions(-)
+
+diff --git a/src/models/qwen38_flash_next/continuation_adapter.cpp b/src/models/qwen38_flash_next/continuation_adapter.cpp
+index 4cbc03502..3be32e595 100644
+--- a/src/models/qwen38_flash_next/continuation_adapter.cpp
++++ b/src/models/qwen38_flash_next/continuation_adapter.cpp
+@@ -209,7 +209,8 @@ ContinuationAdapter::ContinuationAdapter(std::shared_ptr<Model> model,
+       context_(context),
+       layout_(model_ ? model_->config() : Config{},
+               mode == core::SessionMode::kSpeculative, context,
+-              model_ ? model_->executor_->max_speculative() : 0),
++              model_ ? model_->executor_->max_speculative() : 0,
++              model_ ? model_->KvCacheInt8() : false),
+       identity_(std::move(identity)) {
+   if ((mode != core::SessionMode::kAutoregressive &&
+        mode != core::SessionMode::kSpeculative) ||
+@@ -227,6 +228,7 @@ ContinuationAdapter::ContinuationAdapter(std::shared_ptr<Model> model,
+   put(model_->executor_->max_speculative());
+   put(model_->PrefillCapacity());
+   put(model_->DecodeConcurrency());
++  put(model_->KvCacheInt8() ? 1 : 0);  // F16 and Q8 snapshots must not mix.
+   for (const auto& component : layout_.Components())
+     descriptors_.push_back(component.descriptor);
+ }
+@@ -356,19 +358,30 @@ const ContinuationComponent& ContinuationAdapter::Component(
+ void* ContinuationAdapter::RowData(
+     State& state, const ContinuationComponent& component) const {
+   auto& native = state.CaptureState();
++  // The slot facade's precision flag is not always populated, but the
++  // session allocates exactly one of the F16 / Q8 cache pairs: resolve by
++  // presence (the flag only breaks ties, which never occur in practice).
++  const bool q8flag = native.kv_cache_int8();
++  const auto pick = [&](void* f16, void* q8) -> void* {
++    if (f16 != nullptr && q8 != nullptr)
++      return q8flag ? q8 : f16;
++    return f16 != nullptr ? f16 : q8;
++  };
+   switch (component.part) {
+     case ContinuationPart::kTokens:
+       return state.session->tokens_.data();
+     case ContinuationPart::kKey:
+-      return native.attention_[component.layer].k_cache;
++      return pick(native.attention_[component.layer].k_cache,
++                  native.attention_[component.layer].k_cache_q8);
+     case ContinuationPart::kValue:
+-      return native.attention_[component.layer].v_cache;
++      return pick(native.attention_[component.layer].v_cache,
++                  native.attention_[component.layer].v_cache_q8);
+     case ContinuationPart::kPooledKeys:
+       return native.attention_[component.layer].block_k;
+     case ContinuationPart::kDraftKey:
+-      return native.mtp_.k_cache;
++      return pick(native.mtp_.k_cache, native.mtp_.k_cache_q8);
+     case ContinuationPart::kDraftValue:
+-      return native.mtp_.v_cache;
++      return pick(native.mtp_.v_cache, native.mtp_.v_cache_q8);
+     case ContinuationPart::kDraftPooledKeys:
+       return native.mtp_.block_k;
+     default:
+diff --git a/src/models/qwen38_flash_next/continuation_layout.cpp b/src/models/qwen38_flash_next/continuation_layout.cpp
+index 90e1950dd..76556fc60 100644
+--- a/src/models/qwen38_flash_next/continuation_layout.cpp
++++ b/src/models/qwen38_flash_next/continuation_layout.cpp
+@@ -21,7 +21,7 @@ bool IsPool(ContinuationPart part) {
+ 
+ ContinuationLayout::ContinuationLayout(const Config& c, bool mtp,
+                                        std::uint32_t context,
+-                                       std::uint32_t kept_rows)
++                                       std::uint32_t kept_rows, bool kv_int8)
+     : context_(context), ratio_(c.compress_ratio), mtp_(mtp) {
+   if (!context || context > c.context_length || !ratio_ ||
+       !c.full_attention_interval || !c.num_layers || !c.AttentionKvDim() ||
+@@ -30,6 +30,10 @@ ContinuationLayout::ContinuationLayout(const Config& c, bool mtp,
+       (mtp && !kept_rows))
+     throw std::invalid_argument("invalid Flash-Next continuation geometry");
+   raw_capacity_ = std::min(context, std::max(c.indexer_top_k, ratio_ - 1));
++  // Q8_0 blocked rows: 34 bytes per 32 elements; scales live in the blocks.
++  const std::size_t kv_row =
++      kv_int8 ? (static_cast<std::size_t>(c.AttentionKvDim()) + 31) / 32 * 34
++              : std::size_t{c.AttentionKvDim()} * 2;
+   const auto add = [&](ContinuationPart part, std::size_t row,
+                        std::size_t state, std::uint32_t layer = 0) {
+     const auto id = static_cast<std::uint32_t>(components_.size() + 1);
+@@ -57,10 +61,8 @@ ContinuationLayout::ContinuationLayout(const Config& c, bool mtp,
+               sizeof(float),
+           layer);
+     } else {
+-      add(ContinuationPart::kKey, std::size_t{c.AttentionKvDim()} * 2, 0,
+-          layer);
+-      add(ContinuationPart::kValue, std::size_t{c.AttentionKvDim()} * 2, 0,
+-          layer);
++      add(ContinuationPart::kKey, kv_row, 0, layer);
++      add(ContinuationPart::kValue, kv_row, 0, layer);
+       add(ContinuationPart::kPooledKeys, std::size_t{c.indexer_head_dim} * 2, 0,
+           layer);
+       add(ContinuationPart::kRawKeys, 0,
+@@ -72,8 +74,8 @@ ContinuationLayout::ContinuationLayout(const Config& c, bool mtp,
+     add(ContinuationPart::kPleHistory, 0,
+         std::size_t{c.PleConvHistory()} * c.HcDim() * sizeof(float));
+   if (mtp) {
+-    add(ContinuationPart::kDraftKey, std::size_t{c.AttentionKvDim()} * 2, 0);
+-    add(ContinuationPart::kDraftValue, std::size_t{c.AttentionKvDim()} * 2, 0);
++    add(ContinuationPart::kDraftKey, kv_row, 0);
++    add(ContinuationPart::kDraftValue, kv_row, 0);
+     add(ContinuationPart::kDraftPooledKeys, std::size_t{c.indexer_head_dim} * 2,
+         0);
+     add(ContinuationPart::kDraftRawKeys, 0,
+diff --git a/src/models/qwen38_flash_next/continuation_layout.hpp b/src/models/qwen38_flash_next/continuation_layout.hpp
+index a8ca2ae7f..192e5264e 100644
+--- a/src/models/qwen38_flash_next/continuation_layout.hpp
++++ b/src/models/qwen38_flash_next/continuation_layout.hpp
+@@ -50,7 +50,7 @@ struct ContinuationBackingClass {
+ class ContinuationLayout {
+ public:
+   ContinuationLayout(const Config&, bool mtp, std::uint32_t context,
+-                     std::uint32_t kept_rows);
++                     std::uint32_t kept_rows, bool kv_int8 = false);
+   [[nodiscard]] std::span<const ContinuationComponent> Components() const {
+     return components_;
+   }
+
+From 90d49565e0b56116710592aed5318845e428b594 Mon Sep 17 00:00:00 2001
+From: dardeaw <dardeaw@users.noreply.github.com>
+Date: Thu, 15 Oct 2026 17:58:01 +0800
+Subject: [PATCH 05/10] style(serve): join the KV-precision runner argument
+
+---
+ src/cli/serve/inference_backend.cpp | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/cli/serve/inference_backend.cpp b/src/cli/serve/inference_backend.cpp
+index 1b6acafc6..c0e59e74b 100644
+--- a/src/cli/serve/inference_backend.cpp
++++ b/src/cli/serve/inference_backend.cpp
+@@ -3683,8 +3683,7 @@ bool InferenceBackend::load(
+         speculative_config.backend == TextSpeculativeBackend::kMtp,
+         speculative_config.max_draft_tokens,
+         disk_cache_config.model_artifact_fingerprint,
+-        disk_cache_config.draft_model_artifact_fingerprint,
+-        kv_cache_int8);
++        disk_cache_config.draft_model_artifact_fingerprint, kv_cache_int8);
+     new_state->model_id = runner->Descriptor().model_id;
+     new_state->max_context = max_context;
+     std::optional<TextRunnerDiskCacheOptions> runner_disk_cache;
+
+From ab476bace03f61c61a2c99dd5fe6e44702c7d5cd Mon Sep 17 00:00:00 2001
+From: dardeaw <dardeaw@users.noreply.github.com>
+Date: Tue, 13 Oct 2026 20:23:42 +0800
+Subject: [PATCH 06/10] perf(qwen-flash): persistent incremental Q8 staging for
+ prefill
+
+Reuse one per-session Q8->F16 staging pair across prefill chunks instead of malloc/free per chunk, and dequantize each prefix row once (incremental [valid, need)) instead of re-converting the full prefix every chunk. Validity keyed on cache source pointers (trunk vs draft); RestoreSnapshot/Rollback invalidate. Any failure falls back to the scalar kernel. Measured virgin 53K 1418->1471, 160K 1369->1421 tps.
+---
+ .../qwen38_flash_next/kernels/rocm/batch.cpp  |  5 +-
+ .../kernels/rocm/executor.cpp                 | 87 +++++++++++++++----
+ .../kernels/rocm/executor.hpp                 | 17 +++-
+ 3 files changed, 89 insertions(+), 20 deletions(-)
+
+diff --git a/src/models/qwen38_flash_next/kernels/rocm/batch.cpp b/src/models/qwen38_flash_next/kernels/rocm/batch.cpp
+index 176e19725..218434932 100644
+--- a/src/models/qwen38_flash_next/kernels/rocm/batch.cpp
++++ b/src/models/qwen38_flash_next/kernels/rocm/batch.cpp
+@@ -328,7 +328,8 @@ bool Executor::MtpForwardBatch(std::span<const MtpBatchItem> items,
+       if (!Attention(l, attention, s_.mixed, s_.block_out, n,
+                      &session.control_->mtp_position,
+                      &session.control_->mtp_blocks, session.mtp_.position, pool,
+-                     session.max_context_, sparse, error, false, true, false))
++                     session.max_context_, sparse, error, false, true, false, 0,
++                     session))
+         return false;
+     }
+     // Attention retains every catch-up KV row. Only each final residual
+@@ -992,7 +993,7 @@ bool Executor::ForwardBatch(std::span<const BatchItem> items,
+           if (!Attention(l, session.attention_[il], s_.mixed, s_.block_out, n,
+                          &session.control_->position, &session.control_->blocks,
+                          session.position_, pool, session.max_context_,
+-                         sparse[i], error, false, true, false)) {
++                         sparse[i], error, false, true, false, 0, session)) {
+             return false;
+           }
+         }
+diff --git a/src/models/qwen38_flash_next/kernels/rocm/executor.cpp b/src/models/qwen38_flash_next/kernels/rocm/executor.cpp
+index a32eee49d..009073306 100644
+--- a/src/models/qwen38_flash_next/kernels/rocm/executor.cpp
++++ b/src/models/qwen38_flash_next/kernels/rocm/executor.cpp
+@@ -2389,7 +2389,8 @@ bool Executor::Attention(const DeviceLayer& l, Session::AttentionState& s,
+                          std::uint32_t max_context, bool sparse,
+                          std::string* error_msg, bool last_only,
+                          bool projections_ready, bool project_output,
+-                         std::uint32_t checkpoint_tokens) const {
++                         std::uint32_t checkpoint_tokens,
++                         Session& session) const {
+   const Config& c = config();
+   const std::uint32_t kv_row = c.AttentionKvDim();
+   const std::uint32_t index_capacity =
+@@ -2567,15 +2568,68 @@ bool Executor::Attention(const DeviceLayer& l, Session::AttentionState& s,
+         if (need == 0)
+           return false;
+         const std::size_t row_bytes = std::size_t(kv_row) * sizeof(__half);
+-        __half* stage_k = nullptr;
+-        __half* stage_v = nullptr;
++        const std::size_t kv_q8_row = (std::size_t{kv_row} + 31) / 32 * 34;
++        // Persistent per-session staging: reused across prefill chunks and
++        // dequantized incrementally (only rows [valid, need) are converted).
++        // The source pointers disambiguate trunk vs draft caches; snapshot
++        // restore/rollback invalidate (see RestoreSnapshot/Rollback). Any
++        // failure here falls back to the scalar kernel below.
++        if (session.q8_stage_ksrc_ != s.k_cache_q8 ||
++            session.q8_stage_vsrc_ != s.v_cache_q8) {
++          session.q8_stage_ksrc_ = s.k_cache_q8;
++          session.q8_stage_vsrc_ = s.v_cache_q8;
++          session.q8_stage_valid_ = 0;
++        }
++        if (need > session.q8_stage_cap_) {
++          const std::size_t new_cap =
++              (std::size_t{need} + 4095) & ~std::size_t{4095};
++          __half* nk = nullptr;
++          __half* nv = nullptr;
++          if (hipMalloc(reinterpret_cast<void**>(&nk), new_cap * row_bytes) !=
++                  hipSuccess ||
++              hipMalloc(reinterpret_cast<void**>(&nv), new_cap * row_bytes) !=
++                  hipSuccess) {
++            if (nk != nullptr)
++              (void)hipFree(nk);
++            if (nv != nullptr)
++              (void)hipFree(nv);
++            return false;
++          }
++          auto forget = [&](void* p) {
++            auto& a = session.allocations_;
++            a.erase(std::remove(a.begin(), a.end(), p), a.end());
++          };
++          if (session.q8_stage_k_ != nullptr) {
++            (void)hipFree(session.q8_stage_k_);
++            forget(session.q8_stage_k_);
++          }
++          if (session.q8_stage_v_ != nullptr) {
++            (void)hipFree(session.q8_stage_v_);
++            forget(session.q8_stage_v_);
++          }
++          session.q8_stage_k_ = nk;
++          session.q8_stage_v_ = nv;
++          session.allocations_.push_back(nk);
++          session.allocations_.push_back(nv);
++          session.q8_stage_cap_ = new_cap;
++          session.q8_stage_valid_ = 0;
++        }
++        if (need > session.q8_stage_valid_) {
++          const std::uint32_t base = session.q8_stage_valid_;
++          if (!rocm::DequantizeQ8KVRows(
++                  s.k_cache_q8 + std::size_t{base} * kv_q8_row,
++                  session.q8_stage_k_ + std::size_t{base} * kv_row,
++                  s.v_cache_q8 + std::size_t{base} * kv_q8_row,
++                  session.q8_stage_v_ + std::size_t{base} * kv_row, need - base,
++                  kv_row, stream_)) {
++            return false;
++          }
++          session.q8_stage_valid_ = need;
++        }
++        __half* stage_k = session.q8_stage_k_;
++        __half* stage_v = session.q8_stage_v_;
+         bool ok = false;
+-        if (hipMalloc(reinterpret_cast<void**>(&stage_k),
+-                      std::size_t(need) * row_bytes) == hipSuccess &&
+-            hipMalloc(reinterpret_cast<void**>(&stage_v),
+-                      std::size_t(need) * row_bytes) == hipSuccess &&
+-            rocm::DequantizeQ8KVRows(s.k_cache_q8, stage_k, s.v_cache_q8,
+-                                     stage_v, need, kv_row, stream_)) {
++        {
+           const auto at = [&](std::uint32_t row) {
+             return std::size_t{first + row} * c.AttentionQDim();
+           };
+@@ -2599,10 +2653,6 @@ bool Executor::Attention(const DeviceLayer& l, Session::AttentionState& s,
+                                     c.num_heads, c.num_kv_heads, c.head_dim,
+                                     c.compress_ratio, stream_, last));
+         }
+-        if (stage_k != nullptr)
+-          (void)hipFree(stage_k);
+-        if (stage_v != nullptr)
+-          (void)hipFree(stage_v);
+         return ok;
+       };
+   const auto attend = [&](std::uint32_t first, std::uint32_t rows, bool last) {
+@@ -3209,7 +3259,7 @@ bool Executor::ForwardBody(Session& session, std::uint32_t n,
+                           &session.control_->blocks, start_pos, pool_grid,
+                           session.max_context_, sparse, error_msg,
+                           last_attention, false, true,
+-                          checkpoint ? checkpoint->tokens : 0)) {
++                          checkpoint ? checkpoint->tokens : 0, session)) {
+       return false;
+     }
+ 
+@@ -3351,6 +3401,10 @@ bool Executor::Rollback(Session& session, std::uint32_t keep,
+   if (keep == n && logits == nullptr) {
+     return true;
+   }
++  // Rewound K/V rows past the kept frontier will be overwritten by the next
++  // append; clamp the persistent Q8 staging so it cannot serve stale rows.
++  session.q8_stage_valid_ =
++      std::min(session.q8_stage_valid_, session.spec_base_ + keep);
+   if (keep < n) {
+     const std::size_t conv_elems =
+         static_cast<std::size_t>(c.ssm_conv_kernel - 1) * c.SsmConvChannels();
+@@ -3803,6 +3857,9 @@ bool Executor::RestoreSnapshot(Session& session,
+     AssignError(error_msg, "session belongs to another executor");
+     return false;
+   }
++  // Snapshot payloads overwrite cache rows below any staged frontier;
++  // invalidate the persistent Q8 staging (buffers are kept for reuse).
++  session.q8_stage_valid_ = 0;
+   if (payload.size() < sizeof(SnapshotHeader)) {
+     AssignError(error_msg, "snapshot payload is truncated");
+     return false;
+@@ -4438,7 +4495,7 @@ bool Executor::MtpBody(Session& session, std::uint32_t n, std::uint32_t pos,
+                  &session.control_->mtp_position, &session.control_->mtp_blocks,
+                  pos, pool_grid, session.max_context_,
+                  pos + n > c.indexer_top_k, error_msg, last_only, true,
+-                 skipped == 0)) {
++                 skipped == 0, 0, session)) {
+     return false;
+   }
+   struct RestoreScratch {
+diff --git a/src/models/qwen38_flash_next/kernels/rocm/executor.hpp b/src/models/qwen38_flash_next/kernels/rocm/executor.hpp
+index 86ad4e406..1f46c7234 100644
+--- a/src/models/qwen38_flash_next/kernels/rocm/executor.hpp
++++ b/src/models/qwen38_flash_next/kernels/rocm/executor.hpp
+@@ -201,6 +201,18 @@ class Session {
+   MtpState mtp_;
+   Control* control_{nullptr};
+   std::uint32_t blocks_{0};  ///< host shadow of Control::blocks
++  /// Persistent Q8->F16 prefill staging (q8 mode): one pair shared across
++  /// layers, reused across prefill chunks, dequantized incrementally. Rows
++  /// [0, q8_stage_valid_) mirror (q8_stage_ksrc_, q8_stage_vsrc_); the
++  /// source pointers disambiguate trunk vs draft caches, while
++  /// RestoreSnapshot/Rollback invalidate on overwrite/rewind. Buffers are
++  /// freed with allocations_ at teardown.
++  mutable __half* q8_stage_k_{nullptr};
++  mutable __half* q8_stage_v_{nullptr};
++  mutable std::size_t q8_stage_cap_{0};  ///< rows provisioned
++  mutable const void* q8_stage_ksrc_{nullptr};
++  mutable const void* q8_stage_vsrc_{nullptr};
++  mutable std::uint32_t q8_stage_valid_{0};  ///< rows [0, valid) dequantized
+   /// Captured decode graphs by batch shape, and the shapes that ran eagerly
+   /// once (the GEMM tier's arena must be grown before capture).
+   std::unordered_map<std::uint64_t, hipGraphExec_t> graphs_;
+@@ -525,9 +537,8 @@ class Executor {
+                  const std::uint32_t* pos, const std::uint32_t* first_block,
+                  std::uint32_t start_pos, std::uint32_t pool_grid,
+                  std::uint32_t max_context, bool sparse, std::string* error_msg,
+-                 bool last_only = false, bool projections_ready = false,
+-                 bool project_output = true,
+-                 std::uint32_t checkpoint_tokens = 0) const;
++                 bool last_only, bool projections_ready, bool project_output,
++                 std::uint32_t checkpoint_tokens, Session& session) const;
+   bool Moe(const DeviceLayer& l, const float* x, float* out,
+            std::uint32_t n_tokens, std::string* error_msg,
+            bool last_only = false) const;
+
+From d57bb17991937c3748bfe5219b9729a744033c15 Mon Sep 17 00:00:00 2001
+From: dardeaw <dardeaw@users.noreply.github.com>
+Date: Thu, 15 Oct 2026 14:30:46 +0800
+Subject: [PATCH 07/10] fix(qwen-flash): invalidate persistent Q8 staging on
+ component restore
+
+---
+ src/models/qwen38_flash_next/continuation_adapter.cpp | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/src/models/qwen38_flash_next/continuation_adapter.cpp b/src/models/qwen38_flash_next/continuation_adapter.cpp
+index 3be32e595..013426206 100644
+--- a/src/models/qwen38_flash_next/continuation_adapter.cpp
++++ b/src/models/qwen38_flash_next/continuation_adapter.cpp
+@@ -752,6 +752,15 @@ cache::Completion ContinuationAdapter::CopyRowsIn(
+         bytes.empty()
+             ? nullptr
+             : static_cast<std::byte*>(RowData(state, component)) + first * row;
++    // Restored K/V rows overwrite the caches in place, which the persistent
++    // Q8 staging cannot detect by source pointer: drop its validity so the
++    // next prefill re-dequantizes instead of serving stale rows.
++    if (!bytes.empty() &&
++        (component.part == ContinuationPart::kKey ||
++         component.part == ContinuationPart::kValue ||
++         component.part == ContinuationPart::kDraftKey ||
++         component.part == ContinuationPart::kDraftValue))
++      state.CaptureState().q8_stage_valid_ = 0;
+     {
+       const std::lock_guard lock(state.jobs_mutex);
+       state.coverage[id.value - 1].emplace_back(first * row, end * row);
+
+From 2c2a341133bcf93afa03a72feeba44f33c8bf0da Mon Sep 17 00:00:00 2001
+From: dardeaw <dardeaw@users.noreply.github.com>
+Date: Thu, 15 Oct 2026 15:04:35 +0800
+Subject: [PATCH 08/10] style(qwen-flash): canonical wrap for the
+ restore-invalidate guard
+
+---
+ src/models/qwen38_flash_next/continuation_adapter.cpp | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/models/qwen38_flash_next/continuation_adapter.cpp b/src/models/qwen38_flash_next/continuation_adapter.cpp
+index 013426206..8a392e21b 100644
+--- a/src/models/qwen38_flash_next/continuation_adapter.cpp
++++ b/src/models/qwen38_flash_next/continuation_adapter.cpp
+@@ -755,11 +755,11 @@ cache::Completion ContinuationAdapter::CopyRowsIn(
+     // Restored K/V rows overwrite the caches in place, which the persistent
+     // Q8 staging cannot detect by source pointer: drop its validity so the
+     // next prefill re-dequantizes instead of serving stale rows.
+-    if (!bytes.empty() &&
+-        (component.part == ContinuationPart::kKey ||
+-         component.part == ContinuationPart::kValue ||
+-         component.part == ContinuationPart::kDraftKey ||
+-         component.part == ContinuationPart::kDraftValue))
++    const bool restores_kv = component.part == ContinuationPart::kKey ||
++                             component.part == ContinuationPart::kValue ||
++                             component.part == ContinuationPart::kDraftKey ||
++                             component.part == ContinuationPart::kDraftValue;
++    if (!bytes.empty() && restores_kv)
+       state.CaptureState().q8_stage_valid_ = 0;
+     {
+       const std::lock_guard lock(state.jobs_mutex);
+
+From 91f5ffe185f0cd16b23462a32b6e02a3b9516c61 Mon Sep 17 00:00:00 2001
+From: Mike Alani <mikealanni@gmail.com>
+Date: Tue, 13 Oct 2026 16:04:25 -0500
+Subject: [PATCH 09/10] feat(qwen38-flash-next): token-history drafting and a
+ draft confidence gate
+
+Drafting from the token history is a retrieval guess over tokens the session
+already holds: when the context ends in a phrase that occurred earlier, the
+tokens that followed it replace the MTP chain for that cycle. The target still
+verifies every token, so a wrong guess only costs the verify width. A repeated
+phrase says nothing about the predictor's acceptance, so these cycles stay out
+of its adaptive length controller.
+
+The gate stops before a speculative slot the draft head is unlikely to win.
+Verification is unchanged, so it only gives up positions.
+
+No environment switches. History drafting closes #239.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+---
+ src/cli/bench/bench.cpp                       |   7 +-
+ src/cli/serve/generation_metrics.hpp          |   4 +-
+ src/cli/serve/inference_backend.cpp           |   8 ++
+ src/cli/serve/text_generation_backend.hpp     |   3 +
+ src/cli/serve/text_generation_scheduler.cpp   |   5 +
+ src/cli/serve/text_model_runner.hpp           |   3 +
+ src/models/qwen38_flash_next/engine.cpp       | 122 ++++++++++++++++--
+ src/models/qwen38_flash_next/engine.hpp       |  18 ++-
+ src/models/qwen38_flash_next/lookup_draft.hpp | 121 +++++++++++++++++
+ src/models/qwen38_flash_next/mtp_policy.hpp   |  13 ++
+ src/models/qwen38_flash_next/mtp_sampling.hpp |  20 +++
+ .../qwen38_flash_next/lookup_draft_test.cpp   |  93 +++++++++++++
+ 13 files changed, 404 insertions(+), 17 deletions(-)
+ create mode 100644 src/models/qwen38_flash_next/lookup_draft.hpp
+
+diff --git a/src/cli/bench/bench.cpp b/src/cli/bench/bench.cpp
+index fdf690cf7..ff7246254 100644
+--- a/src/cli/bench/bench.cpp
++++ b/src/cli/bench/bench.cpp
+@@ -1119,7 +1119,12 @@ int RunQwen38FlashNextBenchmark(
+           std::cerr << "Qwen3.8-Flash-Next tg depth=" << depth
+                     << " cycles=" << stats.cycles
+                     << " drafted=" << stats.drafted
+-                    << " accepted=" << stats.accepted << " output_sha256="
++                    << " accepted=" << stats.accepted << " widths=";
++          for (std::size_t w = 0; w < std::size(stats.widths); ++w) {
++            if (stats.widths[w] != 0)
++              std::cerr << w << ':' << stats.widths[w] << ' ';
++          }
++          std::cerr << "output_sha256="
+                     << crypto::Sha256Hex(
+                            std::span(reinterpret_cast<const std::uint8_t*>(
+                                          generated.data()),
+diff --git a/src/cli/serve/generation_metrics.hpp b/src/cli/serve/generation_metrics.hpp
+index 9d0e91670..00efd5ba0 100644
+--- a/src/cli/serve/generation_metrics.hpp
++++ b/src/cli/serve/generation_metrics.hpp
+@@ -172,7 +172,9 @@ inline std::string GenerationLogDetails(
+         << result.component_cache->ledger.total_bytes;
+   if (result.draft_tokens > 0)
+     out << " acceptance_pct="
+-        << 100.0 * result.draft_accepted_tokens / result.draft_tokens;
++        << 100.0 * result.draft_accepted_tokens / result.draft_tokens
++        << " suffix_accepted=" << result.suffix_accepted_tokens
++        << " suffix_proposed=" << result.suffix_draft_tokens;
+   if (result.cache_snapshot_bytes > 0)
+     out << " cache_snapshot_bytes=" << result.cache_snapshot_bytes;
+   if (result.cache_disk_queued_bytes > 0)
+diff --git a/src/cli/serve/inference_backend.cpp b/src/cli/serve/inference_backend.cpp
+index c0e59e74b..e38c4ccbd 100644
+--- a/src/cli/serve/inference_backend.cpp
++++ b/src/cli/serve/inference_backend.cpp
+@@ -2969,6 +2969,10 @@ class QwenFlashNextTextRunner final : public HipTextModelRunner {
+     step.draft_rounds = stats_after.cycles - stats_before.cycles;
+     step.draft_tokens = stats_after.drafted - stats_before.drafted;
+     step.draft_accepted_tokens = stats_after.accepted - stats_before.accepted;
++    step.suffix_draft_tokens =
++        stats_after.suffix_drafted - stats_before.suffix_drafted;
++    step.suffix_accepted_tokens =
++        stats_after.suffix_accepted - stats_before.suffix_accepted;
+     return step;
+   }
+ 
+@@ -3056,6 +3060,10 @@ class QwenFlashNextTextRunner final : public HipTextModelRunner {
+       step.draft_rounds = stats.cycles - before[i].cycles;
+       step.draft_tokens = stats.drafted - before[i].drafted;
+       step.draft_accepted_tokens = stats.accepted - before[i].accepted;
++      step.suffix_draft_tokens =
++          stats.suffix_drafted - before[i].suffix_drafted;
++      step.suffix_accepted_tokens =
++          stats.suffix_accepted - before[i].suffix_accepted;
+     }
+     return steps;
+   }
+diff --git a/src/cli/serve/text_generation_backend.hpp b/src/cli/serve/text_generation_backend.hpp
+index 704259b9f..1c273e7ab 100644
+--- a/src/cli/serve/text_generation_backend.hpp
++++ b/src/cli/serve/text_generation_backend.hpp
+@@ -207,6 +207,9 @@ class TextGenerationBackend {
+     std::size_t draft_rounds{0};
+     std::size_t draft_tokens{0};
+     std::size_t draft_accepted_tokens{0};
++    /// The share of the draft taken from the token history, not the predictor.
++    std::size_t suffix_draft_tokens{0};
++    std::size_t suffix_accepted_tokens{0};
+     std::size_t prefill_tokens{0};
+     std::size_t prefill_chunks{0};
+     std::size_t active_decode_prefill_chunks{0};
+diff --git a/src/cli/serve/text_generation_scheduler.cpp b/src/cli/serve/text_generation_scheduler.cpp
+index 5ba6248e0..d55654f93 100644
+--- a/src/cli/serve/text_generation_scheduler.cpp
++++ b/src/cli/serve/text_generation_scheduler.cpp
+@@ -1385,6 +1385,8 @@ struct TextGenerationScheduler::Impl {
+       request->result.draft_rounds += step.draft_rounds;
+       request->result.draft_tokens += step.draft_tokens;
+       request->result.draft_accepted_tokens += step.draft_accepted_tokens;
++      request->result.suffix_draft_tokens += step.suffix_draft_tokens;
++      request->result.suffix_accepted_tokens += step.suffix_accepted_tokens;
+ 
+       CheckPreviewResult(request, step);
+       for (const auto& selection : step.selections) {
+@@ -1689,6 +1691,9 @@ struct TextGenerationScheduler::Impl {
+       item.request->result.draft_rounds += step.draft_rounds;
+       item.request->result.draft_tokens += step.draft_tokens;
+       item.request->result.draft_accepted_tokens += step.draft_accepted_tokens;
++      item.request->result.suffix_draft_tokens += step.suffix_draft_tokens;
++      item.request->result.suffix_accepted_tokens +=
++          step.suffix_accepted_tokens;
+ 
+       bool published = true;
+       try {
+diff --git a/src/cli/serve/text_model_runner.hpp b/src/cli/serve/text_model_runner.hpp
+index 0032ba048..541c6ca72 100644
+--- a/src/cli/serve/text_model_runner.hpp
++++ b/src/cli/serve/text_model_runner.hpp
+@@ -184,6 +184,9 @@ struct TextDecodeStep {
+   std::size_t draft_rounds{0};
+   std::size_t draft_tokens{0};
+   std::size_t draft_accepted_tokens{0};
++  /// The share of the draft taken from the token history, not the predictor.
++  std::size_t suffix_draft_tokens{0};
++  std::size_t suffix_accepted_tokens{0};
+   bool stop{false};
+   /// Execution actually used for this request, including model-owned subgroup
+   /// dispatch. A runner's advertised maximum is not evidence of batching.
+diff --git a/src/models/qwen38_flash_next/engine.cpp b/src/models/qwen38_flash_next/engine.cpp
+index 1c2ea4aff..0641638bb 100644
+--- a/src/models/qwen38_flash_next/engine.cpp
++++ b/src/models/qwen38_flash_next/engine.cpp
+@@ -543,6 +543,7 @@ bool Session::RestoreSnapshotImpl(std::span<const std::uint8_t> payload,
+   }
+   tokens_ = std::move(tokens);
+   ForgetDraftVocab();
++  lookup_ = LookupIndex{};
+   logits_ = std::move(logits);
+   hidden_base_ = info.position - info.hidden_rows;
+   draft_token_ = 0;
+@@ -605,7 +606,8 @@ bool Session::DraftReplay(std::int32_t next_token,
+ 
+ bool Session::DraftCatchUp(std::int32_t next_token, bool propose,
+                            std::string* error_msg,
+-                           MtpCandidateLogits* candidates, bool draft_subset) {
++                           MtpCandidateLogits* candidates, bool with_token,
++                           bool draft_subset) {
+   std::vector<std::int32_t> replay;
+   std::int32_t hidden_row = 0;
+   if (!DraftReplay(next_token, &replay, &hidden_row, error_msg))
+@@ -615,7 +617,9 @@ bool Session::DraftCatchUp(std::int32_t next_token, bool propose,
+   auto& exec = *model_->executor_;
+   if (!exec.MtpForward(
+           *session_, replay, hidden_row,
+-          {.token = propose && candidates == nullptr ? &draft_token_ : nullptr,
++          {.token = propose && (candidates == nullptr || with_token)
++                        ? &draft_token_
++                        : nullptr,
+            .candidates = candidates,
+            .draft_subset = draft_subset},
+           error_msg)) {
+@@ -807,7 +811,35 @@ bool Session::Evaluate(std::int32_t token, std::string* error_msg) {
+   return ok;
+ }
+ 
++namespace {
++
++/// Retrieval drafting from the token history: when the context ends in a phrase
++/// that occurred earlier, the tokens that followed it replace the MTP chain for
++/// that cycle. The target still verifies every token, so a wrong guess only
++/// costs the verify width.
++constexpr std::uint32_t kSuffixMinMatch = 16;
++
++MtpProposal PointMassProposal(std::int32_t token) {
++  MtpProposal proposal;
++  proposal.size = 1;
++  proposal.ids[0] = static_cast<sampling::TokenId>(token);
++  proposal.probabilities[0] = 1.0F;
++  proposal.token = proposal.ids[0];
++  proposal.probability = 1.0F;
++  return proposal;
++}
++
++}  // namespace
++
++void Session::SyncLookup() {
++  if (lookup_.size() > tokens_.size())
++    lookup_ = LookupIndex{};
++  for (std::size_t i = lookup_.size(); i < tokens_.size(); ++i)
++    lookup_.Append(tokens_[i]);
++}
++
+ struct Session::PendingDecode {
++  bool suffix{false};  ///< chain came from the token history, not the predictor
+   std::vector<std::int32_t> chain;
+   std::vector<MtpProposal> proposals;
+   std::uint32_t base{0};
+@@ -883,6 +915,44 @@ bool Session::PrepareDecode(const DecodeRequest& request,
+     result->stop = true;
+     return true;
+   }
++  // Retrieval drafts: the token history may already contain what follows this
++  // phrase. The index includes the anchor, which is committed in every outcome.
++  std::vector<std::int32_t> history_draft;
++  if (MtpEnabled() && cap > 1) {
++    SyncLookup();
++    lookup_.Append(anchor);
++    std::uint32_t matched = 0;
++    // After a poor round only a long match is trusted for a while.
++    const std::uint32_t needed = tokens_.size() < suffix_cooldown_until_
++                                     ? std::max(kSuffixMinMatch, 48U)
++                                     : kSuffixMinMatch;
++    history_draft = lookup_.Draft(
++        needed, std::min<std::size_t>(cap - 1, kMaxMtpDraftTokens), &matched);
++  }
++  if (!history_draft.empty()) {
++    const bool sampled = sampler.config().uses_random_sampling();
++    const bool gpu_greedy = sampler.config().temperature == 0.0F;
++    if (!defer_head && !DraftCatchUp(anchor, false, error_msg))
++      return false;
++    pending->suffix = true;
++    pending->chain = {anchor};
++    for (const auto token : history_draft) {
++      pending->chain.push_back(token);
++      if (sampled)
++        pending->proposals.push_back(PointMassProposal(token));
++    }
++    pending->width = pending->chain.size();
++    pending->base = static_cast<std::uint32_t>(tokens_.size());
++    pending->speculative = true;
++    pending->sampled = sampled;
++    pending->gpu_greedy = gpu_greedy;
++    pending->gpu_verification = gpu_greedy;
++    if (!pending->gpu_verification &&
++        verify_logits_.size() < exec.max_speculative() * model_->VocabSize()) {
++      verify_logits_.resize(exec.max_speculative() * model_->VocabSize());
++    }
++    return true;
++  }
+   if (!MtpEnabled() || width < 2) {
+     if (MtpEnabled() && !defer_head &&
+         !DraftCatchUp(anchor, false, error_msg)) {
+@@ -904,7 +974,7 @@ bool Session::PrepareDecode(const DecodeRequest& request,
+                             return model_->InDraftSubset(token);
+                           });
+   if (!defer_head && !DraftCatchUp(anchor, true, error_msg,
+-                                   sampled ? &pending->candidates : nullptr,
++                                   &pending->candidates, !sampled,
+                                    pending->draft_subset)) {
+     return false;
+   }
+@@ -929,14 +999,24 @@ bool Session::PrepareDecode(const DecodeRequest& request,
+   if (!defer_head) {
+     while (pending->chain.size() < width) {
+       AppendDraft(*pending);
+-      if (pending->chain.size() < width &&
+-          !exec.MtpForward(
+-              *session_, std::span<const std::int32_t>(&pending->draft, 1), -1,
+-              {.token = sampled ? nullptr : &pending->draft,
+-               .candidates = sampled ? &pending->candidates : nullptr,
+-               .draft_subset = pending->draft_subset},
+-              error_msg)) {
+-        return false;
++      if (pending->chain.size() < width) {
++        if (!exec.MtpForward(*session_,
++                             std::span<const std::int32_t>(&pending->draft, 1),
++                             -1,
++                             {.token = sampled ? nullptr : &pending->draft,
++                              .candidates = &pending->candidates,
++                              .draft_subset = pending->draft_subset},
++                             error_msg)) {
++          return false;
++        }
++        // Stop before a slot the predictor is unlikely to win. Verification is
++        // unchanged, so this only gives up speculative positions.
++        if (!sampled) {
++          const float confidence = DraftConfidence(pending->candidates);
++          if (kMinDraftConfidence > 0.0F && confidence < kMinDraftConfidence) {
++            break;
++          }
++        }
+       }
+     }
+   }
+@@ -962,6 +1042,11 @@ bool Session::FinishDecode(const DecodeRequest& request,
+     return request.stop_at_eos && model_->IsStopToken(token);
+   };
+   if (!pending.speculative) {
++    // Ordinary decode is a cycle too. Leaving it uncounted made `cycles` a
++    // speculative-only denominator, so any configuration that fell back to
++    // plain decode reported an inflated per-cycle cost.
++    stats_.cycles += 1;
++    stats_.widths[0] += 1;
+     draft_length_.ObserveArToken();
+     hidden_base_ = base;
+     tokens_.push_back(anchor);
+@@ -1055,9 +1140,18 @@ bool Session::FinishDecode(const DecodeRequest& request,
+   stats_.drafted += k - 1;
+   stats_.accepted += keep - 1;
+   stats_.small_head_cycles += pending.draft_subset;
+-  // A target stop ends the request; it does not classify the remaining
+-  // proposals as failed predictions.
+-  draft_length_.Observe(keep - 1, result->stop ? keep - 1 : k - 1, base);
++  stats_.widths[std::min<std::size_t>(k - 1, kMaxMtpDraftTokens)] += 1;
++  if (pending.suffix) {
++    stats_.suffix_cycles += 1;
++    stats_.suffix_drafted += k - 1;
++    stats_.suffix_accepted += keep - 1;
++    if ((keep - 1) * 2 < k - 1)
++      suffix_cooldown_until_ = base + keep + 32;
++  } else {
++    // A target stop ends the request; it does not classify the remaining
++    // proposals as failed predictions.
++    draft_length_.Observe(keep - 1, result->stop ? keep - 1 : k - 1, base);
++  }
+ 
+   // The next call knows the next sampled anchor. Defer draft catch-up until
+   // then, retaining this session's target hidden rows across interleaving.
+diff --git a/src/models/qwen38_flash_next/engine.hpp b/src/models/qwen38_flash_next/engine.hpp
+index 9ab92b3d5..2a779a6fe 100644
+--- a/src/models/qwen38_flash_next/engine.hpp
++++ b/src/models/qwen38_flash_next/engine.hpp
+@@ -17,6 +17,8 @@
+ #include "src/models/qwen/vision/prompt.hpp"
+ #include "src/models/qwen38_flash_next/config.hpp"
+ #include "src/models/qwen38_flash_next/draft_vocab.hpp"
++#include "src/models/qwen38_flash_next/lookup_draft.hpp"
++
+ #include "src/models/qwen38_flash_next/mtp_policy.hpp"
+ 
+ namespace gufo::core {
+@@ -219,6 +221,15 @@ class Session final {
+     std::uint64_t accepted{0};
+     /// Cycles whose draft scored the small head (draft_vocab.hpp).
+     std::uint64_t small_head_cycles{0};
++    /// Cycles by verify width, widths[0] counting ordinary single-token decode.
++    /// The per-width cycle cost is steep and occupancy-dependent, so a change
++    /// in this shape explains a change in throughput that drafted/accepted
++    /// totals cannot.
++    std::uint64_t widths[kMaxMtpDraftTokens + 1]{};
++    /// Cycles drafted from the token history instead of the MTP predictor.
++    std::uint64_t suffix_cycles{0};
++    std::uint64_t suffix_drafted{0};
++    std::uint64_t suffix_accepted{0};
+   };
+   [[nodiscard]] const SpeculativeStats& Statistics() const noexcept {
+     return stats_;
+@@ -281,7 +292,7 @@ class Session final {
+   bool DraftCatchUp(std::int32_t next_token, bool propose,
+                     std::string* error_msg,
+                     MtpCandidateLogits* candidates = nullptr,
+-                    bool draft_subset = false);
++                    bool with_token = false, bool draft_subset = false);
+   bool DraftReplay(std::int32_t next_token, std::vector<std::int32_t>* replay,
+                    std::int32_t* hidden_row, std::string* error_msg) const;
+   static bool DraftCatchUpBatch(std::span<const AdvanceRequest> requests,
+@@ -309,6 +320,11 @@ class Session final {
+   std::vector<float> verify_logits_;
+   std::uint32_t hidden_base_{0};  ///< first position whose hidden row is kept
+   MtpLengthController draft_length_;
++  /// Retrieval drafts over tokens_; extended lazily by SyncLookup.
++  LookupIndex lookup_;
++  /// Position until which history drafts need a long match to be trusted again.
++  std::size_t suffix_cooldown_until_{0};
++  void SyncLookup();
+   SpeculativeStats stats_;
+   std::shared_ptr<const qwen::vision::Prompt> image_prompt_;
+   [[nodiscard]] std::span<const std::uint8_t> ImageIdentity(
+diff --git a/src/models/qwen38_flash_next/lookup_draft.hpp b/src/models/qwen38_flash_next/lookup_draft.hpp
+new file mode 100644
+index 000000000..bc0913b2e
+--- /dev/null
++++ b/src/models/qwen38_flash_next/lookup_draft.hpp
+@@ -0,0 +1,121 @@
++#pragma once
++
++#include <algorithm>
++#include <cstdint>
++#include <vector>
++
++namespace gufo::models::qwen38_flash_next {
++
++/// Retrieval draft source over the token history. When the text so far ends in
++/// a phrase that occurred earlier, the tokens that followed that occurrence are
++/// a free guess for what comes next (copied code, quoted tool output, repeated
++/// identifiers). The target model still verifies every token, so a wrong guess
++/// only costs the verify width.
++///
++/// Positions are indexed by a hash of the last kGram tokens and chained newest
++/// first, so a query inspects the most recent occurrences and keeps the one
++/// with the longest verified match. The index is host-side and a pure function
++/// of the token history, which keeps a request's drafts reproducible.
++class LookupIndex {
++public:
++  static constexpr std::uint32_t kGram = 4;
++  static constexpr std::uint32_t kCandidates = 8;
++  static constexpr std::uint32_t kMaxMatch = 128;
++
++  void Append(std::int32_t token) {
++    text_.push_back(token);
++    prev_.push_back(-1);
++    const auto count = static_cast<std::int32_t>(text_.size());
++    if (count < static_cast<std::int32_t>(kGram)) {
++      return;
++    }
++    if (2 * static_cast<std::size_t>(count) > head_.size()) {
++      Rebuild(std::max<std::size_t>(1024, head_.size() * 2));
++      return;
++    }
++    const auto slot = Slot(count - 1);
++    prev_[count - 1] = head_[slot];
++    head_[slot] = count - 1;
++  }
++
++  [[nodiscard]] std::size_t size() const noexcept { return text_.size(); }
++
++  /// Tokens that followed the best earlier occurrence of the current tail, at
++  /// most `limit` of them; empty when no earlier match reaches `minimum_match`.
++  /// `matched` receives the verified match length.
++  [[nodiscard]] std::vector<std::int32_t> Draft(
++      std::uint32_t minimum_match, std::size_t limit,
++      std::uint32_t* matched = nullptr) const {
++    std::vector<std::int32_t> draft;
++    const auto count = static_cast<std::int32_t>(text_.size());
++    if (matched != nullptr) {
++      *matched = 0;
++    }
++    if (limit == 0 || count < static_cast<std::int32_t>(kGram) ||
++        head_.empty()) {
++      return draft;
++    }
++    minimum_match = std::max(minimum_match, kGram);
++    std::int32_t best_end = -1;
++    std::uint32_t best_length = 0;
++    std::uint32_t tried = 0;
++    for (std::int32_t end = head_[Slot(count - 1)];
++         end >= 0 && tried < kCandidates; end = prev_[end]) {
++      if (end == count - 1) {
++        continue;  // the tail itself
++      }
++      ++tried;
++      std::uint32_t length = 0;
++      while (length < kMaxMatch &&
++             end - static_cast<std::int32_t>(length) >= 0 &&
++             text_[end - length] == text_[count - 1 - length]) {
++        ++length;
++      }
++      if (length > best_length) {
++        best_length = length;
++        best_end = end;
++      }
++    }
++    if (best_end < 0 || best_length < minimum_match) {
++      return draft;
++    }
++    if (matched != nullptr) {
++      *matched = best_length;
++    }
++    for (std::size_t i = 0; i < limit; ++i) {
++      const auto at = static_cast<std::size_t>(best_end) + 1 + i;
++      if (at >= text_.size()) {
++        break;
++      }
++      draft.push_back(text_[at]);
++    }
++    return draft;
++  }
++
++private:
++  [[nodiscard]] std::size_t Slot(std::int32_t end) const noexcept {
++    std::uint64_t h = 0xcbf29ce484222325ULL;
++    for (std::uint32_t i = 0; i < kGram; ++i) {
++      h = (h ^ static_cast<std::uint32_t>(text_[end - kGram + 1 + i])) *
++          0x100000001b3ULL;
++    }
++    h ^= h >> 29;
++    return static_cast<std::size_t>(h) & (head_.size() - 1);
++  }
++
++  void Rebuild(std::size_t capacity) {
++    head_.assign(capacity, -1);
++    for (std::int32_t end = static_cast<std::int32_t>(kGram) - 1;
++         end < static_cast<std::int32_t>(text_.size()); ++end) {
++      const auto slot = Slot(end);
++      prev_[end] = head_[slot];
++      head_[slot] = end;
++    }
++  }
++
++  std::vector<std::int32_t> text_;
++  std::vector<std::int32_t> prev_;
++  std::vector<std::int32_t> head_;
++};
++
++}  // namespace gufo::models::qwen38_flash_next
+diff --git a/src/models/qwen38_flash_next/mtp_policy.hpp b/src/models/qwen38_flash_next/mtp_policy.hpp
+index 59bd857c4..faa7f9352 100644
+--- a/src/models/qwen38_flash_next/mtp_policy.hpp
++++ b/src/models/qwen38_flash_next/mtp_policy.hpp
+@@ -14,6 +14,19 @@ namespace gufo::models::qwen38_flash_next {
+ 
+ inline constexpr std::uint32_t kMaxMtpDraftTokens = 7;
+ 
++/// Top-1 mass below which another draft slot is not spent. A wide verify batch
++/// is not free on a model with hundreds of experts: verifying n tokens touches
++/// far more distinct experts than one token does, so slots the predictor is
++/// unlikely to win are better left unspent. Verification is unchanged, so the
++/// gate only gives up speculative positions.
++///
++/// This is a property of the loaded target. 0.60 is tuned on UD-Q5K_HCP, where
++/// it won 3 of 4 interleaved 32k+64k rounds against 0.70 and 0.80 and beat 0.45
++/// in both. UD-Q4_K_XL prefers 0.45 (+9.7 %), and the signal is not on the same
++/// scale across targets, so a per-target value needs the confidence mapped onto
++/// the controller's observed acceptance first.
++inline constexpr float kMinDraftConfidence = 0.60F;
++
+ struct MtpLengthState {
+   std::array<float, kMaxMtpDraftTokens> successes;
+   std::array<float, kMaxMtpDraftTokens> failures;
+diff --git a/src/models/qwen38_flash_next/mtp_sampling.hpp b/src/models/qwen38_flash_next/mtp_sampling.hpp
+index 4a4919c2c..2256bf14b 100644
+--- a/src/models/qwen38_flash_next/mtp_sampling.hpp
++++ b/src/models/qwen38_flash_next/mtp_sampling.hpp
+@@ -1,6 +1,7 @@
+ #ifndef GUFO_MODELS_QWEN38_FLASH_NEXT_MTP_SAMPLING_HPP_
+ #define GUFO_MODELS_QWEN38_FLASH_NEXT_MTP_SAMPLING_HPP_
+ 
++#include <algorithm>
+ #include <array>
+ #include <cmath>
+ #include <cstdint>
+@@ -29,6 +30,25 @@ struct MtpProposal {
+   float probability{0.0F};
+ };
+ 
++/// Top-1 mass inside the proposal's own candidate set, used as a per-position
++/// confidence signal. Renormalizing over the returned candidates rather than
++/// the full vocabulary is deliberate: the head already reduced to them, and the
++/// tail only shifts the scale.
++[[nodiscard]] inline float DraftConfidence(const MtpCandidateLogits& c) {
++  if (c.size == 0) {
++    return 0.0F;
++  }
++  float largest = c.logits[0];
++  for (std::size_t i = 1; i < c.size; ++i) {
++    largest = std::max(largest, c.logits[i]);
++  }
++  float sum = 0.0F;
++  for (std::size_t i = 0; i < c.size; ++i) {
++    sum += std::exp(c.logits[i] - largest);
++  }
++  return sum > 0.0F ? 1.0F / sum : 0.0F;
++}
++
+ /// The proposal has bounded support; the target distribution stays complete.
+ /// Integer probability masses sum to 2^24, so the exported F32 q sums to
+ /// exactly one and is exactly the distribution used to draw the proposal.
+
+From d7eaadbf2598d793e93827d279a7b08d8abf31aa Mon Sep 17 00:00:00 2001
+From: dardeaw <dardeaw@users.noreply.github.com>
+Date: Fri, 16 Oct 2026 10:50:53 +0800
+Subject: [PATCH 10/10] style(qwen-flash): clang-format the draft-vocab/history
+ merge
+
+---
+ src/models/qwen38_flash_next/engine.cpp | 6 +++---
+ src/models/qwen38_flash_next/engine.hpp | 1 -
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/src/models/qwen38_flash_next/engine.cpp b/src/models/qwen38_flash_next/engine.cpp
+index 0641638bb..ef6c5ec85 100644
+--- a/src/models/qwen38_flash_next/engine.cpp
++++ b/src/models/qwen38_flash_next/engine.cpp
+@@ -973,9 +973,9 @@ bool Session::PrepareDecode(const DecodeRequest& request,
+                           draft_vocab_.Fits(anchor, [&](std::int32_t token) {
+                             return model_->InDraftSubset(token);
+                           });
+-  if (!defer_head && !DraftCatchUp(anchor, true, error_msg,
+-                                   &pending->candidates, !sampled,
+-                                   pending->draft_subset)) {
++  if (!defer_head &&
++      !DraftCatchUp(anchor, true, error_msg, &pending->candidates, !sampled,
++                    pending->draft_subset)) {
+     return false;
+   }
+   // A cycle-local proposal stream needs no pending RNG state in snapshots.
+diff --git a/src/models/qwen38_flash_next/engine.hpp b/src/models/qwen38_flash_next/engine.hpp
+index 2a779a6fe..29605cdc0 100644
+--- a/src/models/qwen38_flash_next/engine.hpp
++++ b/src/models/qwen38_flash_next/engine.hpp
+@@ -18,7 +18,6 @@
+ #include "src/models/qwen38_flash_next/config.hpp"
+ #include "src/models/qwen38_flash_next/draft_vocab.hpp"
+ #include "src/models/qwen38_flash_next/lookup_draft.hpp"
+-
+ #include "src/models/qwen38_flash_next/mtp_policy.hpp"
+ 
+ namespace gufo::core {
