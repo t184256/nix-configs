@@ -152,10 +152,16 @@ let
     advisorModelWhitelist = [ "litellm/interactive" "litellm/mini" ];
     contextMaxChars = 9007199254740991;  # ALL, for KV cache reuse
     alwaysOn = true;  # activate the flow on session start instead of /advisor
+    advisorSessionSummary = true;  # report Jev screening counts
     advisorEffort = "medium";  # high is ridiculously slow
     advisorGitContext = "full";
     #gateFailureMode = "warn-and-continue";  # let's see how deep contexts work
-    # TODO: use Jev/Laya for autoquerying
+    advisorJevFilterEnabled = true;
+    advisorJevTransport = "typesafe-compatible";  # 'auto' doesn't use BaseUrl
+    advisorJevBaseUrl = "https://llm.slop.unboiled.info";
+    advisorJevModel = "d1-3B";
+    advisorJevTimeoutMs = 10000;
+    advisorJevTurnGateEveryTurns = 10;  # consider consulting every 10 turns
   });
   # pi-hot-compact: the raw session log stays authoritative, the model sees a
   # compiled projection (mechanical sections + one written checkpoint), and
@@ -294,6 +300,7 @@ let
   # https://git.sr.ht/~alexdavid/jail.nix
   extraJailOpts = with comb; [
     (fwd-env "LLAMA_KEY")
+    (fwd-env "JEV_API_KEY")
     (fwd-env "PWD")
     (write-text (noescape "~/.config/nix/nix.conf") ''
       experimental-features = nix-command flakes
@@ -345,6 +352,7 @@ let
   jailed-pi = pkgs.writeShellScriptBin "jailed-pi" ''
     set -Eeuo pipefail; shopt -s inherit_errexit
     export LLAMA_KEY=$(cat /mnt/secrets/llm)
+    export JEV_API_KEY="$LLAMA_KEY"
     exec ${jailedPi}/bin/jailed-pi "$@"
   '';
 
