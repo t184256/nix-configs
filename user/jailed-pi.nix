@@ -189,10 +189,20 @@ let
   });
   modelsJson = pkgs.writeText "models.json" modelsRaw;
   settingsJson = pkgs.writeText "settings.json" settingsRaw;
+  # TODO: try searxng (keyless, self-hosted, downsides unresearched)
+  # TODO: try crawl4ai/firecrawl for JS-only pages? (self-hosted renderers)
+  # TODO: add lightpanda + a skill for it. nix packaging is unofficial
+  # TODO: far-fetched/heavy, but screenshotting from browsers. agent-browser?
   webSearchJson = pkgs.writeText "web-search.json"
     (builtins.toJSON {
-      workflow = "none";
-      summaryModel = "litellm/mini";
+      workflow = "auto-summary";  # summarize via mini, no curator browser
+      summaryModel = "litellm/mini:low";
+      searchRouting = {
+        providers = [ "exa" "duckduckgo" ];  # fall back to ddg if exa fails
+        fallbackOn = [
+          "unsupported" "transient" "quota" "network" "invalid-response"
+        ];
+      };
     });
   keybindingsJson = pkgs.writeText "keybindings.json" (builtins.toJSON {
     "app.message.dequeue" = "ctrl+q";
