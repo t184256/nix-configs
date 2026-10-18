@@ -39,6 +39,9 @@
     "ttm.pages_limit=29360128"
     "ttm.page_pool_size=29360128"
   ];
+
+  zramSwap.memoryMax = 8 * 1024 * 1024 * 1024;  # zram ain't workload-friendly
+
   hardware.graphics.enable = true;
   hardware.wirelessRegulatoryDatabase = true;
   #hardware.amdgpu.opencl.enable = true;
