@@ -8,6 +8,8 @@
     ./disko.nix
     ./hardware.nix
     ./network.nix
+    ./llama-cpp-decision.nix
+    ./whisper-cpp.nix
     ../../nixos/services/autosync-voice.nix
     ../../nixos/services/dyndns.nix
     #../../nixos/services/ipfs/cluster-leader.nix
@@ -26,6 +28,7 @@
   };
 
   hardware.cpu.intel.updateMicrocode = true;
+  hardware.graphics.enable = true;
   hardware.graphics.extraPackages = [ pkgs.intel-media-driver ];
   hardware.wirelessRegulatoryDatabase = true;
 

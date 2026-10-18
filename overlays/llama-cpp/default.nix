@@ -39,19 +39,19 @@ let
       ./20819-persist-checkpoints.patch
     ];
   };
-  cuda-vulkan = (prev.llama-cpp.override {
+in
+rec {
+  llama-cpp = freshen prev.llama-cpp;
+
+  llama-cpp-vulkan = llama-cpp.override { vulkanSupport = true; };
+  llama-cpp-rocm = llama-cpp.override { rocmSupport = true; };
+  llama-cpp-cuda-vulkan = (llama-cpp.override {
     cudaSupport = true;
     vulkanSupport = true;
   }).overrideAttrs (oa: {
     cmakeFlags = (oa.cmakeFlags or []) ++ [ "-DGGML_CUDA_NCCL=ON" ];
     buildInputs = (oa.buildInputs or []) ++ [ prev.cudaPackages.nccl ];
   });
-in
-rec {
-  llama-cpp = freshen prev.llama-cpp;
-  llama-cpp-vulkan = freshen prev.llama-cpp-vulkan;
-  llama-cpp-rocm = freshen prev.llama-cpp-rocm;
-  llama-cpp-cuda-vulkan = freshen cuda-vulkan;
 
   llama-cpp-rocm-gfx1151 = (llama-cpp.override {
     rocmSupport = true;

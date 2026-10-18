@@ -74,6 +74,7 @@ in
         plum = "http://192.168.99.53:11111/v1";
         plumMini = "http://192.168.99.53:11113/v1";
         grapefruit = "http://192.168.99.52:11111/v1";
+        cocoa = "http://192.168.99.7:11113/v1";
         qwen35Think = {
           temperature = 0.6;
           top_p = 0.95;
@@ -105,6 +106,8 @@ in
           "qwen3.5-0.8b".hosts = [ grapefruit ];
           "qwen3.6-35b-a3b".hosts = [ grapefruit ];
           "qwen3.5-122b-a10b".hosts = [ grapefruit ];
+
+          "d1-3B".hosts = [ cocoa ];
 
           "zeta-2.1".hosts = [ grapefruit ];
           "zeta-2".hosts = [ plumMini grapefruit ];
@@ -141,6 +144,10 @@ in
             { model = "qwen3.5-122b-a10b"; params = qwen35Think; };
           "qwen3.5-122b-a10b-nothink" =
             { model = "qwen3.5-122b-a10b"; params = qwen35Nothink; };
+
+          # chat only; real decisions go to /v1/systemone, bypassing litellm
+          # decisions go to /v1/systemone, bypassing litellm
+          "decision".model = "d1-3B";
 
           "zeta".model = "zeta-2.1";
           "zeta-2".model = "zeta-2";
@@ -205,8 +212,19 @@ in
 
   services.nginx = {
     virtualHosts = {
+      # /v1/systemone skips litellm (old version only speaks chat completions)
       "llm.slop.unboiled.info" =
-        mkForward "http://127.0.0.1:11110" {} {};
+        mkForward "http://127.0.0.1:11110" {} {
+          "/v1/systemone" = {
+            proxyPass = "http://192.168.99.7:11113";
+            extraConfig = ''
+              auth_request /custom-auth;
+              proxy_read_timeout 600s;
+              proxy_buffering off;
+              client_max_body_size 0;
+            '';
+          };
+        };
       "whisper.slop.unboiled.info" =
         mkForward "http://192.168.99.53:11112" {} {};
       "goose.slop.unboiled.info" =
