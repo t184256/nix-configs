@@ -127,6 +127,7 @@ let
     packages = [
       "npm:pi-web-access@0.37.0"
       "npm:pi-advisor-flow@0.13.1"
+      "npm:pi-hot-compact@0.3.0"
     ];
   };
 
@@ -141,6 +142,7 @@ let
     mkdir $out
     cp -r ${pkgs.pi-web-access}/lib/node_modules/* $out
     cp -r ${pkgs.pi-advisor}/lib/node_modules/* $out
+    cp -r ${pkgs.pi-hot-compact}/lib/node_modules/* $out
   '';
 
   # pi-advisor: batch reviews interactive and mini, not itself
@@ -154,6 +156,30 @@ let
     advisorGitContext = "full";
     #gateFailureMode = "warn-and-continue";  # let's see how deep contexts work
     # TODO: use Jev/Laya for autoquerying
+  });
+  # pi-hot-compact: the raw session log stays authoritative, the model sees a
+  # compiled projection (mechanical sections + one written checkpoint), and
+  # whatever is dropped stays recallable via context_recall / event://N
+  hotCompactJson = pkgs.writeText "hot-compact.json" (builtins.toJSON {
+    enabled = true;
+    startPercent = 65;  # start async compaction
+    hardPercent = 88;  # fall back to synchronous deterministic-only
+    tailTokens = 48000;  # keep that much of the recent conversation verbatim
+    minDeltaTokens = 8000;  # no recompiling for small deltas
+    cooldownMs = 30000;
+    jobTimeoutMs = 300000;  # async anyway, so be patient with batch
+    maxRetries = 3;  # exhausted retries disable background jobs for the session
+    semantic = true;
+    semanticModel = "litellm/batch";  # mini's probably too dumb
+    semanticMaxTokens = 12000;  # fits under maxCheckpointTokens with the rest
+    maxCheckpointTokens = 24000;
+    briefTranscriptTokens = 3500;
+    # lossy in context, lossless on disk: old long tool outputs shrink to
+    # metadata + head/tail + event://N, rest via context_recall
+    collapseToolOutputChars = 3000;
+    collapseKeepRecentTurns = 2;
+    handleNativeCompaction = true;  # deterministic, for /compact overflow
+    #debug = true;  # write ~/.pi/agent/hot-compact.log while tuning
   });
   modelsJson = pkgs.writeText "models.json" modelsRaw;
   settingsJson = pkgs.writeText "settings.json" settingsRaw;
@@ -293,6 +319,7 @@ let
     (ro-bind modelsJson (noescape "~/.pi/agent/models.json"))
     (ro-bind settingsJson (noescape "~/.pi/agent/settings.json"))
     (ro-bind advisorJson (noescape "~/.pi/agent/advisor.json"))
+    (ro-bind hotCompactJson (noescape "~/.pi/agent/hot-compact.json"))
     (ro-bind webSearchJson (noescape "~/.pi/web-search.json"))
     (ro-bind keybindingsJson (noescape "~/.pi/agent/keybindings.json"))
     (ro-bind agentsMd (noescape "~/.pi/agent/AGENTS.md"))
