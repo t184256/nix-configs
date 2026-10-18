@@ -33,6 +33,7 @@ rec {
         'qwen3.8': '${final.qwen38-tokenizer}',
         'qwen3.8-flash-next': '${final.qwen38-tokenizer}',
         'qwen3.8-27b': '${final.qwen38-tokenizer}',
+        'lfm2.5': '${final.lfm25-tokenizer}',
     }
     for i, a in enumerate(args):
         if a == '--tokenizer' and args[i + 1] in TOKENIZERS:

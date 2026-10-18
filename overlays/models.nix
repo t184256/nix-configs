@@ -170,6 +170,30 @@ in
     ];
   });
 
+  # LFM 2.5 fast small MoE
+  lfm25-8b-a1b-ud-q4kxl = fetchHF {
+    repo = "unsloth/LFM2.5-8B-A1B-GGUF";
+    name = "LFM2.5-8B-A1B-UD-Q4_K_XL.gguf";
+    hash = "sha256-7nxekloEzWcoaJWeSNGZtm1ty5+Qr+ZPIZhWGJ6Dsn4=";
+  };
+  lfm25-tokenizer = fetchHF {
+    repo = "LiquidAI/LFM2.5-8B-A1B";
+    name = "tokenizer.json";
+    hash = "sha256-aVvngCoOS4qBBI8P9eu3/IEaC6WmvmPbsk3rWoEJb0E=";
+  };
+
+  # d1-3b decision model
+  d1-3b-q4km = fetchHF {
+    repo = "LiquidAI/d1-3B-GGUF";
+    name = "d1-3B-Q4_K_M.gguf";
+    hash = "sha256-Fq/yfqLu/cMrmJf0OFSl0xcMHcjcy5x1aQWvMKTiJAI=";
+  };
+  d1-3b-mmproj-q80 = fetchHF {  # only for image questions on /v1/systemone
+    repo = "LiquidAI/d1-3B-GGUF";
+    name = "mmproj-d1-3B-Q8_0.gguf";
+    hash = "sha256-JQWSDORkt8VKzYt7dKkxwMZx8G0MiDN2Cy+87rJT6So=";
+  };
+
   zeta_2_1 = fetchHF {
     repo = "mradermacher/zeta-2.1-i1-GGUF";
     name = "zeta-2.1.i1-Q4_K_M.gguf";
