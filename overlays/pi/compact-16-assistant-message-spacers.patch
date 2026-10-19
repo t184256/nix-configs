@@ -1,4 +1,4 @@
-From cbe45c905697cb50fe1c58d40bb0f438c7a720f7 Mon Sep 17 00:00:00 2001
+From d5f15bc8eae10e53d89ca97d6e11530eafde6a49 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:56:28 +0000
 Subject: [PATCH 16/24] modes/interactive/components/assistant-message: remove
@@ -9,7 +9,7 @@ Subject: [PATCH 16/24] modes/interactive/components/assistant-message: remove
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
-index c02e371..d8f30b3 100644
+index c02e37165..d8f30b3c5 100644
 --- a/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/assistant-message.ts
 @@ -1,5 +1,5 @@

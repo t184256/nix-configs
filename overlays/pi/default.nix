@@ -1,17 +1,17 @@
 _: prev:
 
 let
-  newerVer = "1.1.0";
+  newerVer = "1.3.0";
   freshSrc = prev.fetchFromGitHub {
     owner = "earendil-works";
     repo = "pi";
     tag = "v${newerVer}";
-    hash = "sha256-lwjspkMGrW+8Fl/yBEDEFsHZJA57OKOhmVQmi6zfej4=";
+    hash = "sha256-AsutbwnjiwwLkB5tqLW+1GdGZyLmXsU0W+SNdNhJu7U=";
   };
-  freshNpmDepsHash = "sha256-GOh5WG+rRgzoy/yVHY5PoEKJZGQcEGhISrDDJxkP8W4=";
+  freshNpmDepsHash = "sha256-+gFyvrhkCsF99oNvs0gBmLXnDW0hWnZI/wFId7UbI6Q=";
   freshModelData = prev.fetchurl {
     url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${newerVer}.tgz";
-    hash = "sha256-bKqzPOxXSA7QLFf+N0KKAwp3zCoGYoFLQ1pc+JMq2Ck=";
+    hash = "sha256-U0PhY5vzQ73DNE3zrWwxwFpQtoutB6xrzhCJDUtrimE=";
   };
   localPatches = [
     ./9709-bandaid.patch
@@ -73,7 +73,7 @@ let
     });
     # Build workspace dependencies in order, then the coding-agent, using the
     # model catalog supplied via modelData instead of fetching it during build.
-    # Remove when nixpkgs catches up to 1.1.0.
+    # Remove when nixpkgs catches up to 1.3.0.
     buildPhase = ''
       runHook preBuild
 
@@ -92,10 +92,10 @@ let
       for ws in @earendil-works/chord:packages/chord \
                 @earendil-works/pi-ai:packages/ai \
                 @earendil-works/pi-agent-core:packages/agent \
-                @earendil-works/pi-client:packages/client \
                 @earendil-works/pi-codemode:packages/codemode \
+                @earendil-works/pi-durable:packages/durable \
+                @earendil-works/pi-env:packages/env \
                 @earendil-works/pi-mcp:packages/mcp \
-                @earendil-works/pi-protocol:packages/protocol \
                 @earendil-works/pi-telemetry:packages/telemetry \
                 @earendil-works/pi-tui:packages/tui; do
         IFS=: read -r pkg src <<< "$ws"

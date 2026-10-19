@@ -1,4 +1,4 @@
-From 4ae268d2334d818de22bbdc24b175f9fae3eea1a Mon Sep 17 00:00:00 2001
+From 4d31e4ea8fa2a6eaeed2f58c86aef323991c214e Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:37:16 +0000
 Subject: [PATCH 06/24] modes/interactive/components/custom-message: depad
@@ -8,7 +8,7 @@ Subject: [PATCH 06/24] modes/interactive/components/custom-message: depad
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/custom-message.ts b/packages/coding-agent/src/modes/interactive/components/custom-message.ts
-index b5ee926..67e9459 100644
+index 6c757e0dd..ab60568e6 100644
 --- a/packages/coding-agent/src/modes/interactive/components/custom-message.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/custom-message.ts
 @@ -33,7 +33,7 @@ export class CustomMessageComponent extends Container {

@@ -1,4 +1,4 @@
-From f8f6677cda28fe7c3f710066a5243a1aac935950 Mon Sep 17 00:00:00 2001
+From f3ee2e3433b38cc9f111b9a73407a538f38e6605 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 24 Sep 2026 16:20:10 +0200
 Subject: [PATCH 13/24] tui: depad loader spinner and border status
@@ -9,7 +9,7 @@ Subject: [PATCH 13/24] tui: depad loader spinner and border status
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/status-indicator.ts b/packages/coding-agent/src/modes/interactive/components/status-indicator.ts
-index be27321..b4604b6 100644
+index c2ccc3a87..c1e90639b 100644
 --- a/packages/coding-agent/src/modes/interactive/components/status-indicator.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/status-indicator.ts
 @@ -22,8 +22,8 @@ export class StatusIndicator extends Loader {
@@ -24,7 +24,7 @@ index be27321..b4604b6 100644
  
  	renderSpinnerInBorder(width: number): string {
 diff --git a/packages/tui/src/components/loader.ts b/packages/tui/src/components/loader.ts
-index 0c59e73..70043df 100644
+index 0c59e73a8..70043df9c 100644
 --- a/packages/tui/src/components/loader.ts
 +++ b/packages/tui/src/components/loader.ts
 @@ -32,7 +32,7 @@ export class Loader extends Text {

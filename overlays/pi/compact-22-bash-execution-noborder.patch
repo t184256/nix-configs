@@ -1,4 +1,4 @@
-From 410fd3a8b14b8cd55904caf07011bb2fb9247860 Mon Sep 17 00:00:00 2001
+From 4195b7eeca08f36aeddc36ed4fc2d21f5c42c89d Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Wed, 2 Sep 2026 15:22:08 +0000
 Subject: [PATCH 22/24] modes/interactive/components/bash-execution: remove borders and annotate unterminated output

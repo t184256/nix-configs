@@ -1,4 +1,4 @@
-From 52d6f8556a4c72d395190646dd9ce1599f8c723e Mon Sep 17 00:00:00 2001
+From f4215ab6cde32c77ade07ab7b919ca32725fa671 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:55:50 +0000
 Subject: [PATCH 09/24] tools: remove leading newlines
@@ -22,10 +22,10 @@ index 8e058b9b6..dcc93d40c 100644
  
  			try {
 diff --git a/packages/coding-agent/src/core/tools/renderers/bash.ts b/packages/coding-agent/src/core/tools/renderers/bash.ts
-index 8bc8687f6..b613bb5d3 100644
+index 6932a7e72..863bf2e01 100644
 --- a/packages/coding-agent/src/core/tools/renderers/bash.ts
 +++ b/packages/coding-agent/src/core/tools/renderers/bash.ts
-@@ -69,7 +69,7 @@ function rebuildBashResultRenderComponent(
+@@ -58,7 +58,7 @@ function rebuildBashResultRenderComponent(
  		const styledOutput = lines.join("\n");
  
  		if (options.expanded) {
@@ -34,7 +34,7 @@ index 8bc8687f6..b613bb5d3 100644
  		} else {
  			component.addChild(new Spacer(1));
  			component.addChild(
-@@ -99,7 +99,7 @@ function rebuildBashResultRenderComponent(
+@@ -88,7 +88,7 @@ function rebuildBashResultRenderComponent(
  				);
  			}
  		}
@@ -43,12 +43,12 @@ index 8bc8687f6..b613bb5d3 100644
  	}
  
  	// A final result's recorded duration wins: it is monotonic and survives reloads. The renderer's own clock is the
-@@ -116,7 +116,7 @@ function rebuildBashResultRenderComponent(
- 	} else if (startedAt !== undefined) {
- 		const label = options.isPartial ? "Elapsed" : "Took";
- 		const endTime = endedAt ?? Date.now();
--		component.addChild(new Text(`\n${theme.fg("muted", `${label} ${formatDuration(endTime - startedAt)}`)}`, 0, 0));
-+		component.addChild(new Text(theme.fg("muted", `${label} ${formatDuration(endTime - startedAt)}`), 0, 0));
+@@ -103,7 +103,7 @@ function rebuildBashResultRenderComponent(
+ 					: `Took ${formatToolDuration(durationMs)}`;
+ 		component.addChild(new Text(theme.fg("muted", `[${label}]`), 0, 0));
+ 	} else if (timerText) {
+-		component.addChild(new Text(`\n${theme.fg("muted", timerText)}`, 0, 0));
++		component.addChild(new Text(theme.fg("muted", timerText), 0, 0));
  	}
  }
  

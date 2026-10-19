@@ -1,4 +1,4 @@
-From a1af8641aed4a9fae8843aeb78762508f82372a2 Mon Sep 17 00:00:00 2001
+From e328eea3265512d94306ba0bd029ee284ae87783 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 8 Oct 2026 13:51:27 +0200
 Subject: [PATCH] append exit code and duration metadata to tool results sent
@@ -10,10 +10,10 @@ Subject: [PATCH] append exit code and duration metadata to tool results sent
  2 files changed, 15 insertions(+), 2 deletions(-)
 
 diff --git a/packages/ai/src/api/openai-completions.ts b/packages/ai/src/api/openai-completions.ts
-index 96cb23a..7b3dd6d 100644
+index 32cf42b45..42485bd49 100644
 --- a/packages/ai/src/api/openai-completions.ts
 +++ b/packages/ai/src/api/openai-completions.ts
-@@ -1190,6 +1190,19 @@ function addCacheControlToTextContent(
+@@ -1192,6 +1192,19 @@ function addCacheControlToTextContent(
  	return false;
  }
  
@@ -33,7 +33,7 @@ index 96cb23a..7b3dd6d 100644
  export function convertMessages(
  	model: Model<"openai-completions">,
  	context: TranscriptContext,
-@@ -1423,7 +1436,7 @@ export function convertMessages(
+@@ -1425,7 +1438,7 @@ export function convertMessages(
  				// Some providers require the 'name' field in tool results
  				const toolResultMsg: ChatCompletionToolMessageParam = {
  					role: "tool",
@@ -43,7 +43,7 @@ index 96cb23a..7b3dd6d 100644
  				};
  				if (compat.requiresToolResultName && toolMsg.toolName) {
 diff --git a/packages/ai/test/openai-completions-tool-result-images.test.ts b/packages/ai/test/openai-completions-tool-result-images.test.ts
-index 4d30386..46ee426 100644
+index 4d303865e..46ee426a1 100644
 --- a/packages/ai/test/openai-completions-tool-result-images.test.ts
 +++ b/packages/ai/test/openai-completions-tool-result-images.test.ts
 @@ -175,7 +175,7 @@ describe("openai-completions convertMessages", () => {

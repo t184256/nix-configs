@@ -1,4 +1,4 @@
-From 540bce629b5f8642f985e2cab5f2fa6027edadcf Mon Sep 17 00:00:00 2001
+From e8f9753ed017f69e1e6282a6b4d1c7a7b29a2497 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Wed, 2 Sep 2026 14:45:39 +0000
 Subject: [PATCH 25/26] tui, modes/interactive: middle-click paste and terminal clipboard fallback
@@ -13,7 +13,7 @@ Subject: [PATCH 25/26] tui, modes/interactive: middle-click paste and terminal c
  5 files changed, 142 insertions(+), 19 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index e0c8d85da..40b4faeb9 100644
+index 145d1b2cd..d85ab1fe3 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 @@ -622,6 +622,7 @@ export class InteractiveMode {
@@ -32,7 +32,7 @@ index e0c8d85da..40b4faeb9 100644
  			fullscreenCopyOnSelect: this.settingsManager.getFullscreenCopyOnSelect(),
  			fullscreenWheelScrollLines: this.settingsManager.getFullscreenWheelScrollLines(),
  		});
-@@ -3137,7 +3139,9 @@ export class InteractiveMode {
+@@ -3139,7 +3141,9 @@ export class InteractiveMode {
  		const handleInput = target?.handleInput;
  		if (!target || !handleInput) return;
  		try {
@@ -106,11 +106,11 @@ index 6487c1c6f..e5ff749e6 100644
  
  /** Stable reference for components while InteractiveMode replaces the active renderer. */
 diff --git a/packages/coding-agent/src/utils/clipboard.ts b/packages/coding-agent/src/utils/clipboard.ts
-index b2b7b66fc..4be0f7d9e 100644
+index a59082392..9a4cecdfc 100644
 --- a/packages/coding-agent/src/utils/clipboard.ts
 +++ b/packages/coding-agent/src/utils/clipboard.ts
-@@ -12,15 +12,31 @@ function isRemoteSession(env: NodeJS.ProcessEnv): boolean {
- 	return Boolean(env.SSH_CONNECTION || env.SSH_CLIENT || env.MOSH_CONNECTION);
+@@ -17,15 +17,31 @@ function isRemoteSession(env: NodeJS.ProcessEnv): boolean {
+ 	return Boolean(env.SSH_CONNECTION || env.SSH_CLIENT || env.MOSH_CONNECTION || env.PI_CLIPBOARD_OSC52 === "1");
  }
  
 -function emitOsc52(text: string): boolean {
@@ -143,7 +143,7 @@ index b2b7b66fc..4be0f7d9e 100644
  /**
   * WSL without WSLg has no Linux display, so the Windows clipboard is written through
   * interop. PowerShell reads the text from a file because `clip.exe` and PowerShell stdin
-@@ -50,26 +66,50 @@ async function copyViaWindowsClipboard(text: string): Promise<boolean> {
+@@ -55,26 +71,50 @@ async function copyViaWindowsClipboard(text: string): Promise<boolean> {
  	}
  }
  
@@ -202,7 +202,7 @@ index b2b7b66fc..4be0f7d9e 100644
  }
  
  /** Read file paths, such as Finder file copies, from the native clipboard. */
-@@ -78,7 +118,7 @@ export async function readClipboardFilePaths(): Promise<string[] | null> {
+@@ -83,7 +123,7 @@ export async function readClipboardFilePaths(): Promise<string[] | null> {
  	return paths?.length ? paths : null;
  }
  
@@ -211,7 +211,7 @@ index b2b7b66fc..4be0f7d9e 100644
  	const p = platform();
  	const env = process.env;
  	let copied = false;
-@@ -120,7 +160,7 @@ export async function copyToClipboard(text: string): Promise<void> {
+@@ -125,7 +165,7 @@ export async function copyToClipboard(text: string): Promise<void> {
  	let osc52Emitted = false;
  	if (!copied && p === "linux" && isWSL(env)) {
  		// Windows Terminal supports OSC 52; prefer it over the slower PowerShell round trip.
@@ -220,7 +220,7 @@ index b2b7b66fc..4be0f7d9e 100644
  		copied = osc52Emitted || (await copyViaWindowsClipboard(text));
  	}
  	// OSC 52 cannot be verified, so a desktop session with a display reports the failure
-@@ -129,7 +169,7 @@ export async function copyToClipboard(text: string): Promise<void> {
+@@ -134,7 +174,7 @@ export async function copyToClipboard(text: string): Promise<void> {
  	const headless = p === "linux" && !env.DISPLAY && !env.WAYLAND_DISPLAY && !env.TERMUX_VERSION;
  	let oversized = false;
  	if (!osc52Emitted && (isRemoteSession(env) || (!copied && headless))) {
@@ -230,7 +230,7 @@ index b2b7b66fc..4be0f7d9e 100644
  	}
  	if (copied) return;
 diff --git a/packages/tui/src/tui-alt-screen.ts b/packages/tui/src/tui-alt-screen.ts
-index 8bcac9682..9bbe9961c 100644
+index e92f5c953..bb38028ed 100644
 --- a/packages/tui/src/tui-alt-screen.ts
 +++ b/packages/tui/src/tui-alt-screen.ts
 @@ -188,6 +188,8 @@ export interface TuiAltScreenOptions {
@@ -258,7 +258,7 @@ index 8bcac9682..9bbe9961c 100644
  		this.copyOnSelect = options.copyOnSelect ?? true;
  		this.copySelection = options.copySelection;
  		this.addInputListener((data) => this.handleViewportInput(data));
-@@ -957,6 +961,7 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
+@@ -958,6 +962,7 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
  		}
  
  		if (this.handleRightClickPaste(raw)) return;
@@ -266,7 +266,7 @@ index 8bcac9682..9bbe9961c 100644
  		this.handleSelectionMouseEvent(raw);
  	}
  
-@@ -1014,6 +1019,24 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
+@@ -1015,6 +1020,24 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
  		};
  	}
  
@@ -291,7 +291,7 @@ index 8bcac9682..9bbe9961c 100644
  	private handleRightClickPaste(event: SgrMouseEvent): boolean {
  		if (
  			!this.onRightClickPaste ||
-@@ -1479,7 +1502,9 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
+@@ -1480,7 +1503,9 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
  			);
  			return ok;
  		}
@@ -303,10 +303,10 @@ index 8bcac9682..9bbe9961c 100644
  		return true;
  	}
 diff --git a/packages/tui/src/tui.ts b/packages/tui/src/tui.ts
-index 7968a9e79..c62e5d837 100644
+index 56a983b17..6350a7974 100644
 --- a/packages/tui/src/tui.ts
 +++ b/packages/tui/src/tui.ts
-@@ -497,6 +497,7 @@ export abstract class TuiBase extends Container implements TUI {
+@@ -508,6 +508,7 @@ export abstract class TuiBase extends Container implements TUI {
  	public terminal: Terminal;
  	private focusedComponent: Component | null = null;
  	private inputListeners = new Set<TuiInputListener>();
@@ -314,7 +314,7 @@ index 7968a9e79..c62e5d837 100644
  
  	/** Global callback for debug key (Shift+Ctrl+D). Called before input is forwarded to focused component. */
  	public onDebug?: () => void;
-@@ -974,6 +975,7 @@ export abstract class TuiBase extends Container implements TUI {
+@@ -985,6 +986,7 @@ export abstract class TuiBase extends Container implements TUI {
  			this.terminal.write("\x1b[?2031l");
  		}
  		this.beforeTerminalStop(options);
@@ -322,7 +322,7 @@ index 7968a9e79..c62e5d837 100644
  		this.terminal.showCursor();
  		this.terminal.stop();
  		this.afterTerminalStop(options);
-@@ -1071,6 +1073,11 @@ export abstract class TuiBase extends Container implements TUI {
+@@ -1082,6 +1084,11 @@ export abstract class TuiBase extends Container implements TUI {
  			return;
  		}
  
@@ -334,7 +334,7 @@ index 7968a9e79..c62e5d837 100644
  		// Global debug key handler (Shift+Ctrl+D)
  		if (matchesKey(data, "shift+ctrl+d") && this.onDebug) {
  			this.onDebug();
-@@ -1177,6 +1184,43 @@ export abstract class TuiBase extends Container implements TUI {
+@@ -1188,6 +1195,43 @@ export abstract class TuiBase extends Container implements TUI {
  		return true;
  	}
  

@@ -1,4 +1,4 @@
-From 4ed5867033ec6ed9a804f1c76c0f30a255c1aec0 Mon Sep 17 00:00:00 2001
+From 46cabd8d881ea056665d28689a6028229f9ce0c8 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Wed, 19 Aug 2026 00:43:32 +0200
 Subject: [PATCH 21/24] modes/interactive/components/footer: keep model name
@@ -9,7 +9,7 @@ Subject: [PATCH 21/24] modes/interactive/components/footer: keep model name
  1 file changed, 11 insertions(+), 9 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
-index 2bbee05..3d6b844 100644
+index 2bbee05ba..3d6b844ad 100644
 --- a/packages/coding-agent/src/modes/interactive/components/footer.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
 @@ -265,16 +265,18 @@ export class FooterComponent implements Component {

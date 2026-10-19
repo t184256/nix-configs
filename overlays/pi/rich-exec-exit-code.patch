@@ -1,4 +1,4 @@
-From 83431f4d319dd768cc08acf096409b79d19b094b Mon Sep 17 00:00:00 2001
+From 7ca3d926fd31c17a51ee180713e3439362da7d2e Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 8 Oct 2026 15:31:41 +0200
 Subject: [PATCH] store command exit code in bash tool details

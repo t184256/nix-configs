@@ -1,4 +1,4 @@
-From 864a611a061c31d107d10a1c3ea81d217bea8386 Mon Sep 17 00:00:00 2001
+From d4b4de82b5596b11508c6c24f380205ecab2d4df Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 8 Oct 2026 12:31:45 +0200
 Subject: [PATCH] utils/clipboard: write the primary selection with Linux
@@ -9,10 +9,10 @@ Subject: [PATCH] utils/clipboard: write the primary selection with Linux
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/packages/coding-agent/src/utils/clipboard.ts b/packages/coding-agent/src/utils/clipboard.ts
-index f6fdfe8..544662d 100644
+index c1eedc636..a59082392 100644
 --- a/packages/coding-agent/src/utils/clipboard.ts
 +++ b/packages/coding-agent/src/utils/clipboard.ts
-@@ -140,9 +140,13 @@ export async function copyToClipboard(text: string, target: ClipboardTarget = "c
+@@ -106,9 +106,13 @@ export async function copyToClipboard(text: string): Promise<void> {
  		else if (p === "win32") commands.push(["clip", []]);
  		else {
  			if (env.TERMUX_VERSION) commands.push(["termux-clipboard-set", []]);

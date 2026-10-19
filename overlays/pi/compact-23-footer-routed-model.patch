@@ -1,4 +1,4 @@
-From 5e55488447bd03f3a91df29931b17e881e89f953 Mon Sep 17 00:00:00 2001
+From b6f2f0d4ec274dbad58116af729f26eb423f8bdc Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 8 Oct 2026 12:27:52 +0200
 Subject: [PATCH 23/24] modes/interactive/components/footer: abbreviate routed
@@ -9,7 +9,7 @@ Subject: [PATCH 23/24] modes/interactive/components/footer: abbreviate routed
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
-index 3d6b844..d92d48b 100644
+index 3d6b844ad..d92d48b13 100644
 --- a/packages/coding-agent/src/modes/interactive/components/footer.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
 @@ -242,8 +242,10 @@ export class FooterComponent implements Component {

@@ -1,4 +1,4 @@
-From e0d38de7907bf7ea42cc26917ab5d9098ac3979a Mon Sep 17 00:00:00 2001
+From 4d87da3aaa2c02fa931a79a1bb44a40af147d127 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 21:37:29 +0000
 Subject: [PATCH 01/24] src/core/tools/renderers/edit: remove spacers
@@ -8,7 +8,7 @@ Subject: [PATCH 01/24] src/core/tools/renderers/edit: remove spacers
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/packages/coding-agent/src/core/tools/renderers/edit.ts b/packages/coding-agent/src/core/tools/renderers/edit.ts
-index ca75dc3e9..4e75f797f 100644
+index f4d1df6dd..b70e509f0 100644
 --- a/packages/coding-agent/src/core/tools/renderers/edit.ts
 +++ b/packages/coding-agent/src/core/tools/renderers/edit.ts
 @@ -6,7 +6,7 @@

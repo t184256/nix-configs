@@ -1,4 +1,4 @@
-From feb4b4208e643ac6e8089f923071587c90b4d7cb Mon Sep 17 00:00:00 2001
+From cbe2b45ca48ecfa63a23dbc3117262e126ac1cf3 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:09:44 +0000
 Subject: [PATCH 08/24] modes/interactive/components/bash-execution: remove spacers and leading newlines

@@ -1,4 +1,4 @@
-From b7b51f4aeb3dea52cdfae7424bb294ef05671f6f Mon Sep 17 00:00:00 2001
+From d6ea28f245b5842c7ad922900e8315cb3ef5f2e2 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:54:26 +0000
 Subject: [PATCH 05/24] modes/interactive/components/user-message: depad

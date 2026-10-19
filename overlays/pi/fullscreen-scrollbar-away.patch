@@ -1,4 +1,4 @@
-From adc159afcb531b8aa66563dcbd2a536beaef6d1e Mon Sep 17 00:00:00 2001
+From c03955a63217402490e4482e25216887bb2719c1 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Tue, 18 Aug 2026 22:04:22 +0000
 Subject: [PATCH 26/26] tui, modes/interactive: add "away" fullscreen scrollbar
@@ -6,17 +6,19 @@ Subject: [PATCH 26/26] tui, modes/interactive: add "away" fullscreen scrollbar
 
 ---
  packages/coding-agent/docs/settings.md                        | 2 +-
+ packages/coding-agent/schemas/settings.schema.json            | 4 ++++
  packages/coding-agent/src/core/settings-manager.ts            | 2 +-
+ packages/coding-agent/src/core/settings-schema.ts             | 2 +-
  .../src/modes/interactive/components/settings-selector.ts     | 2 +-
  packages/coding-agent/test/settings-selector.test.ts          | 4 ++--
  packages/tui/src/components/scroll-view.ts                    | 3 ++-
- 5 files changed, 7 insertions(+), 6 deletions(-)
+ 7 files changed, 12 insertions(+), 7 deletions(-)
 
 diff --git a/packages/coding-agent/docs/settings.md b/packages/coding-agent/docs/settings.md
-index 02f46e6..7506621 100644
+index 058736f0c..153d2abc4 100644
 --- a/packages/coding-agent/docs/settings.md
 +++ b/packages/coding-agent/docs/settings.md
-@@ -93,7 +93,7 @@ See [Compaction Reference](compaction.md) for trigger, summarization, and valida
+@@ -96,7 +96,7 @@ See [Compaction Reference](compaction.md) for trigger, summarization, and valida
  | `quietStartup` | boolean \| `"header"` | `false` | `true` hides the startup header and loaded-resource listing. `"header"` keeps the header (version and key hints) but hides the model scope line and loaded-resource listing. |
  | `tuiMode` | `"regular" \| "fullscreen"` | `"fullscreen"` | Interactive terminal UI mode. |
  | `fullscreenExitOutput` | `"transcript" \| "resume-hint"` | `"transcript"` | Output printed when fullscreen mode exits. |
@@ -25,24 +27,52 @@ index 02f46e6..7506621 100644
  | `fullscreenCopyOnSelect` | boolean | `true` | Copy selected text automatically in fullscreen mode. |
  | `fullscreenWheelScrollLines` | `"auto"` \| number | `"auto"` | Lines per mouse-wheel event in fullscreen mode, from 1 to 100. `"auto"` moves one line per event in local macOS terminals, which already accelerate wheel and trackpad input; elsewhere, and over SSH, it speeds up fast wheel spins to at most 6 lines per event. Alt+wheel moves five times as far. |
  | `editorPaddingX` | number | `0` | Horizontal editor padding from 0 to 3 cells. |
+diff --git a/packages/coding-agent/schemas/settings.schema.json b/packages/coding-agent/schemas/settings.schema.json
+index 4d6c23a6d..f19ac36f1 100644
+--- a/packages/coding-agent/schemas/settings.schema.json
++++ b/packages/coding-agent/schemas/settings.schema.json
+@@ -720,6 +720,10 @@
+           "type": "string",
+           "const": "always"
+         },
++        {
++          "type": "string",
++          "const": "away"
++        },
+         {
+           "type": "string",
+           "const": "hidden"
 diff --git a/packages/coding-agent/src/core/settings-manager.ts b/packages/coding-agent/src/core/settings-manager.ts
-index 6593b52..27996cb 100644
+index ad8b82c9e..7276ff7b0 100644
 --- a/packages/coding-agent/src/core/settings-manager.ts
 +++ b/packages/coding-agent/src/core/settings-manager.ts
-@@ -1367,7 +1367,7 @@ export class SettingsManager {
+@@ -1277,7 +1277,7 @@ export class SettingsManager {
  
  	getFullscreenScrollbar(): ScrollViewScrollbar {
  		const mode = this.settings.fullscreenScrollbar;
--		return mode === "always" || mode === "hidden" ? mode : "auto";
-+		return mode === "always" || mode === "away" || mode === "hidden" ? mode : "auto";
+-		return mode === "always" || mode === "hidden" ? mode : SETTINGS_DEFAULTS.fullscreenScrollbar;
++		return mode === "always" || mode === "away" || mode === "hidden" ? mode : SETTINGS_DEFAULTS.fullscreenScrollbar;
  	}
  
  	setFullscreenScrollbar(mode: ScrollViewScrollbar): void {
+diff --git a/packages/coding-agent/src/core/settings-schema.ts b/packages/coding-agent/src/core/settings-schema.ts
+index b17bab563..e0a00ea50 100644
+--- a/packages/coding-agent/src/core/settings-schema.ts
++++ b/packages/coding-agent/src/core/settings-schema.ts
+@@ -423,7 +423,7 @@ export const SettingsSchema = Type.Object(
+ 			}),
+ 		),
+ 		fullscreenScrollbar: Type.Optional(
+-			Type.Union([Type.Literal("auto"), Type.Literal("always"), Type.Literal("hidden")], {
++			Type.Union([Type.Literal("auto"), Type.Literal("always"), Type.Literal("away"), Type.Literal("hidden")], {
+ 				description: "No effect in regular TUI mode.",
+ 				default: SETTINGS_DEFAULTS.fullscreenScrollbar,
+ 			}),
 diff --git a/packages/coding-agent/src/modes/interactive/components/settings-selector.ts b/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
-index 22fe0f3..a9e19be 100644
+index e0cca789f..d25eea146 100644
 --- a/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/settings-selector.ts
-@@ -721,7 +721,7 @@ export class SettingsSelectorComponent extends Container {
+@@ -734,7 +734,7 @@ export class SettingsSelectorComponent extends Container {
  				label: "Fullscreen scrollbar",
  				description: "Scrollbar behavior in fullscreen mode; has no effect in regular mode",
  				currentValue: config.fullscreenScrollbar,
@@ -52,7 +82,7 @@ index 22fe0f3..a9e19be 100644
  			{
  				id: "fullscreen-copy-on-select",
 diff --git a/packages/coding-agent/test/settings-selector.test.ts b/packages/coding-agent/test/settings-selector.test.ts
-index 669bb6e..2a40777 100644
+index 35b9bfe23..6467ec9b0 100644
 --- a/packages/coding-agent/test/settings-selector.test.ts
 +++ b/packages/coding-agent/test/settings-selector.test.ts
 @@ -54,8 +54,8 @@ describe("SettingsSelectorComponent", () => {
@@ -67,7 +97,7 @@ index 669bb6e..2a40777 100644
  		expect(onCopyOnSelectChange.mock.calls.flat()).toEqual([false, true]);
  		// #9758: custom values from settings.json stay in the cycle.
 diff --git a/packages/tui/src/components/scroll-view.ts b/packages/tui/src/components/scroll-view.ts
-index b8f8a51..ab30188 100644
+index b8f8a51ff..ab3018850 100644
 --- a/packages/tui/src/components/scroll-view.ts
 +++ b/packages/tui/src/components/scroll-view.ts
 @@ -1,7 +1,7 @@

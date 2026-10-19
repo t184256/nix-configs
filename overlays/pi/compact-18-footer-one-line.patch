@@ -1,4 +1,4 @@
-From ef8e4c47515f020615f26922cb20665f5bc44b49 Mon Sep 17 00:00:00 2001
+From 099c5a35f46d843009f8c4a2d2ea800ca28d0d57 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:58:35 +0000
 Subject: [PATCH 18/24] modes/interactive/components/footer: single line
@@ -8,7 +8,7 @@ Subject: [PATCH 18/24] modes/interactive/components/footer: single line
  1 file changed, 5 insertions(+), 24 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/footer.ts b/packages/coding-agent/src/modes/interactive/components/footer.ts
-index ef66d02..2bbee05 100644
+index ef66d02f2..2bbee05ba 100644
 --- a/packages/coding-agent/src/modes/interactive/components/footer.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/footer.ts
 @@ -167,13 +167,13 @@ export class FooterComponent implements Component {

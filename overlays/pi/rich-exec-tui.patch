@@ -1,18 +1,31 @@
-From 8105310eeb3a1f4447d4362d9e5ab7a40d7b3fcb Mon Sep 17 00:00:00 2001
+From bcd0e39495f698522a56309c6ac1d615bb173eae Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 8 Oct 2026 13:51:27 +0200
 Subject: [PATCH] show explicit completion status with duration in bash tool
  results
 
 ---
- .../src/core/tools/renderers/bash.ts          | 23 ++++++++++++++-----
- 1 file changed, 17 insertions(+), 6 deletions(-)
+ .../src/core/tools/renderers/bash.ts          | 41 +++++++++++++++----
+ 1 file changed, 33 insertions(+), 8 deletions(-)
 
 diff --git a/packages/coding-agent/src/core/tools/renderers/bash.ts b/packages/coding-agent/src/core/tools/renderers/bash.ts
-index 1c47224b1..a8b642951 100644
+index 4631b6b2c..6932a7e72 100644
 --- a/packages/coding-agent/src/core/tools/renderers/bash.ts
 +++ b/packages/coding-agent/src/core/tools/renderers/bash.ts
-@@ -49,7 +49,9 @@ function rebuildBashResultRenderComponent(
+@@ -12,7 +12,7 @@ import { VisualLinePreview } from "../../../modes/interactive/components/visual-
+ import { theme } from "../../../modes/interactive/theme/theme.ts";
+ import type { ToolDefinition, ToolRenderResultOptions } from "../../extensions/types.ts";
+ import type { BashToolDetails } from "../bash.ts";
+-import { getTextOutput, invalidArgText, startToolTimer, str, toolTimerText } from "../render-utils.ts";
++import { formatToolDuration, getTextOutput, invalidArgText, startToolTimer, str, toolTimerText } from "../render-utils.ts";
+ import { DEFAULT_MAX_BYTES, formatSize } from "../truncate.ts";
+ 
+ const BASH_PREVIEW_LINES = 5;
+@@ -33,10 +33,13 @@ function rebuildBashResultRenderComponent(
+ 	options: ToolRenderResultOptions,
+ 	showImages: boolean,
+ 	timerText: string | undefined,
++	durationMs: number | undefined,
  ): void {
  	component.clear();
  
@@ -23,7 +36,7 @@ index 1c47224b1..a8b642951 100644
  	const truncation = result.details?.truncation;
  	const fullOutputPath = result.details?.fullOutputPath;
  	if (!options.isPartial && truncation?.truncated && fullOutputPath && output.endsWith("]")) {
-@@ -60,10 +62,12 @@ function rebuildBashResultRenderComponent(
+@@ -47,10 +50,12 @@ function rebuildBashResultRenderComponent(
  	}
  
  	if (output) {
@@ -40,22 +53,44 @@ index 1c47224b1..a8b642951 100644
  
  		if (options.expanded) {
  			component.addChild(new Text(`\n${styledOutput}`, 0, 0));
-@@ -102,7 +106,14 @@ function rebuildBashResultRenderComponent(
- 	// A final result's recorded duration wins: it is monotonic and survives reloads. The renderer's own clock is the
- 	// fallback for live progress and for results stored without one.
- 	if (!options.isPartial && durationMs !== undefined) {
--		component.addChild(new Text(`\n${theme.fg("muted", `Took ${formatDuration(durationMs)}`)}`, 0, 0));
+@@ -86,7 +91,20 @@ function rebuildBashResultRenderComponent(
+ 		component.addChild(new Text(`\n${theme.fg("warning", `[${warnings.join(". ")}]`)}`, 0, 0));
+ 	}
+ 
+-	if (timerText) component.addChild(new Text(`\n${theme.fg("muted", timerText)}`, 0, 0));
++	// A final result's recorded duration wins: it is monotonic and survives reloads. The renderer's own clock is the
++	// fallback for live progress and for results stored without one.
++	if (!options.isPartial && durationMs !== undefined) {
 +		const exitCode = result.details?.exitCode;
 +		const label =
 +			exitCode === 0
-+				? `Command completed successfully in ${formatDuration(durationMs)}`
++				? `Command completed successfully in ${formatToolDuration(durationMs)}`
 +				: exitCode !== undefined
-+					? `Command exited with code ${exitCode} in ${formatDuration(durationMs)}`
-+					: `Took ${formatDuration(durationMs)}`;
++					? `Command exited with code ${exitCode} in ${formatToolDuration(durationMs)}`
++					: `Took ${formatToolDuration(durationMs)}`;
 +		component.addChild(new Text(theme.fg("muted", `[${label}]`), 0, 0));
- 	} else if (startedAt !== undefined) {
- 		const label = options.isPartial ? "Elapsed" : "Took";
- 		const endTime = endedAt ?? Date.now();
++	} else if (timerText) {
++		component.addChild(new Text(`\n${theme.fg("muted", timerText)}`, 0, 0));
++	}
+ }
+ 
+ /** Shell renderers are shared by bash and powershell, which differ only in the prompt they display. */
+@@ -101,7 +119,14 @@ export function createShellRenderers(prompt: string): Pick<ToolDefinition<any, a
+ 		renderResult(result, options, _theme, context) {
+ 			const timerText = toolTimerText(context, options.isPartial);
+ 			const component = (context.lastComponent as Container | undefined) ?? new Container();
+-			rebuildBashResultRenderComponent(component, result as any, options, context.showImages, timerText);
++			rebuildBashResultRenderComponent(
++				component,
++				result as any,
++				options,
++				context.showImages,
++				timerText,
++				context.durationMs,
++			);
+ 			component.invalidate();
+ 			return component;
+ 		},
 -- 
 2.55.0
 

@@ -1,4 +1,4 @@
-From 163eb824a42720a74b0027327e374286e8529a22 Mon Sep 17 00:00:00 2001
+From e646fbb3082568ccf0c7c7a13fb574219d605436 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Tue, 18 Aug 2026 08:39:21 +0000
 Subject: [PATCH 20/24] modes/interactive: fullscreen editor slot: minimum one
@@ -9,7 +9,7 @@ Subject: [PATCH 20/24] modes/interactive: fullscreen editor slot: minimum one
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/chat-viewport.ts b/packages/coding-agent/src/modes/interactive/chat-viewport.ts
-index eff762a..66d65fc 100644
+index eff762a04..66d65fcd3 100644
 --- a/packages/coding-agent/src/modes/interactive/chat-viewport.ts
 +++ b/packages/coding-agent/src/modes/interactive/chat-viewport.ts
 @@ -32,7 +32,7 @@ export function createChatViewport(options: ChatViewportOptions): ChatViewport {

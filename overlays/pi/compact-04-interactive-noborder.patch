@@ -1,4 +1,4 @@
-From 3a9401a4e0e6bb30ec37a3ea6332368422126a2f Mon Sep 17 00:00:00 2001
+From b73d53aaa7bd68a4354d0d06c897381ad36e8fa5 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:51:23 +0000
 Subject: [PATCH 04/24] modes/interactive/interactive-mode: remove
@@ -9,7 +9,7 @@ Subject: [PATCH 04/24] modes/interactive/interactive-mode: remove
  1 file changed, 15 insertions(+), 17 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index c0eb78b8b..e0c8d85da 100644
+index 492714e2c..145d1b2cd 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 @@ -142,7 +142,6 @@ import { CompactionSummaryMessageComponent } from "./components/compaction-summa
@@ -38,7 +38,7 @@ index c0eb78b8b..e0c8d85da 100644
  	}
  
  	private mountInteractiveTui(tui: TuiMainScreen | TuiAltScreen, components: readonly Component[]): void {
-@@ -4639,21 +4638,21 @@ export class InteractiveMode {
+@@ -4658,21 +4657,21 @@ export class InteractiveMode {
  		const note = release.note?.trim();
  
  		// no spacer
@@ -63,7 +63,7 @@ index c0eb78b8b..e0c8d85da 100644
  		this.ui.requestRender();
  	}
  
-@@ -4664,16 +4663,16 @@ export class InteractiveMode {
+@@ -4683,16 +4682,16 @@ export class InteractiveMode {
  		const packageLines = packages.map((pkg) => `- ${pkg}`).join("\n");
  
  		// no spacer
@@ -83,7 +83,7 @@ index c0eb78b8b..e0c8d85da 100644
  		this.ui.requestRender();
  	}
  
-@@ -6433,18 +6432,17 @@ export class InteractiveMode {
+@@ -6456,18 +6455,17 @@ export class InteractiveMode {
  		this.resetExtensionUI();
  
  		const reloadBox = new Container();
@@ -105,7 +105,7 @@ index c0eb78b8b..e0c8d85da 100644
  
  		const previousEditor = this.editor;
  		this.editorContainer.clear();
-@@ -6777,11 +6775,11 @@ export class InteractiveMode {
+@@ -6800,11 +6798,11 @@ export class InteractiveMode {
  				: "No changelog entries found.";
  
  		// no spacer
@@ -119,7 +119,7 @@ index c0eb78b8b..e0c8d85da 100644
  		this.ui.requestRender();
  	}
  
-@@ -6908,11 +6906,11 @@ export class InteractiveMode {
+@@ -6931,11 +6929,11 @@ export class InteractiveMode {
  		}
  
  		// no spacer

@@ -1,4 +1,4 @@
-From 1ccc16d69344512de375558cdc821565810f674f Mon Sep 17 00:00:00 2001
+From f00e989d26a76fbc3df45a7892e5c4bee606551a Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 8 Oct 2026 16:40:42 +0200
 Subject: [PATCH] modes/interactive: tolerate abort-cascade errors in
@@ -9,10 +9,10 @@ Subject: [PATCH] modes/interactive: tolerate abort-cascade errors in
  1 file changed, 5 insertions(+)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index 55ea404..68badbe 100644
+index ce2398475..7282f5cff 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -4357,6 +4357,11 @@ export class InteractiveMode {
+@@ -4371,6 +4371,11 @@ export class InteractiveMode {
  		if (this.isShuttingDown) {
  			process.exit(1);
  		}
