@@ -13,7 +13,7 @@
 # 196608  196609  130.213s     1510         46.2    421
 # 261088  261089  177.080s     1474         44.6    351
 
-# bench-gufo --think:
+# bench-gufo --nothink:
 # target      pp      ttft   pp tps   decode tps    gen
 #    256     259    0.624s      416         42.7    298
 #   8192    8195    6.257s     1310         38.0    302
