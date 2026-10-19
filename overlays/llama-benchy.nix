@@ -50,6 +50,10 @@ rec {
                  f'chat_template_kwargs={{"enable_thinking": {val}}}']
     if '--tg' not in args:
         args += ['--tg', '1024']  # llama-benchy's own default (32) is too short
+    if '--no-exact-tg' in args:  # without it, the speed seems inflated
+        args.remove('--no-exact-tg')
+    elif '--exact-tg' not in args:  # default to --exact-tg
+        args += ['--exact-tg']
 
     runs = 3
     it = iter(args)
@@ -71,7 +75,8 @@ rec {
             sys.stderr.write(err)
             sys.stderr.flush()
 
-    print('target      pp      ttft   pp tps   decode tps    gen', flush=True)
+    # avg here means "averaged across the entire prompt". then it's median'd
+    print('target      pp      ttft   avg pp   decode tps    gen', flush=True)
     start, ttft, groups = {}, {}, {}
     for line in proc.stdout:
         ev = json.loads(line)
