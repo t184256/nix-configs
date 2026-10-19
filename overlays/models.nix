@@ -96,6 +96,94 @@ in
     hash = "sha256-poD0SgaSDl1ol3SCN4IAaqOsyNuVdQMjNzskE5tn40g=";
   };
 
+  qwen38-27b-autoround-int4 = fetchHFModel {
+    pname = "qwen38-27b-autoround-int4";
+    repo = "Frozenlock/Qwen3.8-27B-int4-AutoRound";
+    files = [
+      {
+        path = "config.json";
+        hash = "sha256-FRc9ekh8iBEqAoBHAassyPjdRjGj72fI2bssZtMN684=";
+      }
+      {
+        path = "generation_config.json";
+        hash = "sha256-uOt00V4KVmI9AMzRSVCku4f6u/hLXMAw3MkEuJn7HrU=";
+      }
+      {
+        path = "model-00001-of-00007.safetensors";
+        hash = "sha256-g8CtsPEUEUKiXF95N6CScv7yuu59awev5goHb+/+O2Y=";
+      }
+      {
+        path = "model-00002-of-00007.safetensors";
+        hash = "sha256-bIbDkXzSKNVpnLFDXZIW4rrygVgrpCgqmGOBY2Bb5+w=";
+      }
+      {
+        path = "model-00003-of-00007.safetensors";
+        hash = "sha256-v7lhOz9ro9DFs++nT5LMFOxckmazQaeb9rRSR6WFd3A=";
+      }
+      {
+        path = "model-00004-of-00007.safetensors";
+        hash = "sha256-jp+9R2qjBVw8CohimPm+uTxSdcdIxTODV0b2ZI9trlU=";
+      }
+      {
+        path = "model-00005-of-00007.safetensors";
+        hash = "sha256-8M1jliHrJkENlrjAczRK4Aj2RlcqnEcTMm/0PUBs8nY=";
+      }
+      {
+        path = "model-00006-of-00007.safetensors";
+        hash = "sha256-VaFO550+WmWocx2JQm9N9Hfovcfap5dtQSVNivuUMvA=";
+      }
+      {
+        path = "model-00007-of-00007.safetensors";
+        hash = "sha256-aGbPitzMxMxqAOdLwCXxp3T7UhA7cPJnTQKIJylRpzM=";
+      }
+      {
+        path = "model_extra_tensors.safetensors";
+        hash = "sha256-lBArZ8a4TmXbubrjfAC9iKwaQ/9XfOZf2IQtIxx+id4=";
+      }
+      {
+        path = "model.safetensors.index.json";
+        hash = "sha256-rfOH3uGD0QnpXNxNSYj82WbeMmhh/01mh2aSFw8eA60=";
+      }
+      {
+        path = "preprocessor_config.json";
+        hash = "sha256-OhWd/smXihhqcroIXgrWoFDzlo2LNkIY170T9ciTgfI=";
+      }
+      {
+        path = "processor_config.json";
+        hash = "sha256-2J70nOnNN/v1EBWOE8HvBj2ShkEcHskEmTLb4EhxQ7E=";
+      }
+      {
+        path = "quantization_config.json";
+        hash = "sha256-fKfHKQ1Q5hVRIAZ+L+ejHvKRMVixsHRB+VtFG87G25Q=";
+      }
+      {
+        path = "tokenizer.json";
+        hash = "sha256-BrlQk1LSr1A4GrIkfgg7gNMtXAq6kcJyyp/3Kbag5SM=";
+      }
+      {
+        path = "tokenizer_config.json";
+        hash = "sha256-eS+j8MuIsRHlTvMTTIc1MQCMTfRx0QjaF5A0JuMIqns=";
+      }
+      # chat_template.jinja is deliberately NOT fetched: the service
+      # passes its own
+    ];
+  };
+
+  qwen38-27b-dflash2-zlab = fetchHFModel {
+    pname = "qwen38-27b-dflash2-zlab";
+    repo = "z-lab/Qwen3.8-27B-DFlash2";
+    files = [
+      {
+        path = "config.json";
+        hash = "sha256-hz41VlCbDaBuKWVLoA1JRIiNS16KM6/eJffrJ9Mh6YA=";
+      }
+      {
+        path = "model.safetensors";
+        hash = "sha256-Z/x21o3FqUFVEaTzlO90TWdRDNIOk7N8wsx9KOS6tlw=";
+      }
+    ];
+  };  # requantized in hosts/plum/sglang/int8-drafter.nix
+
   # grapefruit
   qwen38-flash-next-ud-iq4xs = fetchHFSharded rec {
     pname = "qwen38-flash-next-ud-iq4xs";
