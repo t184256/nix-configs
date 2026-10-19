@@ -106,34 +106,18 @@ in
         path = "generation_config.json";
         hash = "sha256-uOt00V4KVmI9AMzRSVCku4f6u/hLXMAw3MkEuJn7HrU=";
       }
-      {
-        path = "model-00001-of-00007.safetensors";
-        hash = "sha256-g8CtsPEUEUKiXF95N6CScv7yuu59awev5goHb+/+O2Y=";
-      }
-      {
-        path = "model-00002-of-00007.safetensors";
-        hash = "sha256-bIbDkXzSKNVpnLFDXZIW4rrygVgrpCgqmGOBY2Bb5+w=";
-      }
-      {
-        path = "model-00003-of-00007.safetensors";
-        hash = "sha256-v7lhOz9ro9DFs++nT5LMFOxckmazQaeb9rRSR6WFd3A=";
-      }
-      {
-        path = "model-00004-of-00007.safetensors";
-        hash = "sha256-jp+9R2qjBVw8CohimPm+uTxSdcdIxTODV0b2ZI9trlU=";
-      }
-      {
-        path = "model-00005-of-00007.safetensors";
-        hash = "sha256-8M1jliHrJkENlrjAczRK4Aj2RlcqnEcTMm/0PUBs8nY=";
-      }
-      {
-        path = "model-00006-of-00007.safetensors";
-        hash = "sha256-VaFO550+WmWocx2JQm9N9Hfovcfap5dtQSVNivuUMvA=";
-      }
-      {
-        path = "model-00007-of-00007.safetensors";
-        hash = "sha256-aGbPitzMxMxqAOdLwCXxp3T7UhA7cPJnTQKIJylRpzM=";
-      }
+    ] ++ hfShardFiles {
+      nameTemplate = "model-000{nn}-of-00007.safetensors";
+      shards = [
+        "sha256-g8CtsPEUEUKiXF95N6CScv7yuu59awev5goHb+/+O2Y="
+        "sha256-bIbDkXzSKNVpnLFDXZIW4rrygVgrpCgqmGOBY2Bb5+w="
+        "sha256-v7lhOz9ro9DFs++nT5LMFOxckmazQaeb9rRSR6WFd3A="
+        "sha256-jp+9R2qjBVw8CohimPm+uTxSdcdIxTODV0b2ZI9trlU="
+        "sha256-8M1jliHrJkENlrjAczRK4Aj2RlcqnEcTMm/0PUBs8nY="
+        "sha256-VaFO550+WmWocx2JQm9N9Hfovcfap5dtQSVNivuUMvA="
+        "sha256-aGbPitzMxMxqAOdLwCXxp3T7UhA7cPJnTQKIJylRpzM="
+      ];
+    } ++ [
       {
         path = "model_extra_tensors.safetensors";
         hash = "sha256-lBArZ8a4TmXbubrjfAC9iKwaQ/9XfOZf2IQtIxx+id4=";
@@ -162,8 +146,7 @@ in
         path = "tokenizer_config.json";
         hash = "sha256-eS+j8MuIsRHlTvMTTIc1MQCMTfRx0QjaF5A0JuMIqns=";
       }
-      # chat_template.jinja is deliberately NOT fetched: the service
-      # passes its own
+      # chat_template.jinja is NOT fetched, the service passes its own
     ];
   };
 
