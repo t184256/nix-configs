@@ -17,7 +17,7 @@ _: prev:
       inherit pname version src;
       inherit (prev) pnpm;
       fetcherVersion = 4;
-      hash = "sha256-vrm0pg43hjGk7hrpk+zE4hUtyBrfVSSqRP3c3zHoJU4=";
+      hash = "sha256-dmQ7bJi4L4ME0imJp9hkkkkITzQksgKdJ2d08SIrMYY=";
     };
     nativeBuildInputs = with prev; [ pnpm ];
     npmConfigHook = prev.pnpmConfigHook;
