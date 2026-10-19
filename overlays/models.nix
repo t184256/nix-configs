@@ -34,12 +34,8 @@ let
   # content for small text files (they have SHA1 etags, not SHA256).
   fetchHFModel = { pname, repo, files }:
     let
-      fetchedFiles = map ({ path, hash }:
-        fetchHF {
-          inherit repo hash;
-          name = builtins.baseNameOf path;
-          inherit path;
-        }) files;
+      fetchedFiles = map ({ path, hash, name ? builtins.baseNameOf path }:
+        fetchHF { inherit repo hash name path; }) files;
       links = prev.lib.concatMapStringsSep "\n"
         (f: "ln -s ${f} $out/${f.name}") fetchedFiles;
     in prev.runCommand pname { } ''
@@ -47,24 +43,26 @@ let
       ${links}
     '';
 
+  # Shard manifest for fetchHFModel, for mixing shards with other files.
   # {nn} in templates is replaced by the 1-based shard index, 2-digit padded
-  fetchHFSharded =
-    { pname, repo, nameTemplate, pathTemplate ? nameTemplate, shards }:
+  hfShardFiles =
+    { nameTemplate, pathTemplate ? nameTemplate, shards }:
     let
       pad2 = i: prev.lib.fixedWidthString 2 "0" (builtins.toString i);
       sub = template: i:
         prev.lib.replaceStrings [ "{nn}" ] [ (pad2 i) ] template;
-      fetchedShards = prev.lib.imap1 (i: hash: fetchHF {
-        inherit repo hash;
-        name = sub nameTemplate i;
-        path = sub pathTemplate i;
-      }) shards;
-      symlinkShards = prev.lib.concatMapStringsSep "\n"
-        (s: "ln -s ${s} $out/${s.name}") fetchedShards;
-    in prev.runCommand pname { } ''
-      mkdir -p $out
-      ${symlinkShards}
-    '';
+    in prev.lib.imap1
+      (i: hash: { path = sub pathTemplate i; inherit hash; })
+      shards;
+
+  fetchHFSharded =
+    { pname, repo, nameTemplate, pathTemplate ? nameTemplate, shards }:
+    fetchHFModel {
+      inherit pname repo;
+      files = hfShardFiles {
+        inherit nameTemplate pathTemplate shards;
+      };
+    };
 in
 
 {
