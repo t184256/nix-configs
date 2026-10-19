@@ -15,12 +15,13 @@
     ./bench-llm.nix
     ./clevis.nix
     ./clevis-highlevel.nix
-    ./safe-reboot.nix
     ./cooling/lact.nix
     ./cooling/fancontrol.nix
     ./cooling/measurement/calibrate-fancontroller.nix
     ./cooling/fanlistener.nix
     ./cooling/temps.nix
+    ./safe-reboot.nix
+    ./sglang
   ];
 
   nixpkgs.config.allowUnfreePredicate = pkg:

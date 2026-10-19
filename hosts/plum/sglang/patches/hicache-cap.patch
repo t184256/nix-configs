@@ -1,0 +1,42 @@
+Subject: [PATCH] hicache: allow booking host DRAM for the tiers
+
+--- a/python/sglang/srt/mem_cache/pool_host/base.py	2026-10-21 18:59:34.604139241 +0000
++++ b/python/sglang/srt/mem_cache/pool_host/base.py	2026-10-21 20:31:22.646798582 +0000
+@@ -2,6 +2,7 @@
+ 
+ import abc
+ import logging
++import os
+ import threading
+ from collections.abc import Iterable
+ from contextlib import contextmanager
+@@ -28,6 +29,14 @@
+ # Host RAM to leave free when sizing HiCache pools (OS, other processes).
+ HICACHE_HOST_MEMORY_RESERVE_BYTES: int = 10 * (1024**3)
+ 
++
++def _hicache_booking_bytes() -> tuple[int, int]:
++    """Operator-booked (floor, ceiling) host DRAM for the tiers, per host."""
++    n = ranks_per_host()
++    low = float(os.environ.get("SGLANG_HICACHE_GUARANTEED_GIB", 0) or 0)
++    high = float(os.environ.get("SGLANG_HICACHE_CAP_GIB", 0) or 0)
++    return int(low * (1024**3)) * n, int(high * (1024**3)) * n
++
+ _WRITE_BACK_STAGING_PAGE_CHUNK = 64
+ 
+ 
+@@ -96,10 +105,12 @@
+     if available is not None:
+         if requested_bytes <= available:
+             _host_memory_budget.set(available - requested_bytes)
+-        return available
++        low, high = _hicache_booking_bytes()
++        return min(max(available, low), high or available)
+ 
+     free = available_host_memory_bytes() - HICACHE_HOST_MEMORY_RESERVE_BYTES
+-    return free // ranks_per_host()
++    low, high = _hicache_booking_bytes()
++    return min(max(free, low), high or free) // ranks_per_host()
+ 
+ 
+ def sync_fixed_hicache_size(size: int, host_size: int) -> int:
