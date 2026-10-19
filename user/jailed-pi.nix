@@ -195,8 +195,8 @@ let
   # TODO: far-fetched/heavy, but screenshotting from browsers. agent-browser?
   webSearchJson = pkgs.writeText "web-search.json"
     (builtins.toJSON {
-      workflow = "auto-summary";  # summarize via mini, no curator browser
-      summaryModel = "litellm/mini:low";
+      #workflow = "auto-summary";  # summarize via mini, no curator browser
+      #summaryModel = "litellm/mini:low";
       searchRouting = {
         providers = [ "exa" "duckduckgo" ];  # fall back to ddg if exa fails
         fallbackOn = [
