@@ -26,7 +26,7 @@
     "audio-cpp": {
       "inputs": {
         "nixpkgs": [
-          "gufo",
+          "mbufo",
           "nixpkgs"
         ]
       },
@@ -282,27 +282,6 @@
         "type": "github"
       }
     },
-    "gufo": {
-      "inputs": {
-        "audio-cpp": "audio-cpp",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1792411333,
-        "narHash": "sha256-m05nAusO1WYEINuAzGMmJF1kazOQUDrEsXrsfBuTDQ8=",
-        "owner": "gufo-org",
-        "repo": "gufo",
-        "rev": "270b53338829d25ea05dab633fb924621d9168f9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "gufo-org",
-        "repo": "gufo",
-        "type": "github"
-      }
-    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -480,6 +459,27 @@
       "original": {
         "owner": "t184256",
         "repo": "llm-commit-msg",
+        "type": "github"
+      }
+    },
+    "mbufo": {
+      "inputs": {
+        "audio-cpp": "audio-cpp",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792429997,
+        "narHash": "sha256-BJyW/VRf/vXs+kptkUlNsBDEmQEcAcSbIMFvRQRog1Q=",
+        "owner": "dardeaw",
+        "repo": "MBufo",
+        "rev": "3ab956dccac8280975bd268bc10157fc542996e2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dardeaw",
+        "repo": "MBufo",
         "type": "github"
       }
     },
@@ -750,13 +750,13 @@
         "flake-utils": "flake-utils",
         "git-hooks": "git-hooks",
         "gitignore": "gitignore",
-        "gufo": "gufo",
         "home-manager": "home-manager",
         "impermanence": "impermanence",
         "input-utils": "input-utils",
         "jailed-agents": "jailed-agents",
         "keyboard-remap": "keyboard-remap",
         "llm-commit-msg": "llm-commit-msg",
+        "mbufo": "mbufo",
         "nix-formatter-pack": "nix-formatter-pack",
         "nix-on-droid": "nix-on-droid",
         "nixgl": "nixgl",
