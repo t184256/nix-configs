@@ -2,16 +2,16 @@ final: prev:
 # Doesn't work with non-default python version
 
 let
-  newerVer = "b11491";
+  newerVer = "v0.7.0";
   # b-versions like 10408 compare higher that v-versions like 0.3.0,
   # treat them as older
-  #isFresh = v:
-  #  (prev.lib.strings.match "^[0-9]+$" v) == null &&
-  #  prev.lib.versionAtLeast v newerVer;
+  isFresh = v:
+    (prev.lib.strings.match "^[0-9]+$" v) == null &&
+    prev.lib.versionAtLeast v newerVer;
   freshen = prevLlamaCpp:
-    #if isFresh prevLlamaCpp.version
-    #then prevLlamaCpp
-    #else
+    if isFresh prevLlamaCpp.version
+    then prevLlamaCpp
+    else
     prevLlamaCpp.overrideAttrs overrides-fresh;
   overrides-fresh = oa: {
     name = "llama-cpp-${newerVer}";
@@ -20,16 +20,16 @@ let
       owner = "ggml-org";
       repo = "llama.cpp";
       tag = "${newerVer}";
-      hash = "sha256-/ND3gIDeIPG/2mIUioIHijon1tijRDYSI5eZLNl4NjE=";
+      hash = "sha256-uiZfA6qDaJt2W+4p46Br20+zKt98rjcO8/IhuWN7H4s=";
       leaveDotGit = true;
       postFetch = ''
         git -C "$out" rev-parse --short HEAD > $out/COMMIT
         find "$out" -name .git -print0 | xargs -0 rm -rf
       '';
     };
-    npmDepsHash = "sha256-a17M+L3nLdRnN6WMB6imPFmwqG2g8uv+gwN0XTAUrf8=";
+    npmDepsHash = "sha256-hqYzdp1FwPhYkBP278fQXgY9NCKB6Q3P6Gko7BfP0m0=";
     patches = (prev.lib.remove
-      (prev.fetchpatch { # #30034 is already in b11491
+      (prev.fetchpatch { # #30034 is already in v0.7.0
         url = "https://github.com/ggml-org/llama.cpp/commit/" +
               "07ccce23cf7fe3c84e13d810accff672b1d966bf.patch";
         hash = "sha256-KtsPcveFM51fY1hDWntiqCW/KHoWLv05Gmnhd1U/9Zs=";
