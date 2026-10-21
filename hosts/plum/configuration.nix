@@ -11,7 +11,7 @@
     ./hardware.nix
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
-    ../../nixos/services/whisper-cpp-cuda.nix
+    #../../nixos/services/whisper-cpp-cuda.nix
     ./bench-llm.nix
     ./clevis.nix
     ./clevis-highlevel.nix
