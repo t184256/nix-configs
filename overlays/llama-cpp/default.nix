@@ -1,25 +1,20 @@
-final: prev:
-# Doesn't work with non-default python version
+_: prev:
 
 let
-  newerVer = "v0.7.0";
-  # b-versions like 10408 compare higher that v-versions like 0.3.0,
-  # treat them as older
-  isFresh = v:
-    (prev.lib.strings.match "^[0-9]+$" v) == null &&
-    prev.lib.versionAtLeast v newerVer;
+  newerVer = "0.7.0";  # no support for b##### versions, only semver
+  isFresh = v: prev.lib.versionAtLeast v newerVer;
   freshen = prevLlamaCpp:
+    assert !prev.lib.strings.hasPrefix "b" prevLlamaCpp.version;
     if isFresh prevLlamaCpp.version
     then prevLlamaCpp
-    else
-    prevLlamaCpp.overrideAttrs overrides-fresh;
+    else prevLlamaCpp.overrideAttrs overrides-fresh;
   overrides-fresh = oa: {
     name = "llama-cpp-${newerVer}";
     version = newerVer;
     src = prev.fetchFromGitHub {
       owner = "ggml-org";
       repo = "llama.cpp";
-      tag = "${newerVer}";
+      tag = "v${newerVer}";
       hash = "sha256-uiZfA6qDaJt2W+4p46Br20+zKt98rjcO8/IhuWN7H4s=";
       leaveDotGit = true;
       postFetch = ''
@@ -28,6 +23,9 @@ let
       '';
     };
     npmDepsHash = "sha256-hqYzdp1FwPhYkBP278fQXgY9NCKB6Q3P6Gko7BfP0m0=";
+    disabledTests = (oa.disabledTests or []) ++ [
+      "test-llama-context-model"  # 0.7.0 addition
+    ];
     patches = (prev.lib.remove
       (prev.fetchpatch { # #30034 is already in v0.7.0
         url = "https://github.com/ggml-org/llama.cpp/commit/" +
