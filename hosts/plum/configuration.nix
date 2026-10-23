@@ -37,6 +37,13 @@
 
   hardware.nvidia.open = true;
 
+  hardware.sensor.hddtemp = {
+    enable = true;
+    drives = [ "/dev/sda" ];
+    extraArgs = [ "--listen=127.0.0.1" ];
+    dbEntries = [ ''"ST500LM021" 194 C "Seagate Laptop Thin 500GB"'' ];
+  };
+
   # real swap for llama.cpp
   zramSwap = { enable = false; };
   swapDevices = [ { device = "/var/swap/swapfile"; size = 65536; } ];

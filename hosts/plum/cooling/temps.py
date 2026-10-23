@@ -23,6 +23,9 @@ ENGINE_PP_TPS_MAX = 200
 # updates, short enough that a phase change still shows promptly.
 ENGINE_RATE_WINDOW = 4.0
 
+HDDTEMP_HOST, HDDTEMP_PORT = '127.0.0.1', 7634
+HDD_DEVICE = '/dev/sda'
+
 DB_OVER = 20
 FANS = {  # name: (max_rpm, profile, pwm_n)
     'CPU Fan':       (2010, 'cpu0',  1),
@@ -69,6 +72,36 @@ class LoudnessMonitor:
     def base(self):
         with self._lock:
             return self._base
+
+
+class HddTempMonitor:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._temp = None
+        threading.Thread(target=self._poll, daemon=True).start()
+
+    def _poll(self):
+        while True:
+            temp = None
+            try:
+                with socket.create_connection(
+                        (HDDTEMP_HOST, HDDTEMP_PORT), timeout=1.0) as s:
+                    data = s.makefile('rb').read().decode()
+                # one '|/dev/sda|MODEL|34|C|' per monitored drive
+                fields = data.split('|')
+                if HDD_DEVICE in fields:
+                    value = fields[fields.index(HDD_DEVICE) + 2]
+                    if value.lstrip('-').isdigit():
+                        temp = int(value)
+            except Exception:
+                pass
+            with self._lock:
+                self._temp = temp
+            time.sleep(5)
+
+    def temp(self):
+        with self._lock:
+            return self._temp
 
 
 EngineStats = collections.namedtuple(
@@ -366,7 +399,7 @@ def _kfmt(v):
     return f'{v // 1000}k' if v >= 1000 else f'{v:03d}'
 
 
-def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
+def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog, disk):
     sensors_data = chip_data(nct)
     ct = int(sensors_data["CPU"])
     ct = f'{temp_color(ct)}{ct:3d}°{RESET}'
@@ -374,6 +407,9 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
     st = f'{temp_color(st)}{st:3d}°{RESET}'
     cp = int(psutil.cpu_percent())
     cp = f'{gw_color(cp / 100)}{cp:3d}%{RESET}'
+    ht_val = disk.temp()
+    ht = (f'{temp_color(ht_val, 40, 55)}{ht_val:3d}°{RESET}'
+          if ht_val is not None else '    ')
 
     cpu_fans, cpu_tx = fan(sensors_data, 'CPU Fan', vert=False)
     cpu_line = f'{cpu_fans}{cp}{ct}{cpu_fans}'
@@ -460,7 +496,7 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
         f'          │     ┌────────┐           {tf} {tf_txt}',
         f'         {tr_}  {cpu_line} {cpu_tx}  {tf}',
         f' {tr_txt}{tr_}  └────────┘            │',
-        f'         {tr}{pp_col}{st}            {mf}',
+        f'         {tr}{pp_col}{st} {ht}       {mf}',
         f'          │┌{top_fill}──────────────┐{mf} {mf_txt}',
         f'       {br}│{r0} {u0}{t0} {f0} {w0} │{mf}',
         f'       {br}├{kv_fill}───────────────┤ │',
@@ -481,13 +517,14 @@ try:
     engine = SglangMonitor()
     loudness_usb = LoudnessMonitor(port=9271)
     loudness_analog = LoudnessMonitor(port=9272)
+    disk = HddTempMonitor()
     once = '-1' in sys.argv
     if once:
         engine.ready()
     try:
         while True:
             lines = get_lines(nct, gpu0, gpu1, engine,
-                              loudness_usb, loudness_analog)
+                              loudness_usb, loudness_analog, disk)
             print('\n'.join(lines))
             if once:
                 break
