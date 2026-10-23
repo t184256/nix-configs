@@ -365,10 +365,7 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
     active = (es.requests > 0 or es.decode_rate > 5
               or es.pp_tps > 5 or es.reuse_tps > 5)
 
-    if active and es.reuse_tps > es.pp_tps and es.reuse_tps > 5:
-        pp_col = f' {gw_color(0)}{min(9999, int(es.reuse_tps)):4d} KV{RESET}  '
-        top_fill = f'─{gw_color(0)}↓─↓{RESET}──────'
-    elif active and es.pp_tps > 5:
+    if active and es.pp_tps > 5:
         c = gw_color(es.pp_tps / ENGINE_PP_TPS_MAX)
         pp_col = f' {c}{min(9999, int(es.pp_tps)):4d} PP{RESET}  '
         top_fill = '─↓─↓──────'
@@ -377,8 +374,11 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
         top_fill = '──────────'
 
     if active:
-        kc = gw_color(es.kv_pct / 100)
-        kv_fill = f'{kc}{int(es.kv_pct):3d}%{RESET}─────'
+        if es.requests > 0:
+            kc = gw_color(es.kv_pct / 100)
+            kv_fill = f'{kc}{int(es.kv_pct):3d}%{RESET}─────'
+        else:
+            kv_fill = '─────────'
         n_dec = es.requests
         if n_dec > 1:
             dc = _fg((255, 0, 0)) if n_dec > 2 else _fg((255, 220, 0))
