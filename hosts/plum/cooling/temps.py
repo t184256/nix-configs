@@ -73,7 +73,7 @@ class LoudnessMonitor:
 
 EngineStats = collections.namedtuple(
     'EngineStats',
-    'tg_tps pp_tps reuse_tps kv_pct requests decode_rate accept_rate '
+    'tg_tps pp_tps kv_pct requests decode_rate accept_rate '
     'reuse_share accept_session blocked pending')
 EngineStats.__new__.__defaults__ = (0.0,) * len(EngineStats._fields)
 
@@ -84,7 +84,10 @@ class SglangMonitor:
         self._stats = EngineStats()
         self._conn = None
         self._loads_conn = None
-        self._hist = {}   # key -> deque of (monotonic time, cumulative value)
+        self._dec_base = None  # (monotonic, decode counter) at window anchor
+        self._pend_prev = None  # last waiting-uncached sample
+        self._pend_ep_t = None  # start of current drain episode
+        self._pend_ep_drop = 0.0  # sum of downward jumps in it
         self._polls = 0   # successful fetches; rates need two
         self._acc_sum = 0.0
         self._acc_n = 0
@@ -109,23 +112,6 @@ class SglangMonitor:
                     pass
         return total if matched else None
 
-    def _rate(self, text, key, name, **labels):
-        now = time.monotonic()
-        cur = self._metric(text, name, **labels)
-        if cur is None:
-            return 0.0
-        hist = self._hist.setdefault(key, collections.deque(maxlen=64))
-        # engine restart resets counters; drop history when they go back
-        if hist and cur < hist[-1][1]:
-            hist.clear()
-        hist.append((now, cur))
-        cutoff = now - ENGINE_RATE_WINDOW
-        while len(hist) > 2 and hist[0][0] < cutoff:
-            hist.popleft()
-        t0, v0 = hist[0]
-        dt = now - t0
-        return 0.0 if dt <= 0 else (cur - v0) / dt
-
     def _fetch_metrics(self):
         for attempt in range(2):
             try:
@@ -142,8 +128,6 @@ class SglangMonitor:
         return None
 
     def _fetch_loads(self):
-        # /v1/loads: waiting-queue details that /metrics does not expose
-        # (num_waiting_reqs, num_waiting_uncached_tokens).
         for attempt in range(2):
             try:
                 if self._loads_conn is None:
@@ -172,9 +156,14 @@ class SglangMonitor:
                 # gen_throughput is the engine's own decode rate, but it is
                 # latched: sglang holds the last value for 30 s after decode
                 # stops, so gate it on the decode counter actually moving.
-                decode_rate = self._rate(text, 'dec',
-                                         'sglang:realtime_tokens_total',
-                                         mode='decode')
+                now = time.monotonic()
+                dec = num('sglang:realtime_tokens_total', mode='decode')
+                base = self._dec_base
+                if (base is None or dec < base[1]
+                        or now - base[0] >= ENGINE_RATE_WINDOW):
+                    base = self._dec_base = (now, dec)
+                dt = now - base[0]
+                decode_rate = (dec - base[1]) / dt if dt > 0 else 0.0
                 tg = num('sglang:gen_throughput')
                 tg_tps = tg if decode_rate > 5 else 0.0
                 acc = num('sglang:spec_accept_rate')
@@ -192,14 +181,22 @@ class SglangMonitor:
                         blocked += int(ld.get('num_waiting_reqs', 0))
                         pending += int(
                             ld.get('num_waiting_uncached_tokens', 0))
+                pp_tps = 0.0
+                now = time.monotonic()
+                if pending > 0 and self._pend_prev is not None:
+                    delta = self._pend_prev - pending
+                    if delta > 0:
+                        self._pend_ep_drop += delta
+                    elif delta < 0:
+                        self._pend_ep_t, self._pend_ep_drop = now, 0.0
+                    if self._pend_ep_t is not None:
+                        age = now - self._pend_ep_t
+                        if age > 0:
+                            pp_tps = self._pend_ep_drop / age
+                self._pend_prev = pending
                 stats = EngineStats(
                     tg_tps=tg_tps,
-                    pp_tps=self._rate(
-                        text, 'pp', 'sglang:realtime_tokens_total',
-                        mode='prefill_compute'),
-                    reuse_tps=self._rate(
-                        text, 'reuse', 'sglang:realtime_tokens_total',
-                        mode='prefill_cache'),
+                    pp_tps=pp_tps,
                     kv_pct=num('sglang:token_usage') * 100.0,
                     requests=running,
                     decode_rate=decode_rate,
@@ -400,54 +397,47 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
     r1, u1, t1, f1, w1 = gpu(gpu1, 'gpu1')
 
     es = engine.values()
-    active = (es.requests > 0 or es.decode_rate > 5
-              or es.pp_tps > 5 or es.reuse_tps > 5 or es.blocked)
 
-    if active:
-        if es.blocked:
-            n = '*' if es.blocked > 9 else es.blocked
-            top_fill = (f'─↓{_fg((255, 0, 0))}{n}{RESET}↓'
-                        + '─' * (7 - len(str(n))))
-        elif es.pp_tps > 5:
-            top_fill = '─↓─↓──────'
-        else:
-            top_fill = '──────────'
-        if es.pp_tps > 5:
-            c = gw_color(es.pp_tps / ENGINE_PP_TPS_MAX)
-            r = min(9999, int(es.pp_tps))
-            # Right-align the rate with the TG number / GB counters
-            # (same right edge); the suffix follows it.
-            sv = f'{r:4d}/{_kfmt(es.pending)}' if es.pending else f'{r:4d} PP'
-            pp_col = f' {c}{sv}{RESET}' + ' ' * max(0, 9 - len(sv))
-        else:
-            pp_col = '          '
+    if es.blocked:
+        n = '*' if es.blocked > 9 else es.blocked
+        top_fill = (f'─↓{_fg((255, 0, 0))}{n}{RESET}↓'
+                    + '─' * (7 - len(str(n))))
+    elif es.pp_tps > 5:
+        top_fill = '─↓─↓──────'
+    else:
+        top_fill = '──────────'
+    if es.pp_tps > 5:
+        c = gw_color(es.pp_tps / ENGINE_PP_TPS_MAX)
+        r = min(9999, int(es.pp_tps))
+        sv = f'{r:4d}/{_kfmt(es.pending)}'
+        pp_col = f' {c}{sv}{RESET}' + ' ' * max(0, 9 - len(sv))
     else:
         pp_col = '          '
-        top_fill = '──────────'
 
-    if active:
-        if es.requests > 0:
-            kc = gw_color(es.kv_pct / 100)
-            kv_fill = f'{kc}{int(es.kv_pct):3d}%{RESET}─────'
-        else:
-            kv_fill = '─────────'
+    decoding = es.tg_tps > 5
+
+    if es.requests > 0:
+        kc = gw_color(es.kv_pct / 100)
+        kv_fill = f'{kc}{int(es.kv_pct):3d}%{RESET}─────'
+    else:
+        kv_fill = '─────────'
+    if decoding:
         n_dec = es.requests
         if n_dec > 1:
             dc = _fg((255, 0, 0)) if n_dec > 2 else _fg((255, 220, 0))
             n = '*' if n_dec > 9 else n_dec
             bot_fill = f'─↓{dc}{n}{RESET}↓' + '─' * (7 - len(str(n)))
-        elif n_dec == 1:
-            bot_fill = '─↓─↓──────'
         else:
-            bot_fill = '──────────'
+            bot_fill = '─↓─↓──────'
+    else:
+        bot_fill = '──────────'
+
+    if decoding:
         eng1 = (f'{gw_color(es.tg_tps / ENGINE_TG_TPS_MAX)}'
                 f'{int(es.tg_tps):5d} TG{RESET}')
         ac = int(es.accept_rate * 100)
         eng2 = f'{gwyor_color(es.accept_rate)}{ac:3d}% ac{RESET}'
     else:
-        kv_fill = '─────────'
-        bot_fill = '──────────'
-        # lifetime stats at rest
         eng1 = f'{gw_color(0)}{int(es.reuse_share):4d}% pc{RESET}'
         eng2 = (f'{gw_color(0)}{int(es.accept_session * 100):3d}% ac{RESET}')
 
