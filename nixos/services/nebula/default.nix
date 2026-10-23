@@ -13,9 +13,9 @@ let
   certs = builtins.fromTOML certsFile;
   cert = certs.${config.networking.hostName};
   certFile = pkgs.writeText "nebula.cert" ''
-    -----BEGIN NEBULA CERTIFICATE-----
+    -----BEGIN NEBULA CERTIFICATE V2-----
     ${cert}
-    -----END NEBULA CERTIFICATE-----
+    -----END NEBULA CERTIFICATE V2-----
   '';
 in
 {
