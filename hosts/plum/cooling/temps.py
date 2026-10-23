@@ -288,8 +288,7 @@ def fan_arrows_vert(rpm, rpm_max, width=11):
     return '·' * width
 
 
-def fan_arrow_hor(rpm, rpm_max):
-    frac = rpm / rpm_max
+def _hor_arrow(frac):
     if frac > 0.75:
         return '⬱'
     elif frac > 0.50:
@@ -297,6 +296,10 @@ def fan_arrow_hor(rpm, rpm_max):
     elif frac > 0.25:
         return '←'
     return ':'
+
+
+def fan_arrow_hor(rpm, rpm_max):
+    return _hor_arrow(rpm / rpm_max)
 
 
 def fan_db(sensor_name):
@@ -383,7 +386,10 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
     mf, mf_txt = fan(sensors_data, 'System Fan #5', vert=False)
     bf, bf_txt = fan(sensors_data, 'System Fan #6', vert=False)
     tr, tr_txt = fan(sensors_data, 'System Fan #2', vert=False)
-    br, _ = fan(sensors_data, 'System Fan #4', vert=False)
+    # System Fan #4 has no tach input; use PWM duty for the arrow
+    pwm_n = FANS['System Fan #4'][2]
+    pwm = int((nct_hwmon / f'pwm{pwm_n}').read_text()) * 100 / 255
+    br = _hor_arrow((pwm - 20) / (100 - 20))
     tf = f' {tf}'
     mf = f' {mf}'
     bf = f' {bf}'
