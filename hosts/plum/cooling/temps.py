@@ -366,7 +366,7 @@ def gpu(h, profile_name):
 
 def _kfmt(v):
     v = int(v)
-    return f'{v // 1000}k' if v >= 1000 else f'{v}'
+    return f'{v // 1000}k' if v >= 1000 else f'{v:03d}'
 
 
 def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
@@ -401,21 +401,26 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
 
     es = engine.values()
     active = (es.requests > 0 or es.decode_rate > 5
-              or es.pp_tps > 5 or es.reuse_tps > 5 or es.blocked > 0)
+              or es.pp_tps > 5 or es.reuse_tps > 5 or es.blocked)
 
     if active:
-        sv = f'{min(9999, int(es.pp_tps))}/{_kfmt(es.pending)}' \
-            if es.pp_tps > 5 else ''
-        bv = str(es.blocked) if es.blocked else ''
-        vis = len(bv) + len(sv) + (1 if bv and sv else 0)
-        while vis > 10 and len(sv) > 4:
-            sv = sv[:-1]
-            vis -= 1
-        c = gw_color(es.pp_tps / ENGINE_PP_TPS_MAX)
-        pp_col = (f'{_fg((255, 0, 0))}{bv}{RESET} ' if bv else ' ') \
-               + (f'{c}{sv}{RESET}' if sv else '')
-        pp_col += ' ' * max(0, 10 - vis)
-        top_fill = '─↓─↓──────' if es.pp_tps > 5 else '──────────'
+        if es.blocked:
+            n = '*' if es.blocked > 9 else es.blocked
+            top_fill = (f'─↓{_fg((255, 0, 0))}{n}{RESET}↓'
+                        + '─' * (7 - len(str(n))))
+        elif es.pp_tps > 5:
+            top_fill = '─↓─↓──────'
+        else:
+            top_fill = '──────────'
+        if es.pp_tps > 5:
+            c = gw_color(es.pp_tps / ENGINE_PP_TPS_MAX)
+            r = min(9999, int(es.pp_tps))
+            # Right-align the rate with the TG number / GB counters
+            # (same right edge); the suffix follows it.
+            sv = f'{r:4d}/{_kfmt(es.pending)}' if es.pending else f'{r:4d} PP'
+            pp_col = f' {c}{sv}{RESET}' + ' ' * max(0, 9 - len(sv))
+        else:
+            pp_col = '          '
     else:
         pp_col = '          '
         top_fill = '──────────'
@@ -429,7 +434,8 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
         n_dec = es.requests
         if n_dec > 1:
             dc = _fg((255, 0, 0)) if n_dec > 2 else _fg((255, 220, 0))
-            bot_fill = f'─↓{dc}{n_dec}{RESET}↓──────'
+            n = '*' if n_dec > 9 else n_dec
+            bot_fill = f'─↓{dc}{n}{RESET}↓' + '─' * (7 - len(str(n)))
         elif n_dec == 1:
             bot_fill = '─↓─↓──────'
         else:
