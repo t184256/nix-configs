@@ -67,11 +67,14 @@ in
             0: ${toString asus_clock_offset}
           mem_clock_offsets:
             0: 0  # keep constant at 9501 MHz, do not overclock
+          nvidia_thermal_options:
+          target_temperature: 70  # range: 65-91
           fan_control_enabled: true
           fan_control_settings:
             mode: curve
             temperature_key: junction
             interval_ms: 500
+            spindown_delay_ms: 10000
             change_threshold: 2
             auto_threshold: 48
             curve:
@@ -86,6 +89,8 @@ in
             0: ${toString msi_clock_offset}
           mem_clock_offsets:
             0: 0  # keep constant at 9501 MHz, do not overclock
+          nvidia_thermal_options:
+            target_temperature: 70  # range: 65-91
           fan_control_enabled: true
           fan_control_settings:
             mode: curve
