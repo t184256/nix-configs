@@ -20,6 +20,7 @@
     ../../nixos/services/sunshine.nix
     ../../nixos/services/syncthing.nix
     ../../nixos/services/tang.nix
+    ./steam.nix
   ];
 
   boot.loader = {

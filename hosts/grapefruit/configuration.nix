@@ -15,8 +15,9 @@
     ../../nixos/services/nps.nix  # rather condition on interactive or something
     #../../nixos/services/syncthing.nix
     ./gufo.nix
-    ./llama-cpp-mini.nix
+    #./llama-cpp-mini.nix
     ./select2q.nix
+    ./steam.nix
   ];
 
   boot.loader = {
@@ -114,7 +115,6 @@
         ".local/share/password-store"
         ".localai"
         ".mozilla"
-        ".steam" ".local/share/Steam" ".games"
       ];
     };
   };
@@ -139,14 +139,4 @@
   system.role.virtualizer.storageLocation = "storage";
 
   networking.firewall.allowedTCPPorts = [ 8000 ];  # slopfest
-
-  programs.steam = {
-    enable = true;
-    extraCompatPackages = with pkgs; [ proton-ge-bin ];
-  };
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-    "steam"
-    "steam-unwrapped"
-  ];
-  programs.xwayland.enable = true;
 }
