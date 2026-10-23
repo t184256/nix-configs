@@ -74,7 +74,7 @@ class LoudnessMonitor:
 EngineStats = collections.namedtuple(
     'EngineStats',
     'tg_tps pp_tps reuse_tps kv_pct requests decode_rate accept_rate '
-    'reuse_share accept_session')
+    'reuse_share accept_session blocked pending')
 EngineStats.__new__.__defaults__ = (0.0,) * len(EngineStats._fields)
 
 
@@ -83,6 +83,7 @@ class SglangMonitor:
         self._lock = threading.Lock()
         self._stats = EngineStats()
         self._conn = None
+        self._loads_conn = None
         self._hist = {}   # key -> deque of (monotonic time, cumulative value)
         self._polls = 0   # successful fetches; rates need two
         self._acc_sum = 0.0
@@ -140,6 +141,23 @@ class SglangMonitor:
                     continue
         return None
 
+    def _fetch_loads(self):
+        # /v1/loads: waiting-queue details that /metrics does not expose
+        # (num_waiting_reqs, num_waiting_uncached_tokens).
+        for attempt in range(2):
+            try:
+                if self._loads_conn is None:
+                    self._loads_conn = http.client.HTTPConnection(
+                        SGLANG_HOST, SGLANG_PORT, timeout=1.0)
+                self._loads_conn.request('GET', '/v1/loads',
+                                         headers={'Connection': 'keep-alive'})
+                return json.loads(self._loads_conn.getresponse().read())
+            except Exception:
+                self._loads_conn = None
+                if attempt == 0:
+                    continue
+        return None
+
     def _poll(self):
         active = False
         while True:
@@ -167,6 +185,13 @@ class SglangMonitor:
                              mode='prefill_cache')
                 computed = num('sglang:realtime_tokens_total',
                                mode='prefill_compute')
+                blocked = pending = 0
+                loads = self._fetch_loads()
+                if loads is not None:
+                    for ld in loads.get('loads', ()):
+                        blocked += int(ld.get('num_waiting_reqs', 0))
+                        pending += int(
+                            ld.get('num_waiting_uncached_tokens', 0))
                 stats = EngineStats(
                     tg_tps=tg_tps,
                     pp_tps=self._rate(
@@ -184,6 +209,8 @@ class SglangMonitor:
                     # Lifetime reuse share: cached / (cached + computed).
                     # Exact rather than sampled, so idling cannot skew it.
                     reuse_share=cached / max(1.0, cached + computed) * 100.0,
+                    blocked=blocked,
+                    pending=pending,
                 )
                 with self._lock:
                     self._stats = stats
@@ -334,6 +361,11 @@ def gpu(h, profile_name):
     return r, u, t, f, w
 
 
+def _kfmt(v):
+    v = int(v)
+    return f'{v // 1000}k' if v >= 1000 else f'{v}'
+
+
 def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
     sensors_data = chip_data(nct)
     ct = int(sensors_data["CPU"])
@@ -363,12 +395,21 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog):
 
     es = engine.values()
     active = (es.requests > 0 or es.decode_rate > 5
-              or es.pp_tps > 5 or es.reuse_tps > 5)
+              or es.pp_tps > 5 or es.reuse_tps > 5 or es.blocked > 0)
 
-    if active and es.pp_tps > 5:
+    if active:
+        sv = f'{min(9999, int(es.pp_tps))}/{_kfmt(es.pending)}' \
+            if es.pp_tps > 5 else ''
+        bv = str(es.blocked) if es.blocked else ''
+        vis = len(bv) + len(sv) + (1 if bv and sv else 0)
+        while vis > 10 and len(sv) > 4:
+            sv = sv[:-1]
+            vis -= 1
         c = gw_color(es.pp_tps / ENGINE_PP_TPS_MAX)
-        pp_col = f' {c}{min(9999, int(es.pp_tps)):4d} PP{RESET}  '
-        top_fill = '─↓─↓──────'
+        pp_col = (f'{_fg((255, 0, 0))}{bv}{RESET} ' if bv else ' ') \
+               + (f'{c}{sv}{RESET}' if sv else '')
+        pp_col += ' ' * max(0, 10 - vis)
+        top_fill = '─↓─↓──────' if es.pp_tps > 5 else '──────────'
     else:
         pp_col = '          '
         top_fill = '──────────'
