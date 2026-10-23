@@ -328,6 +328,7 @@ in
         HF_HUB_OFFLINE = "1"; # weights come from the store, never from HF
         TRANSFORMERS_OFFLINE = "1";
         NCCL_DEBUG = "WARN";
+        CUDA_DISABLE_PERF_BOOST = "1";  # make mem clocks drop on idle
         #SGLANG_HICACHE_FILE_BACKEND_STORAGE_DIR = "/kv-hdd";
       };
       extraOptions = [
