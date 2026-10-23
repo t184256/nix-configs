@@ -18,7 +18,7 @@ EXHAUST = [2, 4, 6]  # top SYS_PUMP1, rear-top SYS_FAN2, rear-bottom SYS_FAN4
 INTAKE = [3, 5, 7, 8]  # front-top SYS_FAN1, bottom SYS_FAN3,
                        # front-mid SYS_FAN5, front-bottom SYS_FAN6
 TEMP_MIN  = 40  # °C: below this, case fans are off
-TEMP_MAX  = 90  # °C: case fans hit their acoustic cap at this temp
+TEMP_MAX  = 85  # °C: case fans hit their acoustic cap at this temp
 LOG_EVERY = 10  # seconds between log lines
 DB_OFFSET = 1  # run case fans this many dB quieter than the estimated noise
 
