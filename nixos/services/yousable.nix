@@ -60,9 +60,6 @@ in
 
   services.nginx = {
     enable = true;
-    appendConfig = ''
-        worker_processes auto;
-    '';
     appendHttpConfig = ''
         sendfile_max_chunk 512k;
     '';
