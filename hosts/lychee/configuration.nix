@@ -128,8 +128,13 @@
   # * screen locking in GNOME
   # * thunderbird
 
-  # let's try to fix suspend
-  #boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages =  # for RTL8157 5 GbE USB NIC from 7.1
+    if lib.versionAtLeast pkgs.linuxPackages.kernel.version "7.1"
+      then pkgs.linuxPackages
+      else pkgs.linuxPackages_7_2 or pkgs.linuxPackages_latest;
+  # if it still binds cdc_ncm, blacklist it:
+  #boot.blacklistedKernelModules = [ "cdc_ncm" ];
+
   hardware.sensor.iio.enable = lib.mkForce false;
   systemd.services.systemd-suspend = {
     environment.SYSTEMD_SLEEP_FREEZE_USER_SESSIONS = "false";
