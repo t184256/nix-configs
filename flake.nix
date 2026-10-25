@@ -34,7 +34,9 @@
     nix-on-droid.inputs.nixpkgs-docs.follows = "nixpkgs";
     nix-on-droid.inputs.nixpkgs-for-bootstrap.follows = "nixpkgs";
 
-    nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nixos-hardware.url =
+      "github:t184256/nixos-hardware/onenetbook-kernel-6.18.55";
+    #nixos-hardware.url = "/mnt/storage/sync/code/nixos-hardware";
     nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
 
     impermanence.url = "github:nix-community/impermanence";
