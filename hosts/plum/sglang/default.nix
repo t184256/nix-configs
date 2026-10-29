@@ -249,7 +249,7 @@ let
       --enable-metrics
       --enable-cache-report
       --sleep-on-idle
-      --uvicorn-access-log-exclude-prefixes /health /metrics
+      --uvicorn-access-log-exclude-prefixes /health /metrics /v1/loads
     )
 
     # Fit up to a second conversation in RAM
