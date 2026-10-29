@@ -86,6 +86,16 @@
     "nix" "bash" "prose" "python" "typst" "yaml"
   ];
 
+  environment.persistence."/mnt/persist" = {
+    users.monk = {
+      directories = [
+        ".config/gh"
+        ".config/mozilla/firefox"
+        ".local/share/password-store"
+      ];
+    };
+  };
+
   networking.firewall.allowedTCPPorts = [
     8787 # slopfest pi bridge
     9988 # ctl
