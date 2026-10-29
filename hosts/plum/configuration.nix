@@ -11,6 +11,7 @@
     ./hardware.nix
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
+    ../../nixos/services/syncthing.nix
     #../../nixos/services/whisper-cpp-cuda.nix
     ./bench-llm.nix
     ./clevis.nix
@@ -56,6 +57,8 @@
 
   home-manager.users.monk.home.stateVersion = "25.11";
   system.stateVersion = "25.11";
+
+  services.syncthing = { user = "monk"; group = "users"; };
 
   systemd.tpm2.enable = false;
   systemd.services.libvirtd.serviceConfig = {

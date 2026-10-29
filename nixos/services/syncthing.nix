@@ -71,6 +71,7 @@ in
         fig = mkDevice "fig" {};
         lychee = mkDevice "lychee" {};
         olosapo = mkDevice "olosapo" {};
+        plum = mkDevice "plum" {};
         quince = mkDevice "quince" {};
         sloe = mkDevice "sloe" {};
         tamarillo = mkDevice "tamarillo" {};
@@ -96,8 +97,8 @@ in
         };
         "camera" = mkFolder "camera" { extraDevices = [ "carambola" "fig" ]; };
         "code" = mkFolder "code" {
-          extraDevices = [ "lychee" ];
-          type = sendReceiveFor [ "cocoa" "lychee" ];
+          extraDevices = [ "lychee" "plum" ];
+          type = sendReceiveFor [ "cocoa" "lychee" "plum" ];
           versioning = lib.mkDefault {
             type = "staggered";
             params = {
