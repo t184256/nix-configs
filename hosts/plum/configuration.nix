@@ -70,11 +70,21 @@
   systemd.sleep.settings.Sleep.AllowSuspend = false;
   services.displayManager.gdm.autoSuspend = false;
 
-  system.role.desktop.enable = true;
-  system.role.physical.enable = true;
+  system.role = {
+    deployer.enable = true;
+    desktop.enable = true;
+    physical.enable = true;
+    yubikey.enable = true;
 
-  system.role.virtualizer.enable = true;
-  system.role.virtualizer.storageLocation = "persist";
+    virtualizer.enable = true;
+    virtualizer.storageLocation = "persist";
+  };
+
+  home-manager.users.monk.roles.slop = true;
+  home-manager.users.monk.neovim.fat = true;
+  home-manager.users.monk.language-support = [
+    "nix" "bash" "prose" "python" "typst" "yaml"
+  ];
 
   networking.firewall.allowedTCPPorts = [
     8787 # slopfest pi bridge
