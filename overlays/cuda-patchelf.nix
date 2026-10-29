@@ -35,4 +35,23 @@ in
       )
     ];
   });
+
+  kernelPackagesExtensions = (prev.kernelPackagesExtensions or [ ]) ++ [
+    # for stuff like nvidia_x11 to follow
+    (_finalKernelPackages: prevKernelPackages: {
+      nvidiaPackages = prevKernelPackages.nvidiaPackages.extend (
+        _fn: prevNvidia:
+        prev.lib.mapAttrs (_name: value:
+          if prev.lib.isDerivation value
+          then
+            value.overrideAttrs (oa: {
+              nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
+                patchelf_legacy
+              ];
+            })
+          else value
+        ) prevNvidia
+      );
+    })
+  ];
 }
