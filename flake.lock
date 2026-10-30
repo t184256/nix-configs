@@ -423,7 +423,9 @@
         "systems": [
           "systems"
         ],
-        "treefmt-nix": "treefmt-nix"
+        "treefmt-nix": [
+          "treefmt-nix"
+        ]
       },
       "locked": {
         "lastModified": 1792405059,
@@ -769,6 +771,7 @@
         "pre-commit-hooks": "pre-commit-hooks",
         "simple-nixos-mailserver": "simple-nixos-mailserver",
         "systems": "systems",
+        "treefmt-nix": "treefmt-nix",
         "yousable": "yousable"
       }
     },
@@ -833,8 +836,6 @@
     "treefmt-nix": {
       "inputs": {
         "nixpkgs": [
-          "jailed-agents",
-          "llm-agents",
           "nixpkgs"
         ]
       },

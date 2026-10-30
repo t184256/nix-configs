@@ -25,6 +25,8 @@
     nix-formatter-pack.inputs.nixpkgs.follows = "nixpkgs";
     nix-formatter-pack.inputs.nmd.follows = "nmd";
     systems.url = "github:nix-systems/default";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-on-droid.url = "github:t184256/nix-on-droid/testing";
     nix-on-droid.inputs.nixpkgs.follows = "nixpkgs";
@@ -84,6 +86,7 @@
         flake-parts.follows = "flake-parts";
         nixpkgs.follows = "nixpkgs";
         systems.follows = "systems";
+        treefmt-nix.follows = "treefmt-nix";
       };
     };
 
