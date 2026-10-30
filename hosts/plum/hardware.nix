@@ -1,4 +1,5 @@
 { lib, config, modulesPath, ... }:
+# for hardware inventory and links, see hosts/plum/README.md
 
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
