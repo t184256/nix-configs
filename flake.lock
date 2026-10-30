@@ -470,11 +470,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792429997,
-        "narHash": "sha256-BJyW/VRf/vXs+kptkUlNsBDEmQEcAcSbIMFvRQRog1Q=",
+        "lastModified": 1793201408,
+        "narHash": "sha256-pC/SeKWwO1jQxSrtvx1a23exMAu2DyeygpmEkJRcz8E=",
         "owner": "dardeaw",
         "repo": "MBufo",
-        "rev": "3ab956dccac8280975bd268bc10157fc542996e2",
+        "rev": "9877fb002ea1ba1cd0fb0c5fb7b9843d0e1eb04b",
         "type": "github"
       },
       "original": {
