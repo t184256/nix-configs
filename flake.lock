@@ -718,6 +718,61 @@
         "type": "gitlab"
       }
     },
+    "openwrt-imagebuilder": {
+      "inputs": {
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "systems": [
+          "systems"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792934203,
+        "narHash": "sha256-9b3HSdwXYvFrFro+SwaTS/Dx7hK8r9Vjxbjh99/8fhM=",
+        "owner": "astro",
+        "repo": "nix-openwrt-imagebuilder",
+        "rev": "3da403fee1def2e2fd7dd2140d334d2a2a409b73",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astro",
+        "repo": "nix-openwrt-imagebuilder",
+        "type": "github"
+      }
+    },
+    "openwrt-nix": {
+      "inputs": {
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "openwrt-imagebuilder": [
+          "openwrt-imagebuilder"
+        ],
+        "treefmt-nix": [
+          "treefmt-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788196604,
+        "narHash": "sha256-kXh7XIBukm/XDe4SbUBPbbT8GFF4ItyL25YEZdU6mo4=",
+        "owner": "lonerOrz",
+        "repo": "openwrt-nix",
+        "rev": "7d0cc8db7be221ffdfbbe9ec31a64f227badf30b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lonerOrz",
+        "repo": "openwrt-nix",
+        "type": "github"
+      }
+    },
     "pre-commit-hooks": {
       "inputs": {
         "flake-compat": [
@@ -768,6 +823,8 @@
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
         "nmd": "nmd",
+        "openwrt-imagebuilder": "openwrt-imagebuilder",
+        "openwrt-nix": "openwrt-nix",
         "pre-commit-hooks": "pre-commit-hooks",
         "simple-nixos-mailserver": "simple-nixos-mailserver",
         "systems": "systems",

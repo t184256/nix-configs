@@ -28,6 +28,17 @@
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
 
+    openwrt-imagebuilder.url = "github:astro/nix-openwrt-imagebuilder";
+    openwrt-imagebuilder.inputs.nixpkgs.follows = "nixpkgs";
+    openwrt-imagebuilder.inputs.flake-parts.follows = "flake-parts";
+    openwrt-imagebuilder.inputs.systems.follows = "systems";
+
+    openwrt-nix.url = "github:lonerOrz/openwrt-nix";
+    openwrt-nix.inputs.nixpkgs.follows = "nixpkgs";
+    openwrt-nix.inputs.flake-parts.follows = "flake-parts";
+    openwrt-nix.inputs.openwrt-imagebuilder.follows = "openwrt-imagebuilder";
+    openwrt-nix.inputs.treefmt-nix.follows = "treefmt-nix";
+
     nix-on-droid.url = "github:t184256/nix-on-droid/testing";
     nix-on-droid.inputs.nixpkgs.follows = "nixpkgs";
     nix-on-droid.inputs.home-manager.follows = "home-manager";
