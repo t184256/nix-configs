@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# identify: find which of a set of addresses a router is at, by fingerprint.
+#   usage: identify <name> <addr> [<addr>...]
+
+set -Eeuo pipefail; shopt -s inherit_errexit
+
+NAME=$1
+shift
+
+ROUTER="$(dirname "$0")/../routers/$NAME"
+LAYOUT="$ROUTER/mtd.layout"
+[ -r "$LAYOUT" ] || { echo 2>&1 "no $LAYOUT"; exit 1; }
+. "$LAYOUT"
+[ $(( RNDOFF % RNDLEN )) -eq 0 ] \
+  || { echo 2>&1 'offset not a multiple of the block size'; exit 1; }
+# BusyBox dd takes no hex, so hand it decimals
+FPOFF=$(( FPOFF ))
+FPFILE="$ROUTER/fingerprint"
+[ -r "$FPFILE" ] || { echo 2>&1 "no $FPFILE"; exit 1; }
+FP_EXPECTED=$(cat "$FPFILE")
+
+KH=$(mktemp)
+trap 'rm -f "$KH"' EXIT
+
+for ADDR in "$@"; do
+    ssh-keyscan "$ADDR" > "$KH" 2>/dev/null ||:
+    FP=$(ssh -o BatchMode=yes -o ConnectTimeout=5 -o UserKnownHostsFile="$KH" \
+        "root@$ADDR" \
+        "dd if=/dev/$FPMTD bs=1 skip=$FPOFF count=$FPLEN 2>/dev/null \
+         | tr -d '\000\377'" 2>/dev/null || true)
+    if [ "$FP" = "$FP_EXPECTED" ]; then
+        echo "$ADDR"
+        exit 0
+    fi
+done
+
+echo 2>&1 "no address has $NAME's fingerprint ($FP_EXPECTED)"
+exit 1
