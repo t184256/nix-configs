@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# bootstrap: get a freshly-flashed or reset router to nuciable state
+#   usage: bootstrap <name> <ssh-target>
+set -Eeuo pipefail; shopt -s inherit_errexit
+
+ROOT="$(dirname "$0")/../.."
+[ $# -ge 2 ] || { echo "usage: bootstrap <name> <ssh-target>" >&2; exit 2; }
+NAME=$1
+HOST=$2
+ROUTER="$ROOT/openwrt/routers/$NAME"
+COMMON="$ROOT/openwrt/common"
+
+KH=$(mktemp)
+STAGE=$(mktemp -d)
+trap 'rm -rf "$KH" "$STAGE"' EXIT
+
+# install authorized SSH key, TOFU for now
+echo "installing the admin key on $NAME (TOFU)"
+ssh-keyscan "$HOST" > "$KH" 2>/dev/null
+ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile="$KH" "root@$HOST" \
+    "umask 077; mkdir -p /etc/dropbear; cat > /etc/dropbear/authorized_keys" \
+    < "$ROOT/misc/pubkeys/ssh"
+
+mkdir -p "$STAGE/usr" "$STAGE/tmp"
+install -m 0644 "$ROUTER/mtd.layout" "$STAGE/usr/mtd.layout"
+install -m 0755 "$COMMON/decrypt-ssh-key" "$STAGE/tmp/decrypt-ssh-key"
+FEED=https://downloads.openwrt.org/releases/
+echo "waiting for the uplink, then restoring the regular ssh host key"
+tar --owner=0 --group=0 -C "$STAGE" -cf - usr/mtd.layout tmp/decrypt-ssh-key | \
+    ssh -o ConnectTimeout=10 -o UserKnownHostsFile="$KH" "root@$HOST" "
+    set -ue
+    tar xf - -C /
+    for _ in \$(seq 30); do
+        if wget -q -O /dev/null --timeout=5 '$FEED'; then break; fi
+        sleep 2
+    done
+    apk update
+    apk upgrade
+    apk add python3-light python3-cryptography
+    python3 /tmp/decrypt-ssh-key
+    sed -i 's/^ktype_all=.*/ktype_all=ed25519/' /etc/init.d/dropbear
+    rm -f /etc/dropbear/dropbear_*_host_key
+    ln -sf /tmp/secrets/sshd /etc/dropbear/dropbear_ed25519_host_key
+    service dropbear reload" \
+    || { echo >&2 'ssh server key configuration failed'; exit 1; }
+
+# verify: swap the TOFU key for the pinned one from sshd.toml, check
+SSH_PUBKEY=$(sed -n "s/^$NAME[[:space:]]*=[[:space:]]*'\(.*\)'\$/\1/p" \
+    "$ROOT/misc/pubkeys/sshd.toml" | head -n1)
+[ -n "$SSH_PUBKEY" ] || { echo "no $NAME key in sshd.toml" >&2; exit 1; }
+printf '%s %s\n' "$HOST" "$SSH_PUBKEY" > "$KH"
+sleep 1
+ssh -o BatchMode=yes -o ConnectTimeout=5 -o UserKnownHostsFile="$KH" \
+    "root@$HOST" true \
+    || { echo "host key mismatch on $NAME" >&2; exit 1; }
+
+echo "$NAME is bootstrapped and nuciable"

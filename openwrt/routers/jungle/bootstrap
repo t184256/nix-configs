@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# bootstrap jungle to nuci-able state. see openwrt/common/bootstrap
+
+set -Eeuo pipefail; shopt -s inherit_errexit
+
+NAME=jungle
+COMMON="$(dirname "$0")/../../common"
+IP=192.168.1.1
+"$COMMON/identify" jungle "$IP"  # accept direct connection only
+
+# jungle's MT7987 + RTL8221B EEE breaks TX (openwrt/openwrt#20967);
+# eee option is a no-op, so tx-lpi it is
+BASE_URL=https://downloads.openwrt.org/releases/25.12.6
+PKG_URL=$BASE_URL/packages/aarch64_cortex-a53/base/ethtool-6.15-r1.apk
+PKG_SHA256='905350b2c901ba1d7465829b62e53102112fc3a7f52592e580f7f0b4aa48a6c2'
+
+KH=$(mktemp)
+PKG=$(mktemp --suffix=.apk)
+trap 'rm -f "$KH" "$PKG"' EXIT
+
+# get in (TOFU) and fix the link
+ssh-keyscan "$IP" > "$KH" 2>/dev/null
+echo "fixing the link"
+curl -fL --output "$PKG" "$PKG_URL"
+[ "$(sha256sum < "$PKG" | cut -d' ' -f1)" = "$PKG_SHA256" ] \
+    || { echo "ethtool sha256 mismatch" >&2; exit 1; }
+# sideload ethtool to fix the broken link (MT7987+RTL8221B EEE breaks TX,
+# openwrt#20967); netifd's eee is a no-op, so tx-lpi it
+ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile="$KH" "root@$IP" \
+    "cat > /tmp/ethtool.apk &&
+     [ \$(sha256sum < /tmp/ethtool.apk | cut -d' ' -f1) = '$PKG_SHA256' ] &&
+     apk add --allow-untrusted --no-network /tmp/ethtool.apk &&
+     echo 'ethtool --set-eee eth0 eee off tx-lpi off ||:' > /etc/rc.local &&
+     echo 'ethtool --set-eee eth1 eee off tx-lpi off ||:' >> /etc/rc.local &&
+     echo 'exit 0' >> /etc/rc.local &&
+     chmod +x /etc/rc.local &&
+     /etc/rc.local" < "$PKG"
+
+exec "$COMMON/bootstrap" "$NAME" "$IP"
