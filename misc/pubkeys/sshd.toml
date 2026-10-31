@@ -6,6 +6,7 @@ etrog = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO1ii+4fTGmHhdOcLe44B7YAup+wSCFer3b
 fig = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJqgedUvuPRTMLbhpz9IXKH03TdTnQVwdLsMpbTyBb4u'
 grapefruit = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICHLMdijanilYxEG8Qgffguo//Sp++j5WfkBoUNMbZ3x grapefruit'
 iyokan = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG0qPqDNul1u1cGL1QOynlpucuqv76qEyC3w812ac51V iyokan'
+jungle = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII/wj5BLzsAX85a9p37PEYz5ZzcaP88yGzKW4ot2bqat jungle'
 loquat = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBra/oIenaBvFOtNsF97uUrWRakng1R1zcJyy0/MoR8 loquat'
 lychee = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFs8HSQs9jb+TORQ+BphdG3BAvJayFrcDWUune4prNWc lychee'
 olosapo = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKShxkVutX/8mgxS/1rRMrgxmePyfu3m31ZDWJxSxfD8 olosapo'
