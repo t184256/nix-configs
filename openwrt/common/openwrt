@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# openwrt: unified commandline for configuring routers
+#   openwrt config <name> [--reflash|--reset|--bootstrap] [nuci args]
+#   openwrt identify <name> <addr> [<addr>...]
+#   openwrt rekey <name> <ssh-target>
+#   openwrt nuci <name> <args...>
+
+set -Eeuo pipefail; shopt -s inherit_errexit
+ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+[ $# -ge 2 ] || { sed -n '2,/^$/{/^$/d;s/^# //p}' "$0" >&2; exit 2; }
+CMD=$1 NAME=$2; shift 2
+
+case $CMD in
+config)
+    R="$ROOT/openwrt/routers/$NAME"
+    case ${1-} in
+    --reflash)   shift; "$R/reflash";   "$R/bootstrap" ;;
+    --reset)     shift; "$R/reset";     "$R/bootstrap" ;;
+    --bootstrap) shift; "$R/bootstrap" ;;
+    esac
+    exec nix run "$ROOT#nuci-$NAME" -- "$@"
+    ;;
+identify) exec "$ROOT/openwrt/common/identify" "$NAME" "$@" ;;
+rekey)
+    HOST=$1
+    "$ROOT/openwrt/common/flash-randomness" "$HOST" "$NAME"
+    exec "$ROOT/openwrt/common/fetch-pubkeys" "$NAME" "$HOST"
+    ;;
+nuci) exec nix run "$ROOT#nuci-$NAME" -- "$@" ;;
+*) sed -n '2,/^$/{/^$/d;s/^# //p}' "$0" >&2; exit 2 ;;
+esac
