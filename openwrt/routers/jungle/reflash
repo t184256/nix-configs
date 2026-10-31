@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# flash jungle's prebuilt image, see openwrt/common/{identify,reflash}
+set -Eeuo pipefail; shopt -s inherit_errexit
+
+COMMON="$(dirname "$0")/../../common"
+IP_BEFORE=192.168.1.1
+"$COMMON/identify" jungle "$IP_BEFORE"  # accept direct connection only
+IP_AFTER=192.168.1.1
+
+BASE_URL=https://downloads.openwrt.org/releases/25.12.6
+IMG=openwrt-25.12.6-mediatek-filogic-glinet_gl-mt3600be-squashfs-sysupgrade.bin
+IMG_URL=$BASE_URL/targets/mediatek/filogic/$IMG
+IMG_SHA256='22b0edd5cdfe4a3ebabd575d077ada2b4cd4864d409245088e344d5d13b9cdaa'
+export IMG_URL IMG_SHA256 IP_BEFORE IP_AFTER
+exec "$COMMON/reflash" "$IP_BEFORE"

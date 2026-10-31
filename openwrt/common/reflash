@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# reflash: flash an OpenWrt image onto a router and wait for it to come back
+# parameters via env: IMG_URL IMG_SHA256 IP_BEFORE IP_AFTER
+set -Eeuo pipefail; shopt -s inherit_errexit
+
+: "${IMG_URL:?IMG_URL not set}"
+: "${IMG_SHA256:?IMG_SHA256 not set}"
+: "${IP_BEFORE:?IP_BEFORE not set}"
+: "${IP_AFTER:?IP_AFTER not set}"
+[ $# -ge 1 ] || { echo "usage: reflash <ssh-target>" >&2; exit 2; }
+HOST=$1
+
+TMP=$(mktemp --suffix=.bin)
+KH=$(mktemp)
+trap 'rm -f "$TMP" "$KH"' EXIT
+
+echo "fetching image..."
+curl -fL --output "$TMP" "$IMG_URL"
+[ "$(sha256sum < "$TMP" | cut -d' ' -f1)" = "$IMG_SHA256" ] \
+    || { echo "image sha256 mismatch" >&2; exit 1; }
+
+echo "pushing image to $HOST and verifying..."
+ssh-keyscan "$HOST" > "$KH" 2>/dev/null || :
+ssh -o UserKnownHostsFile="$KH" "root@$HOST" "
+    cat > /tmp/reflash.bin &&
+    [ \$(sha256sum < /tmp/reflash.bin | cut -d' ' -f1) = '$IMG_SHA256' ]
+" < "$TMP"
+
+echo "flashing..."
+FLASH_OUT=$(ssh -o UserKnownHostsFile="$KH" "root@$HOST" \
+                'sysupgrade -n /tmp/reflash.bin' 2>&1) ||:
+printf '%s\n' "$FLASH_OUT" | grep -q 'Commencing upgrade' \
+    || { echo "sysupgrade did not commence" >&2; exit 1; }
+
+echo 'waiting 30s for the reboot, enjoy the blinking...'
+sleep 30
+echo "waiting for $HOST to come back at $IP_AFTER ..."
+for _ in $(seq 30); do
+    ping -q -c1 -W2 "$IP_AFTER" &>/dev/null && break
+    sleep 5
+done
+ping -q -c1 -W2 "$IP_AFTER" >/dev/null \
+    || { echo "no node at $IP_AFTER after reflash" >&2; exit 1; }
+
+ssh-keyscan "$IP_AFTER" > "$KH" 2>/dev/null || :
+ssh -o BatchMode=yes -o ConnectTimeout=10 -o UserKnownHostsFile="$KH" \
+    "root@$IP_AFTER" true \
+    || { echo "ssh login to $IP_AFTER failed" >&2; exit 1; }
+echo "$HOST is alive at $IP_AFTER"
