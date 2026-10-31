@@ -1,0 +1,8 @@
+# randomness:
+RNDMTD=mtd2  # device
+RNDLEN=0x40000  # = erase size
+RNDOFF=0x2C0000  # offset, multiple of RNDLEN
+# serial fingerprint:
+FPMTD=mtd2  # device
+FPLEN=16  # length
+FPOFF=0x4070  # offset
