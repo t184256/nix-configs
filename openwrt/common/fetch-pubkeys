@@ -5,7 +5,7 @@
 # parameters come from /usr/mtd.layout,
 # uploaded from openwrt/routers/<name>/mtd.layout if missing
 #
-# runs derive-pubkeys on the router, upserts:
+# runs on-device-secrets derive-pubkeys on the router, upserts:
 #   misc/pubkeys/age.toml       "<name>" = "<age1 x25519 recipient>"
 #   misc/pubkeys/sshd.toml      "<name>" = "ssh-ed25519 <ed25519 pubkey> <name>"
 #   misc/pubkeys/wireguard.toml "<name>" = "<raw base64 x25519 pubkey>"
@@ -33,18 +33,16 @@ toml_put() { local file=$1 key=$2 val=$3
     mv "$tmp" "$file"
 }
 
-# the router needs python3 + cryptography
+# the router needs python3 + cryptography + the age module
 # (feed: apk add python3-light python3-cryptography)
 ssh "root@$HOST" "python3 -c 'import cryptography'" 2>/dev/null \
   || { echo 2>&1 'router: apk add python3-light python3-cryptography'
        exit 1; }
+ssh "root@$HOST" '[ -r /usr/local/python-modules/age.py ]' \
+  || { echo 2>&1 'router: age module missing (see python-age.nix)'
+       exit 1; }
 
-ssh "root@$HOST" '[ -s /usr/mtd.layout ]' \
-  || ssh "root@$HOST" "cat > /usr/mtd.layout" < "$LAYOUT"
-ssh "root@$HOST" "cat > /tmp/.derive-pubkeys" \
-  < "$ROOT/openwrt/common/derive-pubkeys"
-OUT=$(ssh "root@$HOST" "python3 /tmp/.derive-pubkeys")
-ssh "root@$HOST" 'rm -f /tmp/.derive-pubkeys'
+OUT=$(ssh "root@$HOST" "/usr/sbin/on-device-secrets derive-pubkeys")
 
 AGE_PUB=$(printf '%s\n' "$OUT" | grep -a '^AGE_PUB ' | cut -d' ' -f2) \
   || { echo 2>&1 "no AGE_PUB in output: $OUT"; exit 1; }

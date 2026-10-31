@@ -22,12 +22,17 @@ ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no \
     "umask 077; mkdir -p /etc/dropbear; cat > /etc/dropbear/authorized_keys" \
     < "$ROOT/misc/pubkeys/ssh"
 
-mkdir -p "$STAGE/usr" "$STAGE/tmp"
+mkdir -p "$STAGE/usr/sbin" "$STAGE/usr/local/python-modules"
 install -m 0644 "$ROUTER/mtd.layout" "$STAGE/usr/mtd.layout"
-install -m 0755 "$COMMON/decrypt-ssh-key" "$STAGE/tmp/decrypt-ssh-key"
+install -m 0755 "$COMMON/on-device-secrets" "$STAGE/usr/sbin/on-device-secrets"
+AGE_PY=$(nix eval --raw --file "$COMMON/python-age.nix")
+install -m 0644 "$AGE_PY" "$STAGE/usr/local/python-modules/age.py"
 FEED=https://downloads.openwrt.org/releases/
 echo "waiting for the uplink, then restoring the regular ssh host key"
-tar --owner=0 --group=0 -C "$STAGE" -cf - usr/mtd.layout tmp/decrypt-ssh-key | \
+tar --owner=0 --group=0 -C "$STAGE" -cf - \
+    usr/mtd.layout \
+    usr/sbin/on-device-secrets \
+    usr/local/python-modules/age.py | \
     ssh -o ConnectTimeout=10 -o UserKnownHostsFile="$KH" "root@$HOST" "
     set -ue
     tar xf - -C /
@@ -38,7 +43,7 @@ tar --owner=0 --group=0 -C "$STAGE" -cf - usr/mtd.layout tmp/decrypt-ssh-key | \
     apk update
     apk upgrade
     apk add python3-light python3-cryptography
-    python3 /tmp/decrypt-ssh-key
+    /usr/sbin/on-device-secrets install-ssh-key
     sed -i 's/^ktype_all=.*/ktype_all=ed25519/' /etc/init.d/dropbear
     rm -f /etc/dropbear/dropbear_*_host_key
     ln -sf /tmp/secrets/sshd /etc/dropbear/dropbear_ed25519_host_key

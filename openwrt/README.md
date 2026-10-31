@@ -5,8 +5,7 @@ but skip the [building images] part and use the vanilla upstream one instead.
 
 # flow
 
-* flash-randomness: generate what's gonna be used as privkeys
-* fetch-pubkeys: derive and fetch pubkeys for those privkeys into nix-confgis
+* rekey: flash on-device secrets, derive and store pubkeys in nix-configs
 * reflash or reset: plug into WAN port, bring device to square one
 * bootstrap: bring device from square one to nuciable, still on WAN port
 * config: actually apply the config using nuci

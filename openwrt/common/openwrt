@@ -23,7 +23,9 @@ config)
 identify) exec "$ROOT/openwrt/common/identify" "$NAME" "$@" ;;
 rekey)
     HOST=$1
-    "$ROOT/openwrt/common/flash-randomness" "$HOST" "$NAME"
+    FP=$(cat "$ROOT/openwrt/routers/$NAME/fingerprint")
+    ssh "root@$HOST" "/usr/sbin/on-device-secrets wipe && \
+                      /usr/sbin/on-device-secrets flash-randomness '$FP'"
     exec "$ROOT/openwrt/common/fetch-pubkeys" "$NAME" "$HOST"
     ;;
 nuci) exec nix run "$ROOT#nuci-$NAME" -- "$@" ;;
