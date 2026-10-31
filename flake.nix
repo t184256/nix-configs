@@ -224,6 +224,9 @@
       system = "x86_64-linux";
       overlays = autoimport.asList ./overlays;
     };
+    uci = nixpkgs.legacyPackages.x86_64-linux
+      .callPackage (inputs.openwrt-nix + "/nix") { };
+    jungleNuci = uci.writeUci ./openwrt/routers/jungle/config.nix;
   in
   {
     inherit nixosConfigurations homeConfigurations nixOnDroidConfigurations;
@@ -247,6 +250,13 @@
 
     nixosModules = {
       nixos = autoimport.asAttrs ./nixos;
+    };
+
+    apps.x86_64-linux = {
+      nuci-jungle = {
+        type = "app";
+        program = toString jungleNuci.command;
+      };
     };
 
     packages.x86_64-linux = {
