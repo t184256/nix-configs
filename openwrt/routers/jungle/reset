@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# factory-reset jungle, see openwrt/common/{identify,reset}
+set -Eeuo pipefail; shopt -s inherit_errexit
+
+COMMON="$(dirname "$0")/../../common"
+IP_BEFORE=192.168.1.1
+"$COMMON/identify" jungle "$IP_BEFORE"  # accept direct connection only
+IP_AFTER=192.168.1.1
+export IP_BEFORE IP_AFTER
+exec "$COMMON/reset" "$IP_BEFORE"
