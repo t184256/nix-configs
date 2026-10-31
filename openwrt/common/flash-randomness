@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 # flash-randomness: flash a block of randomness into a router's vendor mtd
-#   usage: flash-randomness <ssh-target> <name> <serial>
+#   usage: flash-randomness <ssh-target> <name>
 # it should not leave the device as it's used as privkeys; see derive-pubkeys
 #
-# parameters come from openwrt/routers/<name>/mtd.layout
+# parameters come from openwrt/routers/<name>/{mtd.layout,fingerprint}
 
 set -Eeuo pipefail; shopt -s inherit_errexit
 
 HOST=$1
 NAME=$2
-FINGERPRINT=$3
 LAYOUT="$(dirname "$0")/../routers/$NAME/mtd.layout"
+FPFILE="$(dirname "$0")/../routers/$NAME/fingerprint"
 [ -r "$LAYOUT" ] || { echo 2>&1 "no $LAYOUT"; exit 1; }
+[ -r "$FPFILE" ] || { echo 2>&1 "no $FPFILE"; exit 1; }
+FINGERPRINT=$(cat "$FPFILE")
 . "$LAYOUT"
 
 ssh "root@$HOST" \
