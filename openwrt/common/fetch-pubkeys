@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# fetch-pubkeys: pull the derived pubkeys from a router and pin them
+#   usage: fetch-pubkeys <name> <ssh-target>
+#
+# parameters come from /usr/mtd.layout,
+# uploaded from openwrt/routers/<name>/mtd.layout if missing
+#
+# runs derive-pubkeys on the router, upserts:
+#   misc/pubkeys/age.toml       "<name>" = "<age1 x25519 recipient>"
+#   misc/pubkeys/sshd.toml      "<name>" = "ssh-ed25519 <ed25519 pubkey> <name>"
+#   misc/pubkeys/wireguard.toml "<name>" = "<raw base64 x25519 pubkey>"
+set -Eeuo pipefail; shopt -s inherit_errexit
+
+TAPLO=$(nix build --print-out-paths --no-link 'nixpkgs#taplo')/bin/taplo
+
+NAME=$1
+HOST=$2
+ROOT=$(dirname "$0")/../..
+LAYOUT="$ROOT/openwrt/routers/$NAME/mtd.layout"
+AGE="$ROOT/misc/pubkeys/age.toml"
+SSHD="$ROOT/misc/pubkeys/sshd.toml"
+WG="$ROOT/misc/pubkeys/wireguard.toml"
+[ -r "$LAYOUT" ] || { echo 2>&1 "no $LAYOUT"; exit 1; }
+. "$LAYOUT"
+[ $(( RNDOFF % RNDLEN )) -eq 0 ] \
+  || { echo 2>&1 'offset not a multiple of the block size'; exit 1; }
+[ -f "$AGE" ] || : > "$AGE"
+
+toml_put() { local file=$1 key=$2 val=$3
+    local tmp; tmp=$(mktemp --suffix=.toml)
+    ( grep -v "^$key = " "$file" || true; echo "$key = '$val'" ) > "$tmp"
+    "$TAPLO" format --option reorder_keys=true "$tmp" 2> /dev/null
+    mv "$tmp" "$file"
+}
+
+# the router needs python3 + cryptography
+# (feed: apk add python3-light python3-cryptography)
+ssh "root@$HOST" "python3 -c 'import cryptography'" 2>/dev/null \
+  || { echo 2>&1 'router: apk add python3-light python3-cryptography'
+       exit 1; }
+
+ssh "root@$HOST" '[ -s /usr/mtd.layout ]' \
+  || ssh "root@$HOST" "cat > /usr/mtd.layout" < "$LAYOUT"
+ssh "root@$HOST" "cat > /tmp/.derive-pubkeys" \
+  < "$ROOT/openwrt/common/derive-pubkeys"
+OUT=$(ssh "root@$HOST" "python3 /tmp/.derive-pubkeys")
+ssh "root@$HOST" 'rm -f /tmp/.derive-pubkeys'
+
+AGE_PUB=$(printf '%s\n' "$OUT" | grep -a '^AGE_PUB ' | cut -d' ' -f2) \
+  || { echo 2>&1 "no AGE_PUB in output: $OUT"; exit 1; }
+SSH_PUB=$(printf '%s\n' "$OUT" | grep -a '^SSH_PUB ' | cut -d' ' -f2) \
+  || { echo 2>&1 "no SSH_PUB in output: $OUT"; exit 1; }
+WG_PUB=$(printf '%s\n' "$OUT" | grep -a '^WG_PUB ' | cut -d' ' -f2) \
+  || { echo 2>&1 "no WG_PUB in output: $OUT"; exit 1; }
+
+SSH_PUB="ssh-ed25519 ${SSH_PUB} $NAME"
+toml_put "$AGE" "$NAME" "$AGE_PUB"
+toml_put "$SSHD" "$NAME" "$SSH_PUB"
+toml_put "$WG" "$NAME" "$WG_PUB"
+
+echo "age: $AGE_PUB"
+echo "ssh: $SSH_PUB"
+echo "wgpub: $WG_PUB"

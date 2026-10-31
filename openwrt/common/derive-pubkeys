@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+# derive-pubkeys: derive the pubkey trio from the flashed randomness block
+# see flash-randomness for how it was written
+# parameters come from /usr/mtd.layout
+# layout: [0:32] secrets x25519, [32:64] ssh ed25519, [64:96] wireguard x25519
+
+import base64
+import struct
+import sys
+
+from cryptography.hazmat.primitives.asymmetric import ed25519, x25519
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+
+layout = {}
+for line in open('/usr/mtd.layout'):
+    line = line.split('#', 1)[0].strip()
+    if line and '=' in line:
+        k, v = line.split('=', 1)
+        layout[k] = v.strip()
+mtd = layout['RNDMTD']
+rndlen = int(layout['RNDLEN'], 0)
+rndoff = int(layout['RNDOFF'], 0)
+assert rndoff % rndlen == 0, 'offset not a multiple of the block size'
+blob = open(f'/dev/{mtd}', 'rb').read()[rndoff:rndoff + rndlen]
+
+for kind, seed in (('secrets', blob[0:32]), ('ssh', blob[32:64]),
+                  ('wireguard', blob[64:96])):
+    w = bin(int.from_bytes(seed, 'big')).count('1')
+    assert -24 < w - 128 < 24, f'{kind} seed hamming weight {w} is sus'
+
+sys.path.insert(0, '/usr/local/python-modules')
+import age
+
+def x25519_pub(seed):
+    priv = x25519.X25519PrivateKey.from_private_bytes(seed)
+    return priv.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
+
+age_pub = age.X25519Recipient(x25519_pub(blob[0:32]))
+ssh_priv = ed25519.Ed25519PrivateKey.from_private_bytes(blob[32:64])
+ssh_pub = ssh_priv.public_key()
+ssh_raw = ssh_pub.public_bytes(Encoding.Raw, PublicFormat.Raw)
+# OpenSSH wire format: string "ssh-ed25519" + string <raw 32-byte pubkey>.
+ssh = struct.pack('>I', 11) + b'ssh-ed25519' + struct.pack('>I', 32) + ssh_raw
+print('AGE_PUB', age_pub)
+print('SSH_PUB', base64.b64encode(ssh).decode())
+print('WG_PUB', base64.b64encode(x25519_pub(blob[64:96])).decode())
