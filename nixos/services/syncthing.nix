@@ -69,6 +69,7 @@ in
         cocoa = mkDevice "cocoa" {};
         coconut = mkDevice "coconut" {};
         fig = mkDevice "fig" {};
+        hackberry = mkDevice "hackberry" {};
         lychee = mkDevice "lychee" {};
         olosapo = mkDevice "olosapo" {};
         plum = mkDevice "plum" {};
@@ -81,7 +82,7 @@ in
         # TODO: milder/no versioning on non-servers
         "android-shared" = mkFolder "android-shared" {
           type = sendReceiveFor [ "cocoa" ];
-          extraDevices = [ "carambola" "coconut" "fig" ];
+          extraDevices = [ "carambola" "coconut" "fig" "hackberry" ];
         };
         "books" = mkFolder "books" {
           type = sendReceiveFor [ "cocoa" ];
@@ -124,13 +125,13 @@ in
         };
         "notes" = mkFolder "notes" {
           type = sendReceiveFor [ "cocoa" "lychee" ];
-          extraDevices = [ "carambola" "fig" "lychee" ];
+          extraDevices = [ "carambola" "fig" "hackberry" "lychee" ];
         };
         "system" = mkFolder "system" {
           extraDevices = [ "fig" ] ;
         };
         "tracks" = mkFolder "tracks" {
-          extraDevices = [ "carambola" "tamarillo" "fig" ];
+          extraDevices = [ "carambola" "tamarillo" "fig" "hackberry"];
         };
         "video" = mkFolder "video" {
           type = sendReceiveFor [ "cocoa" ];
