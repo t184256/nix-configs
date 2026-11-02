@@ -74,9 +74,8 @@ in
         plum = "http://192.168.99.53:11111/v1";
         plumMini = "http://192.168.99.53:11113/v1";
         grapefruit = "http://192.168.99.52:11111/v1";
-        grapefruitMini = "http://192.168.99.52:11113/v1";
         cocoa = "http://192.168.99.7:11113/v1";
-        qwen38Think = {
+        qwen3Think = {
           temperature = 0.6;
           top_p = 0.95;
           presence_penalty = 1.5;
@@ -86,7 +85,7 @@ in
             chat_template_kwargs.preserve_thinking = true;
           };
         };
-        qwen38Nothink = {
+        qwen3Nothink = {
           temperature = 0.7;
           top_p = 0.8;
           presence_penalty = 1.5;
@@ -99,28 +98,30 @@ in
         models = {
           "qwen3.8-flash-next".hosts = [ grapefruit ];
           "qwen3.8-27b".hosts = [ plum ];
-          "LFM2.5-8B-A2B".hosts = [ grapefruitMini ];
+          "qwen3.5-9b".hosts = [ plumMini ];
           "d1-3B".hosts = [ cocoa ];
         };
         aliases = {
-          "interactive" = { model = "qwen3.8-27b"; params = qwen38Think; };
-          "batch" = { model = "qwen3.8-flash-next"; params = qwen38Think; };
-          "mini".model = "LFM2.5-8B-A2B";
+          "interactive" = { model = "qwen3.8-27b"; params = qwen3Think; };
+          "batch" = { model = "qwen3.8-flash-next"; params = qwen3Think; };
+          "mini".model = "qwen3.5-9b";
+          "mini-think" = { model = "qwen3.5-9b"; params = qwen3Think; };
+          "mini-nothink" = { model = "qwen3.5-9b"; params = qwen3Nothink; };
 
-          "default" = { model = "qwen3.8-flash-next"; params = qwen38Think; };
+          "default" = { model = "qwen3.8-flash-next"; params = qwen3Think; };
           "default-think" =
-            { model = "qwen3.8-flash-next"; params = qwen38Think; };
+            { model = "qwen3.8-flash-next"; params = qwen3Think; };
           "default-nothink" =
-            { model = "qwen3.8-flash-next"; params = qwen38Nothink; };
+            { model = "qwen3.8-flash-next"; params = qwen3Nothink; };
 
           "qwen3.8-27b-think" =
-            { model = "qwen3.8-27b"; params = qwen38Think; };
+            { model = "qwen3.8-27b"; params = qwen3Think; };
           "qwen3.8-27b-nothink" =
-            { model = "qwen3.8-27b"; params = qwen38Nothink; };
+            { model = "qwen3.8-27b"; params = qwen3Nothink; };
           "qwen3.8-flash-next-think" =
-            { model = "qwen3.8-flash-next"; params = qwen38Think; };
+            { model = "qwen3.8-flash-next"; params = qwen3Think; };
           "qwen3.8-flash-next-nothink" =
-            { model = "qwen3.8-flash-next"; params = qwen38Nothink; };
+            { model = "qwen3.8-flash-next"; params = qwen3Nothink; };
 
           # decisions go to /v1/systemone, bypassing litellm
           "decision".model = "d1-3B";

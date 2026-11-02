@@ -74,6 +74,16 @@ in
     name = "Qwen3.8-27B-UD-Q4_K_XL.gguf";
     hash = "sha256-PyJweQA63SURQ35bHpSBLjYzhSJb9qm0ewBUpyvIsB4=";
   };
+  qwen35-9b-mtp-ud-q4kxl = fetchHF {  # eGPU (gfx1102)
+    repo = "unsloth/Qwen3.5-9B-MTP-GGUF";
+    name = "Qwen3.5-9B-UD-Q4_K_XL.gguf";
+    hash = "sha256-Ni+FotfbwCWekm1awzyg0PF/03U0ltZb/SEGOEySnT8=";
+  };
+  qwen35-tokenizer = fetchHF {
+    repo = "Qwen/Qwen3.5-9B";
+    name = "tokenizer.json";
+    hash = "sha256-X55NSQGpK5l+RjwfRgVQiLbMpcphplItG59kxLuBy0I=";
+  };
   qwen38-27b-mmproj-f16 = fetchHF {
     repo = "unsloth/Qwen3.8-27B-GGUF";
     name = "mmproj-F16.gguf";

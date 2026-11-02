@@ -56,9 +56,9 @@ let
             input = [ "text" "image" ];
             contextWindow = 262144; }
             // qwen38Effort)
-          # LFM2.5-8B-A2B on grapefruit's mini unit: fast, 128000
-          # trained 128000; thinking is template-side, so no qwen38Effort here
-          { id = "mini"; input = [ "text" ]; contextWindow = 128000; }
+          # qwen3.5-9b on plum's mini unit: 64k
+          # thinking is template-side, so no qwen38Effort here
+          { id = "mini"; input = [ "text" ]; contextWindow = 65536; }
         ];
       };
       plum = {
@@ -83,6 +83,22 @@ let
             contextWindow = 262144;
             cost = { input = 0; output = 0;
                      cacheRead = 0; cacheWrite = 0; };
+            samplingParams = { return_progress = true; }; }
+        ];
+      };
+      # same box as plum, but the llama-cpp-mini
+      plum-mini = {
+        baseUrl = "http://192.168.99.53:11113/v1";
+        api = "openai-completions";
+        apiKey = "dummy";
+        compat = {
+          thinkingFormat = "qwen-chat-template";
+          supportsDeveloperRole = false;
+          maxTokensField = "max_tokens";
+        };
+        models = [
+          { id = "qwen3.5-9b"; input = [ "text" ]; contextWindow = 65536;
+            cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
             samplingParams = { return_progress = true; }; }
         ];
       };

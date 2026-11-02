@@ -16,6 +16,7 @@
     ../../nixos/services/syncthing.nix
     #../../nixos/services/whisper-cpp-cuda.nix
     ./bench-llm.nix
+    ./llama-cpp-mini.nix
     ./clevis.nix
     ./clevis-highlevel.nix
     ./cooling/lact.nix

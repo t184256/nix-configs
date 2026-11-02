@@ -15,7 +15,7 @@ in
         args = {
           "--api-endpoint", "https://llm.slop.unboiled.info",
           "--api-token-file", "/mnt/secrets/llm",
-          "--model", "default-nothink",
+          "--model", "mini-nothink",
           "--show-off", "0.001",
         },
         --debug = true,

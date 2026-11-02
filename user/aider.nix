@@ -3,7 +3,7 @@
 let
   ctx196k = 196608;
   ctx256k = 262144;
-  ctx128k = 128000;
+  ctx64k = 65536;
 
   mkModel = extra: ctx: name:
     let fullName = "hosted_vllm/${name}"; in {
@@ -27,14 +27,14 @@ let
   # sampling params injected by LiteLLM, don't override here
   mkPlum = mkModel {} ctx196k;
   mkGrapefruit = mkModel {} ctx256k;
-  mkMini = mkModel {} ctx128k;
+  mkMini = mkModel {} ctx64k;
 
   # only what slop-forward actually serves (litellm has no catchall anymore)
   models = {
     "default" = mkGrapefruit;      # qwen3.8-flash-next, thinking on
     "qwen3.8-27b-nothink" = mkPlum;
     "qwen3.8-27b-think" = mkPlum;
-    "mini" = mkMini;               # LFM2.5-8B-A2B, grapefruit's mini unit
+    "mini" = mkMini;               # qwen3.5-9b, plum's mini unit
   };
 
   modelSettings = builtins.toJSON (
