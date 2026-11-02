@@ -1,5 +1,5 @@
 Motherboard: [MSI Pro X870E-P WIFI], [BIOS guide]
-CPU: [AMD Ryzen 5 7600]
+CPU: [AMD Ryzen 5 7600] (upgrade plan: the best non-X3D *single-CCD* Zen 6)
 iGPU: AMD Radeon 610M  (has the actual monitor plugged in)
 GPU: 2x NVIDIA RTX 3090  (dedicated to sglang)
 eGPU: [BoostR 01] AMD Radeon RX 7600M XT  (llama-cpp-mini, see egpu.nix)
