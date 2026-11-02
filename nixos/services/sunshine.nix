@@ -24,46 +24,19 @@ let
     [[ -n "''${args[*]}" ]] && \
       gnome-randr modify "''${args[@]}" '${gnome-connector}'
   '';
-  fixer-script = pkgs.writers.writePython3
-    "sunshine-fixer"
-    { libraries = [ pkgs.python3Packages.python-uinput ]; }
-    ''
-      from pathlib import Path
-      import time
-      import subprocess
-      import sys
-
-      import uinput
-
-
-      def state(output='card1-${sys-connector}'):
-          t = Path(f'/sys/class/drm/{output}/dpms').read_text().strip()
-          return t == 'On'
-
-
-      mouse = uinput.Device([uinput.REL_X, uinput.REL_Y, uinput.BTN_LEFT],
-                            name='sunshine-fixer')
-      f = subprocess.Popen(['journalctl', '-f', '-t', 'sunshine'],
-                           stdout=subprocess.PIPE, encoding='utf-8')
-      while True:
-          line = f.stdout.readline()
-          if 'Trying encoder [' in line:  # requires info level
-              if state():
-                  print('no wiggling required', file=sys.stderr)
-              else:
-                  mouse.emit(uinput.REL_X, -1)
-                  time.sleep(.05)
-                  mouse.emit(uinput.REL_X, 1)
-                  time.sleep(.05)
-                  print(f'wiggled, new output state={state()}', file=sys.stderr)
-    '';
   edid-custom = pkgs.runCommand "edid-custom" {} ''
     mkdir -p "$out/lib/firmware/edid"
     cat ${../../misc/custom.edid} > "$out/lib/firmware/edid/custom.edid"
   '';
 in
 {
-  hardware.uinput.enable = true;
+  imports = [ ./sunshine-fixer.nix ];
+
+  services.sunshine-fixer = {
+    enable = true;
+    output = "card1-${sys-connector}";
+  };
+
   # TODO: more declarative pairing / secret management?
   services.sunshine = {
     enable = true;
@@ -100,16 +73,6 @@ in
       }
       { name = "Desktop"; exit-timeout = 1; auto-detach = "true"; }
     ];
-  };
-
-  systemd.services.sunshine-fixer = {
-    description = "Wiggler that wakes up the display when sunshine struggles";
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${fixer-script}";
-      Restart = "on-failure";
-    };
   };
 
   environment.persistence."/mnt/persist".users.monk.directories = [
