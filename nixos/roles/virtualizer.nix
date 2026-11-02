@@ -4,6 +4,8 @@ with lib;
 
 let
   cfg = config.system.role.virtualizer;
+  dropin =
+    pkgs.writeTextDir "lib/systemd/system/libvirtd.service.d/10-secret.conf" "";
 in {
   options = {
     system.role.virtualizer.enable = mkOption {
@@ -39,6 +41,10 @@ in {
         sshProxy = true;
       };
       users.users.monk.extraGroups = [ "libvirtd" ];
+      # libvirt seals its secret key to the TPM (10-secret.conf drop-in)
+      # bricking libvirtd after any TPM state change. shadow this nonsense
+      boot.extraSystemdUnitPaths = [ "${dropin}" ];
+      environment.etc."libvirt/secret.conf".text = "encrypt_data = 0";
       environment.systemPackages = [
         pkgs.socat
         pkgs.nmap  # for ncat

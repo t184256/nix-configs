@@ -63,9 +63,6 @@
   services.syncthing = { user = "monk"; group = "users"; };
 
   systemd.tpm2.enable = false;
-  systemd.services.libvirtd.serviceConfig = {
-    LoadCredentialEncrypted = lib.mkForce [];
-  };
   services.pipewire = {
     enable = true;
     alsa.enable = true;
