@@ -272,6 +272,26 @@ let
   '';
 
   agentsMd = pkgs.writeText "AGENTS.md" ''
+    ## Scope discipline
+
+    The user's requests are the boundaries of what you're allowed to do.
+    Purely investigative actions are always OK,
+    as are out-of-tree clones/builds to /tmp;
+    lasting or externally visible changes
+    to the workspace or external resources, like manipulating other systems,
+    modifying the versioned files, committing or building projects
+    are only allowed when there's an explicit request authorizing that.
+    Every destructive action must trace to the request itself,
+    be an unavoidable substep of it,
+    or be performed with no lasting side-effects.
+    Your intermediate goals don't count towards extending the scope.
+
+    When the user requests a specific non-investigative action
+    or a status report, perform/reply right away.
+    If you doubt your reply and it warrants a deeper investigation,
+    note your concerns and let the user decide
+    whether to proceed with that or not.
+
     ## Nix Environment
 
     You only have the most basic tools installed.
@@ -300,26 +320,6 @@ let
     If you need to inspect sources of other software,
     there's nothing wrong with cloning them to /tmp/ for ease of inspection.
     Just mind that they might disappear on session saving/resumption.
-
-    ## Scope discipline
-
-    The user's requests are the boundaries of what you're allowed to do.
-    Purely investigative actions are always OK,
-    as are out-of-tree clones/builds to /tmp;
-    lasting or externally visible changes
-    to the workspace or external resources, like manipulating other systems,
-    modifying the versioned files, committing or building projects
-    are only allowed when there's an explicit request authorizing that.
-    Every destructive action must trace to the request itself,
-    be an unavoidable substep of it,
-    or be performed with no lasting side-effects.
-    Your intermediate goals don't count towards extending the scope.
-
-    When the user requests a specific non-investigative action
-    or a status report, perform/reply right away.
-    If you doubt your reply and it warrants a deeper investigation,
-    note your concerns and let the user decide
-    whether to proceed with that or not.
   '';
 
   # https://alexdav.id/projects/jail-nix/combinators/
