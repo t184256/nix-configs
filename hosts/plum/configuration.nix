@@ -9,6 +9,7 @@
     "${inputs.nixos-hardware}/common/cpu/amd"
     "${inputs.nixos-hardware}/common/gpu/nvidia"
     ./hardware.nix
+    ./egpu.nix
     ./prefer-igpu.nix
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix

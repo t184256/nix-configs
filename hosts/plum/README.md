@@ -2,7 +2,7 @@ Motherboard: [MSI Pro X870E-P WIFI], [BIOS guide]
 CPU: [AMD Ryzen 5 7600]
 iGPU: AMD Radeon 610M  (has the actual monitor plugged in)
 GPU: 2x NVIDIA RTX 3090  (dedicated to sglang)
-eGPU: [BoostR 01] AMD Radeon RX 7600M XT  (optional, llama-cpp-mini)
+eGPU: [BoostR 01] AMD Radeon RX 7600M XT  (llama-cpp-mini, see egpu.nix)
 NVMe: [Samsung 990 EVO Plus 1TB]
 HDDs: 2x Seagate Laptop Thin HDD 500GB [ST500LM021]
 NIC: Realtek RTL8126 5GbE (r8169)
