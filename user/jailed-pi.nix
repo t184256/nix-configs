@@ -307,6 +307,9 @@ let
     nixpkgs is pinned to an already fetched version in
     `~/.config/nix/registry.json`.
     If you need a checkout of nixpkgs, this file already points at one.
+    `<nixpkgs>` is not in PATH, use flakes, not channels.
+
+    Do not scan `/nix/store`, it takes too long and is never a good idea.
 
     ## Podman (VM-backed)
 
