@@ -10,7 +10,7 @@
     ./hardware.nix
     ./network.nix
     ./performance.nix
-    ../../nixos/services/apollo.nix
+    ./apollo.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/nps.nix  # rather condition on interactive or something
     #../../nixos/services/syncthing.nix

@@ -62,6 +62,8 @@ in
 
   config = lib.mkIf cfg.enable {
     hardware.uinput.enable = true;
+    # the trigger line is only logged at info level
+    services.sunshine.settings.min_log_level = lib.mkDefault "info";
 
     systemd.services.sunshine-fixer = {
       description = "Wiggler that wakes up the display when sunshine struggles";
