@@ -142,13 +142,12 @@ def check_effort():
            given it is greater than 4?
     ''') + '\n'
     # must stay >= 16384 or high clips down into medium's band
-    lim = {'low': (2000, 4400), 'medium': (4500, 13000),
-           'high': (13500, 33000)}
+    lim = {'low': (768, 1536), 'medium': (3072, 6144), 'high': (8192, 24576)}
     for effort, (lo, hi) in lim.items():
         r = requests.post(URL + '/v1/chat/completions', json={
             'model': MODEL, 'messages': [{'role': 'user',
                                           'content': think_prompt}],
-            'max_tokens': 16384, 'temperature': 0,
+            'max_tokens': 32768, 'temperature': 0,
             'chat_template_kwargs': {'reasoning_effort': effort,
                                      'enable_thinking': True}}, timeout=600)
         r.raise_for_status()
