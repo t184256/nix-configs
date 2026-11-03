@@ -15,6 +15,7 @@
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
     ../../nixos/services/syncthing.nix
     #../../nixos/services/whisper-cpp-cuda.nix
+    ./apollo.nix
     ./bench-llm.nix
     ./llama-cpp-mini.nix
     ./clevis.nix
