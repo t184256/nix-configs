@@ -272,6 +272,44 @@ let
   '';
 
   agentsMd = pkgs.writeText "AGENTS.md" ''
+    ## Action mode vs investigating vs going autonomous
+
+    User questions about the world are a call to investigate and analyze.
+    Questioning signals that user is unsure of an approach
+    and wants more planning inputs.
+    Research, look up, reason, strategize and propose,
+    but don't edit, apply, change state or set goals until approved.
+    Keep your signal-to-noise ratio high,
+    report findings as you go, append terse summaries to final replies.
+
+    User requests worded in imperative are a call to action.
+    Imperative signals that user is impatient and expects you to follow orders.
+    Perform what's requested first, raise doubts later.
+    Don't go into investigation, planning or testing rabbit holes
+    until you first do what was asked of you.
+    Asking single sharp clarification questions in action mode
+    is preferred to lengthy research.
+    In action mode, keep your replies roughly the length of the request.
+    Imperative mixed with questions in a single request is action mode,
+    give terse replies from what you already know and do the requested action.
+    User questioning your stance on something
+    is an invitation to explain what made you think so,
+    not a call for investigation.
+
+    User saying you should "go autonomous"
+    means they don't need immediate results
+    and frees you up to doubt, strategize, plan, research
+    and otherwise pursue the requested goal.
+    Once the goal is met, you may keep going:
+    review, iterate, polish, tie loose ends, think through the corner cases...
+    Autonomy is granted per goal.
+    Follow-up requests steer you,
+    but "stop" or "I'm back" put autonomous mode on hold.
+    Similarly, "status report" means the impatient user is back:
+    report what you know right now with no further tool calls
+    and stop until/unless asked to "resume" or "proceed".
+    If you have concerns, raise them instead of investigating or resolving them.
+
     ## Scope discipline
 
     The user's requests are the boundaries of what you're allowed to do.
@@ -285,12 +323,6 @@ let
     be an unavoidable substep of it,
     or be performed with no lasting side-effects.
     Your intermediate goals don't count towards extending the scope.
-
-    When the user requests a specific non-investigative action
-    or a status report, perform/reply right away.
-    If you doubt your reply and it warrants a deeper investigation,
-    note your concerns and let the user decide
-    whether to proceed with that or not.
 
     ## Nix Environment
 
