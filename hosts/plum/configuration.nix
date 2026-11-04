@@ -114,6 +114,8 @@
     pkgs.runCommandLocal "code" {} "ln -s /mnt/storage/sync/code $out";
   home-manager.users.monk.home.file."notes".source =
     pkgs.runCommandLocal "notes" {} "ln -s /mnt/storage/sync/notes $out";
+  home-manager.users.monk.home.file."work".source =
+    pkgs.runCommandLocal "work" {} "ln -s /mnt/storage/sync/work $out";
 
   networking.firewall.allowedTCPPorts = [
     8787 # slopfest pi bridge

@@ -68,6 +68,7 @@ in
         carambola = mkDevice "carambola" {};
         cocoa = mkDevice "cocoa" {};
         coconut = mkDevice "coconut" {};
+        csb = mkDevice "csb" {};
         fig = mkDevice "fig" {};
         hackberry = mkDevice "hackberry" {};
         lychee = mkDevice "lychee" {};
@@ -145,6 +146,10 @@ in
         "voice-raw" = mkFolder "voice-raw" {
           type = sendReceiveFor [ "cocoa" ];
           extraDevices = [ "carambola" "fig" ];
+        };
+        "work" = mkFolder "work" {
+          type = sendReceiveFor [ "plum" ];
+          devices = [ "csb" "plum" ];  # overrides allDirDevices!
         };
       };
     };
