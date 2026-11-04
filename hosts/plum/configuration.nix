@@ -9,6 +9,7 @@
     "${inputs.nixos-hardware}/common/cpu/amd"
     "${inputs.nixos-hardware}/common/gpu/nvidia"
     ./hardware.nix
+    ./trackball.nix
     ./egpu.nix
     ./prefer-igpu.nix
     ./network.nix
