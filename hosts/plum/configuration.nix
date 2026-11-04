@@ -109,6 +109,11 @@
     };
   };
 
+  home-manager.users.monk.home.file."code".source =
+    pkgs.runCommandLocal "code" {} "ln -s /mnt/storage/sync/code $out";
+  home-manager.users.monk.home.file."notes".source =
+    pkgs.runCommandLocal "notes" {} "ln -s /mnt/storage/sync/notes $out";
+
   networking.firewall.allowedTCPPorts = [
     8787 # slopfest pi bridge
     9988 # ctl
