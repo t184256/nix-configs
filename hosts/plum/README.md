@@ -1,12 +1,17 @@
-Motherboard: [MSI Pro X870E-P WIFI], [BIOS guide]
-CPU: [AMD Ryzen 5 7600] (upgrade plan: the best non-X3D *single-CCD* Zen 6)
-iGPU: AMD Radeon 610M  (has the actual monitor plugged in)
-GPU: 2x NVIDIA RTX 3090  (dedicated to sglang)
+Motherboard: [MSI Pro X870E-P WIFI], [BIOS guide], bent pin, moody RAM slot
+  NIC: Realtek RTL8126 5GbE (r8169)
+  Wi-Fi: Qualcomm WCN785x / FastConnect 7800 (ath12k)
+CPU: [AMD Ryzen 5 7600]
+  iGPU: AMD Radeon 610M  (has the actual monitor plugged in)
+dGPU: 2x NVIDIA RTX 3090  (dedicated to sglang)
 eGPU: [BoostR 01] AMD Radeon RX 7600M XT  (llama-cpp-mini, see egpu.nix)
 NVMe: [Samsung 990 EVO Plus 1TB]
 HDDs: 2x Seagate Laptop Thin HDD 500GB [ST500LM021]
-NIC: Realtek RTL8126 5GbE (r8169)
-Wi-Fi: Qualcomm WCN785x / FastConnect 7800 (ath12k)
+
+Upgrade plans:
+* the best non-X3D *single-CCD* Zen 6, rumor is that'd be 12-core
+* a motherboard from the matching generation (fits that many fans and the rest)
+* 2x24GB + 2x16GB
 
 [MSI Pro X870E-P WIFI]: https://download-2.msi.com/archive/mnu_exe/mb/PROX870E-PWIFI_English.pdf
 [BIOS guide]: https://download-2.msi.com/archive/mnu_exe/mb/AMDAM5800BIOS_English.pdf
