@@ -106,7 +106,6 @@
         ".config/mozilla/firefox"
         ".local/share/password-store"
       ];
-      files = [ ".config/monitors.xml" ];
     };
   };
 

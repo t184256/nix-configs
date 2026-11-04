@@ -42,6 +42,34 @@ in {
     };
     hardware.graphics.enable = true;
 
+    # Restore monitors.xml from /mnt/persist at boot (impermanence#147)
+    systemd.services.monitors-xml = {
+      description = "Restore monitors.xml from /mnt/persist";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "local-fs.target" ];
+      serviceConfig.Type = "oneshot";
+      script = ''
+        src=/mnt/persist/home/monk/.config/monitors.xml
+        dst=/home/monk/.config/monitors.xml
+        mkdir -p "$(dirname "$dst")"
+        cp -n "$src" "$dst" || true
+      '';
+    };
+    # Save it back at shutdown
+    systemd.services."monitors-xml-save" = {
+      description = "Save monitors.xml to /mnt/persist";
+      wantedBy = [ "shutdown.target" ];
+      before = [ "umount.target" ];
+      serviceConfig.Type = "oneshot";
+      script = ''
+        src=/home/monk/.config/monitors.xml
+        dst=/mnt/persist/home/monk/.config/monitors.xml
+        [ -e "$src" ] || exit 0
+        mkdir -p /mnt/persist/home/monk/.config
+        cp -f "$src" "$dst" || true
+      '';
+    };
+
     environment = {
       gnome.excludePackages = with pkgs; [
         cheese

@@ -176,9 +176,6 @@
         ".local/share/password-store"
         ".mozilla"
       ];
-      files = [
-        ".config/monitors.xml"
-      ];
     };
   };
 
