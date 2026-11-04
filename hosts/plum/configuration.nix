@@ -101,6 +101,7 @@
     ];
     users.monk = {
       directories = [
+        ".mozilla"
         ".cache/mozilla/firefox"
         ".config/gh"
         ".config/mozilla/firefox"
