@@ -15,4 +15,7 @@ _:
       ATTRS{vendor}=="0x1002", ATTRS{device}=="0x7480", \
       TAG+="mutter-device-ignore"
   '';
+
+  # HDMI 2.1 FRL on iGPU, might fix 4K@120Hz: 0x2 default | 0x400 DC_FRL_MASK
+  boot.extraModprobeConfig = "options amdgpu dcfeaturemask=0x402";
 }
