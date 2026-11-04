@@ -91,12 +91,21 @@
   ];
 
   environment.persistence."/mnt/persist" = {
+    directories = [
+      "/var/lib/alsa"
+      "/var/lib/bluetooth"
+      "/var/lib/boltd"
+      "/var/lib/systemd"
+      "/var/lib/upower"
+    ];
     users.monk = {
       directories = [
+        ".cache/mozilla/firefox"
         ".config/gh"
         ".config/mozilla/firefox"
         ".local/share/password-store"
       ];
+      files = [ ".config/monitors.xml" ];
     };
   };
 
