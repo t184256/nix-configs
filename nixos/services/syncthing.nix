@@ -125,7 +125,7 @@ in
         };
         "notes" = mkFolder "notes" {
           type = sendReceiveFor [ "cocoa" "lychee" ];
-          extraDevices = [ "carambola" "fig" "hackberry" "lychee" ];
+          extraDevices = [ "carambola" "fig" "hackberry" "lychee" "plum" ];
         };
         "system" = mkFolder "system" {
           extraDevices = [ "fig" ] ;
