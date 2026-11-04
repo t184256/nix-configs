@@ -23,7 +23,8 @@
     mutableUsers = false;
     users.monk.hashedPasswordFile = "/mnt/secrets/login/monk";
     users.root.hashedPasswordFile = "/mnt/secrets/login/root";
-  };
+  };  # and require password files mounted
+  fileSystems."/mnt/secrets".neededForBoot = true;
 
   services.openssh = {
     enable = true;
