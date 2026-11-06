@@ -15,6 +15,7 @@ final: prev: {
       ./compact-advice-card.patch
       ./do-not-force-model.patch
       ./do-not-write-config.patch
+      ./scout-model.patch
     ];
 
     # no runtime deps, no buildNpmPackage, install by copying

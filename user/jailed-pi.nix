@@ -139,10 +139,12 @@ let
     extensions = [
       "extensions/llama-cpp-stats.ts"
       "extensions/no-tail-pipe.ts"
+      "extensions/jev-classifier.ts"
+      "extensions/summarize-branch-on-batch.ts"
     ];
     packages = [
-      "npm:pi-web-access@0.37.0"
-      "npm:pi-advisor-flow@0.13.1"
+      "npm:pi-web-access@0.47.0"
+      "npm:pi-advisor-flow@0.14.4"
       "npm:pi-hot-compact@0.3.0"
     ];
   };
@@ -152,6 +154,12 @@ let
 
   # no-tail-pipe: single .ts file, zero deps (from overlay)
   noTailPipeSrc = pkgs.no-tail-pipe;
+
+  # jev-classifier: registers d1-3B as a Jev classifier model (from overlay)
+  jevClassifierSrc = pkgs.jev-classifier;
+
+  # summarize-branch-on-batch: /tree branch summaries on litellm/batch
+  summarizeBranchOnBatchSrc = pkgs.summarize-branch-on-batch;
 
   # npm-based extensions, copied into a single node_modules tree (incl. deps)
   piNpmNodeModules = pkgs.runCommand "pi-npm-node-modules" {} ''
@@ -173,11 +181,12 @@ let
     advisorGitContext = "full";
     #gateFailureMode = "warn-and-continue";  # let's see how deep contexts work
     advisorJevFilterEnabled = true;
-    advisorJevTransport = "typesafe-compatible";  # 'auto' doesn't use BaseUrl
-    advisorJevBaseUrl = "https://llm.slop.unboiled.info";
-    advisorJevModel = "d1-3B";
+    advisorJevClassifier = "classifier/d1-3B";  # System One via nginx /v1/systemone
     advisorJevTimeoutMs = 10000;
     advisorJevTurnGateEveryTurns = 10;  # consider consulting every 10 turns
+    advisorJevTurnGateNoulThreshold = 0.6;  # default is 0.8
+    advisorScoutEnabled = true;
+    advisorScoutModel = "litellm/mini"; # try batch if too lossy
   });
   # pi-hot-compact: the raw session log stays authoritative, the model sees a
   # compiled projection (mechanical sections + one written checkpoint), and
@@ -189,7 +198,7 @@ let
     tailTokens = 48000;  # keep that much of the recent conversation verbatim
     minDeltaTokens = 8000;  # no recompiling for small deltas
     cooldownMs = 30000;
-    jobTimeoutMs = 300000;  # async anyway, so be patient with batch
+    jobTimeoutMs = 600000;  # async anyway; 12K decode @ 50 t/s alone is 4 min
     maxRetries = 3;  # exhausted retries disable background jobs for the session
     semantic = true;
     semanticModel = "litellm/batch";  # mini's probably too dumb
@@ -383,7 +392,7 @@ let
     (ro-bind podmanHelpers "/usr/libexec/podman")
   ]
   # deferred so these layer on top of ~/.pi from makeJailedPi
-  ++ map (defer) [
+  ++ map defer [
     (ro-bind modelsJson (noescape "~/.pi/agent/models.json"))
     (ro-bind settingsJson (noescape "~/.pi/agent/settings.json"))
     (ro-bind advisorJson (noescape "~/.pi/agent/advisor.json"))
@@ -394,6 +403,10 @@ let
     (ro-bind llamaCppStatsSrc
       (noescape "~/.pi/agent/extensions/llama-cpp-stats.ts"))
     (ro-bind noTailPipeSrc (noescape "~/.pi/agent/extensions/no-tail-pipe.ts"))
+    (ro-bind jevClassifierSrc
+      (noescape "~/.pi/agent/extensions/jev-classifier.ts"))
+    (ro-bind summarizeBranchOnBatchSrc
+      (noescape "~/.pi/agent/extensions/summarize-branch-on-batch.ts"))
     (ro-bind piNpmNodeModules (noescape "~/.pi/agent/npm/node_modules"))
   ];
 

@@ -1,0 +1,73 @@
+--- a/dist/index.js	2026-11-06 16:37:28.271505543 +0100
++++ b/dist/index.js	2026-11-06 16:37:43.188339208 +0100
+@@ -93,6 +93,7 @@
+ var advisorTrackedFileContentRef = false;
+ var advisorScoutEnabledRef = false;
+ var advisorScoutTimeoutMsRef = DEFAULT_SCOUT_TIMEOUT_MS;
++var advisorScoutModelRef = "";
+ var showUsageDetailsRef = true;
+ var showUsageFooterRef = false;
+ var setExecutorRef = (ref) => {
+@@ -260,6 +261,9 @@
+ var setAdvisorScoutTimeoutMsRef = (value) => {
+   advisorScoutTimeoutMsRef = value;
+ };
++var setAdvisorScoutModelRef = (value) => {
++  advisorScoutModelRef = value;
++};
+ var setShowUsageDetailsRef = (enabled) => {
+   showUsageDetailsRef = enabled;
+ };
+@@ -788,6 +792,12 @@
+     type: "number",
+     validate: isValidScoutTimeoutMs
+   },
++  advisorScoutModel: {
++    accepted: "a provider/model string; empty keeps the executor model",
++    current: () => advisorScoutModelRef,
++    persisted: true,
++    type: "string"
++  },
+   advisorSessionSummary: {
+     accepted: "true or false",
+     current: () => advisorSessionSummaryRef,
+@@ -1050,6 +1060,7 @@
+   applyOptionalConfig(config, "advisorLogFeedback", setAdvisorLogFeedbackRef);
+   applyOptionalConfig(config, "advisorScoutEnabled", setAdvisorScoutEnabledRef);
+   applyOptionalConfig(config, "advisorScoutTimeoutMs", setAdvisorScoutTimeoutMsRef);
++  applyOptionalConfig(config, "advisorScoutModel", setAdvisorScoutModelRef);
+   applyOptionalConfig(config, "showUsageDetails", setShowUsageDetailsRef);
+   applyOptionalConfig(config, "showUsageFooter", setShowUsageFooterRef);
+   applyOptionalConfig(config, "simpleMode", setSimpleModeRef);
+@@ -3830,7 +3841,7 @@
+       category,
+       message,
+       metrics: usage === undefined ? baseMetrics(manifest, startedAt) : { ...baseMetrics(manifest, startedAt), usage },
+-      model: effectiveExecutorRef(ctx),
++      model: advisorScoutModelRef || effectiveExecutorRef(ctx),
+       ok: false
+     };
+     publish({ outcome, type: "fallback" });
+@@ -3841,9 +3852,10 @@
+   }
+   const executorModel = effectiveExecutorRef(ctx);
+   const executorEffort = effectiveExecutorEffort(ctx);
++  const scoutModel = advisorScoutModelRef || executorModel;
+   let resolved;
+   try {
+-    resolved = await dependencies.resolve(ctx, executorModel, "Scout");
++    resolved = await dependencies.resolve(ctx, scoutModel, "Scout");
+   } catch (error) {
+     if (parentSignal?.aborted) {
+       return cancelled();
+@@ -3854,8 +3866,8 @@
+   if (parentSignal?.aborted) {
+     return cancelled();
+   }
+-  publish({ model: executorModel, type: "call" });
+-  const streamed = await streamScoutResponse(dependencies, resolved, executorModel, executorEffort, manifest, parentSignal, timeoutMs, publish);
++  publish({ model: scoutModel, type: "call" });
++  const streamed = await streamScoutResponse(dependencies, resolved, scoutModel, executorEffort, manifest, parentSignal, timeoutMs, publish);
+   if (!streamed.ok) {
+     if (parentSignal?.aborted) {
+       return cancelled();
