@@ -1,18 +1,18 @@
-From b73d53aaa7bd68a4354d0d06c897381ad36e8fa5 Mon Sep 17 00:00:00 2001
+From f9f02af4df61a858c4cafdb27e425f11e00d98f5 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:51:23 +0000
 Subject: [PATCH 04/24] modes/interactive/interactive-mode: remove
  borders
 
 ---
- .../src/modes/interactive/interactive-mode.ts | 32 +++++++++----------
+ .../src/modes/interactive/interactive-mode.ts      | 32 ++++++++++------------
  1 file changed, 15 insertions(+), 17 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index 492714e2c..145d1b2cd 100644
+index ed0f397d..5d7225e8 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -142,7 +142,6 @@ import { CompactionSummaryMessageComponent } from "./components/compaction-summa
+@@ -143,7 +143,6 @@ import { CompactionSummaryMessageComponent } from "./components/compaction-summa
  import { CustomEditor } from "./components/custom-editor.ts";
  import { CustomEntryComponent } from "./components/custom-entry.ts";
  import { CustomMessageComponent } from "./components/custom-message.ts";
@@ -20,25 +20,25 @@ index 492714e2c..145d1b2cd 100644
  import { EarendilAnnouncementComponent } from "./components/earendil-announcement.ts";
  import { playArmin3d, playPiLogo3d } from "./components/easter-egg-3d.lazy.ts";
  import { ExtensionEditorComponent } from "./components/extension-editor.ts";
-@@ -851,7 +850,7 @@ export class InteractiveMode {
+@@ -861,7 +860,7 @@ export class InteractiveMode {
  		if (this.chatContainer.children.length > 0) {
  			// no spacer
  		}
 -		this.chatContainer.addChild(new DynamicBorder());
 +		// no border
- 		if (this.settingsManager.getCollapseChangelog()) {
- 			const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
- 			const latestVersion = versionMatch ? versionMatch[1] : this.version;
-@@ -865,7 +864,7 @@ export class InteractiveMode {
- 			);
- 			// no spacer
+ 		if (this.changelogMarkdown) {
+ 			if (this.settingsManager.getCollapseChangelog()) {
+ 				const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
+@@ -896,7 +895,7 @@ export class InteractiveMode {
+ 				// no spacer
+ 			}
  		}
 -		this.chatContainer.addChild(new DynamicBorder());
 +		// no border
  	}
  
  	private mountInteractiveTui(tui: TuiMainScreen | TuiAltScreen, components: readonly Component[]): void {
-@@ -4658,21 +4657,21 @@ export class InteractiveMode {
+@@ -4742,21 +4741,21 @@ export class InteractiveMode {
  		const note = release.note?.trim();
  
  		// no spacer
@@ -63,7 +63,7 @@ index 492714e2c..145d1b2cd 100644
  		this.ui.requestRender();
  	}
  
-@@ -4683,16 +4682,16 @@ export class InteractiveMode {
+@@ -4767,16 +4766,16 @@ export class InteractiveMode {
  		const packageLines = packages.map((pkg) => `- ${pkg}`).join("\n");
  
  		// no spacer
@@ -83,7 +83,7 @@ index 492714e2c..145d1b2cd 100644
  		this.ui.requestRender();
  	}
  
-@@ -6456,18 +6455,17 @@ export class InteractiveMode {
+@@ -6540,18 +6539,17 @@ export class InteractiveMode {
  		this.resetExtensionUI();
  
  		const reloadBox = new Container();
@@ -105,7 +105,7 @@ index 492714e2c..145d1b2cd 100644
  
  		const previousEditor = this.editor;
  		this.editorContainer.clear();
-@@ -6800,11 +6798,11 @@ export class InteractiveMode {
+@@ -6884,11 +6882,11 @@ export class InteractiveMode {
  				: "No changelog entries found.";
  
  		// no spacer
@@ -119,7 +119,7 @@ index 492714e2c..145d1b2cd 100644
  		this.ui.requestRender();
  	}
  
-@@ -6931,11 +6929,11 @@ export class InteractiveMode {
+@@ -7015,11 +7013,11 @@ export class InteractiveMode {
  		}
  
  		// no spacer
@@ -135,4 +135,3 @@ index 492714e2c..145d1b2cd 100644
  
 -- 
 2.55.0
-

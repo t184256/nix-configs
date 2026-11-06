@@ -1,17 +1,19 @@
 _: prev:
 
 let
-  newerVer = "1.3.0";
+  newerVer = "1.5.0";
   freshSrc = prev.fetchFromGitHub {
     owner = "earendil-works";
     repo = "pi";
     tag = "v${newerVer}";
-    hash = "sha256-AsutbwnjiwwLkB5tqLW+1GdGZyLmXsU0W+SNdNhJu7U=";
+    # Hash of the github.com/.../archive/... tarball as fetched by nix,
+    # which differs from the codeload.github.com copy of the same tag.
+    hash = "sha256-eH3RuypmXeayuZ9lEag6KW3m2LSM4bDc4ogyHxjZMNI=";
   };
-  freshNpmDepsHash = "sha256-+gFyvrhkCsF99oNvs0gBmLXnDW0hWnZI/wFId7UbI6Q=";
+  freshNpmDepsHash = "sha256-koVd02HEhEAOkcvIuUg4X1A6P6P0B+wJp4DJLwkH62w=";
   freshModelData = prev.fetchurl {
     url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${newerVer}.tgz";
-    hash = "sha256-U0PhY5vzQ73DNE3zrWwxwFpQtoutB6xrzhCJDUtrimE=";
+    hash = "sha256-4yD+e9K5J3grqaN9NW/lg38aqWpGQyYQ4bO5zLdI6lw==";
   };
   localPatches = [
     ./9709-bandaid.patch
@@ -73,7 +75,7 @@ let
     });
     # Build workspace dependencies in order, then the coding-agent, using the
     # model catalog supplied via modelData instead of fetching it during build.
-    # Remove when nixpkgs catches up to 1.3.0.
+    # Remove when nixpkgs catches up to 1.5.0.
     buildPhase = ''
       runHook preBuild
 
@@ -90,6 +92,7 @@ let
 
       # Replace workspace deps needed at runtime with real copies
       for ws in @earendil-works/chord:packages/chord \
+                @earendil-works/pi-schema:packages/schema \
                 @earendil-works/pi-ai:packages/ai \
                 @earendil-works/pi-agent-core:packages/agent \
                 @earendil-works/pi-codemode:packages/codemode \

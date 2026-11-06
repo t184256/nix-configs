@@ -1,19 +1,19 @@
-From e328eea3265512d94306ba0bd029ee284ae87783 Mon Sep 17 00:00:00 2001
+From 70d6fe175e3af5aca660d20d3f09b009c23899c9 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Thu, 8 Oct 2026 13:51:27 +0200
 Subject: [PATCH] append exit code and duration metadata to tool results sent
  via OpenAI completions
 
 ---
- packages/ai/src/api/openai-completions.ts         | 15 ++++++++++++++-
- .../openai-completions-tool-result-images.test.ts |  2 +-
+ packages/ai/src/api/openai-completions.ts                 | 15 ++++++++++++++-
+ .../ai/test/openai-completions-tool-result-images.test.ts |  2 +-
  2 files changed, 15 insertions(+), 2 deletions(-)
 
 diff --git a/packages/ai/src/api/openai-completions.ts b/packages/ai/src/api/openai-completions.ts
-index 32cf42b45..42485bd49 100644
+index 0e5b606e..0eee5498 100644
 --- a/packages/ai/src/api/openai-completions.ts
 +++ b/packages/ai/src/api/openai-completions.ts
-@@ -1192,6 +1192,19 @@ function addCacheControlToTextContent(
+@@ -1175,6 +1175,19 @@ function addCacheControlToTextContent(
  	return false;
  }
  
@@ -33,7 +33,7 @@ index 32cf42b45..42485bd49 100644
  export function convertMessages(
  	model: Model<"openai-completions">,
  	context: TranscriptContext,
-@@ -1425,7 +1438,7 @@ export function convertMessages(
+@@ -1412,7 +1425,7 @@ export function convertMessages(
  				// Some providers require the 'name' field in tool results
  				const toolResultMsg: ChatCompletionToolMessageParam = {
  					role: "tool",
@@ -43,18 +43,17 @@ index 32cf42b45..42485bd49 100644
  				};
  				if (compat.requiresToolResultName && toolMsg.toolName) {
 diff --git a/packages/ai/test/openai-completions-tool-result-images.test.ts b/packages/ai/test/openai-completions-tool-result-images.test.ts
-index 4d303865e..46ee426a1 100644
+index 7acc7221..7ff485c6 100644
 --- a/packages/ai/test/openai-completions-tool-result-images.test.ts
 +++ b/packages/ai/test/openai-completions-tool-result-images.test.ts
-@@ -175,7 +175,7 @@ describe("openai-completions convertMessages", () => {
- 		const messages = convertMessages(model, context, compat);
- 		const toolMessage = messages.find((m) => m.role === "tool") as { role: "tool"; content: string } | undefined;
- 		expect(toolMessage).toBeTruthy();
--		expect(toolMessage?.content).toBe("(no tool output)");
-+		expect(toolMessage?.content).toBe("(no tool output)\n[completed successfully]");
- 		expect(toolMessage?.content).not.toContain("see attached image");
- 	});
- });
+@@ -178,7 +178,7 @@ describe("openai-completions convertMessages", () => {
+ 			const messages = convertMessages(model, context, compat);
+ 			const toolMessage = messages.find((m) => m.role === "tool") as { role: "tool"; content: string } | undefined;
+ 			expect(toolMessage).toBeTruthy();
+-			expect(toolMessage?.content).toBe("(no tool output)");
++			expect(toolMessage?.content).toBe("(no tool output)\n[completed successfully]");
+ 			expect(toolMessage?.content).not.toContain("see attached image");
+ 		},
+ 	);
 -- 
 2.55.0
-
