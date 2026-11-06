@@ -273,6 +273,18 @@ in
     hash = "sha256-JQWSDORkt8VKzYt7dKkxwMZx8G0MiDN2Cy+87rJT6So=";
   };
 
+  # LFM3-Audio-2B: streaming ASR via llama.cpp /v1/realtime
+  lfm3-audio-2b-q80 = fetchHF {
+    repo = "LiquidAI/LFM3-Audio-2B-GGUF";
+    name = "LFM3-Audio-2B-Q8_0.gguf";
+    hash = "sha256-1ONpArqPDuezM1lgMKWdZQ+IrHZmC02bpf93w8Ilj8A=";
+  };
+  lfm3-audio-2b-mmproj-q80 = fetchHF {
+    repo = "LiquidAI/LFM3-Audio-2B-GGUF";
+    name = "mmproj-LFM3-Audio-2B-Q8_0.gguf";
+    hash = "sha256-K2ZIsf1IrxaqCHewWSsUTRUHB4NnPgOKN5/bxR1A42U=";
+  };
+
   zeta_2_1 = fetchHF {
     repo = "mradermacher/zeta-2.1-i1-GGUF";
     name = "zeta-2.1.i1-Q4_K_M.gguf";

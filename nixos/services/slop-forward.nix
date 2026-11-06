@@ -162,6 +162,7 @@ in
   services.nginx = {
     virtualHosts = {
       # /v1/systemone skips litellm (old version only speaks chat completions)
+      # and so does /v1/realtime
       "llm.slop.unboiled.info" =
         mkForward "http://127.0.0.1:11110" {} {
           "/v1/systemone" = {
@@ -173,9 +174,29 @@ in
               client_max_body_size 0;
             '';
           };
+          # batch speech-to-text for Leantype-style clients (multipart POST,
+          # Bearer auth, {"text":...} replies)
+          "/v1/audio" = {
+            proxyPass = "http://192.168.99.7:11113";
+            extraConfig = ''
+              auth_request /custom-auth;
+              proxy_read_timeout 600s;
+              client_max_body_size 25m;
+            '';
+          };
+          "~ ^/v1/realtime" = {
+            proxyPass = "http://192.168.99.7:11113";
+            proxyWebsockets = true;
+            extraConfig = ''
+              auth_request /custom-auth;
+              proxy_read_timeout 1800s;
+              proxy_buffering off;
+            '';
+          };
         };
       "whisper.slop.unboiled.info" =
         mkForward "http://192.168.99.7:11112" {} {};
+
       "goose.slop.unboiled.info" =
         mkForward "http://192.168.99.52:8000" {} {};
       "ctl.slop.unboiled.info" =

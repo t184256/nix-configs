@@ -1,6 +1,7 @@
 { pkgs, lib, ... }:
 
-# just the decision model: d1-3B on /v1/systemone.
+# d1-3B decision model on /v1/systemone, plus LFM3-Audio-2B for
+# /v1/realtime streaming transcription (live partials while speaking).
 # I don't care about performance much,
 # since I'm not exactly sure what decision models are
 # and whether I really need them.
@@ -23,6 +24,13 @@ let
     load-on-startup = true
     ctx-size = 32768
     parallel = 1
+
+    [lfm3-audio-2b]
+    alias = asr
+    model = ${pkgs.lfm3-audio-2b-q80}
+    mmproj = ${pkgs.lfm3-audio-2b-mmproj-q80}
+    ctx-size = 8192
+    parallel = 1
   '';
 in
 {
@@ -35,7 +43,7 @@ in
       port = 11113;
       models-dir = "/var/lib/llama";
       models-preset = models;
-      models-max = 1;
+      models-max = 2;
       n-gpu-layers = 999;
       jinja = true;
       offline = true;

@@ -80,7 +80,7 @@ in
       # runtime override next to it
       models-preset = generatedConfig;
       # chat only now: the decision model (d1-3B) and whisper live on cocoa,
-      # see hosts/cocoa/llama-cpp-decision.nix
+      # see hosts/cocoa/llama-cpp-misc.nix
       models-max = 1;
       n-gpu-layers = 999;
       jinja = true;

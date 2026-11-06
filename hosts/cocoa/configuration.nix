@@ -8,7 +8,7 @@
     ./disko.nix
     ./hardware.nix
     ./network.nix
-    ./llama-cpp-decision.nix
+    ./llama-cpp-misc.nix
     ./whisper-cpp.nix
     ../../nixos/services/autosync-voice.nix
     ../../nixos/services/dyndns.nix
