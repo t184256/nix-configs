@@ -47,23 +47,26 @@ def think_chars(msg):
     return len(val) if isinstance(val, str) else 0
 
 
-def _conversation(prompt):
-    msgs = [{'role': 'user', 'content': prompt}]
-    while True:
+class Convo:
+    def __init__(self, body):
+        self.body = body
+        self.msgs = []
+
+    def ask(self, content):
+        msgs = self.msgs + [{'role': 'user', 'content': content}]
         start = time.perf_counter()
-        r = requests.post(URL + '/v1/chat/completions', json={
-            'model': MODEL, 'messages': msgs,
-            'max_tokens': MAX_TOKENS}, timeout=120)
+        r = requests.post(URL + '/v1/chat/completions',
+                          json={'model': MODEL, 'messages': msgs,
+                                **self.body}, timeout=120)
         r.raise_for_status()  # hitting the context ceiling here is a failure
         out = r.json()
         dt = time.perf_counter() - start
         reply = out['choices'][0]['message']['content'] or ''
-        msgs.append({'role': 'assistant', 'content': reply})
+        self.msgs = msgs + [{'role': 'assistant', 'content': reply}]
         u = out['usage']
         cached = (u.get('prompt_tokens_details') or {}).get('cached_tokens', 0)
-        q = yield (reply, u['prompt_tokens'], u['prompt_tokens'] - cached,
-                   dt, u['total_tokens'])
-        msgs.append({'role': 'user', 'content': q})
+        return (u['prompt_tokens'], cached, u['prompt_tokens'] - cached,
+                dt, u['total_tokens'])
 
 
 def check_pool():
@@ -171,6 +174,55 @@ def check_prefix():
     assert ratio >= prefix_min_hit_ratio, f'{cached}/{ptok} cached'
 
 
+def check_grow_then_fork():
+    # grow in varied chunks until 48k is passed, then fork from older snapshots
+    print('[grow-then-fork]', flush=True)
+    tip_slack = 2048 + 256  # max distance to checkpoint
+    max_fork_time = 1  # snapshots sit checkpointed: rewinds are instant
+
+    def budget(added):
+        return -(-added // 1000)  # ~1000 tps prefill
+
+    words = blob(128000, f'fork-{time.time_ns()}').split(' ')
+    convo = Convo({'max_tokens': 64, 'temperature': 0})
+    snapshots = []
+    prev = 0
+    pos, width = 0, 1000
+    while pos < len(words):
+        p, cached, uncached, dt, _ = convo.ask(
+            ' '.join(words[pos:pos + width]))
+        pos += width
+        added = p - prev
+        limit = budget(added)
+        snapshots.append((p, len(convo.msgs)))
+        print(f'    prompt={p:<9}cached={cached:>5} '
+              f'uncached={max(0, uncached - added):>2}+{added:>5} '
+              f't={dt:.1f}s<{limit:.1f}s', flush=True)
+        assert uncached - added <= tip_slack, \
+            f'tip unprotected: uncached={uncached} added={added}'
+        assert dt <= limit, f'growth {dt:.1f}s > {limit:.1f}s'
+        prev = p
+        if p >= 80000:
+            break
+        width += 3777
+
+    tip = prev  # rewinds: fork at every snapshot, earliest-first
+    for p0, n in sorted(snapshots):
+        fork = Convo(convo.body)
+        fork.msgs = convo.msgs[:n]
+        p, cached, uncached, dt, _ = fork.ask(
+            'Which fruit sounds most like a place?'
+        )
+        fresh = p - p0  # reply tail + question, exact again
+        # page-aligned anchors may cover a few tokens past their mark
+        missed = max(0, uncached - fresh)
+        print(f'    rewind={p0:>5}+{fresh} cached={cached:>5} '
+              f'uncached={missed:>2}+{fresh:<5} '
+              f't={dt:.1f}s<{max_fork_time:.1f}s', flush=True)
+        assert uncached - fresh <= tip_slack, f'hole at {tip - p0}'
+        assert dt <= max_fork_time, f'fork took {dt:.1f}s'
+
+
 def check_switch():
     # flipping between two conversations must not re-prefill (RAM cache works)
     print('[switch]', flush=True)
@@ -184,13 +236,13 @@ def check_switch():
     max_slowdown_to_base = 10
     max_slowdown_to_prev = 5
     min_reuse_coefficient = 0.90
-    convos = [_conversation(blob(step, f'{j}-open')) for j in range(2)]
+    convos = [Convo({'max_tokens': MAX_TOKENS}) for _ in range(2)]
     depths, grow = [0, 0], [0, 0]  # grow: cost of a turn, learned as we go
     bases = []
     for i in range(2):
         for j, convo in enumerate(convos):
-            _, _, _, dt, total = (next(convo) if i == 0 else
-                                  convo.send(blob(step, f'{j}-{i}')))
+            q = blob(step, f'{j}-open' if i == 0 else f'{j}-{i}')
+            _, _, _, dt, total = convo.ask(q)
             grow[j] = max(grow[j], total - depths[j])
             depths[j] = total
             print(f'    +{dt:4.1f}s {i}/4: warmed up to {sum(depths)}...',
@@ -209,7 +261,7 @@ def check_switch():
         for j, convo in enumerate(convos):
             if stuck[j]:
                 continue
-            _, p, uncached, dt, total = convo.send(blob(step, f'{j}-{i}'))
+            p, _, uncached, dt, total = convo.ask(blob(step, f'{j}-{i}'))
             added = p - depths[j]
             grow[j] = max(grow[j], added)
             history = depths[j]  # what could be reused
@@ -233,6 +285,7 @@ def check_switch():
 check_pool()
 check_accept()
 check_nothink()
+check_grow_then_fork()
 check_effort()
 check_prefix()
 check_switch()
