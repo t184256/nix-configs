@@ -1,7 +1,7 @@
 _: prev:
 
 let
-  newerVer = "0.7.0";  # no support for b##### versions, only semver
+  newerVer = "0.9.0";  # no support for b##### versions, only semver
   isFresh = v: prev.lib.versionAtLeast v newerVer;
   freshen = prevLlamaCpp:
     assert !prev.lib.strings.hasPrefix "b" prevLlamaCpp.version;
@@ -15,27 +15,25 @@ let
       owner = "ggml-org";
       repo = "llama.cpp";
       tag = "v${newerVer}";
-      hash = "sha256-uiZfA6qDaJt2W+4p46Br20+zKt98rjcO8/IhuWN7H4s=";
+      hash = "sha256-2FHjR0XXT+THe/RBXC8CXsWQ0PRa7oDzucYwhSy3/UM=";
       leaveDotGit = true;
       postFetch = ''
         git -C "$out" rev-parse --short HEAD > $out/COMMIT
         find "$out" -name .git -print0 | xargs -0 rm -rf
       '';
     };
-    npmDepsHash = "sha256-hqYzdp1FwPhYkBP278fQXgY9NCKB6Q3P6Gko7BfP0m0=";
+    npmDepsHash = "sha256-XLtEZsSFdk+2SyfXzBp8HQ2e27PQPpDCn1YjePU1/9w=";
     disabledTests = (oa.disabledTests or []) ++ [
       "test-llama-context-model"  # 0.7.0 addition
+      "test-conversion-fp8"  # 0.9.0 addition, needs torch/safetensors/numpy
     ];
-    patches = (prev.lib.remove
+    patches = prev.lib.remove
       (prev.fetchpatch { # #30034 is already in v0.7.0
         url = "https://github.com/ggml-org/llama.cpp/commit/" +
               "07ccce23cf7fe3c84e13d810accff672b1d966bf.patch";
         hash = "sha256-KtsPcveFM51fY1hDWntiqCW/KHoWLv05Gmnhd1U/9Zs=";
       })
-      (oa.patches or [])) ++ [
-      # https://github.com/ggml-org/llama.cpp/pull/20819 persist checkpoints
-      ./20819-persist-checkpoints.patch
-    ];
+      (oa.patches or []);
   };
 in
 rec {
