@@ -1,12 +1,12 @@
 diff --git a/dist/index.js b/dist/index.js
-index e9ba932..606415b 100644
+index 3cb1d8d..ce58b36 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -5460,9 +5460,6 @@ var resolveActivationModels = async (runtime, ctx, canContinue) => {
+@@ -5532,9 +5532,6 @@ var resolveActivationModels = async (runtime, ctx, canContinue) => {
    if (!(advisorAuth.ok && advisorAuth.apiKey)) {
      return { error: `No API key for Advisor ${advisorRef}` };
    }
--  if (!isMarkedSubagent() && !await runtime.setExecutorModel(executor)) {
+-  if (executor && !isMarkedSubagent() && !await runtime.setExecutorModel(executor)) {
 -    return { error: `No API key for Executor ${executorRef}` };
 -  }
    return {};

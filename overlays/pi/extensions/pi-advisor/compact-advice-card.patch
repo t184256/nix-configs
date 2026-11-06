@@ -1,8 +1,8 @@
 diff --git a/dist/index.js b/dist/index.js
-index e9ba932..87e0c98 100644
+index a66ac06..3cb1d8d 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -4545,7 +4545,7 @@ var hiddenThinkingLabel = (theme) => {
+@@ -4615,7 +4615,7 @@ var hiddenThinkingLabel = (theme) => {
  var renderThinkingMarkdown = (thinking, theme) => piHideThinkingEnabled() ? hiddenThinkingLabel(theme) : new ThinkingMarkdown(thinking, theme);
  var resolveAdvisorRequest = (question) => question?.trim() || undefined;
  var renderAdvisorCallBox = (question, theme, followUp = false) => {
@@ -11,7 +11,7 @@ index e9ba932..87e0c98 100644
    const label = theme.fg("customMessageLabel", theme.bold("[advisor]"));
    const title = theme.fg("customMessageText", followUp ? "Executor → Advisor · Follow-up" : "Executor → Advisor");
    box.addChild(new Text(question ? `${label} ${title}
-@@ -7806,7 +7806,7 @@ var manualCallRenderer = (runtime) => (entry, { expanded }, theme) => {
+@@ -7199,7 +7199,7 @@ var manualCallRenderer = (runtime) => (entry, { expanded }, theme) => {
  };
  var manualResultRenderer = (message, { expanded }, theme) => {
    const { details } = message;
@@ -20,7 +20,7 @@ index e9ba932..87e0c98 100644
    const advice = details?.text ?? (isString(message.content) ? message.content : "(Advisor returned no advice.)");
    box.addChild(new Text4(renderAdvisorResponseHeader(hasSoundVerdict(advice), theme), 0, 0));
    if (details?.advisor) {
-@@ -7829,7 +7829,7 @@ var manualResultRenderer = (message, { expanded }, theme) => {
+@@ -7222,7 +7222,7 @@ var manualResultRenderer = (message, { expanded }, theme) => {
    return box;
  };
  var outcomeStatsRenderer = (message, _options, theme) => {
@@ -29,7 +29,7 @@ index e9ba932..87e0c98 100644
    box.addChild(new Text4(theme.fg("accent", theme.bold("◆ ADVISOR · OUTCOME STATS")), 0, 0));
    box.addChild(new Markdown3(formatAdvisorStats(message.details ?? { malformedLines: 0 }), 0, 0, getMarkdownTheme3()));
    return box;
-@@ -10099,7 +10099,7 @@ var renderFinalAdvisorResult = (box, result, expanded, theme, context) => {
+@@ -9152,7 +9152,7 @@ var renderFinalAdvisorResult = (box, result, expanded, theme, context) => {
    box.addChild(new Markdown4(adviceForDisplay(displayAdvice, expanded), 0, 0, getMarkdownTheme4()));
  };
  var renderAdvisorResult = (result, { isPartial, expanded }, theme, context) => {
@@ -38,7 +38,7 @@ index e9ba932..87e0c98 100644
    box.setBgFn((text) => theme.bg("customMessageBg", text));
    box.clear();
    if (isPartial) {
-@@ -10107,7 +10107,6 @@ var renderAdvisorResult = (result, { isPartial, expanded }, theme, context) => {
+@@ -9160,7 +9160,6 @@ var renderAdvisorResult = (result, { isPartial, expanded }, theme, context) => {
    } else {
      renderFinalAdvisorResult(box, result, expanded, theme, context);
    }
@@ -46,7 +46,7 @@ index e9ba932..87e0c98 100644
    return box;
  };
  
-@@ -10752,13 +10751,13 @@ var addUsageLine = (box, details, theme) => {
+@@ -9816,13 +9815,13 @@ var addUsageLine = (box, details, theme) => {
  };
  var callQuestionRenderer = (message, _options, theme) => renderAdvisorCallBox(message.details?.question, theme);
  var scoutResultRenderer = (entry, { expanded }, theme) => {
@@ -62,7 +62,7 @@ index e9ba932..87e0c98 100644
    box.addChild(new Text7(theme.fg("warning", theme.bold("◆ ADVISOR · TURN REVIEW")), 0, 0));
    if (details?.advisor) {
      box.addChild(new Text7(theme.fg("dim", `  ${details.advisor}`), 0, 0));
-@@ -10773,7 +10772,7 @@ var turnGateResultRenderer = (message, { expanded }, theme) => {
+@@ -9837,7 +9836,7 @@ var turnGateResultRenderer = (message, { expanded }, theme) => {
  };
  var loopResultRenderer = (message, { expanded }, theme) => {
    const { details } = message;
@@ -72,19 +72,19 @@ index e9ba932..87e0c98 100644
    if (details?.advisor) {
      box.addChild(new Text7(theme.fg("dim", `  ${details.advisor}`), 0, 0));
 diff --git a/src/commands/renderers.ts b/src/commands/renderers.ts
-index 1024210..7ff1017 100644
+index 80906ec..e8de22f 100644
 --- a/src/commands/renderers.ts
 +++ b/src/commands/renderers.ts
-@@ -65,7 +65,7 @@ const manualResultRenderer: MessageRenderer<ManualResultDetails> = (
+@@ -69,7 +69,7 @@ const manualResultRenderer: MessageRenderer<ManualResultDetails> = (
    theme
  ) => {
    const { details } = message;
 -  const box = new Box(1, 1, (text) => theme.bg("customMessageBg", text));
 +  const box = new Box(0, 0, (text) => theme.bg("customMessageBg", text));
+ 
    const advice =
      details?.text ??
-     (isString(message.content)
-@@ -108,7 +108,7 @@ const outcomeStatsRenderer: MessageRenderer<AdvisorStatsDetails> = (
+@@ -121,7 +121,7 @@ const outcomeStatsRenderer: MessageRenderer<AdvisorStatsDetails> = (
    _options,
    theme
  ) => {
@@ -94,10 +94,10 @@ index 1024210..7ff1017 100644
      new Text(theme.fg("accent", theme.bold("◆ ADVISOR · OUTCOME STATS")), 0, 0)
    );
 diff --git a/src/tools/register-renderers.ts b/src/tools/register-renderers.ts
-index 5cb3c25..ae3cb6f 100644
+index 8af2fcf..bf3fc85 100644
 --- a/src/tools/register-renderers.ts
 +++ b/src/tools/register-renderers.ts
-@@ -90,7 +90,7 @@ const scoutResultRenderer: EntryRenderer<ScoutToolDetails> = (
+@@ -92,7 +92,7 @@ const scoutResultRenderer: EntryRenderer<ScoutToolDetails> = (
    { expanded },
    theme
  ) => {
@@ -106,7 +106,7 @@ index 5cb3c25..ae3cb6f 100644
    // SAFETY: appendScoutLifecycleEntry always stores scout details under this customType.
    renderScoutDetails(
      box,
-@@ -107,7 +107,7 @@ const turnGateResultRenderer: MessageRenderer<TurnGateResultDetails> = (
+@@ -110,7 +110,7 @@ const turnGateResultRenderer: MessageRenderer<TurnGateResultDetails> = (
    theme
  ) => {
    const { details } = message;
@@ -115,7 +115,7 @@ index 5cb3c25..ae3cb6f 100644
    box.addChild(
      new Text(theme.fg("warning", theme.bold("◆ ADVISOR · TURN REVIEW")), 0, 0)
    );
-@@ -147,7 +147,7 @@ const loopResultRenderer: MessageRenderer<LoopResultDetails> = (
+@@ -154,7 +154,7 @@ const loopResultRenderer: MessageRenderer<LoopResultDetails> = (
    theme
  ) => {
    const { details } = message;
@@ -125,7 +125,7 @@ index 5cb3c25..ae3cb6f 100644
      new Text(
        theme.fg(
 diff --git a/src/tools/render-advisor-result.ts b/src/tools/render-advisor-result.ts
-index da5ec94..557d745 100644
+index 081ea4c..635d8e2 100644
 --- a/src/tools/render-advisor-result.ts
 +++ b/src/tools/render-advisor-result.ts
 @@ -4,7 +4,7 @@ import type {
@@ -137,33 +137,34 @@ index da5ec94..557d745 100644
  
  import { getAdvisorSettings } from "../config/state.ts";
  import { textFrom } from "../conversation.ts";
-@@ -236,7 +236,7 @@ export const renderAdvisorResult = (
+@@ -276,7 +276,7 @@ export const renderAdvisorResult = (
    const box =
      context.lastComponent instanceof Box
        ? context.lastComponent
 -      : new Box(1, 0, (text: string) => theme.bg("customMessageBg", text));
 +      : new Box(0, 0, (text: string) => theme.bg("customMessageBg", text));
+ 
    box.setBgFn((text) => theme.bg("customMessageBg", text));
    box.clear();
-   if (isPartial) {
-@@ -244,7 +244,5 @@ export const renderAdvisorResult = (
-   } else {
+@@ -287,8 +287,6 @@ export const renderAdvisorResult = (
      renderFinalAdvisorResult(box, result, expanded, theme, context);
    }
+ 
 -  // Restores the bottom breathing room the removed vertical padding provided.
 -  box.addChild(new Spacer(1));
+ 
    return box;
  };
 diff --git a/src/tools/render-common.ts b/src/tools/render-common.ts
-index 7513772..6757907 100644
+index fa03e6a..8305cac 100644
 --- a/src/tools/render-common.ts
 +++ b/src/tools/render-common.ts
-@@ -88,7 +88,7 @@ export const renderAdvisorCallBox = (
+@@ -91,7 +91,7 @@ export const renderAdvisorCallBox = (
    theme: Theme,
    followUp = false
  ) => {
 -  const box = new Box(1, 1, (text) => theme.bg("customMessageBg", text));
 +  const box = new Box(0, 0, (text) => theme.bg("customMessageBg", text));
    const label = theme.fg("customMessageLabel", theme.bold("[advisor]"));
+ 
    const title = theme.fg(
-     "customMessageText",

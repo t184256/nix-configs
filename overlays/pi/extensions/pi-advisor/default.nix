@@ -1,14 +1,14 @@
-# philipbrembeck/pi-advisor v0.13.1: automatic async secondary review
+# philipbrembeck/pi-advisor v0.14.4: automatic async secondary review
 final: prev: {
   pi-advisor = prev.stdenv.mkDerivation {
     pname = "pi-advisor";
-    version = "0.13.1";
+    version = "0.14.4";
 
     src = prev.fetchFromGitHub {
       owner = "philipbrembeck";
       repo = "pi-advisor";
-      rev = "v0.13.1";
-      sha256 = "sha256-AvTxZ7UVa6XXS+9O/flAq85v7ZunXDArWnx62VJC2Gw=";
+      rev = "v0.14.4";
+      sha256 = "sha256-0IMUnODkWUBvlwDaaGZfT+sYR9vNKFxLlKVd5pNqiHU=";
     };
 
     patches = [
