@@ -375,11 +375,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792415785,
-        "narHash": "sha256-/g69iWHQO0WI2051Sv3dsxMtIjP1sTqEyrTTXlAtUZU=",
+        "lastModified": 1793972669,
+        "narHash": "sha256-6P3kpRY8QGRo+LlW9zehYIAJuxyQ2aUAXPrkgrHk794=",
         "owner": "andersonjoseph",
         "repo": "jailed-agents",
-        "rev": "15544087b17148138b2b1424864410301435d665",
+        "rev": "3e0419223d01dbf241002d7f72f283699d3e4c07",
         "type": "github"
       },
       "original": {
