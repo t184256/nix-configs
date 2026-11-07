@@ -420,6 +420,7 @@ let
     pkg = pkgs.pi-coding-agent;
     env = { PI_SKIP_VERSION_CHECK = "1"; };
     enableNix = true;
+    enableGitWorktrees = true;  # bind the shared .git rw
     extraPkgs = with pkgs; [
       pi-coding-agent
       gh xxd gnutar
