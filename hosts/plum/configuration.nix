@@ -6,28 +6,28 @@
   imports = [
     ../../nixos/profiles/2024.nix
     ./disko.nix
-    "${inputs.nixos-hardware}/common/cpu/amd"
+    #"${inputs.nixos-hardware}/common/cpu/amd"
     "${inputs.nixos-hardware}/common/gpu/nvidia"
     ./hardware.nix
     ./trackball.nix
-    ./egpu.nix
+    #./egpu.nix
     ./prefer-igpu.nix
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
-    ../../nixos/services/syncthing.nix
+    #../../nixos/services/syncthing.nix
     #../../nixos/services/whisper-cpp-cuda.nix
-    ./apollo.nix
-    ./bench-llm.nix
-    ./llama-cpp-mini.nix
-    ./clevis.nix
-    ./clevis-highlevel.nix
-    ./cooling/lact.nix
-    ./cooling/fancontrol.nix
-    ./cooling/measurement/calibrate-fancontroller.nix
-    ./cooling/fanlistener.nix
-    ./cooling/temps.nix
-    ./safe-reboot.nix
-    ./sglang
+    #./apollo.nix
+    #./bench-llm.nix
+    #./llama-cpp-mini.nix
+    #./clevis.nix
+    #./clevis-highlevel.nix
+    #./cooling/lact.nix
+    #./cooling/fancontrol.nix
+    #./cooling/measurement/calibrate-fancontroller.nix
+    #./cooling/fanlistener.nix
+    #./cooling/temps.nix
+    #./safe-reboot.nix
+    #./sglang
   ];
 
   nixpkgs.config.allowUnfreePredicate = pkg:
