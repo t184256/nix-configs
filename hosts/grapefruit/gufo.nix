@@ -6,35 +6,38 @@
 
 # bench-gufo --think:
 # target      pp      ttft   avg pp   decode tps    gen
-#    256     257    0.349s      736         48.1    596
-#   8192    8193    7.916s     1035         53.3    537
-#  16384   16385   15.506s     1057         49.8    385
-#  32768   32769   31.260s     1048         49.8    506
-#  65536   65537   65.816s      996         51.9    535
-# 131072  131073  135.635s      966         51.4    539
-# 196608  196609  208.438s      943         50.8    308
-# 260096  260097  282.605s      920         51.2    386
+# target      pp      ttft   avg pp   decode tps    gen
+#    256     257    0.367s      701         50.8    606
+#   8192    8193    8.041s     1019         49.7    614
+#  16384   16385   15.579s     1052         49.9    505
+#  32768   32769   31.441s     1042         50.0    437
+#  65536   65537   66.302s      988         48.7    527
+# 131072  131073  136.681s      959         52.6    409
+# 196608  196609  209.663s      938         49.9    459
+# 260096  260097  284.412s      915         48.5    357
+# target      pp      ttft   avg pp   decode tps    gen
 
 # bench-gufo --nothink:
 # target      pp      ttft   avg pp   decode tps    gen
-#    256     259    0.357s      725         45.7    392
-#   8192    8196    7.833s     1046         42.8    605
-#  16384   16387   15.628s     1049         45.7    584
-#  32768   32771   32.119s     1020         42.1    324
-#  65536   65539   65.298s     1004         43.1   1017
-# 131072  131075  135.516s      967         43.1    195
-# 196608  196611  208.264s      944         46.9    538
-# 260096  260099  282.489s      921         46.4   1024
+#    256     259    0.362s      717         45.3    251
+#   8192    8195    7.859s     1043         39.9    626
+#  16384   16387   15.635s     1048         41.0    679
+#  32768   32772   32.307s     1014         45.2    971
+#  65536   65539   65.706s      997         45.9   1024
+# 131072  131075  135.863s      965         41.2    895
+# 196608  196611  209.186s      940         43.6   1024
+# 260096  260099  283.942s      916         42.1   1024
 
 # bench-gufo --think --concurrency 2 (last row per size only):
-#    256     257    0.709s      362         33.6    554
-#   8192    8193   16.428s      502         33.3    432
-#  16384   16385   32.221s      512         28.7    468
-#  32768   32769   67.929s      482         29.3    468
-#  65536   65537  136.815s      479         29.3    501
-# 131072  131073  276.000s      475         29.0    443
-# 196608  196609  427.749s      460         27.1    376
-# 260096  260097  589.190s      441         26.3    360
+# target      pp      ttft   avg pp   decode tps    gen
+#    256     257    0.728s      353         35.3    620
+#   8192    8193   17.237s      476         30.4    586
+#  16384   16385   31.504s      524         28.4    594
+#  32768   32769   68.846s      476         24.8    451
+#  65536   65537  137.545s      476         31.3    513
+# 131072  131073  279.339s      469         30.2    492
+# 196608  196609  428.717s      459         30.1    370
+# 260096  260097  589.714s      441         26.0    338
 
 let
   gufo = inputs.mbufo.packages.x86_64-linux.default.overrideAttrs (_: prev: {
@@ -42,8 +45,14 @@ let
     postPatch = ''
       ${prev.postPatch or ""}
       substituteInPlace src/models/qwen/chat_template.cpp \
-      --replace-fail 'reasoning.effort.value_or(ReasoningEffort::kXHigh)' \
-                     'reasoning.effort.value_or(ReasoningEffort::kMedium)'
+        --replace-fail 'reasoning.effort.value_or(ReasoningEffort::kXHigh)' \
+                       'reasoning.effort.value_or(ReasoningEffort::kMedium)'
+
+      # v0.27 gufo_core_gemm includes <hipblas/hipblas.h> through hip_utils.hpp
+      # but links only hip::host and roc::hipblaslt. fix for splti ROCM outputs:
+      substituteInPlace CMakeLists.txt \
+        --replace-fail 'hip::host roc::hipblaslt)' \
+                       'hip::host roc::hipblas roc::hipblaslt)'
     '';
   });
   gufoServe = inputs.mbufo.lib.mkGufoServe {
