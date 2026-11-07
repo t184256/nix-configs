@@ -23,7 +23,7 @@
       Environment = [ "PORT=9272" ];
       ExecStart =
         "${pkgs.python3.withPackages (ps: [ ps.sounddevice ps.numpy ])}"
-        + "/bin/python3 ${./fanlistener.py} 'HD-Audio Generic: ALC897 Analog'";
+        + "/bin/python3 ${./fanlistener.py} 'HD-Audio Generic: ALC1220 Analog'";
       Restart = "on-failure";
     };
   };

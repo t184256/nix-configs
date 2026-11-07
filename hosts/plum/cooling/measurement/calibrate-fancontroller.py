@@ -7,7 +7,7 @@ import pynvml
 
 PORT = 9272
 
-ALL_FANS = [1, 2, 3, 4, 5, 6, 7, 8]  # cpu: 1  exhaust: 2,4,6  intake: 3,5,7,8
+ALL_FANS = [1, 2, 3, 4, 5, 6, 7]
 
 
 def find_hwmon(name):
@@ -20,7 +20,12 @@ def find_hwmon(name):
     raise RuntimeError(f'{name} hwmon not found')
 
 
-hwmon = find_hwmon('nct6687')
+hwmon = find_hwmon('nct6799')
+
+SNAPSHOT = {}
+for n in ALL_FANS:
+    SNAPSHOT[f'pwm{n}_enable'] = (hwmon / f'pwm{n}_enable').read_text().strip()
+    SNAPSHOT[f'pwm{n}'] = (hwmon / f'pwm{n}').read_text().strip()
 
 pynvml.nvmlInit()
 gpu0 = pynvml.nvmlDeviceGetHandleByIndex(0)
@@ -32,6 +37,15 @@ def set_case_fan(n, pwm):
     (hwmon / f'pwm{n}').write_text(str(pwm))
 
 
+def read_chip():
+    out = {}
+    for n in ALL_FANS:
+        out[f'fan{n}'] = (hwmon / f'fan{n}_input').read_text().strip()
+        out[f'pwm{n}'] = (hwmon / f'pwm{n}').read_text().strip()
+        out[f'pwm{n}_enable'] = (hwmon / f'pwm{n}_enable').read_text().strip()
+    return out
+
+
 def set_gpu_fan(gpu, fan_idx, pct):
     pynvml.nvmlDeviceSetFanControlPolicy(
         gpu, fan_idx, pynvml.NVML_FAN_POLICY_MANUAL)
@@ -39,8 +53,11 @@ def set_gpu_fan(gpu, fan_idx, pct):
 
 
 def restore():
-    for n in ALL_FANS:
-        (hwmon / f'pwm{n}_enable').write_text('99')
+    for key, val in SNAPSHOT.items():
+        try:
+            (hwmon / key).write_text(val)
+        except OSError as e:
+            print(f'restore {key}={val} failed: {e}')
 
 
 def handle_sigterm(sig, frame):
@@ -63,6 +80,10 @@ class Handler(socketserver.StreamRequestHandler):
                 gpu = gpu0 if cmd['gpu'] == 0 else gpu1
                 set_gpu_fan(gpu, cmd['fan'], cmd['pct'])
                 self.wfile.write(b'{"ok": true}\n')
+            elif cmd['cmd'] == 'read':
+                self.wfile.write(
+                    (json.dumps({'ok': True, 'data': read_chip()})
+                     + '\n').encode())
             elif cmd['cmd'] == 'restore':
                 restore()
                 self.wfile.write(b'{"ok": true}\n')

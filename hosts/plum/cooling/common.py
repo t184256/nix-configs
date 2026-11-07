@@ -73,7 +73,7 @@ def _fg(rgb):
 _ALL_PROFILES = [PROFILES_USB, PROFILES_ANALOG]
 _db_bases = [min(min(prof) for prof in profs.values())
              for profs in _ALL_PROFILES]
-K = len(PROFILES_USB['cpu0']) - 1
+K = len(next(iter(PROFILES_USB.values()))) - 1
 
 
 def profile_db(profile, pct):

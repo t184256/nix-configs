@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import atexit
 import json
+import os
 import socket
 import statistics
 import sys
@@ -25,22 +26,22 @@ DELTA_SILENCE   = 0.1   # dB to stop going lower
 SPEEDS = [round(100 * i / K) for i in range(K + 1)]
 
 ALL_GPU_FANS  = [(0, 0), (0, 1), (1, 0), (1, 1)]
-ALL_PWM_FANS  = [1, 2, 3, 4, 5, 6, 7, 8]  # 1=cpu0, rest=case fans
-PWM_FAN_NAMES = {1: 'cpu0', 2: 'case2', 3: 'case3', 4: 'case4',
-                 5: 'case5', 6: 'case6', 7: 'case7', 8: 'case8'}
+ALL_PWM_FANS  = [1, 2, 3, 4, 5, 6, 7]  # all case fans (cpu cooler is
+# not on the chip; fan2 tach senses it, see fancontrol.py header)
+PWM_FAN_NAMES = {1: 'case1', 2: 'case2', 3: 'case3', 4: 'case4',
+                 5: 'case5', 6: 'case6', 7: 'case7'}
 
 # Each target: name, own gpu fans [(gpu,fan),...], own pwm fans [n,...]
 ALL_TARGETS = [
     ('gpu0',  [(0, 0), (0, 1)], []),
     ('gpu1',  [(1, 0), (1, 1)], []),
-    ('cpu0',  [], [1]),
+    ('case1', [], [1]),
     ('case2', [], [2]),
     ('case3', [], [3]),
     ('case4', [], [4]),
     ('case5', [], [5]),
     ('case6', [], [6]),
     ('case7', [], [7]),
-    ('case8', [], [8]),
 ]
 ALL_TARGET_NAMES = [name for name, *_ in ALL_TARGETS]
 
@@ -94,7 +95,7 @@ def measure_all_mics():
 
 
 def restore():
-    print(' * restore all fans to auto')
+    print(' * restore all fans')
     fanctl({'cmd': 'restore'})
 
 

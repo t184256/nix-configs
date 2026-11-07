@@ -19,16 +19,18 @@
     ./apollo.nix
     ./bench-llm.nix
     ./llama-cpp-mini.nix
-    ./clevis.nix
-    ./clevis-highlevel.nix
+    #./clevis.nix
+    #./clevis-highlevel.nix
     ./cooling/lact.nix
     ./cooling/fancontrol.nix
     ./cooling/measurement/calibrate-fancontroller.nix
     ./cooling/fanlistener.nix
     ./cooling/temps.nix
-    ./safe-reboot.nix
+    #./safe-reboot.nix
     ./sglang
   ];
+
+  hardware.rasdaemon.enable = true;
 
   nixpkgs.config.allowUnfreePredicate = pkg:
     lib.hasPrefix "nvidia" (lib.getName pkg) ||
@@ -45,7 +47,7 @@
 
   hardware.sensor.hddtemp = {
     enable = true;
-    drives = [ "/dev/sda" ];
+    drives = [ "/dev/sda" "/dev/sdb" ];
     extraArgs = [ "--listen=127.0.0.1" ];
     dbEntries = [ ''"ST500LM021" 194 C "Seagate Laptop Thin 500GB"'' ];
   };
@@ -56,6 +58,7 @@
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.memtest86.enable = true;
 
   boot.initrd.systemd.enable = true;
   boot.initrd.systemd.network.enable = true;
@@ -96,6 +99,7 @@
       "/var/lib/alsa"
       "/var/lib/bluetooth"
       "/var/lib/boltd"
+      "/var/lib/rasdaemon"
       "/var/lib/systemd"
       "/var/lib/upower"
     ];

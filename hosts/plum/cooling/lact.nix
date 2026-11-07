@@ -59,7 +59,7 @@ in
         disable_nvapi: false
       apply_settings_timer: 5
       gpus:
-        "10DE:2204-1043:87AF-0000:11:00.0":  # ASUS
+        "10DE:2204-1043:87AF-0000:03:00.0":  # ASUS
           power_cap: 250.0
           min_core_clock: ${toString core_clock_min}
           max_core_clock: ${toString core_clock_max}
