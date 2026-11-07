@@ -59,6 +59,9 @@
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
 
+    paseo.url = "github:getpaseo/paseo?ref=v0.15.3";
+    paseo.inputs.nixpkgs.follows = "nixpkgs";
+
     simple-nixos-mailserver.url =
       "gitlab:simple-nixos-mailserver/nixos-mailserver";
     simple-nixos-mailserver.inputs.flake-compat.follows = "flake-compat";

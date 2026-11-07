@@ -773,6 +773,27 @@
         "type": "github"
       }
     },
+    "paseo": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793979111,
+        "narHash": "sha256-ZpJ1devem8cREv4MzPf3JG84xUAEHAmgUhAP4HfQ+us=",
+        "owner": "getpaseo",
+        "repo": "paseo",
+        "rev": "d91ae138cb931447635e94296023414a58bedcc5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "getpaseo",
+        "ref": "v0.15.3",
+        "repo": "paseo",
+        "type": "github"
+      }
+    },
     "pre-commit-hooks": {
       "inputs": {
         "flake-compat": [
@@ -825,6 +846,7 @@
         "nmd": "nmd",
         "openwrt-imagebuilder": "openwrt-imagebuilder",
         "openwrt-nix": "openwrt-nix",
+        "paseo": "paseo",
         "pre-commit-hooks": "pre-commit-hooks",
         "simple-nixos-mailserver": "simple-nixos-mailserver",
         "systems": "systems",

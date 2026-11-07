@@ -430,7 +430,21 @@ let
 
   jailed-pi = pkgs.writeShellScriptBin "jailed-pi" ''
     set -Eeuo pipefail; shopt -s inherit_errexit
-    export LLAMA_KEY=$(cat /mnt/secrets/llm)
+    # key sources, in order:
+    # 1. daemon context: PID1 materializes the root:0400 secret into
+    #    the unit's cred dir (unit LoadCredential); only exists while
+    #    the daemon runs, owned by the daemon user
+    # 2. interactive, fresh inject: the file is monk-readable
+    # 3. interactive, durable: pass (add the entry if you rely on this)
+    llama_key=""
+    if [ -r /run/credentials/paseo.service/llm.key ]; then
+      llama_key=$(cat /run/credentials/paseo.service/llm.key)
+    fi
+    if [ -z "$llama_key" ]; then
+      llama_key=$(cat /mnt/secrets/llm 2>/dev/null \
+                 || pass show services/unboiled.info/llm.slop.unboiled.info)
+    fi
+    export LLAMA_KEY="$llama_key"
     export JEV_API_KEY="$LLAMA_KEY"
     exec ${jailedPi}/bin/jailed-pi "$@"
   '';

@@ -28,6 +28,7 @@
     ./cooling/temps.nix
     ./safe-reboot.nix
     ./sglang
+    ./paseo.nix
   ];
 
   nixpkgs.config.allowUnfreePredicate = pkg:
@@ -120,7 +121,7 @@
   networking.firewall.allowedTCPPorts = [
     8787 # slopfest pi bridge
     9988 # ctl
-    6767 # slopfest paseo
+    6767 # paseo (VPN-only, see ./paseo.nix)
   ];
 
   environment.systemPackages = with pkgs; [
