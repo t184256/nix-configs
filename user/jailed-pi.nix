@@ -374,9 +374,7 @@ let
   # https://alexdav.id/projects/jail-nix/combinators/
   # https://git.sr.ht/~alexdavid/jail.nix
   extraJailOpts = with comb; [
-    (fwd-env "LLAMA_KEY")
-    (fwd-env "JEV_API_KEY")
-    (fwd-env "PWD")
+    (fwd-env "PWD")  # strict on purpose, must be set
     (write-text (noescape "~/.config/nix/nix.conf") ''
       experimental-features = nix-command flakes
     '')
@@ -421,6 +419,7 @@ let
     env = { PI_SKIP_VERSION_CHECK = "1"; };
     enableNix = true;
     enableGitWorktrees = true;  # bind the shared .git rw
+    fwdEnv = [ "LLAMA_KEY" "JEV_API_KEY" ];  # wrapper always sets them
     extraPkgs = with pkgs; [
       pi-coding-agent
       gh xxd gnutar
