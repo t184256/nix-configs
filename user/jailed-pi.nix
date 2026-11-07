@@ -361,9 +361,14 @@ let
 
     ## Source code exploration
 
-    If you need to inspect sources of other software,
+    If you need to inspect sources code of open source software,
     there's nothing wrong with cloning them to /tmp/ for ease of inspection.
     Just mind that they might disappear on session saving/resumption.
+
+    ## Don't filter the baby out with the water
+
+    Piping to tail/head/grep to save tokens causes truncation and logic errors.
+    Don't. Tokens are free. Overly long output is auto-truncated by harness.
   '';
 
   # https://alexdav.id/projects/jail-nix/combinators/
