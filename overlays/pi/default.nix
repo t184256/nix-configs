@@ -1,19 +1,19 @@
 _: prev:
 
 let
-  newerVer = "1.5.0";
+  newerVer = "1.5.2";
   freshSrc = prev.fetchFromGitHub {
     owner = "earendil-works";
     repo = "pi";
     tag = "v${newerVer}";
     # Hash of the github.com/.../archive/... tarball as fetched by nix,
     # which differs from the codeload.github.com copy of the same tag.
-    hash = "sha256-eH3RuypmXeayuZ9lEag6KW3m2LSM4bDc4ogyHxjZMNI=";
+    hash = "sha256-0dKtABQqfvCLF0WOydu5rpycMqC+N8Pc9Ex4BWKElyw=";
   };
-  freshNpmDepsHash = "sha256-koVd02HEhEAOkcvIuUg4X1A6P6P0B+wJp4DJLwkH62w=";
+  freshNpmDepsHash = "sha256-uHehffbEB2uU9U9uSpfWojzxvQyqeicbh/esCwk4neQ=";
   freshModelData = prev.fetchurl {
     url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${newerVer}.tgz";
-    hash = "sha256-4yD+e9K5J3grqaN9NW/lg38aqWpGQyYQ4bO5zLdI6lw==";
+    hash = "sha256-1XFe+oNMI7/fEKBCtJ307hacyZAAvxbXmY+rLVM7Rfg=";
   };
   localPatches = [
     ./9709-bandaid.patch
@@ -75,7 +75,7 @@ let
     });
     # Build workspace dependencies in order, then the coding-agent, using the
     # model catalog supplied via modelData instead of fetching it during build.
-    # Remove when nixpkgs catches up to 1.5.0.
+    # Remove when nixpkgs catches up to 1.5.2.
     buildPhase = ''
       runHook preBuild
 
@@ -106,8 +106,8 @@ let
         cp -r "$src" "$nm/$pkg"
       done
 
-      # Delete remaining workspace symlinks
-      find "$nm" -type l -lname '*/packages/*' -delete
+      # Delete remaining workspace symlinks (apps/* are not installed)
+      find "$nm" -type l \( -lname '*/packages/*' -o -lname '*/apps/*' \) -delete
 
       # Clean up now-dangling .bin symlinks
       find "$nm/.bin" -xtype l -delete

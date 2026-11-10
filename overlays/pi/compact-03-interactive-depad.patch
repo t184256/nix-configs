@@ -8,10 +8,10 @@ Subject: [PATCH 03/24] modes/interactive/interactive-mode: depad
  1 file changed, 30 insertions(+), 30 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index 72775d6f..194f9b42 100644
+index 8c9d5c61..b7e6b34c 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -867,12 +867,12 @@ export class InteractiveMode {
+@@ -886,10 +886,10 @@ export class InteractiveMode {
  				const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
  				const latestVersion = versionMatch ? versionMatch[1] : this.version;
  				const condensedText = `Updated to v${latestVersion}. Use ${theme.bold("/changelog")} to view full changelog.`;
@@ -21,13 +21,11 @@ index 72775d6f..194f9b42 100644
 -				this.chatContainer.addChild(new ThemedText(() => theme.bold(theme.fg("accent", "What's New")), 1, 0));
 +				this.chatContainer.addChild(new ThemedText(() => theme.bold(theme.fg("accent", "What's New")), 0, 0));
  				// no spacer
- 				this.chatContainer.addChild(
--					new Markdown(this.changelogMarkdown.trim(), 1, 0, this.getMarkdownThemeWithSettings()),
-+					new Markdown(this.changelogMarkdown.trim(), 0, 0, this.getMarkdownThemeWithSettings()),
- 				);
+-				this.chatContainer.addChild(this.createChangelogMarkdown(this.changelogMarkdown.trim(), 1, 0));
++				this.chatContainer.addChild(this.createChangelogMarkdown(this.changelogMarkdown.trim(), 0, 0));
  				// no spacer
  			}
-@@ -885,14 +885,14 @@ export class InteractiveMode {
+@@ -902,14 +902,14 @@ export class InteractiveMode {
  				const condensedText = this.extensionChangelogUpdates
  					.map((update) => `Updated ${update.name} to v${update.version}.`)
  					.join("\n");
@@ -40,8 +38,8 @@ index 72775d6f..194f9b42 100644
  				);
  				// no spacer
  				const markdown = this.extensionChangelogUpdates.map((update) => update.markdown).join("\n\n");
--				this.chatContainer.addChild(new Markdown(markdown, 1, 0, this.getMarkdownThemeWithSettings()));
-+				this.chatContainer.addChild(new Markdown(markdown, 0, 0, this.getMarkdownThemeWithSettings()));
+-				this.chatContainer.addChild(this.createChangelogMarkdown(markdown, 1, 0));
++				this.chatContainer.addChild(this.createChangelogMarkdown(markdown, 0, 0));
  				// no spacer
  			}
  		}
@@ -193,15 +191,15 @@ index 72775d6f..194f9b42 100644
  		this.ui.requestRender();
  	}
  
-@@ -6885,9 +6885,9 @@ export class InteractiveMode {
+@@ -6981,9 +6981,9 @@ export class InteractiveMode {
  
  		// no spacer
  		this.chatContainer.addChild(new DynamicBorder());
 -		this.chatContainer.addChild(new ThemedText(() => theme.bold(theme.fg("accent", "What's New")), 1, 0));
 +		this.chatContainer.addChild(new ThemedText(() => theme.bold(theme.fg("accent", "What's New")), 0, 0));
  		// no spacer
--		this.chatContainer.addChild(new Markdown(changelogMarkdown, 1, 1, this.getMarkdownThemeWithSettings()));
-+		this.chatContainer.addChild(new Markdown(changelogMarkdown, 0, 0, this.getMarkdownThemeWithSettings()));
+-		this.chatContainer.addChild(this.createChangelogMarkdown(changelogMarkdown, 1, 1));
++		this.chatContainer.addChild(this.createChangelogMarkdown(changelogMarkdown, 0, 0));
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
  	}
