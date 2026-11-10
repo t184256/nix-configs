@@ -280,6 +280,26 @@ let
     exec "$REAL" "$@"
   '';
 
+  # Wraps act: makes sure podman is up, then runs the real act
+  actWrapper = pkgs.writeShellScriptBin "act" ''
+    set -euo pipefail
+    podman machine list >/dev/null 2>&1 || true
+    exec ${pkgs.act}/bin/act "$@"
+  '';
+
+  # Preselect container images, can be overridden with -P on the command line.
+  actrc = pkgs.writeText "actrc" ''
+    -P ubuntu-latest=catthehacker/ubuntu:act-latest
+    -P ubuntu-24.04=catthehacker/ubuntu:act-latest
+    -P ubuntu-24.04-arm=catthehacker/ubuntu:act-latest
+    -P ubuntu-22.04=catthehacker/ubuntu:act-latest
+  '';
+
+  # gitlab-ci-local: prefer podman for container jobs
+  gitlabCiLocalEnv = pkgs.writeText "gitlab-ci-local.env" ''
+    CONTAINER_EXECUTABLE=podman
+  '';
+
   agentsMd = pkgs.writeText "AGENTS.md" ''
     ## Action mode vs investigating vs going autonomous
 
@@ -359,6 +379,12 @@ let
     (state is lost for resumed sessions) and then runs containers inside VM.
     `podman run -it fedora /usr/bin/echo hello` should work.
 
+    `gitlab-ci-local` (via `nix shell nixpkgs#gitlab-ci-local`) is
+    preconfigured to use podman for container jobs.
+
+    `act`, GitHub Actions local runner,
+    is also a wrapper that spins up podman first.
+
     ## Source code exploration
 
     If you need to inspect code of open source software,
@@ -369,12 +395,22 @@ let
 
     Piping to tail/head/grep to save tokens causes truncation and logic errors.
     Don't. Tokens are free. Overly long output is auto-truncated by harness.
+
+    ## Skills
+
+    Read all the skills relevant to the task at hand.
   '';
 
   # https://alexdav.id/projects/jail-nix/combinators/
   # https://git.sr.ht/~alexdavid/jail.nix
   extraJailOpts = with comb; [
     (fwd-env "PWD")  # strict on purpose, must be set
+    # XDG_RUNTIME_DIR must point at an existing 0700 dir; create it in the
+    # (ephemeral) jail rootfs before the agent starts
+    (wrap-entry (entry: ''
+      install -d -m 700 "/run/user/$(id -u)"
+      ${entry}
+    ''))
     (write-text (noescape "~/.config/nix/nix.conf") ''
       experimental-features = nix-command flakes
     '')
@@ -403,6 +439,8 @@ let
     (ro-bind webSearchJson (noescape "~/.pi/web-search.json"))
     (ro-bind keybindingsJson (noescape "~/.pi/agent/keybindings.json"))
     (ro-bind agentsMd (noescape "~/.pi/agent/AGENTS.md"))
+    (ro-bind actrc (noescape "~/.config/act/actrc"))
+    (ro-bind gitlabCiLocalEnv (noescape "~/.gitlab-ci-local/.env"))
     (ro-bind llamaCppStatsSrc
       (noescape "~/.pi/agent/extensions/llama-cpp-stats.ts"))
     (ro-bind noTailPipeSrc (noescape "~/.pi/agent/extensions/no-tail-pipe.ts"))
@@ -416,7 +454,12 @@ let
   jailedPi = jailedAgentsLib.makeJailedPi {
     name = "jailed-pi";
     pkg = pkgs.pi-coding-agent;
-    env = { PI_SKIP_VERSION_CHECK = "1"; };
+    env = {
+      PI_SKIP_VERSION_CHECK = "1";
+      XDG_RUNTIME_DIR = comb.noescape "\"/run/user/$(id -u)\"";
+      DOCKER_HOST = comb.noescape
+        "\"unix:///run/user/$(id -u)/podman/podman-machine-default-api.sock\"";
+    };
     enableNix = true;
     enableGitWorktrees = true;  # bind the shared .git rw
     fwdEnv = [ "LLAMA_KEY" "JEV_API_KEY" ];  # wrapper always sets them
@@ -424,6 +467,7 @@ let
       pi-coding-agent
       gh xxd gnutar
       podmanWrapper
+      actWrapper
     ];
     baseJailOptions = jailedAgentsLib.commonJailOptions ++ extraJailOpts;
   };
