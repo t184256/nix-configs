@@ -8,7 +8,7 @@ in
 {
   services.garage = {
     enable = true;
-    package = pkgs.garage_1;
+    package = pkgs.garage_2;
     settings = {
       data_dir = lib.mkDefault "/mnt/storage/garage/data";
       metadata_dir = lib.mkDefault "/mnt/storage/garage/meta";
