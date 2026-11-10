@@ -361,7 +361,7 @@ let
 
     ## Source code exploration
 
-    If you need to inspect sources code of open source software,
+    If you need to inspect code of open source software,
     there's nothing wrong with cloning them to /tmp/ for ease of inspection.
     Just mind that they might disappear on session saving/resumption.
 
