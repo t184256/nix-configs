@@ -57,7 +57,6 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  boot.initrd.systemd.enable = true;
   boot.initrd.systemd.network.enable = true;
 
   home-manager.users.monk.home.stateVersion = "25.11";

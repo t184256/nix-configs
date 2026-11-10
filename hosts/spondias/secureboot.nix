@@ -6,7 +6,6 @@
   security.tpm2.enable = true;
 
   boot.initrd.systemd = {
-    enable = true;
     additionalUpstreamUnits = [
       "systemd-pcrphase-initrd.service"
       "systemd-pcrphase.service"

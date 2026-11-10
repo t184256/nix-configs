@@ -93,8 +93,6 @@
 
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
-  boot.initrd.systemd.enable = true;
-
   system.role.virtualizer.enable = true;
   system.role.virtualizer.storageLocation = "storage";
 }

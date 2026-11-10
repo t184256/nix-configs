@@ -125,8 +125,6 @@
 
   services.displayManager.autoLogin = { enable = true; user = "monk"; };
 
-  boot.initrd.systemd.enable = true;
-
   programs.nix-ld.enable = true;
 
   boot.initrd.systemd.network.enable = true;  # see network.nix
