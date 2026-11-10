@@ -154,7 +154,6 @@
   # locking down
   systemd.enableEmergencyMode = false;
   boot.initrd.systemd.emergencyAccess = false;
-  boot.initrd.verbose = false;
   boot.kernelParams = [
     "rd.systemd.gpt_auto=0"
     "quiet" "loglevel=4"
