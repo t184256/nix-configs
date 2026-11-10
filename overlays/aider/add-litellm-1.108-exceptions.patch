@@ -1,0 +1,19 @@
+diff --git a/aider/exceptions.py b/aider/exceptions.py
+--- a/aider/exceptions.py
++++ b/aider/exceptions.py
+@@ -35,6 +35,9 @@
+     ExInfo("JSONSchemaValidationError", True, None),
+     ExInfo("ModelNotMappedError", False, None),
+     ExInfo("NotFoundError", False, None),
++    ExInfo("CallerCredentialAuthenticationError", False, None),
++    ExInfo("CallerCredentialRateLimitError", True, None),
++    ExInfo("MalformedRequestFieldError", False, None),
+     ExInfo("PaymentRequiredError", False, None),
+     ExInfo(
+         "PermissionDeniedError",
+@@ -53,4 +56,5 @@
+     ExInfo("UnsupportedParamsError", True, None),
++    ExInfo("ValidationError", False, None),
+     ExInfo("VectorStoreSearchError", False, None),
+     ExInfo("ZoneInfoNotFoundError", False, None),
+     ExInfo(

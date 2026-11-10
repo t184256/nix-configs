@@ -73,45 +73,6 @@ let
       outputHash = freshNpmDepsHash;
       patches = localPatches;
     });
-    # Build workspace dependencies in order, then the coding-agent, using the
-    # model catalog supplied via modelData instead of fetching it during build.
-    # Remove when nixpkgs catches up to 1.5.2.
-    buildPhase = ''
-      runHook preBuild
-
-      npm run build:offline
-
-      runHook postBuild
-    '';
-    dontNpmPrune = true;
-    preInstall = ''
-      npm prune --omit=dev --no-save
-    '';
-    postInstall = ''
-      local nm="$out/lib/node_modules/pi-monorepo/node_modules"
-
-      # Replace workspace deps needed at runtime with real copies
-      for ws in @earendil-works/chord:packages/chord \
-                @earendil-works/pi-schema:packages/schema \
-                @earendil-works/pi-ai:packages/ai \
-                @earendil-works/pi-agent-core:packages/agent \
-                @earendil-works/pi-codemode:packages/codemode \
-                @earendil-works/pi-durable:packages/durable \
-                @earendil-works/pi-env:packages/env \
-                @earendil-works/pi-mcp:packages/mcp \
-                @earendil-works/pi-telemetry:packages/telemetry \
-                @earendil-works/pi-tui:packages/tui; do
-        IFS=: read -r pkg src <<< "$ws"
-        rm "$nm/$pkg"
-        cp -r "$src" "$nm/$pkg"
-      done
-
-      # Delete remaining workspace symlinks (apps/* are not installed)
-      find "$nm" -type l \( -lname '*/packages/*' -o -lname '*/apps/*' \) -delete
-
-      # Clean up now-dangling .bin symlinks
-      find "$nm/.bin" -xtype l -delete
-    '';
   };
   overrides-patches = oa: {
     patches = (oa.patches or []) ++ localPatches;
