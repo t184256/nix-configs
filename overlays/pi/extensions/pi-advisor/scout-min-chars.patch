@@ -1,0 +1,64 @@
+--- a/dist/index.js	2026-11-06 16:37:28.271505543 +0100
++++ b/dist/index.js	2026-11-06 16:40:00.000000000 +0100
+@@ -13,6 +13,7 @@
+ var DEFAULT_JEV_TIMEOUT_MS = 8000;
+ var DEFAULT_SCOUT_TIMEOUT_MS = 30000;
+ var MAX_SCOUT_TIMEOUT_MS = 2147483647;
++var DEFAULT_SCOUT_MIN_CONVERSATION_CHARS = 100500;
+ var DEFAULT_JEV_DIGEST_MAX_CHARS = 4000;
+ var DEFAULT_JEV_PRICE_PER_MTOK = 0.042;
+ var DEFAULT_JEV_FILTER_SKIP_CONFIDENCE = 0.85;
+@@ -96,5 +97,6 @@
+ var showUsageDetailsRef = true;
+ var showUsageFooterRef = false;
++var advisorScoutMinConversationCharsRef = DEFAULT_SCOUT_MIN_CONVERSATION_CHARS;
+ var setExecutorRef = (ref) => {
+   executorRef = ref;
+ };
+@@ -264,3 +266,6 @@
++var setAdvisorScoutMinConversationCharsRef = (value) => {
++  advisorScoutMinConversationCharsRef = value;
++};
+ var setShowUsageDetailsRef = (enabled) => {
+   showUsageDetailsRef = enabled;
+ };
+@@ -541,4 +546,5 @@
+ var isValidScoutTimeoutMs = (value) => typeof value === "number" && Number.isSafeInteger(value) && value >= 1 && value <= MAX_SCOUT_TIMEOUT_MS;
++var isValidScoutMinConversationChars = (value) => nonNegativeSafeInteger(value);
+ var isValidJevDigestMaxChars = (value) => nonNegativeSafeInteger(value);
+ var isValidJevPricePerMtok = (value) => typeof value === "number" && Number.isFinite(value) && value > 0;
+ var isValidJevSkipConfidence = (value) => typeof value === "number" && Number.isFinite(value) && value >= 0.5 && value <= 1;
+@@ -791,3 +797,10 @@
++  advisorScoutMinConversationChars: {
++    accepted: "a non-negative safe integer, in characters of redacted conversation; 0 runs Scout on every consultation",
++    current: () => advisorScoutMinConversationCharsRef,
++    persisted: true,
++    type: "number",
++    validate: isValidScoutMinConversationChars
++  },
+   advisorSessionSummary: {
+     accepted: "true or false",
+     current: () => advisorSessionSummaryRef,
+@@ -1015,5 +1028,6 @@
+   setAdvisorScoutEnabledRef(false);
+   setAdvisorScoutTimeoutMsRef(DEFAULT_SCOUT_TIMEOUT_MS);
++  setAdvisorScoutMinConversationCharsRef(DEFAULT_SCOUT_MIN_CONVERSATION_CHARS);
+   setShowUsageDetailsRef(true);
+   setShowUsageFooterRef(false);
+ };
+@@ -1052,3 +1066,4 @@
+   applyOptionalConfig(config, "showUsageDetails", setShowUsageDetailsRef);
++  applyOptionalConfig(config, "advisorScoutMinConversationChars", setAdvisorScoutMinConversationCharsRef);
+   applyOptionalConfig(config, "showUsageFooter", setShowUsageFooterRef);
+   applyOptionalConfig(config, "simpleMode", setSimpleModeRef);
+@@ -3895,6 +3910,9 @@
+ var curateAdvisorConversation = async (ctx, legacyConversation, signal, onScout, enabled = advisorScoutEnabledRef, runScout = runAdvisorScout, currentInvocationId, maxChars, imageNonce = "") => {
+   if (!enabled) {
+     return { conversation: legacyConversation };
+   }
++  if (legacyConversation.length < advisorScoutMinConversationCharsRef) {
++    return { conversation: legacyConversation };
++  }
+   if (maxChars !== undefined && maxChars <= 0) {
+     return { conversation: "" };
+   }

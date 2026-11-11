@@ -16,6 +16,7 @@ final: prev: {
       ./do-not-force-model.patch
       ./do-not-write-config.patch
       ./scout-model.patch
+      ./scout-min-chars.patch
     ];
 
     # no runtime deps, no buildNpmPackage, install by copying

@@ -187,6 +187,11 @@ let
     advisorJevTurnGateNoulThreshold = 0.6;  # default is 0.8
     advisorScoutEnabled = true;
     advisorScoutModel = "litellm/mini"; # try batch if too lossy
+    # 64KB manifest worst case: ~27s prefill @ ~590 t/s + ~30-40s decode;
+    advisorScoutTimeoutMs = 120000;
+    # ~32k tokens at the measured 3.22 chars/token
+    # below this the un-curated conversation is faster
+    advisorScoutMinConversationChars = 100500;
   });
   # pi-hot-compact: the raw session log stays authoritative, the model sees a
   # compiled projection (mechanical sections + one written checkpoint), and
