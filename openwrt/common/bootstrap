@@ -51,7 +51,7 @@ tar --owner=0 --group=0 -C "$STAGE" -cf - \
     || { echo >&2 'ssh server key configuration failed'; exit 1; }
 
 # verify: swap the TOFU key for the pinned one from sshd.toml, check
-SSH_PUBKEY=$(sed -n "s/^$NAME[[:space:]]*=[[:space:]]*'\(.*\)'\$/\1/p" \
+SSH_PUBKEY=$(sed -n "s/^${NAME}[[:space:]]*=[[:space:]]*'\(.*\)'\$/\1/p" \
     "$ROOT/misc/pubkeys/sshd.toml" | head -n1)
 [ -n "$SSH_PUBKEY" ] || { echo "no $NAME key in sshd.toml" >&2; exit 1; }
 printf '%s %s\n' "$HOST" "$SSH_PUBKEY" > "$KH"
