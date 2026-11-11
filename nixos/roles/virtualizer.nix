@@ -44,6 +44,7 @@ in {
       # libvirt seals its secret key to the TPM (10-secret.conf drop-in)
       # bricking libvirtd after any TPM state change. shadow this nonsense
       boot.extraSystemdUnitPaths = [ "${dropin}" ];
+      systemd.services.libvirtd.serviceConfig.LoadCredentialEncrypted = "";
       environment.etc."libvirt/secret.conf".text = "encrypt_data = 0";
       environment.systemPackages = [
         pkgs.socat
