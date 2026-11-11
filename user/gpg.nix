@@ -32,6 +32,7 @@
   # home-manager's activation runs `gpg --import` way too early,
   # spawns its own agent and breaks everything, including SSH auth
   # start the real agent eagerly and order it before the activation
+  systemd.user.sockets.gpg-agent.Unit.After = [ "gpg-agent-ssh.socket" ];
   systemd.user.services.gpg-agent = {
     Unit.Before = [ "home-manager.service" ];
     Install.WantedBy = [ "default.target" ];
