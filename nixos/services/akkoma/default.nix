@@ -1,17 +1,14 @@
 { config, pkgs, ... }:
 
 {
-  imports = [ ./postgresql.nix ];
+  imports = [ ../postgresql.nix ];
   services.akkoma = {
     enable = true;
     initDb.enable = true;
     extraStatic = {
       "static/terms-of-service.html" =
         pkgs.writeText "terms-of-service.html" "No service, no rules.";
-      "favicon.png" = pkgs.fetchurl {
-        url = "https://avatars.githubusercontent.com/u/5991987?v=4";
-        sha256 = "1d1mshxgjns4qz35cpnhk1acjv6rds4gkhay6a20zd9zxscfd393";
-      };
+      "favicon.png" = ./favicon.png;
       "emoji/custom/nixos.png" = pkgs.fetchurl {
         url = "https://cdn.fosstodon.org/custom_emojis/images/000/062/778/original/48d6a1983312ea5a.png";
         sha256 = "1qihzqkaqa2fy1kxkvjj8anpmx1n38fap3hzhhyc64baspqx4zgr";

@@ -5,7 +5,7 @@
 
   imports = [
     ./hardware-configuration.nix
-    ../../nixos/services/akkoma.nix
+    ../../nixos/services/akkoma
     ../../nixos/services/fedifetcher.nix
     #../../nixos/services/ipfs/cluster-leader.nix
     #../../nixos/services/ipfs/node.nix
