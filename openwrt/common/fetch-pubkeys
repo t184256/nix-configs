@@ -20,10 +20,10 @@ LAYOUT="$ROOT/openwrt/routers/$NAME/mtd.layout"
 AGE="$ROOT/misc/pubkeys/age.toml"
 SSHD="$ROOT/misc/pubkeys/sshd.toml"
 WG="$ROOT/misc/pubkeys/wireguard.toml"
-[ -r "$LAYOUT" ] || { echo 2>&1 "no $LAYOUT"; exit 1; }
+[ -r "$LAYOUT" ] || { echo >&2 "no $LAYOUT"; exit 1; }
 . "$LAYOUT"
 [ $(( RNDOFF % RNDLEN )) -eq 0 ] \
-  || { echo 2>&1 'offset not a multiple of the block size'; exit 1; }
+  || { echo >&2 'offset not a multiple of the block size'; exit 1; }
 [ -f "$AGE" ] || : > "$AGE"
 
 toml_put() { local file=$1 key=$2 val=$3
@@ -36,20 +36,20 @@ toml_put() { local file=$1 key=$2 val=$3
 # the router needs python3 + cryptography + the age module
 # (feed: apk add python3-light python3-cryptography)
 ssh "root@$HOST" "python3 -c 'import cryptography'" 2>/dev/null \
-  || { echo 2>&1 'router: apk add python3-light python3-cryptography'
+  || { echo >&2 'router: apk add python3-light python3-cryptography'
        exit 1; }
 ssh "root@$HOST" '[ -r /usr/local/python-modules/age.py ]' \
-  || { echo 2>&1 'router: age module missing (see python-age.nix)'
+  || { echo >&2 'router: age module missing (see python-age.nix)'
        exit 1; }
 
 OUT=$(ssh "root@$HOST" "/usr/sbin/on-device-secrets derive-pubkeys")
 
 AGE_PUB=$(printf '%s\n' "$OUT" | grep -a '^AGE_PUB ' | cut -d' ' -f2) \
-  || { echo 2>&1 "no AGE_PUB in output: $OUT"; exit 1; }
+  || { echo >&2 "no AGE_PUB in output: $OUT"; exit 1; }
 SSH_PUB=$(printf '%s\n' "$OUT" | grep -a '^SSH_PUB ' | cut -d' ' -f2) \
-  || { echo 2>&1 "no SSH_PUB in output: $OUT"; exit 1; }
+  || { echo >&2 "no SSH_PUB in output: $OUT"; exit 1; }
 WG_PUB=$(printf '%s\n' "$OUT" | grep -a '^WG_PUB ' | cut -d' ' -f2) \
-  || { echo 2>&1 "no WG_PUB in output: $OUT"; exit 1; }
+  || { echo >&2 "no WG_PUB in output: $OUT"; exit 1; }
 
 SSH_PUB="ssh-ed25519 ${SSH_PUB} $NAME"
 toml_put "$AGE" "$NAME" "$AGE_PUB"

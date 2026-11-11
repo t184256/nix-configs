@@ -9,14 +9,14 @@ shift
 
 ROUTER="$(dirname "$0")/../routers/$NAME"
 LAYOUT="$ROUTER/mtd.layout"
-[ -r "$LAYOUT" ] || { echo 2>&1 "no $LAYOUT"; exit 1; }
+[ -r "$LAYOUT" ] || { echo >&2 "no $LAYOUT"; exit 1; }
 . "$LAYOUT"
 [ $(( RNDOFF % RNDLEN )) -eq 0 ] \
-  || { echo 2>&1 'offset not a multiple of the block size'; exit 1; }
+  || { echo >&2 'offset not a multiple of the block size'; exit 1; }
 # BusyBox dd takes no hex, so hand it decimals
 FPOFF=$(( FPOFF ))
 FPFILE="$ROUTER/fingerprint"
-[ -r "$FPFILE" ] || { echo 2>&1 "no $FPFILE"; exit 1; }
+[ -r "$FPFILE" ] || { echo >&2 "no $FPFILE"; exit 1; }
 FP_EXPECTED=$(cat "$FPFILE")
 
 KH=$(mktemp)
@@ -34,5 +34,5 @@ for ADDR in "$@"; do
     fi
 done
 
-echo 2>&1 "no address has $NAME's fingerprint ($FP_EXPECTED)"
+echo >&2 "no address has $NAME's fingerprint ($FP_EXPECTED)"
 exit 1
