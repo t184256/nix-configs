@@ -38,6 +38,7 @@ in {
       gnome = {
         gnome-initial-setup.enable = false;
         gnome-remote-desktop.enable = true;
+        gcr-ssh-agent.enable = false;  # prefer gpg-agent
       };
     };
     hardware.graphics.enable = true;

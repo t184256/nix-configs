@@ -29,13 +29,12 @@
     noAllowExternalCache = true;
   };
 
-  # hacky hack: https://releases.nixos.org/nix-dev/2016-June/020831.html
-  xdg.configFile = if config.system.noGraphics then {} else {
-    "autostart/gcr-ssh-agent.desktop".text = ''
-      [Desktop Entry]
-      Type=Application
-      Name=SSH Agent
-      Hidden=true
-    '';
+  # home-manager's activation runs `gpg --import` way too early,
+  # spawns its own agent and breaks everything, including SSH auth
+  # start the real agent eagerly and order it before the activation
+  systemd.user.services.gpg-agent = {
+    Unit.Before = [ "home-manager.service" ];
+    Install.WantedBy = [ "default.target" ];
   };
+  programs.gpg.settings."no-autostart" = true;  # systemd should handle it
 }
