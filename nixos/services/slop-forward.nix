@@ -147,6 +147,7 @@ in
           if builtins.length models.${model}.hosts < 2 then []
           else [ { "${clientName}" = [ "fb-${clientName}" ]; } ];
       in {
+        general_settings.dangerously_permit_weak_or_unset_master_key = true;
         model_list = builtins.concatLists (builtins.attrValues
           (builtins.mapAttrs mkEntries aliases));
         litellm_settings = {
