@@ -28,8 +28,8 @@
   };
   # ethernet needed in initrd to reach tang server at 192.168.98.1
   boot.initrd = lib.mkIf config.boot.initrd.systemd.network.enable {
-    kernelModules = [ "r8169" ];
-    availableKernelModules = [ "r8169" ];
+    kernelModules = [ "igc" "atlantic" ];
+    availableKernelModules = [ "igc" "atlantic" ];
     systemd.network = {
       networks."10-wired" = {
         matchConfig.Type = "ether";

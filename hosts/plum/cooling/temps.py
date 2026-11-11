@@ -27,15 +27,14 @@ HDDTEMP_HOST, HDDTEMP_PORT = '127.0.0.1', 7634
 HDD_DEVICE = '/dev/sda'
 
 DB_OVER = 20
-FANS = {  # name: (max_rpm, profile, pwm_n)
-    'CPU Fan':       (2010, 'cpu0',  1),
-    'Pump Fan':      (2400, 'case2', 2),
-    'System Fan #1': (2423, 'case3', 3),
-    'System Fan #2': (3030, 'case4', 4),
-    'System Fan #3': (3000, 'case5', 5),
-    'System Fan #4': (2100, 'case6', 6),
-    'System Fan #5': (2370, 'case7', 7),
-    'System Fan #6': (2365, 'case8', 8),
+FANS = {  # hwmon label: (max_rpm, profile, pwm_n)
+    'fan1': (3100, 'case1', 1),
+    'fan2': (2010, 'case2', 2),
+    'fan3': (3080, 'case3', 3),
+    'fan4': (3030, 'case4', 4),
+    'fan5': (3000, 'case5', 5),
+    'fan6': (2100, 'case6', 6),
+    'fan7': (2400, 'case7', 7),
 }
 
 
@@ -401,9 +400,9 @@ def _kfmt(v):
 
 def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog, disk):
     sensors_data = chip_data(nct)
-    ct = int(sensors_data["CPU"])
+    ct = int(sensors_data["TSI0_TEMP"])
     ct = f'{temp_color(ct)}{ct:3d}°{RESET}'
-    st = int(sensors_data["System"])
+    st = int(sensors_data["SYSTIN"])
     st = f'{temp_color(st)}{st:3d}°{RESET}'
     cp = int(psutil.cpu_percent())
     cp = f'{gw_color(cp / 100)}{cp:3d}%{RESET}'
@@ -411,18 +410,20 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog, disk):
     ht = (f'{temp_color(ht_val, 40, 55)}{ht_val:3d}°{RESET}'
           if ht_val is not None else '    ')
 
-    cpu_fans, cpu_tx = fan(sensors_data, 'CPU Fan', vert=False)
+    cpu_fans, cpu_tx = fan(sensors_data, 'fan2', vert=False)  # cpu cooler
     cpu_line = f'{cpu_fans}{cp}{ct}{cpu_fans}'
-    top_fans, top_tx = fan(sensors_data, 'Pump Fan')
-    bot_fans, bot_tx = fan(sensors_data, 'System Fan #3', width=11)
-    tf, tf_txt = fan(sensors_data, 'System Fan #1', vert=False)
-    mf, mf_txt = fan(sensors_data, 'System Fan #5', vert=False)
-    bf, bf_txt = fan(sensors_data, 'System Fan #6', vert=False)
-    tr, tr_txt = fan(sensors_data, 'System Fan #2', vert=False)
-    # System Fan #4 has no tach input; use PWM duty for the arrow
-    pwm_n = FANS['System Fan #4'][2]
-    pwm = int((nct_hwmon / f'pwm{pwm_n}').read_text()) * 100 / 255
-    br = _hor_arrow((pwm - 20) / (100 - 20))
+    top_fans, top_tx = fan(sensors_data, 'fan7')  # top exhaust (2 fans)
+    bot_fans, bot_tx = fan(sensors_data, 'fan4', width=11)  # bottom intake
+    tr, tr_txt = fan(sensors_data, 'fan1', vert=False)  # rear-top exhaust
+    mf, mf_txt = fan(sensors_data, 'fan5', vert=False)  # front-mid intake
+    bf, bf_txt = fan(sensors_data, 'fan6', vert=False)  # front-bottom
+    # front-top intake shares pwm2 with the cooler and its own tach is
+    # the EC's CPU_Opt; show pwm2 duty as the arrow
+    pwm = int((nct_hwmon / 'pwm2').read_text()) * 100 / 255
+    tf = _hor_arrow((pwm - 20) / (100 - 20))
+    tf_txt = ''
+    # rear-bottom exhaust (3 minifans) via its chip tach
+    br = fan(sensors_data, 'fan3', vert=False)[0]
     tf = f' {tf}'
     mf = f' {mf}'
     bf = f' {bf}'
@@ -510,8 +511,8 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog, disk):
 pynvml.nvmlInit()
 try:
     nct = next(c for c in sensors.get_detected_chips()
-               if 'nct6687' in str(c))
-    nct_hwmon = find_hwmon('nct6687')
+               if 'nct6799' in str(c))
+    nct_hwmon = find_hwmon('nct6799')
     gpu0 = pynvml.nvmlDeviceGetHandleByIndex(0)
     gpu1 = pynvml.nvmlDeviceGetHandleByIndex(1)
     engine = SglangMonitor()
