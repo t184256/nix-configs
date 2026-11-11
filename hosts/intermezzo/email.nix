@@ -42,7 +42,7 @@
 
     notmuch = {
       enable = true;
-      extraConfig = {
+      settings = {
         user = {
           name = "Alexander Sosedkin";
           primary_email = "asosedkin@redhat.com";
