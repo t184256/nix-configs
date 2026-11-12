@@ -14,6 +14,7 @@
     ./prefer-igpu.nix
     ./network.nix
     ../../nixos/services/nebula ../../nixos/services/nebula/2024.nix
+    ../../nixos/services/nps.nix
     ../../nixos/services/syncthing.nix
     #../../nixos/services/whisper-cpp-cuda.nix
     ./apollo.nix
