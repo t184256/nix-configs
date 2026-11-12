@@ -28,6 +28,7 @@
     ./cooling/temps.nix
     #./safe-reboot.nix
     ./sglang
+    ./paseo.nix
   ];
 
   hardware.rasdaemon.enable = true;
@@ -123,7 +124,6 @@
   networking.firewall.allowedTCPPorts = [
     8787 # slopfest pi bridge
     9988 # ctl
-    6767 # slopfest paseo
   ];
 
   environment.systemPackages = with pkgs; [

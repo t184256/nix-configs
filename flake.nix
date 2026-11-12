@@ -104,6 +104,9 @@
     mbufo.url = "github:dardeaw/MBufo";
     mbufo.inputs.nixpkgs.follows = "nixpkgs";
 
+    paseo.url = "github:getpaseo/paseo/v0.15.4";
+    paseo.inputs.nixpkgs.follows = "nixpkgs";
+
     alacritty-autoresizing = {
       url = "github:t184256/alacritty-autoresizing";
       inputs.nixpkgs.follows = "nixpkgs";
