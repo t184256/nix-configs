@@ -279,8 +279,10 @@ let
             "$REAL" machine start  # defaults to podman-machine-default
           else
             echo >&2 'podmanWrapper: initializing 4G/12G podman-machine-default'
+            install -m 644 ${pkgs.podmanMachineImage} /tmp/machine.img
             "$REAL" machine init --now -m 4096 --disk-size 12 \
-              podman-machine-default
+                                 --image /tmp/machine.img podman-machine-default
+            rm -f /tmp/machine.img
           fi
       fi
     fi
@@ -490,8 +492,9 @@ let
 in
 {
   imports = [ ./config/roles.nix ];
-  nixpkgs.overlays = lib.mkIf config.roles.slop
-    ([ (import ../overlays/pi) ]
-     ++ ((import ../.autoimport).asList ../overlays/pi/extensions));
+  nixpkgs.overlays = lib.mkIf config.roles.slop ([
+    (import ../overlays/pi)
+    (import ../overlays/podman-machine-image.nix)
+  ] ++ ((import ../.autoimport).asList ../overlays/pi/extensions));
   home.packages = lib.mkIf config.roles.slop [ jailed-pi ];
 }
