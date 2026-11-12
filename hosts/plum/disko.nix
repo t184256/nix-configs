@@ -1,12 +1,98 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 let
   # TODO: fancier toml, with names and IPs, possibly? and a custom module
   tangToml = builtins.fromTOML (builtins.readFile ../../misc/pubkeys/tang.toml);
   tangThpQuince = tangToml.quince;
+
+  # Two HDDs, identical layout:
+  #   p1 32G  hdd-swap-<x>  LUKS, swap (the only swap on the system)
+  #   p2 92G  hdd-fast-<x>  LUKS, btrfs RAID0 -> /mnt/hdd/fast
+  #   p3 rest hdd-slow-<x>  LUKS, btrfs RAID0 -> /mnt/hdd/slow
+  # TODO: consider switching to bcachefs later and carving out a bit of NVMe.
+
+  mkHDD =
+    { device, suffix }:
+    {
+      type = "disk";
+      inherit device;
+    content = {
+      type = "gpt";
+      partitions = {
+        hdd-swap = {
+          size = "32G";
+          content = {
+            type = "luks";
+            name = "hdd-swap-${suffix}";
+            # tolerate a missingDrive
+            settings = { crypttabExtraOpts = [ "nofail" ]; };
+            content = {
+              type = "swap";
+              randomEncryption = false;  # already on LUKS
+              priority = 1;
+            };
+          };
+        };
+        hdd-fast = {
+          size = "92G";
+          content = {
+            type = "luks";
+            name = "hdd-fast-${suffix}";
+            settings = { crypttabExtraOpts = [ "nofail" ]; };
+            postCreateHook = lib.optionalString (suffix == "b") ''
+              # disko has no multi-device btrfs; guard against reformats
+              if ! blkid /dev/mapper/hdd-fast-a | grep -q '^TYPE=btrfs'; then
+                mkfs.btrfs -d raid0 -m raid0 \
+                  /dev/mapper/hdd-fast-a /dev/mapper/hdd-fast-b
+              fi
+            '';
+          };
+        };
+        hdd-slow = {
+          size = "100%";
+          content = {
+            type = "luks";
+            name = "hdd-slow-${suffix}";
+            settings = { crypttabExtraOpts = [ "nofail" ]; };
+            postCreateHook = lib.optionalString (suffix == "b") ''
+              # disko has no multi-device btrfs; guard against reformats
+              if ! blkid /dev/mapper/hdd-slow-a | grep -q '^TYPE=btrfs'; then
+                mkfs.btrfs -d raid0 -m raid0 \
+                  /dev/mapper/hdd-slow-a /dev/mapper/hdd-slow-b
+              fi
+            '';
+          };
+        };
+      };
+    };
+  };
 in
 
 {
+  # initrd closes them as they're unused; the passphrase gets reused
+  environment.etc."crypttab".text = ''
+    hdd-swap-a /dev/disk/by-partlabel/disk-hdd-a-hdd-swap - nofail
+    hdd-swap-b /dev/disk/by-partlabel/disk-hdd-b-hdd-swap - nofail
+    hdd-fast-a /dev/disk/by-partlabel/disk-hdd-a-hdd-fast - nofail
+    hdd-fast-b /dev/disk/by-partlabel/disk-hdd-b-hdd-fast - nofail
+    hdd-slow-a /dev/disk/by-partlabel/disk-hdd-a-hdd-slow - nofail
+    hdd-slow-b /dev/disk/by-partlabel/disk-hdd-b-hdd-slow - nofail
+  '';
+
+  # can't define in disko because multidevice
+  fileSystems = {
+    "/mnt/hdd/fast" = {
+      device = "/dev/mapper/hdd-fast-a";
+      fsType = "btrfs";
+      options = [ "noatime" "nofail" ];
+    };
+    "/mnt/hdd/slow" = {
+      device = "/dev/mapper/hdd-slow-a";
+      fsType = "btrfs";
+      options = [ "noatime" "nofail" ];
+    };
+  };
+
   disko.devices = {
     disk = {
       plum-main = {
@@ -61,16 +147,25 @@ in
                       mountpoint = "/mnt/storage";
                       mountOptions = [ "noatime" ];
                     };
-                    "/swap" = {
-                      mountpoint = "/var/swap";
-                      mountOptions = [ "noatime" ];
-                    };
+                    # HDD-only swap now
+                    # "/swap" = {
+                    #   mountpoint = "/var/swap";
+                    #   mountOptions = [ "noatime" ];
+                    # };
                   };
                 };
               };
             };
           };
         };
+      };
+      hdd-a = mkHDD {
+        suffix = "a";
+        device = "/dev/disk/by-id/ata-ST500LM021-1KJ152_W62HE649";
+      };
+      hdd-b = mkHDD {
+        suffix = "b";
+        device = "/dev/disk/by-id/ata-ST500LM021-1KJ152_W62MV65Q";
       };
     };
     nodev = {

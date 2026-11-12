@@ -54,9 +54,7 @@
     dbEntries = [ ''"ST500LM021" 194 C "Seagate Laptop Thin 500GB"'' ];
   };
 
-  # real swap for llama.cpp
-  zramSwap = { enable = false; };
-  swapDevices = [ { device = "/var/swap/swapfile"; size = 65536; } ];
+  zramSwap = { enable = false; };  # don't bother with zramSwap
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
