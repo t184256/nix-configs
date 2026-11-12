@@ -491,4 +491,9 @@ in
     ([ (import ../overlays/pi) ]
      ++ ((import ../.autoimport).asList ../overlays/pi/extensions));
   home.packages = lib.mkIf config.roles.slop [ jailed-pi ];
+  home.persistence."/mnt/persist" = {
+    directories = [
+      { directory = ".pi/agent/sessions"; mode = "0700"; }
+    ];
+  };
 }
