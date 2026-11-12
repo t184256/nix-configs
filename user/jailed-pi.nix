@@ -442,6 +442,8 @@ let
     # podman machine: user-mode networking via gvproxy, no tun needed;
     # state lives on tmpfs ~ and is recreated each session
     (ro-bind podmanHelpers "/usr/libexec/podman")
+    # nps: read-only access to the host's shared package cache
+    (try-ro-bind "/var/cache/nps" "/var/cache/nps")
   ]
   # deferred so these layer on top of ~/.pi from makeJailedPi
   ++ map defer [
@@ -472,6 +474,8 @@ let
       XDG_RUNTIME_DIR = comb.noescape "\"/run/user/$(id -u)\"";
       DOCKER_HOST = comb.noescape
         "\"unix:///run/user/$(id -u)/podman/podman-machine-default-api.sock\"";
+      NIX_PACKAGE_SEARCH_EXPERIMENTAL = "true";
+      NIX_PACKAGE_SEARCH_CACHE_FOLDER_ABSOLUTE_PATH = "/var/cache/nps";
     };
     enableNix = true;
     enableGitWorktrees = true;  # bind the shared .git rw
@@ -481,6 +485,7 @@ let
       gh xxd gnutar procps
       podmanWrapper
       actWrapper
+      nps
     ];
     baseJailOptions = jailedAgentsLib.commonJailOptions ++ extraJailOpts;
   };
