@@ -313,10 +313,12 @@ let
   agentsMd = pkgs.writeText "AGENTS.md" ''
     ## Action mode vs investigating vs going autonomous
 
-    User questions about the world are a call to investigate and analyze.
+    User questions about the world
+    are a call to quickly outline what you already know,
+    and to look it up rather than guess where you don't.
     Questioning signals that user is unsure of an approach
     and wants more planning inputs.
-    Research, look up, reason, strategize and propose,
+    Muster a reply, then research, look up, reason, strategize and propose,
     but don't edit, apply, change state or set goals until approved.
     Keep your signal-to-noise ratio high,
     report findings as you go, append terse summaries to final replies.
@@ -365,9 +367,10 @@ let
 
     ## Nix Environment
 
-    You only have the most basic tools installed.
-    `nix shell nixpkgs#python3 nixpkgs#file --command <command> <arguments>`
-    if you need more. Command and arguments must not be quoted together.
+    You only have the most basic tools installed, NixOS style,
+    not even `/bin/bash`. Shebangs should use `#!/usr/bin/env <interpreter>`.
+    `nix shell nixpkgs#jq nixpkgs#file --command <command> <arguments>`
+    if you need more tools. Command and arguments must not be quoted together.
 
     Example of the withPackages idiom:
     `nix shell --impure
@@ -475,7 +478,7 @@ let
     fwdEnv = [ "LLAMA_KEY" "JEV_API_KEY" ];  # wrapper always sets them
     extraPkgs = with pkgs; [
       pi-coding-agent
-      gh xxd gnutar
+      gh xxd gnutar procps
       podmanWrapper
       actWrapper
     ];
