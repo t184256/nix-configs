@@ -28,6 +28,7 @@
     ./cooling/fanlistener.nix
     ./cooling/temps.nix
     #./safe-reboot.nix
+    ./sccache-storage.nix
     ./sglang
     ./paseo.nix
   ];
@@ -92,6 +93,9 @@
   home-manager.users.monk.language-support = [
     "nix" "bash" "c" "prose" "python" "rust" "typst" "yaml"
   ];
+
+  home-manager.users.monk.programs.sccache.enable = true;
+  home-manager.users.monk.programs.sccache.dir = "/mnt/hdd/fast/sccache";
 
   environment.persistence."/mnt/persist" = {
     directories = [
