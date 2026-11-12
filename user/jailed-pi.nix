@@ -266,16 +266,19 @@ let
   # Wraps podman: auto-inits/starts the VM if it isn't running
   podmanWrapper = pkgs.writeShellScriptBin "podman" ''
     set -euo pipefail
-    export PATH="${pkgs.openssh}/bin:$PATH" # is needed on $PATH
     REAL=${pkgs.podman}/bin/podman
+    [ "''${PODMAN_NO_AUTOSTART:-0}" != 1 ] || exec "$REAL" "$@"
+    export PATH="${pkgs.openssh}/bin:$PATH" # is needed on $PATH
     if [ "$#" -lt 2 ] || [ "$1" != "machine" ] || \
         ( [ "$2" != "stop" ] && [ "$2" != "rm" ]; ); then
         if ! "$REAL" machine list --format '{{.Running}}' 2>/dev/null \
             | grep -qx true; then
           if "$REAL" machine list --format '{{.Default}}' 2>/dev/null \
             | grep -qx true; then
+            echo >&2 'podmanWrapper: starting podman-machine-default VM'
             "$REAL" machine start  # defaults to podman-machine-default
           else
+            echo >&2 'podmanWrapper: initializing 4G/12G podman-machine-default'
             "$REAL" machine init --now -m 4096 --disk-size 12 \
               podman-machine-default
           fi
