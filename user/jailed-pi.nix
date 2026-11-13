@@ -59,6 +59,7 @@ let
           # qwen3.5-9b on plum's mini unit: 64k
           # thinking is template-side, so no qwen38Effort here
           { id = "mini"; input = [ "text" ]; contextWindow = 65536; }
+          { id = "mini-nothink"; input = [ "text" ]; contextWindow = 65536; }
         ];
       };
       plum = {
@@ -186,7 +187,7 @@ let
     advisorJevTurnGateEveryTurns = 10;  # consider consulting every 10 turns
     advisorJevTurnGateNoulThreshold = 0.6;  # default is 0.8
     advisorScoutEnabled = true;
-    advisorScoutModel = "litellm/mini"; # try batch if too lossy
+    advisorScoutModel = "litellm/mini-nothink";
     # 64KB manifest worst case: ~27s prefill @ ~590 t/s + ~30-40s decode;
     advisorScoutTimeoutMs = 120000;
     # ~32k tokens at the measured 3.22 chars/token
