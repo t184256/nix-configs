@@ -11,8 +11,11 @@ let
   '';
 in
 {
+  nixpkgs.overlays = [ (import ../overlays/vulnogram.nix) ];
+
   home.packages = [
     pkgs.cve
+    pkgs.vulnogram
     (mkCveWrapper "test")
     (mkCveWrapper "prod")
   ];
