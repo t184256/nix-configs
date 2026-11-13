@@ -14,7 +14,7 @@ let
     1
   ];
   mkWorkspace = i: {
-    background = "";
+    background = "/var/empty/nonex";  # "" hits a paperwm bug
     color = "rgb(0, 0, 0)";
     index = i - 1;
     name = builtins.toString i;
