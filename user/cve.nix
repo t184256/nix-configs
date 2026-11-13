@@ -13,10 +13,10 @@ in
 {
   nixpkgs.overlays = [ (import ../overlays/vulnogram.nix) ];
 
-  home.packages = [
-    pkgs.cve
-    pkgs.vulnogram
+  home.packages = with pkgs; [
+    cve
     (mkCveWrapper "test")
     (mkCveWrapper "prod")
+    vulnogram
   ];
 }

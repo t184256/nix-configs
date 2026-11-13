@@ -26,6 +26,7 @@ in
     pname = "vulnogram";
     version = "1.0.5";
     src = site;
+    nativeBuildInputs = [ prev.python3 prev.xdg-utils ];
 
     installPhase = ''
       mkdir -p $out/share/vulnogram
@@ -56,6 +57,16 @@ in
       exec ${prev.xdg-utils}/bin/xdg-open "$out/share/vulnogram/index.html"
       EOF
       chmod +x $out/bin/vulnogram
+
+      cat > $out/bin/vulnogram-server <<EOF
+      #!${prev.bash}/bin/bash
+      ${prev.python3}/bin/python3 -m http.server --bind 127.0.0.1 8334 \
+        --directory "$out/share/vulnogram" &
+      sleep .25
+      ${prev.xdg-utils}/bin/xdg-open http://127.0.0.1:8334/
+      wait
+      EOF
+      chmod +x $out/bin/vulnogram-server
     '';
   };
 }
