@@ -942,11 +942,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1772461732,
-        "narHash": "sha256-WBlWbmV6lYPi8relAg3+ZGTHFw5MWDcK4V5UJWM5L8M=",
+        "lastModified": 1794649588,
+        "narHash": "sha256-p1JX8e5frNv5j6vy7Wf1m8cUipKeJeuQzZVGR840l0Y=",
         "owner": "t184256",
         "repo": "yousable",
-        "rev": "3c68a32463fe7fe81e91dc1b7ccefb21d49d6092",
+        "rev": "6437679a2ab1215c9e91e2f4ebd2ece692d0dc40",
         "type": "github"
       },
       "original": {
