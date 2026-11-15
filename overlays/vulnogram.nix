@@ -11,8 +11,8 @@ let
   };
 
   ace = prev.fetchurl {
-    url = "https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js";
-    sha256 = "bS3VAQePcKYmsvI+8BdG2QJAVb9FbiZLgM5vK2/+TcM=";
+    url = "https://cdnjs.cloudflare.com/ajax/libs/ace/1.45.2/ace.js";
+    sha256 = "aQB8sOtkLp0/hcEtdK8v1Bndh39H4HMpk7yo76IueAw=";
   };
 
   jsoneditor = prev.fetchurl {
@@ -29,6 +29,19 @@ in
     nativeBuildInputs = [ prev.python3 prev.xdg-utils ];
 
     installPhase = ''
+      # fix copying multiple lines out of the editor
+      substituteInPlace js/vg-editor.js \
+        --replace-fail 'editorUnloadWarningDisabled=!1;' \
+        'editorUnloadWarningDisabled=!1;
+      document.addEventListener("copy", function (e) {
+          if (!sourceEditor || !sourceEditor.container.contains(e.target))
+            return;
+          var text = sourceEditor.getCopyText();
+          if (!text || !e.clipboardData || !e.clipboardData.setData) return;
+          e.preventDefault();
+          e.clipboardData.setData("text/plain", text);
+      }, true);'
+
       mkdir -p $out/share/vulnogram
       cp index.html cvss.html cvss4.html $out/share/vulnogram/
       cp -r css js static $out/share/vulnogram/
