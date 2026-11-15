@@ -27,11 +27,17 @@
     };
   };
   boot.initrd = lib.mkIf config.boot.initrd.systemd.network.enable {
-    kernelModules = [ "r8169" ];
-    availableKernelModules = [ "r8169" ];
+    kernelModules = [ "r8169" "r8153_ecm" ];
+    availableKernelModules = [ "r8169" "r8153_ecm" ];
     systemd.network = {
       networks."10-wired" = {
         matchConfig.Name = "enp191s0";
+        networkConfig.DHCP = "yes";
+        linkConfig.RequiredForOnline = "routable";
+        linkConfig.RequiredFamilyForOnline = "ipv4";
+      };
+      networks."11-usb" = {
+        matchConfig.Driver = "r8152";
         networkConfig.DHCP = "yes";
         linkConfig.RequiredForOnline = "routable";
         linkConfig.RequiredFamilyForOnline = "ipv4";
