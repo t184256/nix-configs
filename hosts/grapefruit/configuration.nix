@@ -129,6 +129,10 @@
 
   boot.initrd.systemd.network.enable = true;  # see network.nix
   boot.initrd.clevisLuksAskpass.enable = true;
+  boot.initrd.systemd.storePaths = [
+    # nixpkgs issue, hash mismatch due to wrong instance included
+    "${pkgs.systemd}/lib/systemd/systemd-reply-password"
+  ];
 
   systemd.sleep.settings.Sleep.AllowSuspend = false;
   services.displayManager.gdm.autoSuspend = false;
