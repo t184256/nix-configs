@@ -65,11 +65,12 @@ in
       if grep -Eq "(cdnjs|seaview.cna)" -R $out; then exit 1; fi
 
       mkdir -p $out/bin
-      cat > $out/bin/vulnogram <<EOF
+      cat > $out/bin/vulnogram-dumb <<EOF
       #!${prev.bash}/bin/bash
+      # needs security.fileuri.strict_origin_policy = false in firefox
       exec ${prev.xdg-utils}/bin/xdg-open "$out/share/vulnogram/index.html"
       EOF
-      chmod +x $out/bin/vulnogram
+      chmod +x $out/bin/vulnogram-dumb
 
       cat > $out/bin/vulnogram-server <<EOF
       #!${prev.bash}/bin/bash
