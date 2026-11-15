@@ -1,43 +1,40 @@
 { inputs, pkgs, ... }:
 
 # Qwen3.8-Flash-Next (UD-Q4_K_XL + shared-Q8 MTP), gfx1151-only:
-# compared to gufo, it gains q8 and impressive parallelism, sacrificing prefill:
-# https://github.com/gufo-org/gufo/pull/561#issuecomment-6281046627
+# compared to gufo, it gains q8 and impressive parallelism
 
-# 95530M GTT / 109G of actual usage
+# 96480M GTT / 110G of actual usage
 
 # bench-gufo --think:
 # target      pp      ttft   avg pp   decode tps    gen
-#    256     257    0.344s      748         51.8    562
-#   8192    8193    5.845s     1402         53.2    400
-#  16384   16385   11.244s     1457         54.0    486
-#  32768   32769   23.305s     1406         52.8    500
-#  65536   65537   48.130s     1362         52.7    477
-# 131072  131074   99.657s     1315         53.5    433
-# 196608  196609  153.627s     1280         52.1    496
-# 260096  260097  208.684s     1246         50.3    373
+#    256     257    0.334s      770         56.5    482
+#   8192    8193    5.219s     1570         53.3    424
+#  16384   16385   10.065s     1628         55.6    549
+#  32768   32769   20.576s     1593         54.7    474
+#  65536   65537   42.069s     1558         54.2    545
+# 131072  131073   88.384s     1483         50.0    523
+# 196608  196609  134.001s     1467         52.9    417
+# 260096  260097  180.827s     1438         50.3    365
 
 # bench-gufo --nothink:
 # target      pp      ttft   avg pp   decode tps    gen
-#    256     259    0.351s      737         48.7    337
-#   8192    8195    5.784s     1417         46.5    678
-#  16384   16387   11.225s     1460         45.6   1010
-#  32768   32771   22.875s     1433         48.2    823
-#  65536   65539   47.574s     1378         46.7    790
-# 131072  131075   99.676s     1315         44.8   1024
-# 196608  196611  152.729s     1287         43.4   1024
-# 260096  260099  207.563s     1253         43.1    219
+#    256     259    0.340s      761         45.0    397
+#   8192    8195    5.318s     1541         44.4    546
+#  16384   16387    9.890s     1657         42.4    757
+#  32768   32771   20.220s     1621         42.8    707
+#  65536   65539   42.383s     1546         47.7   1024
+# 131072  131075   86.944s     1508         46.0    613
+# 196608  196611  133.502s     1473         47.5    736
+# 260096  260099  180.798s     1439         43.8    994
 
 # bench-gufo --think --concurrency 2 (last row per size only):
 # target      pp      ttft   avg pp   decode tps    gen
-#    256     257    0.678s      377         35.3    773
-#   8192    8193   11.218s      730         33.7    570
-#  16384   16385   21.289s      770         34.7    468
-#  32768   32769   50.469s      649         35.4    454
-#  65536   65537  108.431s      604         33.5    535
-# 131072  131073  204.031s      642         34.9    441
-# 196608  196609  316.806s      621         32.0    374
-# 260096  260097  444.659s      585         27.4    329
+#    256     257    0.510s      547         38.2    607
+#   8192    8193   12.638s      648         31.8    474
+#  16384   16385   21.883s      751         32.0    566
+#  32768   32769   43.844s      748         33.1    497
+#  65536   65537   89.841s      729         32.2    398
+# 131072  131073  183.417s      715         32.6    399
 
 let
   gufo = inputs.mbufo.packages.x86_64-linux.default.overrideAttrs (_: prev: {
@@ -105,8 +102,10 @@ in
       Restart = "on-failure";
       RestartSec = "30s";
       MemorySwapMax = 0;  # let's just not
-      # recover pp throughput, risk correctness
-      Environment = [ "GUFO_KV_WMMA=1" "GUFO_KV_I8=1" ];
+      Environment = [
+        "GUFO_KV_WMMA=1"
+        # GUFO_KV_I8=2 is the default
+      ];
       ExecStart = [ gufoServe ];
     };
   };
