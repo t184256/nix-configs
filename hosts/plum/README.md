@@ -1,6 +1,6 @@
 Motherboard: [Asus ProArt X870E-Creator WiFi], [BIOS guide], BIOS 2503
   NIC: Marvell AQtion 10GbE + Intel I226 2.5GbE (igc)
-RAM: 2x32GB [Corsair CMH64GX5M2D6000Z40] (DDR5-6000 CL40)
+RAM: 4x32GB [Corsair CMH64GX5M2D6000Z40] (DDR5-6000 CL40) @6000MT/s
 CPU: [AMD Ryzen 5 7600]
   iGPU: AMD Radeon 610M  (has the actual monitor plugged in)
 dGPU: 2x NVIDIA RTX 3090  (dedicated to sglang)
