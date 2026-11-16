@@ -104,6 +104,18 @@ in
               70: 0.5
               80: 0.7
               90: 1.0
+        "1002:7480-2014:8014-0000:1c:00.0":  # BoostR 7600M eGPU
+          fan_control_enabled: true  # no gpu_od/fan_ctrl, fallback to hwmon
+          fan_control_settings:
+            mode: curve
+            temperature_key: junction
+            interval_ms: 500
+            spindown_delay_ms: 10000
+            change_threshold: 2
+            curve:
+              40: 0.0  # silent until 65C
+              65: 0.0  # so that it doesn't even attempt spinning up w/o load
+              85: 1.0  # then linear to 100% by 85C
     '';
   };
 
