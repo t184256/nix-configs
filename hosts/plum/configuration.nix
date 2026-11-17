@@ -80,6 +80,8 @@
   system.role = {
     deployer.enable = true;
     desktop.enable = true;
+    fedora-packager.enable = true;
+    fedora-packager.fasUser = "asosedkin";
     physical.enable = true;
     yubikey.enable = true;
 
