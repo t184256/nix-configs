@@ -100,6 +100,9 @@
   home = lib.mkIf (config.roles.mua) {
     packages = [ pkgs.w3m ];
     file.".mailcap".text = "text/html;  w3m -dump -o document_charset=%{charset} '%s'; nametemplate=%s.html; copiousoutput";
+    persistence."/mnt/persist" = {
+      directories = [ ".mail" ];
+    };
     activation.notmuch-symlink = lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD ln -sf $VERBOSE_ARG \
           $HOME/.config/notmuch/default/config $HOME/.notmuch-config
