@@ -23,10 +23,20 @@ rec {
     doCheck = false;
   };
 
+  # Offline benchmark book (gutenberg #1661): fetch, strip the preamble
+  book-raw = prev.fetchurl {
+    url =
+      "https://www.mirrorservice.org/sites/gutenberg.org/1/6/6/1661/1661-0.txt";
+    hash = "sha256-ucEFpcDPn8s3x9AhFliFHtVgdFGclFXRXiDwTAxaMXQ=";
+  };
+  book-sliced = prev.runCommand "book-sliced" { preferLocalBuild = true; } ''
+    sed -n '/\*\*\* START OF THE PROJECT GUTENBERG EBOOK/,$p' ${book-raw} > $out
+  '';
+
   llama-benchy-nice = prev.writers.writePython3Bin "llama-benchy-nice"
     { doCheck = false; }  # skip flake8: store-path interpolation breaks E501
     ''
-    import json, statistics, subprocess, sys, tempfile
+    import hashlib, json, os, statistics, subprocess, sys, tempfile
 
     args = sys.argv[1:]
     TOKENIZERS = {  # shared Qwen3.8 tokenizer; other values pass through
@@ -62,6 +72,15 @@ rec {
         if a == '--runs':
             runs = int(next(it))
     args += ['--emit-progress', '-']
+
+    # symlink the offline book into llama-benchy's hardcoded cache path
+    book_url = 'https://www.gutenberg.org/files/1661/1661-0.txt'
+    hash_fname = f'{hashlib.md5(book_url.encode()).hexdigest()}.txt'
+    cache_dir = os.path.expanduser('~/.cache/llama-benchy')
+    cache_file = os.path.join(cache_dir, hash_fname)
+    if not os.path.exists(cache_file):
+        os.makedirs(cache_dir, exist_ok=True)
+        os.symlink('${book-sliced}', cache_file)
 
     # stderr goes to a tempfile so a chatty failure can't deadlock the
     # stdout pipe; dumped only on failure
