@@ -1,8 +1,30 @@
-{ pkgs, config, lib, ... }:
+{ config, lib, ... }:
 
 {
-  imports = [ ./config/no-graphics.nix ./config/live.nix ];
+  imports = [
+    ./config/no-graphics.nix
+    ./config/live.nix
+    ./config/roles.nix
+  ];
 
-  home.packages = lib.mkIf (! config.system.noGraphics && ! config.system.live)
-    [ pkgs.thunderbird ];
+  config = lib.mkIf (config.roles.mua
+                && ! config.system.noGraphics
+                && ! config.system.live) {
+    programs.thunderbird = {
+      enable = true;
+      profiles.default = {
+        isDefault = true;
+        # TB wants the public key in its internal keyring .
+        # Import it once: Account Settings -> Privacy -> Manage Keys.
+        withExternalGnupg = true;  # broken anyway as of Nov 2026, I give up
+        #settings."mail.openpgp.load_untested_gpgme_version" = 45;
+      };
+    };
+
+    home.persistence."/mnt/persist" = {
+      directories = [ ".thunderbird" ];
+    };
+
+    accounts.email.accounts."monk@unboiled.info".thunderbird.enable = true;
+  };
 }
