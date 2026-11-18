@@ -90,6 +90,7 @@
   };
 
   home-manager.users.monk.roles.slop = true;
+  home-manager.users.monk.roles.mua = true;
   home-manager.users.monk.neovim.fat = true;
   home-manager.users.monk.language-support = [
     "nix" "bash" "c" "prose" "python" "rust" "typst" "yaml"
