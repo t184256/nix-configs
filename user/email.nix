@@ -12,11 +12,13 @@
       userName = "monk@unboiled.info";
       imap = {
         host = "unboiled.info";
-        tls = { enable = true; useStartTls = true; };
+        port = 993;
+        tls.enable = true;
       };
       smtp = {
         host = "unboiled.info";
-        tls = { enable = true; };
+        port = 465;
+        tls.enable = true;
       };
       passwordCommand = "${pkgs.pass}/bin/pass show services/unboiled.info/mail/monk@unboiled.info";
 
