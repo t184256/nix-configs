@@ -270,6 +270,14 @@ let
     REAL=${pkgs.podman}/bin/podman
     [ "''${PODMAN_NO_AUTOSTART:-0}" != 1 ] || exec "$REAL" "$@"
     export PATH="${pkgs.openssh}/bin:$PATH" # is needed on $PATH
+    # virtiofsd 1.14 file-handle bug (user-ns daemon, EPERM on
+    # name_to_handle_at) breaks container writes; force O_PATH fds.
+    mkdir -p /run/user/$UID/vfsd-shadow
+    printf '#!/bin/sh\nexec %s --inode-file-handles=never "$@"\n' \
+        ${pkgs.virtiofsd}/bin/virtiofsd \
+        > /run/user/$UID/vfsd-shadow/virtiofsd
+    chmod +x /run/user/$UID/vfsd-shadow/virtiofsd
+    export CONTAINERS_HELPER_BINARY_DIR=/run/user/$UID/vfsd-shadow
     if [ "$#" -lt 2 ] || [ "$1" != "machine" ] || \
         ( [ "$2" != "stop" ] && [ "$2" != "rm" ]; ); then
         if ! "$REAL" machine list --format '{{.Running}}' 2>/dev/null \
@@ -278,11 +286,32 @@ let
             | grep -qx true; then
             echo >&2 'podmanWrapper: starting podman-machine-default VM'
             "$REAL" machine start  # defaults to podman-machine-default
+            # FCP bug: a catatonit (podman pause) process started before the
+            # usermod -g 100 core fix can survive the reboot with the old gid
+            # map (1000), and storage dirs it touched stay owned by gid 1000.
+            # The correct map (100) cannot map that, so every container create
+            # dies with EOVERFLOW in the overlay copy-up (surfacing as
+            # "merged/etc/resolv.conf: No such file"). Kill the stale ns
+            # processes and re-gid the storage tree.
+            "$REAL" machine ssh podman-machine-default \
+              'sudo pkill -x catatonit 2>/dev/null;
+               sudo pkill -x pause 2>/dev/null;
+               sudo chown -R core:users /var/home/core/.local/share/containers 2>/dev/null;
+               true'
           else
             echo >&2 'podmanWrapper: initializing 4G/12G podman-machine-default'
             install -m 644 ${pkgs.podmanMachineImage} /tmp/machine.img
             "$REAL" machine init --now -m 4096 --disk-size 12 \
+                                 -v "$HOME:$HOME" -v "/:/host" \
                                  --image /tmp/machine.img podman-machine-default
+            "$REAL" machine ssh podman-machine-default \
+                                'sudo usermod -g 100 core
+                                 # kill pre-usermod ns processes and wipe the
+                                 # stale-gid state they created; next run
+                                 # re-creates it
+                                 sudo pkill -U core -x pause 2>/dev/null || true
+                                 sudo pkill -U core -x catatonit 2>/dev/null || true
+                                 sudo rm -rf /var/home/core/.local/share/containers'
             rm -f /tmp/machine.img
           fi
       fi
@@ -392,6 +421,7 @@ let
     auto-inits/starts a QEMU/KVM, user-mode networking VM on first use
     (state is lost for resumed sessions) and then runs containers inside VM.
     `podman run -it fedora /usr/bin/echo hello` should work.
+    `$HOME` is mounted over at `/var/home/monk` in the VM and `/` at `/host`.
 
     `gitlab-ci-local` (via `nix shell nixpkgs#gitlab-ci-local`) is
     preconfigured to use podman for container jobs.
