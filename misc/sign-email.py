@@ -10,8 +10,9 @@ KEY = 'B0E9DD20B29F1432'
 
 
 raw = sys.stdin.buffer.read()
-raw_u = raw.decode('utf-8')
-head, _, body = raw_u.partition('\n\n')
+raw_u = raw.replace(b'\r\n', b'\n').decode('utf-8')
+head, sep, body = raw_u.partition('\n\n')
+assert sep, 'missing blank line after headers'
 
 inner_boundary = '-' + hashlib.sha256(b'inner_boundary' + raw).hexdigest()[:26]
 outer_boundary = '-' + hashlib.sha256(b'outer_boundary' + raw).hexdigest()[:26]
