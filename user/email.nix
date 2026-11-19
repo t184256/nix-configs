@@ -97,8 +97,13 @@
   };
 
 
-  home = lib.mkIf (config.roles.mua) {
-    packages = [ pkgs.w3m ];
+  home = lib.mkIf config.roles.mua {
+    packages = [
+      pkgs.w3m
+      (pkgs.writers.writePython3Bin "sign-email"
+        { libraries = [ pkgs.python3Packages.gpgme ]; doCheck = false; }
+        ../misc/sign-email.py)
+    ];
     file.".mailcap".text = "text/html;  w3m -dump -o document_charset=%{charset} '%s'; nametemplate=%s.html; copiousoutput";
     persistence."/mnt/persist" = {
       directories = [ ".mail" ];
