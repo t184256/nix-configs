@@ -185,7 +185,7 @@ let
     advisorJevClassifier = "classifier/d1-3B";  # System One via nginx /v1/systemone
     advisorJevTimeoutMs = 10000;
     advisorJevTurnGateEveryTurns = 10;  # consider consulting every 10 turns
-    advisorJevTurnGateNoulThreshold = 0.6;  # default is 0.8
+    advisorJevTurnGateNoulThreshold = 0.7;  # default is 0.8
     advisorScoutEnabled = true;
     advisorScoutModel = "litellm/mini-nothink";
     # 64KB manifest worst case: ~27s prefill @ ~590 t/s + ~30-40s decode;
