@@ -1,6 +1,7 @@
 # TODO: try jj-specific https://github.com/anglesideangle/jjinn
 # TODO: let it run fingertip
 # TODO: let it run lightweight nixos VMs built from this configuration
+# TODO: try github:Leoguy77/pi-packages.nix
 
 { pkgs, lib, inputs, config, ... }:
 
