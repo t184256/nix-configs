@@ -487,7 +487,7 @@ let
     fwdEnv = [ "LLAMA_KEY" "JEV_API_KEY" ];  # wrapper always sets them
     extraPkgs = with pkgs; [
       pi-coding-agent
-      gh xxd gnutar procps
+      gh xxd gnutar xz zstd cpio patch util-linux hostname procps
       podmanWrapper
       actWrapper
       nps
