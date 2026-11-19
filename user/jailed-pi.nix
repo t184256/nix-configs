@@ -370,7 +370,7 @@ let
 
     You only have the most basic tools installed, NixOS style,
     not even `/bin/bash`. Shebangs should use `#!/usr/bin/env <interpreter>`.
-    `nix shell nixpkgs#jq nixpkgs#file --command <command> <arguments>`
+    `nix shell nixpkgs#jq-go nixpkgs#file --command <command> <arguments>`
     if you need more tools. Command and arguments must not be quoted together.
 
     Example of the withPackages idiom:
@@ -403,16 +403,20 @@ let
 
     If you need to inspect code of open source software,
     there's nothing wrong with cloning them to /tmp/ for ease of inspection.
-    Just mind that they might disappear on session saving/resumption.
+    Just mind that they might disappear on session saving/resumption,
+    and always consider web search to complement / speed up source spelunking.
 
     ## Don't filter the baby out with the water
 
-    Piping to tail/head/grep to save tokens causes truncation and logic errors.
+    Piping to tail / head / grep /any limiter to save tokens
+    causes truncation, masks return codes and leads to logic errors.
     Don't. Tokens are free. Overly long output is auto-truncated by harness.
+    Access/filter the full output later afterwards if need be.
 
     ## Skills
 
-    Read all the skills relevant to the task at hand.
+    Read all the skills that are plausibly relevant to the task at hand
+    right away. As the scope creeps, read more skills.
   '';
 
   # https://alexdav.id/projects/jail-nix/combinators/
