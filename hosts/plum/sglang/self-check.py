@@ -20,7 +20,7 @@ def flat(s):
 def blob(tokens, seed):
     words = '''
       araceae bayroot carambola cocoa coconut cookie duckweed etrog grapefruit
-      intermezzo iyokan jujube loquat lychee olosapo plum quince sloe spondias
+      intermezzo iyokan jujube loquat lychee plum quince sloe spondias
       watermelon
     '''.split()  # ~2 tokens per word
     return ' '.join(random.Random(seed).choice(words) for _ in range(tokens))

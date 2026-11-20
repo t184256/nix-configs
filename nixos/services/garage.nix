@@ -34,7 +34,6 @@ in
         "${pubkeys.cocoa}@192.168.99.7:3901"
         "${pubkeys.watermelon}@watermelon.unboiled.info:3901"
         "${pubkeys.sloe}@sloe.unboiled.info:3901"
-        "${pubkeys.olosapo}@olosapo.unboiled.info:3901"
         "${pubkeys.quince}@192.168.99.6:3901"
       ];
       allow_world_readable_secrets = true;  # mode: 0100440

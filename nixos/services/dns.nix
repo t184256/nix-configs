@@ -7,7 +7,6 @@ let
     etrog = "152.70.59.201";
     iyokan = "152.70.58.224";
     loquat = "38.242.239.104";
-    olosapo = "216.181.107.104";
     sloe = "77.237.232.57";
     watermelon = "104.152.210.200";
   };
@@ -18,7 +17,6 @@ let
     iyokan = "2603:c022:c004:2424:38fd:cc4e:5757:6d9";
     loquat = "2a02:c206:2101:9233::1";
     sloe = "2a02:c206:2207:3890::1";
-    olosapo = "2606:a8c0:3::955";
     watermelon = "2602:ffd5:907:2::2";
   };
   zones."unboiled.info".data = ''
@@ -48,8 +46,6 @@ let
     loquat          IN AAAA  ${IP6.loquat}
     sloe            IN A     ${IP4.sloe}
     sloe            IN AAAA  ${IP6.sloe}
-    olosapo         IN A     ${IP4.olosapo}
-    olosapo         IN AAAA  ${IP6.olosapo}
     watermelon      IN A     ${IP4.watermelon}
     watermelon      IN AAAA  ${IP6.watermelon}
     araceae         IN AAAA  ${IP6.araceae}

@@ -20,7 +20,6 @@ _ :
       grapefruit = { User = "monk"; Hostname = "192.168.99.52"; };
       plum = { User = "monk"; Hostname = "192.168.99.53"; };
       sloe = { User = "monk"; Hostname = "sloe.unboiled.info"; };
-      olosapo = { User = "monk"; Hostname = "olosapo.unboiled.info"; };
       watermelon = { User = "monk"; Hostname = "watermelon.unboiled.info"; };
       etrog = { User = "monk"; Hostname = "etrog.unboiled.info"; };
       iyokan = { User = "monk"; Hostname = "iyokan.unboiled.info"; };

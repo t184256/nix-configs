@@ -14,7 +14,7 @@ let
   key = "${keyDir}/key.pem";
   cert = "${keyDir}/cert.pem";
 
-  allDirDevices = [ "cocoa" "olosapo" "quince" "sloe" "watermelon" ];
+  allDirDevices = [ "cocoa" "quince" "sloe" "watermelon" ];
   mkFolderList = lib.attrsets.filterAttrs
     (_: t: (builtins.elem config.networking.hostName t.devices));
   mkFolder = name: extraAttrs: {
@@ -72,7 +72,6 @@ in
         fig = mkDevice "fig" {};
         hackberry = mkDevice "hackberry" {};
         lychee = mkDevice "lychee" {};
-        olosapo = mkDevice "olosapo" {};
         plum = mkDevice "plum" {};
         quince = mkDevice "quince" {};
         sloe = mkDevice "sloe" {};

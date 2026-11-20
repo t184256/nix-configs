@@ -9,7 +9,6 @@ iyokan = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG0qPqDNul1u1cGL1QOynlpucuqv76qEyC
 jungle = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII/wj5BLzsAX85a9p37PEYz5ZzcaP88yGzKW4ot2bqat jungle'
 loquat = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBra/oIenaBvFOtNsF97uUrWRakng1R1zcJyy0/MoR8 loquat'
 lychee = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFs8HSQs9jb+TORQ+BphdG3BAvJayFrcDWUune4prNWc lychee'
-olosapo = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKShxkVutX/8mgxS/1rRMrgxmePyfu3m31ZDWJxSxfD8 olosapo'
 plum = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINuhpgUntiyGDnuQl2eL0Mjv6hvJL0rxkPbhBs6B/val plum'
 quince = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHJJJaBj6vAKjZJ9dlIS6q4qMPV63J7dyInV7iqwMkwp quince'
 sloe = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDu+6P0zkyAaOi7xliGtpITG+dUPdHZe2j7IDZtSolRc sloe'

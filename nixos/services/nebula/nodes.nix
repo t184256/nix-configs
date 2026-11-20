@@ -15,7 +15,6 @@
   watermelon = {
     int = "192.168.99.22"; ext = [ "watermelon.unboiled.info" ]; routines = 2;
   };
-  olosapo = { int = "192.168.99.23"; ext = [ "olosapo.unboiled.info" ]; };
   almond = { int = "192.168.99.31"; };
   carambola = { int = "192.168.99.32"; };
   pistachio = { int = "192.168.99.33"; };
