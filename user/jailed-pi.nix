@@ -393,6 +393,7 @@ let
     auto-inits/starts a QEMU/KVM, user-mode networking VM on first use
     (state is lost for resumed sessions) and then runs containers inside VM.
     `podman run -it fedora /usr/bin/echo hello` should work.
+    Bind-mounts don't work because VM, use `podman cp`.
 
     `gitlab-ci-local` (via `nix shell nixpkgs#gitlab-ci-local`) is
     preconfigured to use podman for container jobs.
