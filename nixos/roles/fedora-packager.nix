@@ -41,6 +41,14 @@ in {
           "centos.org" = "FEDORAPROJECT.ORG";
         };
       };
+      environment.etc."koji.conf".text = ''
+        [koji]
+        server = https://koji.fedoraproject.org/kojihub
+        weburl = https://koji.fedoraproject.org/koji
+        topurl = https://kojipkgs.fedoraproject.org
+        authtype = kerberos
+        use_fast_upload = yes
+      '';
       environment.systemPackages = [ pkgs.fkinit pkgs.fedpkg ];
     })
     (mkIf (cfg.enable && cfg.fasUser != "") {
