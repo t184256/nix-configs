@@ -415,6 +415,14 @@ let
     Don't. Tokens are free. Overly long output is auto-truncated by harness.
     Access/filter the full output later afterwards if need be.
 
+    ## Misc discipline
+
+    * Edit existing files with edit tool, don't rewrite to not lose changes.
+    * Do not run commands in background just to immediately sleep/block.
+      Just run synchronously then.
+    * Don't hand-craft/hand-edit patches, generate them.
+    * Never count anything by hand, use tools.
+
     ## Skills
 
     Read all the skills that are plausibly relevant to the task at hand
