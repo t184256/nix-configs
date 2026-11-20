@@ -1,17 +1,17 @@
-From 66e8c98f3887308511d0d42bdd2636a3eeccfe34 Mon Sep 17 00:00:00 2001
+From 616d2fd60678c18a43a0fc3933d13b83467a78e3 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Mon, 27 Jul 2026 18:48:40 +0000
 Subject: [PATCH 03/24] modes/interactive/interactive-mode: depad
 
 ---
- .../src/modes/interactive/interactive-mode.ts      | 60 +++++++++++-----------
+ .../src/modes/interactive/interactive-mode.ts | 60 +++++++++----------
  1 file changed, 30 insertions(+), 30 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/interactive-mode.ts b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-index 8c9d5c61..b7e6b34c 100644
+index 2051b523d..34594a79d 100644
 --- a/packages/coding-agent/src/modes/interactive/interactive-mode.ts
 +++ b/packages/coding-agent/src/modes/interactive/interactive-mode.ts
-@@ -886,10 +886,10 @@ export class InteractiveMode {
+@@ -937,11 +937,11 @@ export class InteractiveMode {
  				const versionMatch = this.changelogMarkdown.match(/##\s+\[?(\d+\.\d+\.\d+)\]?/);
  				const latestVersion = versionMatch ? versionMatch[1] : this.version;
  				const condensedText = `Updated to v${latestVersion}. Use ${theme.bold("/changelog")} to view full changelog.`;
@@ -25,7 +25,8 @@ index 8c9d5c61..b7e6b34c 100644
 +				this.chatContainer.addChild(this.createChangelogMarkdown(this.changelogMarkdown.trim(), 0, 0));
  				// no spacer
  			}
-@@ -902,14 +902,14 @@ export class InteractiveMode {
+ 		}
+@@ -953,14 +953,14 @@ export class InteractiveMode {
  				const condensedText = this.extensionChangelogUpdates
  					.map((update) => `Updated ${update.name} to v${update.version}.`)
  					.join("\n");
@@ -43,7 +44,7 @@ index 8c9d5c61..b7e6b34c 100644
  				// no spacer
  			}
  		}
-@@ -1520,7 +1520,7 @@ export class InteractiveMode {
+@@ -1593,7 +1593,7 @@ export class InteractiveMode {
  
  	private showFullscreenModelScopeNotice(): void {
  		if (!this.getModelScopeNotice()) return;
@@ -52,7 +53,7 @@ index 8c9d5c61..b7e6b34c 100644
  		// no spacer
  	}
  
-@@ -2520,10 +2520,10 @@ export class InteractiveMode {
+@@ -2619,10 +2619,10 @@ export class InteractiveMode {
  			// Wrap string array in a Container with Text components
  			const container = new Container();
  			for (const line of content.slice(0, InteractiveMode.MAX_WIDGET_LINES)) {
@@ -65,7 +66,7 @@ index 8c9d5c61..b7e6b34c 100644
  			}
  			component = container;
  		} else {
-@@ -3106,14 +3106,14 @@ export class InteractiveMode {
+@@ -3230,14 +3230,14 @@ export class InteractiveMode {
  	 */
  	private showExtensionError(extensionPath: string, error: string, stack?: string): void {
  		const errorMsg = `Extension "${extensionPath}" error: ${error}`;
@@ -82,7 +83,7 @@ index 8c9d5c61..b7e6b34c 100644
  			}
  		}
  		this.ui.requestRender();
-@@ -3792,7 +3792,7 @@ export class InteractiveMode {
+@@ -3919,7 +3919,7 @@ export class InteractiveMode {
  					} else {
  						// no spacer
  						const errorMessage = event.errorMessage;
@@ -91,7 +92,7 @@ index 8c9d5c61..b7e6b34c 100644
  					}
  				}
  				void this.flushCompactionQueue({ willRetry: event.willRetry });
-@@ -3903,7 +3903,7 @@ export class InteractiveMode {
+@@ -4030,7 +4030,7 @@ export class InteractiveMode {
  		}
  
  		this.lastStatusMessage = message;
@@ -100,7 +101,7 @@ index 8c9d5c61..b7e6b34c 100644
  		this.chatContainer.addChild(text);
  		this.lastStatusText = text;
  		this.ui.requestRender();
-@@ -4216,7 +4216,7 @@ export class InteractiveMode {
+@@ -4364,7 +4364,7 @@ export class InteractiveMode {
  		const label = notice.kind === "compaction" ? "Compaction" : "Branch summary";
  		// no spacer
  		this.chatContainer.addChild(
@@ -109,7 +110,7 @@ index 8c9d5c61..b7e6b34c 100644
  		);
  	}
  
-@@ -4291,7 +4291,7 @@ export class InteractiveMode {
+@@ -4425,7 +4425,7 @@ export class InteractiveMode {
  			label = `Cache miss after ${Math.round(miss.idleMs / 60_000)}m idle`;
  		}
  		// no spacer
@@ -118,7 +119,7 @@ index 8c9d5c61..b7e6b34c 100644
  	}
  
  	renderInitialMessages(): void {
-@@ -4724,7 +4724,7 @@ export class InteractiveMode {
+@@ -4861,7 +4861,7 @@ export class InteractiveMode {
  
  	showWarning(warningMessage: string): void {
  		// no spacer
@@ -127,7 +128,7 @@ index 8c9d5c61..b7e6b34c 100644
  		this.ui.requestRender();
  	}
  
-@@ -4744,7 +4744,7 @@ export class InteractiveMode {
+@@ -4881,7 +4881,7 @@ export class InteractiveMode {
  		// no spacer
  		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
  		this.chatContainer.addChild(
@@ -136,7 +137,7 @@ index 8c9d5c61..b7e6b34c 100644
  		);
  		if (note) {
  			// no spacer
-@@ -4755,7 +4755,7 @@ export class InteractiveMode {
+@@ -4890,7 +4890,7 @@ export class InteractiveMode {
  			);
  			// no spacer
  		}
@@ -145,7 +146,7 @@ index 8c9d5c61..b7e6b34c 100644
  		this.chatContainer.addChild(new DynamicBorder((text) => theme.fg("warning", text)));
  		this.ui.requestRender();
  	}
-@@ -4823,15 +4823,15 @@ export class InteractiveMode {
+@@ -4962,15 +4962,15 @@ export class InteractiveMode {
  			// no spacer
  			for (const message of steeringMessages) {
  				const text = theme.fg("dim", `Steering: ${message}`);
@@ -164,7 +165,7 @@ index 8c9d5c61..b7e6b34c 100644
  		}
  	}
  
-@@ -6771,7 +6771,7 @@ export class InteractiveMode {
+@@ -6909,7 +6909,7 @@ export class InteractiveMode {
  			const currentName = this.sessionManager.getSessionName();
  			if (currentName) {
  				// no spacer
@@ -173,7 +174,7 @@ index 8c9d5c61..b7e6b34c 100644
  			} else {
  				this.showWarning("Usage: /name <name>");
  			}
-@@ -6786,7 +6786,7 @@ export class InteractiveMode {
+@@ -6924,7 +6924,7 @@ export class InteractiveMode {
  		}
  		// no spacer
  		const displayName = sessionName ?? name;
@@ -182,7 +183,7 @@ index 8c9d5c61..b7e6b34c 100644
  		this.ui.requestRender();
  	}
  
-@@ -6867,7 +6867,7 @@ export class InteractiveMode {
+@@ -7005,7 +7005,7 @@ export class InteractiveMode {
  		};
  
  		// no spacer
@@ -191,7 +192,7 @@ index 8c9d5c61..b7e6b34c 100644
  		this.ui.requestRender();
  	}
  
-@@ -6981,9 +6981,9 @@ export class InteractiveMode {
+@@ -7023,9 +7023,9 @@ export class InteractiveMode {
  
  		// no spacer
  		this.chatContainer.addChild(new DynamicBorder());
@@ -203,7 +204,7 @@ index 8c9d5c61..b7e6b34c 100644
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
  	}
-@@ -7016,9 +7016,9 @@ export class InteractiveMode {
+@@ -7154,9 +7154,9 @@ export class InteractiveMode {
  
  		// no spacer
  		this.chatContainer.addChild(new DynamicBorder());
@@ -215,7 +216,7 @@ index 8c9d5c61..b7e6b34c 100644
  		this.chatContainer.addChild(new DynamicBorder());
  		this.ui.requestRender();
  	}
-@@ -7031,7 +7031,7 @@ export class InteractiveMode {
+@@ -7169,7 +7169,7 @@ export class InteractiveMode {
  				return;
  			}
  			// no spacer
@@ -224,7 +225,7 @@ index 8c9d5c61..b7e6b34c 100644
  			this.ui.requestRender();
  		} catch (error: unknown) {
  			await this.handleFatalRuntimeError("Failed to create session", error);
-@@ -7066,7 +7066,7 @@ export class InteractiveMode {
+@@ -7204,7 +7204,7 @@ export class InteractiveMode {
  
  		// no spacer
  		this.chatContainer.addChild(
@@ -235,3 +236,4 @@ index 8c9d5c61..b7e6b34c 100644
  	}
 -- 
 2.55.0
+

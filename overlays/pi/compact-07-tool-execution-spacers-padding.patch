@@ -1,4 +1,4 @@
-From a034107b43dc433cbaf6b6f6bd9c65a31da26ce1 Mon Sep 17 00:00:00 2001
+From a1ca708b3b27608d15171ba41894672c0e543eba Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:48:31 +0000
 Subject: [PATCH 07/24] modes/interactive/components/tool-execution: remove
@@ -9,7 +9,7 @@ Subject: [PATCH 07/24] modes/interactive/components/tool-execution: remove
  1 file changed, 3 insertions(+), 16 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
-index bf1cd27f9..227692c3c 100644
+index f043d0866..df3eca080 100644
 --- a/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/tool-execution.ts
 @@ -5,8 +5,8 @@ import {
@@ -30,7 +30,7 @@ index bf1cd27f9..227692c3c 100644
  	private toolName: string;
  	private toolCallId: string;
  	private args: any;
-@@ -82,7 +81,7 @@ export class ToolExecutionComponent extends Container {
+@@ -84,7 +83,7 @@ export class ToolExecutionComponent extends Container {
  		this.ui = ui;
  		this.cwd = cwd;
  
@@ -39,9 +39,9 @@ index bf1cd27f9..227692c3c 100644
  
  		// Always create all shell variants. contentBox is used for default renderer-based composition.
  		// selfRenderContainer is used when the tool renders its own framing.
-@@ -241,12 +240,7 @@ export class ToolExecutionComponent extends Container {
- 				lines.push("");
- 				lines.push(...contentLines);
+@@ -252,12 +251,7 @@ export class ToolExecutionComponent extends Container {
+ 				// Append in a loop: spreading hundreds of thousands of wrapped lines exceeds V8's argument limit.
+ 				for (const line of contentLines) lines.push(line);
  			}
 -			for (let i = 0; i < this.imageComponents.length; i++) {
 -				const spacer = this.imageSpacers[i];
@@ -53,7 +53,7 @@ index bf1cd27f9..227692c3c 100644
  				if (imageComponent) {
  					lines.push(...imageComponent.render(width));
  				}
-@@ -344,19 +338,12 @@ export class ToolExecutionComponent extends Container {
+@@ -356,19 +350,12 @@ export class ToolExecutionComponent extends Container {
  		}
  		this.imageComponents = [];
  		this.imageSources = [];

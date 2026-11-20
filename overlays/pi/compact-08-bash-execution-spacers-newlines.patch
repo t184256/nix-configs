@@ -1,4 +1,4 @@
-From cbe2b45ca48ecfa63a23dbc3117262e126ac1cf3 Mon Sep 17 00:00:00 2001
+From 2d915e6e31de63d276edab3f8e8a278b07ba7ec7 Mon Sep 17 00:00:00 2001
 From: Alexander Sosedkin <monk@unboiled.info>
 Date: Fri, 19 Jun 2026 22:09:44 +0000
 Subject: [PATCH 08/24] modes/interactive/components/bash-execution: remove spacers and leading newlines
@@ -8,7 +8,7 @@ Subject: [PATCH 08/24] modes/interactive/components/bash-execution: remove space
  1 file changed, 4 insertions(+), 8 deletions(-)
 
 diff --git a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
-index 2c789bf5b..ada9da6e2 100644
+index a279223b9..51c031824 100644
 --- a/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 +++ b/packages/coding-agent/src/modes/interactive/components/bash-execution.ts
 @@ -2,7 +2,7 @@
@@ -41,7 +41,7 @@ index 2c789bf5b..ada9da6e2 100644
  				const styledOutput = previewLogicalLines.map((line) => theme.fg("muted", line)).join("\n");
 -				const styledInput = `\n${styledOutput}`;
  				let cachedWidth: number | undefined;
- 				let cachedLines: string[] | undefined;
+ 				let cachedLines: readonly string[] | undefined;
  				this.contentContainer.addChild({
  					render: (width: number) => {
  						if (cachedLines === undefined || cachedWidth !== width) {

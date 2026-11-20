@@ -1,19 +1,19 @@
 _: prev:
 
 let
-  newerVer = "1.5.2";
+  newerVer = "1.6.0";
   freshSrc = prev.fetchFromGitHub {
     owner = "earendil-works";
     repo = "pi";
     tag = "v${newerVer}";
     # Hash of the github.com/.../archive/... tarball as fetched by nix,
     # which differs from the codeload.github.com copy of the same tag.
-    hash = "sha256-0dKtABQqfvCLF0WOydu5rpycMqC+N8Pc9Ex4BWKElyw=";
+    hash = "sha256-UVQnOMYikjxi7JREcxPZh/Uamy0l4rBvhawHR/MZZgo=";
   };
-  freshNpmDepsHash = "sha256-uHehffbEB2uU9U9uSpfWojzxvQyqeicbh/esCwk4neQ=";
+  freshNpmDepsHash = "sha256-V7fRy44X50tqfFewWQ/k5UjvUt+AoMOZkTw/v0bib6o=";
   freshModelData = prev.fetchurl {
     url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${newerVer}.tgz";
-    hash = "sha256-1XFe+oNMI7/fEKBCtJ307hacyZAAvxbXmY+rLVM7Rfg=";
+    hash = "sha256-1oMS7FdLyVnLf+4m2k9IdtBnrtm7vnbodjWeYNIpR0c=";
   };
   localPatches = [
     ./9709-bandaid.patch
