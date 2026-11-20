@@ -25,7 +25,7 @@ let
     $ORIGIN        unboiled.info.
     $TTL           1800
     @              IN SOA    a.ns.unboiled.info. admin.unboiled.info. (
-                                 2026082501; serial number
+                                 2026112001; serial number
                                  360       ; refresh
                                  90        ; retry
                                  120960    ; expire
@@ -87,7 +87,7 @@ let
     pi.slop         IN CNAME duckweed
     ctl.slop        IN CNAME duckweed
     paseo.slop      IN CNAME duckweed
-    git.slop        IN CNAME olosapo
+    git.slop        IN CNAME watermelon
 
     _xmpp-client._tcp 86400 IN SRV 5 0 5222 unboiled.info.
     _xmpp-server._tcp 86400 IN SRV 5 0 5269 unboiled.info.
