@@ -1,7 +1,7 @@
 import ctypes
 import functools
 from pathlib import Path
-from acoustic_profile import PROFILES_USB, PROFILES_ANALOG
+from acoustic_profile import PROFILES_TOP, PROFILES_SIDE
 import pynvml
 
 RESET = '\033[0m'
@@ -70,10 +70,10 @@ def _fg(rgb):
     return f'\033[38;2;{r};{g};{b}m'
 
 
-_ALL_PROFILES = [PROFILES_USB, PROFILES_ANALOG]
+_ALL_PROFILES = [PROFILES_TOP, PROFILES_SIDE]
 _db_bases = [min(min(prof) for prof in profs.values())
              for profs in _ALL_PROFILES]
-K = len(next(iter(PROFILES_USB.values()))) - 1
+K = len(next(iter(PROFILES_TOP.values()))) - 1
 
 
 def profile_db(profile, pct):
