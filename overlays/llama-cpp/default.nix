@@ -2,7 +2,7 @@ _: prev:
 
 let
   newerVer = "1.0.0";  # no support for b##### versions, only semver ones
-  isFresh = v: prev.lib.versionAtLeast v newerVer;
+  isFresh = v: prev.lib.compareVersions v newerVer > 0;  # prefer ours on equal
   freshen = prevLlamaCpp:
     assert !prev.lib.strings.hasPrefix "b" prevLlamaCpp.version;
     if isFresh prevLlamaCpp.version

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 {
   home.stateVersion = "24.11";
@@ -39,7 +39,7 @@
   programs.password-store = {
     enable = true;
     package = pkgs.pass-wayland;
-    #settings.PASSWORD_STORE_DIR = "$XDG_DATA_HOME/password-store";
+    settings.PASSWORD_STORE_DIR = "${config.xdg.dataHome}/password-store";
   };
 
   neovim.fat = true;

@@ -520,7 +520,7 @@ in
     (import ../overlays/podman-machine-image.nix)
   ] ++ ((import ../.autoimport).asList ../overlays/pi/extensions));
   home.packages = lib.mkIf config.roles.slop [ jailed-pi ];
-  home.persistence."/mnt/persist" = {
+  home.persistence."/mnt/persist" = lib.mkIf config.roles.slop {
     directories = [
       { directory = ".pi/agent/sessions"; mode = "0700"; }
     ];

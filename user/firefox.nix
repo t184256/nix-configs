@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, lib, config, ... }:
 
 {
   imports = [ ./config/no-graphics.nix ./config/os.nix ];
@@ -10,6 +10,9 @@
     browserpass = { enable = true; browsers = [ "firefox" ]; };
     firefox = {
       enable = config.system.os == "NixOS";
+      configPath = if lib.versionAtLeast config.home.stateVersion "26.05"
+        then "${config.xdg.configHome}/mozilla/firefox"
+        else ".mozilla/firefox";
       package = pkgs.firefox.override {
         cfg = {
           enableGnomeExtensions = true;
