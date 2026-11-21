@@ -52,7 +52,7 @@ in
   environment.etc."lact/config.yaml" = {
     mode = "0644";
     text = ''
-      version: 5
+      version: 7
       daemon:
         log_level: info
         admin_group: wheel
@@ -68,7 +68,7 @@ in
           mem_clock_offsets:
             0: 0  # keep constant at 9501 MHz, do not overclock
           nvidia_thermal_options:
-          target_temperature: 70  # range: 65-91
+            target_temperature: 70  # range: 65-91
           fan_control_enabled: true
           fan_control_settings:
             mode: curve
