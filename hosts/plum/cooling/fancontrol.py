@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 # Case fan control algorithm:
-# CPU/GPU fan speeds determine two "acoustic budgets" (one per mic, max dB).
+# CPU/GPU fan speeds determine two "acoustic budgets" (one per mic, max
+# loudness above that mic's own silence floor). Curves are rebased onto
+# their zero-percent value so caps compare loudness-above-silence instead
+# of absolute dB(A), whose noise floor drifted between measurements.
 # Each budget caps case fan PWM via reverse lookup in its own acoustic profile.
 # The final cap is the minimum of both budgets' caps (more restrictive wins).
 # Case fan speed is linear from TEMP_MIN at 0 to cap at TEMP_MAX,
@@ -37,15 +40,25 @@ DB_OFFSET = 0  # run case fans this many dB quieter than the estimated noise
 
 
 
-def budget_cap_pct(profile, budget_db):
-    """Highest % where the fan stays at or below budget_db loudness."""
-    if profile[K] <= budget_db:
+def _rel(curve):
+    base = curve[0]
+    return [max(0.0, v - base) for v in curve]
+
+
+REL_TOP = {name: _rel(c) for name, c in PROFILES_TOP.items()}
+REL_SIDE = {name: _rel(c) for name, c in PROFILES_SIDE.items()}
+
+
+def budget_cap_pct(profile, budget):
+    """Highest % where the (relative) profile stays at or below budget."""
+    if profile[K] <= budget:
         return 100.0
-    if profile[0] > budget_db:
+    if profile[0] > budget:
         return 0.0
     for i in range(K - 1, -1, -1):
-        if profile[i] <= budget_db:
-            t = (budget_db - profile[i]) / (profile[i + 1] - profile[i])
+        if profile[i] <= budget:
+            d = profile[i + 1] - profile[i]
+            t = 0.0 if d <= 0 else (budget - profile[i]) / d
             return min(100.0, (i + t) * 100 / K)
     return 0.0
 
@@ -76,12 +89,13 @@ def gpu_fan_pct(h):
 def log_fan(name, pwm, cap):
     pct = round(pwm * 100 / 255)
     cap_pct = round(cap * 100 / 255)
-    db_top = profile_db(PROFILES_TOP[name], pct)
-    db_side = profile_db(PROFILES_SIDE[name], pct)
-    cap_db_top = profile_db(PROFILES_TOP[name], cap_pct)
-    cap_db_side = profile_db(PROFILES_SIDE[name], cap_pct)
+    db_top = profile_db(REL_TOP[name], pct)
+    db_side = profile_db(REL_SIDE[name], pct)
+    cap_db_top = profile_db(REL_TOP[name], cap_pct)
+    cap_db_side = profile_db(REL_SIDE[name], cap_pct)
     return (f'{name}: {pct}/{cap_pct}% '
-            f'{db_top:.1f},{db_side:.1f}->{cap_db_top:.1f},{cap_db_side:.1f}dBA')
+            f'+{db_top:.1f},+{db_side:.1f}'
+            f'->+{cap_db_top:.1f},+{cap_db_side:.1f}dB')
 
 
 pynvml.nvmlInit()
@@ -92,8 +106,8 @@ hwmon = find_hwmon('nct6799')
 
 def cap(name, budget_top, budget_side):
     """Cap using both budgets; the more restrictive one wins."""
-    c_top = budget_cap_pct(PROFILES_TOP[name], budget_top)
-    c_side = budget_cap_pct(PROFILES_SIDE[name], budget_side)
+    c_top = budget_cap_pct(REL_TOP[name], budget_top)
+    c_side = budget_cap_pct(REL_SIDE[name], budget_side)
     return int(min(c_top, c_side) * 255 / 100)
 
 
@@ -121,14 +135,14 @@ try:
         # (GPU-driven; the cpu cooler wasn't mapped TODO: map)
         budget_top = (
             max(
-                profile_db(PROFILES_TOP['gpu0'], g0_pct),
-                profile_db(PROFILES_TOP['gpu1'], g1_pct),
+                profile_db(REL_TOP['gpu0'], g0_pct),
+                profile_db(REL_TOP['gpu1'], g1_pct),
             ) - DB_OFFSET
         )
         budget_side = (
             max(
-                profile_db(PROFILES_SIDE['gpu0'], g0_pct),
-                profile_db(PROFILES_SIDE['gpu1'], g1_pct),
+                profile_db(REL_SIDE['gpu0'], g0_pct),
+                profile_db(REL_SIDE['gpu1'], g1_pct),
             ) - DB_OFFSET
         )
 
@@ -163,7 +177,7 @@ try:
             print(
                 f'gpu0: {g0_pct:.0f}%, '
                 f'gpu1: {g1_pct:.0f}%, '
-                f'budget top={budget_top:.2f}dB side={budget_side:.2f}dB',
+                f'budget top=+{budget_top:.2f} side=+{budget_side:.2f}dB',
                 flush=True,
             )
             pwms = {1: pwm1, 3: pwm3, 4: pwm4,
