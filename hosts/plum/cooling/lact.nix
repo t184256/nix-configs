@@ -47,6 +47,31 @@ in
 
   services.lact.enable = true;
 
+  # The eGPU dropped off the Thunderbolt bus mid-op; amdgpu loops forever in
+  # job recovery on it ("device lost from bus", GPU Recovery Failed -19), and
+  # any ioctl into card3 blocks in D state. lact builds an AMD controller for
+  # every DRM card before applying anything (handler.rs load_controllers walks
+  # /sys/class/drm/card*, config is not consulted), so it never reaches the two
+  # 3090s -> their power caps/clocks are silently never applied.
+  #
+  # A closed device policy makes opening the eGPU render node return EACCES
+  # instead: lact logs "could not initialize GPU controller" for it and moves
+  # on to the NVIDIA cards, which are reached through NVML only.
+  # NOTE: this also keeps the iGPU out of lact's view (it was skipped anyway).
+  #
+  # TODO: drop this whole serviceConfig block (and uncomment the eGPU gpu entry
+  # above) once the BoostR is reseated/power-cycled and shows up as card3 again,
+  # so its fan curve is managed again -- until then its fan runs at BIOS default.
+  systemd.services.lactd.serviceConfig = {
+    DevicePolicy = "closed";
+    DeviceAllow = [
+      "/dev/nvidiactl rw"
+      "/dev/nvidia-uvm rw"
+      "/dev/nvidia0 rw"
+      "/dev/nvidia1 rw"
+    ];
+  };
+
   # services.lact.settings serializes attrset keys as YAML strings,
   # but curve keys must be i32; write config directly instead.
   environment.etc."lact/config.yaml" = {
@@ -104,18 +129,24 @@ in
               70: 0.5
               80: 0.7
               90: 1.0
-        "1002:7480-2014:8014-0000:1c:00.0":  # BoostR 7600M eGPU
-          fan_control_enabled: true  # no gpu_od/fan_ctrl, fallback to hwmon
-          fan_control_settings:
-            mode: curve
-            temperature_key: junction
-            interval_ms: 500
-            spindown_delay_ms: 10000
-            change_threshold: 2
-            curve:
-              40: 0.0  # silent until 65C
-              65: 0.0  # so that it doesn't even attempt spinning up w/o load
-              85: 1.0  # then linear to 100% by 85C
+        # Disabled: the BoostR fell off the Thunderbolt bus mid-op, amdgpu is
+        # looping in job recovery ("device lost from bus", GPU Recovery Failed
+        # -19) and any ioctl into card3 blocks in D state forever, so lact
+        # never reaches the two 3090s -> their power caps/clocks are not applied.
+        # Re-enable once the eGPU is reseated/power-cycled and boots clean.
+        #
+        # "1002:7480-2014:8014-0000:1c:00.0":  # BoostR 7600M eGPU
+        #   fan_control_enabled: true  # no gpu_od/fan_ctrl, fallback to hwmon
+        #   fan_control_settings:
+        #     mode: curve
+        #     temperature_key: junction
+        #     interval_ms: 500
+        #     spindown_delay_ms: 10000
+        #     change_threshold: 2
+        #     curve:
+        #       40: 0.0  # silent until 65C
+        #       65: 0.0  # so that it doesn't even attempt spinning up w/o load
+        #       85: 1.0  # then linear to 100% by 85C
     '';
   };
 
