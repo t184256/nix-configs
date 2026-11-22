@@ -63,9 +63,10 @@ let
         inherit nameTemplate pathTemplate shards;
       };
     };
+
 in
 
-{
+rec {
   inherit nix-hf-hash;
 
   # plum
@@ -205,6 +206,49 @@ in
     path = "MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf";
     hash = "sha256-X/VAl0BqkFzzpyTHCRJM6w4+ECNe6GIpiWnpHJb6luY=";
   };
+
+  # The sidecar MBufo's own release notes use for its v2q8k runs; unlike
+  # the ROCmFP4-FAST MTP artifact it has nextn.hc_head_{norm,down,up}, so
+  # no repack applies (all tensors are already Q8_0/F32).
+  qwen38-flash-next-mtp-q80-agentionai = fetchHF {
+    repo = "agentionai/Qwen3.8-Flash-Next-MTP-Q8_0-GGUF";
+    name = "Qwen3.8-Flash-Next-MTP-Q8_0.gguf";
+    hash = "sha256-VU89EjDMGo4tY+MyLxEyGPPgUhVtmDKOnyH7l9tIr38=";
+  };
+
+  # ROCmFP4-FAST v2 imatrix for mbufo, ~87 GB single file, save ~10G
+  qwen38-flash-next-rocmfp4-fast-v2-needs-repack = fetchHF {
+    repo = "agentionai/Qwen3.8-Flash-Next-ROCmFP4-FAST-imatrix-GGUF";
+    name = "Qwen3.8-Flash-Next-ROCmFP4-FAST-imatrix-v2.gguf";
+    path = "v2/Qwen3.8-Flash-Next-ROCmFP4-FAST-imatrix-v2.gguf";
+    hash = "sha256-HkFgyvmZrke5J21mrqV6qFF0aZ5Nlgewk/AySgq3lnQ=";
+  };
+  # needs repack, see below
+  mbufo-rocmfp4-v2-repack = prev.stdenv.mkDerivation {
+    pname = "mbufo-rocmfp4-v2-repack";
+    version = "6ace8271";
+    src = prev.fetchFromGitHub {
+      owner = "dardeaw";
+      repo = "MBufo";
+      rev = "6ace82710a517cb920e1a0b582528d4924b788e1";
+      hash = "sha256-787dheNjjDW4BIqoNC3EDqarn2DmEhwb49r/RhBLOcM=";
+    };
+    nativeBuildInputs = [ prev.gcc ];
+    dontConfigure = true;
+    dontInstall = true;
+    buildPhase = ''
+      runHook preBuild
+      mkdir -p $out/bin
+      $CXX -std=c++20 -O2 -I. -o $out/bin/rocmfp4-v2-repack \
+        tools/qwen-flash/rocmfp4_v2_repack.cpp src/core/quant/ggml_dequant.cpp
+      runHook postBuild
+    '';
+  };
+  qwen38-flash-next-rocmfp4-fast-v2-repacked = prev.runCommand
+    "qwen38-flash-next-rocmfp4-fast-v2-repacked" {} ''
+      ${mbufo-rocmfp4-v2-repack}/bin/rocmfp4-v2-repack \
+        ${qwen38-flash-next-rocmfp4-fast-v2-needs-repack} $out
+    '';
 
   # gufo's vision loader requires BF16 tensors (mmproj-F16 is rejected);
 

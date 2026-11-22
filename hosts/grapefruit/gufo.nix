@@ -1,40 +1,44 @@
 { inputs, pkgs, ... }:
 
-# Qwen3.8-Flash-Next (UD-Q4_K_XL + shared-Q8 MTP), gfx1151-only:
-# compared to gufo, it gains q8 and impressive parallelism
+# TODO: run smaller models on NPU, but mind amd/xdna-driver#1605
 
-# 96480M GTT / 110G of actual usage
+# Qwen3.8-Flash-Next (UD-Q4_K_XL + shared-Q8 MTP), gfx1151-only:
+# compared to gufo, it gains q8 KV, impressive parallelism and ROCm-FAST
+
+# 86576M GTT / ~98G of actual usage ???
 
 # bench-gufo --think:
 # target      pp      ttft   avg pp   decode tps    gen
-#    256     257    0.334s      770         56.5    482
-#   8192    8193    5.219s     1570         53.3    424
-#  16384   16385   10.065s     1628         55.6    549
-#  32768   32769   20.576s     1593         54.7    474
-#  65536   65537   42.069s     1558         54.2    545
-# 131072  131073   88.384s     1483         50.0    523
-# 196608  196609  134.001s     1467         52.9    417
-# 260096  260097  180.827s     1438         50.3    365
+#    256     257    0.319s      805         52.3    606
+#   8192    8193    5.250s     1561         49.5    762
+#  16384   16385   10.017s     1636         54.8    526
+#  32768   32769   20.581s     1592         54.0    501
+#  65536   65537   41.999s     1560         50.3    561
+# 131072  131073   86.455s     1516         53.1    504
+# 196608  196609  132.842s     1480         55.7    476
+# 260096  260097  179.823s     1446         52.2    375
 
 # bench-gufo --nothink:
 # target      pp      ttft   avg pp   decode tps    gen
-#    256     259    0.340s      761         45.0    397
-#   8192    8195    5.318s     1541         44.4    546
-#  16384   16387    9.890s     1657         42.4    757
-#  32768   32771   20.220s     1621         42.8    707
-#  65536   65539   42.383s     1546         47.7   1024
-# 131072  131075   86.944s     1508         46.0    613
-# 196608  196611  133.502s     1473         47.5    736
-# 260096  260099  180.798s     1439         43.8    994
+#    256     259    0.338s      765         50.4    426
+#   8192    8195    5.250s     1561         47.3    870
+#  16384   16387    9.834s     1666         45.5   1024
+#  32768   32771   20.216s     1621         46.1    813
+#  65536   65539   42.132s     1556         47.4    538
+# 131072  131075   86.491s     1515         44.2    977
+# 196608  196611  132.714s     1481         47.0   1023
+# 260096  260099  179.760s     1447         44.1    892
 
 # bench-gufo --think --concurrency 2 (last row per size only):
 # target      pp      ttft   avg pp   decode tps    gen
-#    256     257    0.510s      547         38.2    607
-#   8192    8193   12.638s      648         31.8    474
-#  16384   16385   21.883s      751         32.0    566
-#  32768   32769   43.844s      748         33.1    497
-#  65536   65537   89.841s      729         32.2    398
-# 131072  131073  183.417s      715         32.6    399
+#    256     257    0.516s      528         35.5    556
+#   8192    8193   11.228s      735         33.3    666
+#  16384   16385   21.062s      784         32.4    500
+#  32768   32769   43.397s      756         33.3    540
+#  65536   65537   87.087s      753         35.0    540
+# 131072  131073  178.811s      733         33.8    560
+# 196608  196609  276.062s      712         31.3    393
+# 260096  260097  373.892s      696         28.1    419
 
 let
   gufo = inputs.mbufo.packages.x86_64-linux.default.overrideAttrs (_: prev: {
@@ -58,10 +62,11 @@ let
     modality = "llm";
     host = "192.168.99.52";
     port = 11111;
-    model =
-      "${pkgs.qwen38-flash-next-ud-q4kxl}/" +
-      "Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf";
-    mtpModel = pkgs.qwen38-flash-next-mtp-q80;
+#   model =
+#     "${pkgs.qwen38-flash-next-ud-q4kxl}/" +
+#     "Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf";
+    model = pkgs.qwen38-flash-next-rocmfp4-fast-v2-repacked;
+    mtpModel = pkgs.qwen38-flash-next-mtp-q80-agentionai;
     servedModelName = "qwen3.8-flash-next";
     context = 262144;
     speculative = "mtp";
@@ -69,9 +74,7 @@ let
 
     extraArgs = [
       "--mmproj" "${pkgs.qwen38-flash-next-mmproj-bf16}"
-      # quite a perf hit:
-      # https://github.com/gufo-org/gufo/pull/561#issuecomment-6287816119
-      "--kv-quant" "q8"  # fp8 has even slower prefill
+      "--kv-quant" "q8"
     ];
 
     # no explicit sampling options: gufo auto-selects for thinking on and off
@@ -103,8 +106,10 @@ in
       RestartSec = "30s";
       MemorySwapMax = 0;  # let's just not
       Environment = [
-        "GUFO_KV_WMMA=1"
+        "GUFO_KV_WMMA=1"  # close-to-gufo prefill speed
         # GUFO_KV_I8=2 is the default
+        # TODO: test reverts below
+        "GUFO_MIXED_MTP=0" "GUFO_VERIFY_BATCH_ROWS=8"
       ];
       ExecStart = [ gufoServe ];
     };
