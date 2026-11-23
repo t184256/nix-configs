@@ -148,6 +148,7 @@ let
       "npm:pi-web-access@0.47.0"
       "npm:pi-advisor-flow@0.14.4"
       "npm:pi-hot-compact@0.3.0"
+      "npm:pi-system-reminders@0.1.3"
     ];
   };
 
@@ -169,6 +170,7 @@ let
     cp -r ${pkgs.pi-web-access}/lib/node_modules/* $out
     cp -r ${pkgs.pi-advisor}/lib/node_modules/* $out
     cp -r ${pkgs.pi-hot-compact}/lib/node_modules/* $out
+    cp -r ${pkgs.pi-system-reminders}/lib/node_modules/* $out
   '';
 
   # pi-advisor: batch reviews interactive and mini, not itself
@@ -195,6 +197,7 @@ let
     # below this the un-curated conversation is faster
     advisorScoutMinConversationChars = 100500;
   });
+
   # pi-hot-compact: the raw session log stays authoritative, the model sees a
   # compiled projection (mechanical sections + one written checkpoint), and
   # whatever is dropped stays recallable via context_recall / event://N
@@ -437,6 +440,19 @@ let
     # (ephemeral) jail rootfs before the agent starts
     (wrap-entry (entry: ''
       install -d -m 700 "/run/user/$(id -u)"
+      # Flatten per-skill reminder files into a flat reminders dir
+      # skills/<name>/<part>.ts -> reminders/<name>-<part>.ts
+      mkdir -p ~/.pi/agent/reminders
+      rm -f ~/.pi/agent/reminders/*.ts
+      [ -f ~/.agents/skills/.lib-reminders.ts ] \
+        && cp ~/.agents/skills/.lib-reminders.ts ~/.pi/agent/
+      for d in ~/.agents/skills/*/; do
+        name=$(basename "$d")
+        for f in "$d"*.ts; do
+          [ -f "$f" ] || continue
+          cp "$f" "$HOME/.pi/agent/reminders/$name-$(basename "$f" .ts).ts"
+        done
+      done
       ${entry}
     ''))
     (write-text (noescape "~/.config/nix/nix.conf") ''
