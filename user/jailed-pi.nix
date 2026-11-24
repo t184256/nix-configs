@@ -504,6 +504,11 @@ let
     (ro-bind podmanHelpers "/usr/libexec/podman")
     # nps: read-only access to the host's shared package cache
     (try-ro-bind "/var/cache/nps" "/var/cache/nps")
+    # nix-search-tv: read-only access to the host index cache and config
+    (try-ro-bind (noescape "~/.cache/nix-search-tv")
+      (noescape "~/.cache/nix-search-tv"))
+    (try-ro-bind (noescape "~/.config/nix-search-tv/config.json")
+      (noescape "~/.config/nix-search-tv/config.json"))
   ]
   # deferred so these layer on top of ~/.pi from makeJailedPi
   ++ map defer [
@@ -546,6 +551,7 @@ let
       podmanWrapper
       actWrapper
       nps
+      nix-search-tv
     ];
     baseJailOptions = jailedAgentsLib.commonJailOptions ++ extraJailOpts;
   };

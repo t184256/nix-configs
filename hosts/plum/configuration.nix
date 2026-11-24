@@ -129,6 +129,8 @@
     9988 # ctl
   ];
 
+  home-manager.users.monk.nix-search-tv.enable = true;
+
   environment.systemPackages = with pkgs; [
     amdgpu_top
   ];
