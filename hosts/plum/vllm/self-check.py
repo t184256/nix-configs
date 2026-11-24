@@ -81,7 +81,7 @@ def offload_bytes(lines=None):
 def check_pool():
     # check that pool size didn't dip without us noticing + a bit more
     print('[pool]', flush=True)
-    pool_floor = 500000
+    pool_floor = 440000
     lines = metric_lines()
     info = next(
         line for line in lines

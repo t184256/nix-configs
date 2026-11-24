@@ -48,6 +48,9 @@ for lib in _C_stable_libtorch.abi3.so _moe_C_stable_libtorch.abi3.so; do
     fi
 done
 
+install -m 0644 "$sm86/patches/draft_vocab_rank.json" \
+    "$site/vllm/models/inkling2/draft_vocab_rank.json"
+
 python3 "$sm86/patches/apply_sm86_patch.py" "$site"
 patch -p1 --fuzz=0 -d "$site" < "$sm86/patches/sm86-tune.diff"
 patch -p1 --fuzz=0 -d "$site" < "$sm86/patches/effort-budget.diff"
@@ -60,6 +63,9 @@ for f in \
     vllm/models/inkling2/nvidia/vision.py \
     vllm/models/inkling2/nvidia/attention.py \
     vllm/models/inkling2/nvidia/dspark.py \
+    vllm/models/inkling2/speculator.py \
+    vllm/models/inkling2/nvidia/ops/sconv.py \
+    vllm/models/inkling/nvidia/sconv_swa_attn.py \
     vllm/models/inkling2/nvidia/loop.py \
     vllm/models/inkling2/nvidia/ops/gemv.py \
     vllm/models/inkling2/nvidia/ops/moe_sm90.py \
