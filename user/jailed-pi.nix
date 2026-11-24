@@ -29,6 +29,40 @@ let
     };
   };
 
+  # Inkling 2 Mini reasoning_effort is a chat-template kwarg, [0.0, 0.99):
+  # none 0.0, minimal 0.1, low 0.2, medium 0.7, high 0.9, xhigh/max 0.99.
+  inklingEffort = {
+    thinkingLevelMap = {
+      off = "none";  # plum budgets none at 256 thinking tokens
+      minimal = "minimal";
+      low = "low";
+      medium = "medium";
+      high = "high";
+      xhigh = "xhigh";
+      max = null;
+    };
+    compat = {
+      thinkingFormat = "chat-template";
+      chatTemplateKwargs = {
+        reasoning_effort = { "$var" = "thinking.effort"; };
+      };
+    };
+    # thinking budgets are plum's business now, see
+    # hosts/plum/vllm/effort_budget.py, which maps each name onto one:
+    #   none 256, minimal 2048, low 4096, medium 8192, high 16384, xhigh none
+    # it skips a budget unless max_tokens clears it by another 4096, since a
+    # cap the answer cannot fit behind ends in finish=length with an empty
+    # message. so pi only names the level here.
+    #
+    # samplingParamsByThinkingLevel = {
+    #   off = { thinking_token_budget = 256; };
+    #   minimal = { thinking_token_budget = 2048; };
+    #   low = { thinking_token_budget = 4096; };
+    #   medium = { thinking_token_budget = 8192; };
+    #   high = { thinking_token_budget = 16384; };
+    # };
+  };
+
   modelsRaw = builtins.toJSON {
     providers = {
       litellm = {
@@ -41,18 +75,14 @@ let
           maxTokensField = "max_tokens";
         };
         models = map (m: m // { samplingParams = { return_progress = true; }; }) [
-          ({ id = "qwen3.8-27b-think"; reasoning = true;
-            input = [ "text" "image" ];
-            contextWindow = 262144; }
-            // qwen38Effort)
-          { id = "qwen3.8-27b-nothink";
-            input = [ "text" "image" ];
-            contextWindow = 262144; }
-          # interactive: plum's qwen3.8-27b; batch: grapefruit's
+          # interactive: plum's inkling-2-mini; batch: grapefruit's
           ({ id = "interactive"; reasoning = true;
             input = [ "text" "image" ];
-            contextWindow = 262144; }
-            // qwen38Effort)
+            contextWindow = 262144;
+            # above the xhigh cap, otherwise max_tokens truncates the
+            # thinking span before the budget ever bites
+            maxTokens = 49152; }
+            // inklingEffort)
           ({ id = "batch"; reasoning = true;
             input = [ "text" "image" ];
             contextWindow = 262144; }
@@ -67,25 +97,21 @@ let
         baseUrl = "http://192.168.99.53:11111/v1";
         api = "openai-completions";
         apiKey = "dummy";
+        # vLLM, hence no llama.return_progress and no thinking_budget_tokens
+        # effort names plus thinking_token_budget caps, no -nothink twin
         compat = {
-          thinkingFormat = "qwen-chat-template";
+          thinkingFormat = "chat-template";
           supportsDeveloperRole = false;
           maxTokensField = "max_tokens";
         };
         models = [
-          ({ id = "qwen3.8-27b-think"; reasoning = true;
+          ({ id = "inkling-2-mini"; reasoning = true;
             input = [ "text" "image" ];
             contextWindow = 262144;
+            maxTokens = 49152;
             cost = { input = 0; output = 0;
-                     cacheRead = 0; cacheWrite = 0; };
-            samplingParams = { return_progress = true; }; }
-            // qwen38Effort)
-          { id = "qwen3.8-27b-nothink";
-            input = [ "text" "image" ];
-            contextWindow = 262144;
-            cost = { input = 0; output = 0;
-                     cacheRead = 0; cacheWrite = 0; };
-            samplingParams = { return_progress = true; }; }
+                     cacheRead = 0; cacheWrite = 0; }; }
+            // inklingEffort)
         ];
       };
       # same box as plum, but the llama-cpp-mini
@@ -173,11 +199,14 @@ let
     cp -r ${pkgs.pi-system-reminders}/lib/node_modules/* $out
   '';
 
-  # pi-advisor: batch reviews interactive and mini, not itself
+  # pi-advisor: batch reviews interactive, mini and inkling-2-mini
   advisorJson = pkgs.writeText "advisor.json" (builtins.toJSON {
     executor = "litellm/interactive";
     advisor = "litellm/batch";
-    advisorModelWhitelist = [ "litellm/interactive" "litellm/mini" ];
+    advisorModelWhitelist = [
+      "litellm/interactive" "plum/inkling-2-mini"
+      "litellm/mini" "plum-mini/mini"
+    ];
     contextMaxChars = 9007199254740991;  # ALL, for KV cache reuse
     alwaysOn = true;  # activate the flow on session start instead of /advisor
     advisorSessionSummary = true;  # report Jev screening counts

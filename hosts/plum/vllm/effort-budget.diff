@@ -1,0 +1,44 @@
+--- a/vllm/entrypoints/openai/chat_completion/protocol.py
++++ b/vllm/entrypoints/openai/chat_completion/protocol.py
+@@ -236,6 +236,28 @@
+     type: Literal["function"] = "function"
+ 
+ 
++_EFFORT_THINKING_BUDGETS = {
++    "none": 256,
++    "minimal": 2048,
++    "low": 4096,
++    "medium": 8192,
++    "high": 16384,
++}
++
++
++def _effort_thinking_budget(request, max_tokens):
++    """Thinking budget implied by a named reasoning_effort level."""
++    effort = (request.chat_template_kwargs or {}).get("reasoning_effort")
++    budget = (_EFFORT_THINKING_BUDGETS.get(effort)
++              if isinstance(effort, str) else None)
++    if budget is None:
++        return None
++    # a cap the answer cannot fit behind keeps the model inside thinking
++    if not isinstance(max_tokens, int) or max_tokens < budget + 4096:
++        return None
++    return budget
++
++
+ class ChatCompletionRequest(OpenAIBaseModel):
+     # Ordered by official OpenAI API documentation
+     # https://platform.openai.com/docs/api-reference/chat/create
+@@ -822,7 +844,11 @@
+             structured_outputs=self.extract_structured_outputs(),
+             logit_bias=self.logit_bias,
+             bad_words=self.bad_words,
+-            thinking_token_budget=self.thinking_token_budget,
++            thinking_token_budget=(
++                self.thinking_token_budget
++                if self.thinking_token_budget is not None
++                else _effort_thinking_budget(self, max_tokens)
++            ),
+             allowed_token_ids=self.allowed_token_ids,
+             extra_args=extra_args or None,
+             skip_clone=True,  # Created fresh per request, safe to skip clone

@@ -7,8 +7,8 @@ let
     exec ${llm-commit-msg-upstream}/bin/llm-commit-msg generate \
       --api-endpoint "https://llm.slop.unboiled.info" \
       --api-token-file /mnt/secrets/llm \
-      --model mini \
-      --max-thinking-tokens 256 \
+      --model interactive \
+      --max-thinking-tokens 512 \
       --lookback-messages-stickiness 10 \
       "$@"
   '';

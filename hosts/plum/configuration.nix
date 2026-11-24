@@ -28,8 +28,9 @@
     ./cooling/fanlistener.nix
     ./cooling/temps.nix
     #./safe-reboot.nix
-    ./sglang
+    #./sglang
     ./paseo.nix
+    ./vllm
   ];
 
   hardware.rasdaemon.enable = true;

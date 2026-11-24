@@ -44,6 +44,7 @@ rec {
         'qwen3.8-flash-next': '${final.qwen38-tokenizer}',
         'qwen3.8-27b': '${final.qwen38-tokenizer}',
         'qwen3.5': '${final.qwen35-tokenizer}',
+        'inkling-2-mini': '${final.inkling2-mini-tokenizer}',
         'lfm2.5': '${final.lfm25-tokenizer}',
     }
     for i, a in enumerate(args):

@@ -94,15 +94,20 @@ in
             chat_template_kwargs.enable_thinking = false;
           };
         };
+        inkling2 = {
+          temperature = 1.0;
+          top_p = 1.0;
+          extra_body = { top_k = 0; min_p = 0.0; };
+        };
         # hosts: primary first, fallbacks after
         models = {
           "qwen3.8-flash-next".hosts = [ grapefruit ];
-          "qwen3.8-27b".hosts = [ plum ];
+          "inkling-2-mini".hosts = [ plum ];
           "qwen3.5-9b".hosts = [ plumMini ];
           "d1-3B".hosts = [ cocoa ];
         };
         aliases = {
-          "interactive" = { model = "qwen3.8-27b"; params = qwen3Think; };
+          "interactive" = { model = "inkling-2-mini"; params = inkling2; };
           "batch" = { model = "qwen3.8-flash-next"; params = qwen3Think; };
           "mini".model = "qwen3.5-9b";
           "mini-think" = { model = "qwen3.5-9b"; params = qwen3Think; };
@@ -114,10 +119,6 @@ in
           "default-nothink" =
             { model = "qwen3.8-flash-next"; params = qwen3Nothink; };
 
-          "qwen3.8-27b-think" =
-            { model = "qwen3.8-27b"; params = qwen3Think; };
-          "qwen3.8-27b-nothink" =
-            { model = "qwen3.8-27b"; params = qwen3Nothink; };
           "qwen3.8-flash-next-think" =
             { model = "qwen3.8-flash-next"; params = qwen3Think; };
           "qwen3.8-flash-next-nothink" =

@@ -70,6 +70,69 @@ rec {
   inherit nix-hf-hash;
 
   # plum
+  # Inkling 2 Mini (Thinking Machines, 2026-11-20): 26.4B looped MoE, 3.4B
+  # active, native NVFP4/MXFP8 expert weights, 1M context, vision input.
+  # The DSpark drafter is mtp.safetensors. Served by vLLM (hosts/plum/vllm).
+  inkling2-mini = fetchHFModel {
+    pname = "inkling2-mini";
+    repo = "thinkingmachines/Inkling-2-Mini";
+    files = [
+      {
+        path = "chat_template.jinja";
+        hash = "sha256-U6kDXzJVlFcEtYV2V8+wDBFlCQwGQcT3gqDL8mjMFtw=";
+      }
+      {
+        path = "config.json";
+        hash = "sha256-p6NJYB8JhMSr+ZnEgO93XYVn0h9fhLToo+A1tE8ojcI=";
+      }
+      {
+        path = "generation_config.json";
+        hash = "sha256-oIc3wHplqP32n3zwhldiEOWq1LJBQ3CQsm17DE95Bfc=";
+      }
+      {
+        path = "hf_quant_config.json";
+        hash = "sha256-fGViB9PON4ece+IJoDaw3eQ78B94FZv/BogLho7VcUM=";
+      }
+      {
+        path = "model-00001-of-00001.safetensors";
+        hash = "sha256-ZeYPUaoShNT7AiWEkIwxUnAzTZkYKLt3SvYFhFI1OdE=";
+      }
+      {
+        path = "model.safetensors.index.json";
+        hash = "sha256-wWMQZbewB4eZNSLd3Gamizq+6GkZKXf7Pct5bmO8WDg=";
+      }
+      {
+        path = "mtp.safetensors";
+        hash = "sha256-fDtlExfwH3O89OHc66Zu+LfhoerGvBceiC5pCksQodI=";
+      }
+      {
+        path = "processor_config.json";
+        hash = "sha256-1zUK3OGMi+S2B/JhyPD36rv3ILt6r2SKQ9T4Nyu6zC0=";
+      }
+      {
+        path = "special_tokens_map.json";
+        hash = "sha256-wW9Es1lFY9gnQ92wQXor4b/j4gAN+tLaS48yVUWT4aA=";
+      }
+      {
+        path = "tiktoken/tokenizer.model";
+        hash = "sha256-8XA3LdZVcokJIoIg13z2uBBKWfOKkSYqfSxAJ5BuwNg=";
+      }
+      {
+        path = "tokenizer.json";
+        hash = "sha256-fzMnJ/mj8JPdRSo5zJeOZ1difl2tGwZzqk51F08jbdY=";
+      }
+      {
+        path = "tokenizer_config.json";
+        hash = "sha256-vwk0LShROf03zhDHCHivHVLLOQ6ZAeECSGVCk6gO5jY=";
+      }
+    ];
+  };
+  inkling2-mini-tokenizer = fetchHF {
+    repo = "thinkingmachines/Inkling-2-Mini";
+    name = "tokenizer.json";
+    hash = "sha256-fzMnJ/mj8JPdRSo5zJeOZ1difl2tGwZzqk51F08jbdY=";
+  };
+
   qwen38-27b-q4kxl = fetchHF {
     repo = "unsloth/Qwen3.8-27B-GGUF";
     name = "Qwen3.8-27B-UD-Q4_K_XL.gguf";
