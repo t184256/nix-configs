@@ -25,23 +25,20 @@ DELTA_SILENCE   = 0.1   # dB to stop going lower
 
 SPEEDS = [round(100 * i / K) for i in range(K + 1)]
 
-ALL_GPU_FANS  = [(0, 0), (0, 1), (1, 0), (1, 1)]
-ALL_PWM_FANS  = [1, 2, 3, 4, 5, 6, 7]  # all case fans (cpu cooler is
-# not on the chip; fan2 tach senses it, see fancontrol.py header)
-PWM_FAN_NAMES = {1: 'case1', 2: 'case2', 3: 'case3', 4: 'case4',
-                 5: 'case5', 6: 'case6', 7: 'case7'}
+ALL_GPU_FANS = [(0, 0), (0, 1), (1, 0), (1, 1)]
+ALL_CHANNELS = ['mb1', 'mb2', 'mb3', 'mb4', 'mb5', 'mb6', 'mb7']
 
-# Each target: name, own gpu fans [(gpu,fan),...], own pwm fans [n,...]
+# Each target: name, own gpu fans [(gpu,fan),...], own pwm channels [...]
 ALL_TARGETS = [
     ('gpu0',  [(0, 0), (0, 1)], []),
     ('gpu1',  [(1, 0), (1, 1)], []),
-    ('case1', [], [1]),
-    ('case2', [], [2]),
-    ('case3', [], [3]),
-    ('case4', [], [4]),
-    ('case5', [], [5]),
-    ('case6', [], [6]),
-    ('case7', [], [7]),
+    ('mb1',   [], ['mb1']),
+    ('mb2',   [], ['mb2']),
+    ('mb3',   [], ['mb3']),
+    ('mb4',   [], ['mb4']),
+    ('mb5',   [], ['mb5']),
+    ('mb6',   [], ['mb6']),
+    ('mb7',   [], ['mb7']),
 ]
 ALL_TARGET_NAMES = [name for name, *_ in ALL_TARGETS]
 
@@ -102,24 +99,24 @@ def restore():
 atexit.register(restore)
 
 
-def stall_except(own_gpu_fans, own_pwm_fans):
+def stall_except(own_gpu_fans, own_channels):
     stalled = []
     for gpu, fan in ALL_GPU_FANS:
         if (gpu, fan) not in own_gpu_fans:
             fanctl({'cmd': 'set_gpu', 'gpu': gpu, 'fan': fan, 'pct': 0})
             stalled.append(f'gpu{gpu}f{fan}')
-    for n in ALL_PWM_FANS:
-        if n not in own_pwm_fans:
-            fanctl({'cmd': 'set_case', 'fan': n, 'pwm': 0})
-            stalled.append(PWM_FAN_NAMES[n])
+    for ch in ALL_CHANNELS:
+        if ch not in own_channels:
+            fanctl({'cmd': 'set_pwm', 'ch': ch, 'pwm': 0})
+            stalled.append(ch)
     print(f' * stalled: {", ".join(stalled)}')
 
 
-def set_speed(pct, own_gpu_fans, own_pwm_fans):
+def set_speed(pct, own_gpu_fans, own_channels):
     for gpu, fan in own_gpu_fans:
         fanctl({'cmd': 'set_gpu', 'gpu': gpu, 'fan': fan, 'pct': pct})
-    for n in own_pwm_fans:
-        fanctl({'cmd': 'set_case', 'fan': n, 'pwm': pct * 255 // 100})
+    for ch in own_channels:
+        fanctl({'cmd': 'set_pwm', 'ch': ch, 'pwm': pct * 255 // 100})
 
 
 def sleep_countdown(secs, label):
@@ -135,9 +132,9 @@ def sleep_countdown(secs, label):
 # Per-mic results:  all_results[label][target_name] = [K+1 dB values]
 all_results = {label: {} for label, _, _ in MICS}
 
-for name, own_gpu_fans, own_pwm_fans in TARGETS:
+for name, own_gpu_fans, own_channels in TARGETS:
     # --- silence baseline (all fans off) ---
-    print(f'--- silence before testing f{name} ---')
+    print(f'--- silence before testing {name} ---')
     stall_except([], [])
     sleep_countdown(SPINDOWN_SEC, f'{name} @ stall')
     mic_data = measure_all_mics()
@@ -156,8 +153,8 @@ for name, own_gpu_fans, own_pwm_fans in TARGETS:
         if all(done.values()):
             break
         print(f'--- {name} @ {pct}% ---')
-        stall_except(own_gpu_fans, own_pwm_fans)
-        set_speed(pct, own_gpu_fans, own_pwm_fans)
+        stall_except(own_gpu_fans, own_channels)
+        set_speed(pct, own_gpu_fans, own_channels)
         sleep_countdown(INTERSPEED_SEC if i else SPINUP_SEC,
                         f'spin-up {name}@{pct}%')
 

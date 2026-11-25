@@ -7,7 +7,13 @@ import pynvml
 
 PORT = 9272
 
-ALL_FANS = [1, 2, 3, 4, 5, 6, 7]
+# mb* is the motherboard SuperIO (manual mode via pwm<n>_enable),
+# fc* the ARCTIC USB fan controller: no pwm_enable, every write sends 10 duties
+PROVIDER_HWON = {'mb': 'nct6799', 'fc': 'arctic_fan'}
+PROVIDER_CHANNELS = {
+    'mb': [1, 2, 3, 4, 5, 6, 7],
+    'fc': list(range(1, 11)),
+}
 
 
 def find_hwmon(name):
@@ -20,29 +26,67 @@ def find_hwmon(name):
     raise RuntimeError(f'{name} hwmon not found')
 
 
-hwmon = find_hwmon('nct6799')
+def build_channels():
+    chans = {}
+    for provider, nums in PROVIDER_CHANNELS.items():
+        try:
+            hwmon = find_hwmon(PROVIDER_HWON[provider])
+        except RuntimeError as e:
+            print(f'{e}; no {provider}* channels')
+            continue
+        for n in nums:
+            pwm = hwmon / f'pwm{n}'
+            if pwm.exists():
+                chans[f'{provider}{n}'] = {
+                    'pwm': pwm,
+                    'enable': hwmon / f'pwm{n}_enable',
+                    'tach': hwmon / f'fan{n}_input',
+                }
+    return chans
+
+
+CHANNELS = build_channels()
+
+WRITTEN = {}  # last written per channel, to skip redundant writes
 
 SNAPSHOT = {}
-for n in ALL_FANS:
-    SNAPSHOT[f'pwm{n}_enable'] = (hwmon / f'pwm{n}_enable').read_text().strip()
-    SNAPSHOT[f'pwm{n}'] = (hwmon / f'pwm{n}').read_text().strip()
+for _key, _ch in CHANNELS.items():
+    _snap = {'pwm': _ch['pwm'].read_text().strip()}
+    if _ch['enable'].exists():
+        _snap['enable'] = _ch['enable'].read_text().strip()
+    SNAPSHOT[_key] = _snap
 
 pynvml.nvmlInit()
 gpu0 = pynvml.nvmlDeviceGetHandleByIndex(0)
 gpu1 = pynvml.nvmlDeviceGetHandleByIndex(1)
 
 
-def set_case_fan(n, pwm):
-    (hwmon / f'pwm{n}_enable').write_text('1')
-    (hwmon / f'pwm{n}').write_text(str(pwm))
+def channel_name(name):
+    if name not in CHANNELS:
+        raise KeyError(f'unknown channel {name}, '
+                       f'have: {", ".join(CHANNELS)}')
+    return name
 
 
-def read_chip():
+def set_channel(name, pwm):
+    if WRITTEN.get(name) == pwm:
+        return
+    ch = CHANNELS[name]
+    if ch['enable'].exists():
+        ch['enable'].write_text('1')
+    ch['pwm'].write_text(str(pwm))
+    WRITTEN[name] = pwm
+
+
+def read_channels():
     out = {}
-    for n in ALL_FANS:
-        out[f'fan{n}'] = (hwmon / f'fan{n}_input').read_text().strip()
-        out[f'pwm{n}'] = (hwmon / f'pwm{n}').read_text().strip()
-        out[f'pwm{n}_enable'] = (hwmon / f'pwm{n}_enable').read_text().strip()
+    for name, ch in CHANNELS.items():
+        row = {'pwm': ch['pwm'].read_text().strip()}
+        if ch['enable'].exists():
+            row['enable'] = ch['enable'].read_text().strip()
+        if ch['tach'].exists():
+            row['rpm'] = ch['tach'].read_text().strip()
+        out[name] = row
     return out
 
 
@@ -53,11 +97,16 @@ def set_gpu_fan(gpu, fan_idx, pct):
 
 
 def restore():
-    for key, val in SNAPSHOT.items():
-        try:
-            (hwmon / key).write_text(val)
-        except OSError as e:
-            print(f'restore {key}={val} failed: {e}')
+    for name, snap in SNAPSHOT.items():
+        ch = CHANNELS[name]
+        for part in ('enable', 'pwm'):
+            if part not in snap:
+                continue
+            try:
+                ch[part].write_text(snap[part])
+            except OSError as e:
+                print(f'restore {name}.{part}={snap[part]} failed: {e}')
+    WRITTEN.clear()
 
 
 def handle_sigterm(sig, frame):
@@ -73,8 +122,8 @@ class Handler(socketserver.StreamRequestHandler):
     def handle(self):
         try:
             cmd = json.loads(self.rfile.readline())
-            if cmd['cmd'] == 'set_case':
-                set_case_fan(cmd['fan'], cmd['pwm'])
+            if cmd['cmd'] == 'set_pwm':
+                set_channel(channel_name(cmd['ch']), cmd['pwm'])
                 self.wfile.write(b'{"ok": true}\n')
             elif cmd['cmd'] == 'set_gpu':
                 gpu = gpu0 if cmd['gpu'] == 0 else gpu1
@@ -82,7 +131,7 @@ class Handler(socketserver.StreamRequestHandler):
                 self.wfile.write(b'{"ok": true}\n')
             elif cmd['cmd'] == 'read':
                 self.wfile.write(
-                    (json.dumps({'ok': True, 'data': read_chip()})
+                    (json.dumps({'ok': True, 'data': read_channels()})
                      + '\n').encode())
             elif cmd['cmd'] == 'restore':
                 restore()
