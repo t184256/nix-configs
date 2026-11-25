@@ -59,7 +59,7 @@ in
         disable_nvapi: false
       apply_settings_timer: 5
       gpus:
-        "10DE:2204-1043:87AF-0000:03:00.0":  # ASUS
+        "10DE:2204-1043:87AF-0000:03:00.0":  # ASUS, the bottom one
           power_cap: 250.0
           min_core_clock: ${toString core_clock_min}
           max_core_clock: ${toString core_clock_max}
@@ -67,8 +67,8 @@ in
             0: ${toString asus_clock_offset}
           mem_clock_offsets:
             0: 0  # keep constant at 9501 MHz, do not overclock
-          nvidia_thermal_options:
-          target_temperature: 70  # range: 65-91
+          #nvidia_thermal_options:
+          #  target_temperature: 65  # range: 65-91, conflicts with curve
           fan_control_enabled: true
           fan_control_settings:
             mode: curve
@@ -76,12 +76,12 @@ in
             interval_ms: 500
             spindown_delay_ms: 10000
             change_threshold: 2
-            auto_threshold: 48
+            auto_threshold: 53
             curve:
-              60: 0.45  # awkwardly starts/stalls audibly with 0.3-0.4
-              70: 0.7
-              80: 1.0
-        "10DE:2204-1462:3884-0000:01:00.0":  # MSI
+              55: 0.45  # awkwardly starts/stalls audibly with 0.3-0.4
+              65: 0.7
+              75: 1.0
+        "10DE:2204-1462:3884-0000:01:00.0":  # MSI, the top one
           power_cap: 250.0
           min_core_clock: ${toString core_clock_min}
           max_core_clock: ${toString core_clock_max}
@@ -89,8 +89,8 @@ in
             0: ${toString msi_clock_offset}
           mem_clock_offsets:
             0: 0  # keep constant at 9501 MHz, do not overclock
-          nvidia_thermal_options:
-            target_temperature: 70  # range: 65-91
+          #nvidia_thermal_options:
+          #  target_temperature: 65  # range: 65-91, conflicts with curve
           fan_control_enabled: true
           fan_control_settings:
             mode: curve
@@ -98,12 +98,12 @@ in
             interval_ms: 500
             spindown_delay_ms: 10000
             change_threshold: 2
-            auto_threshold: 48
+            auto_threshold: 53
             curve:
-              60: 0.3
-              70: 0.5
-              80: 0.7
-              90: 1.0
+              55: 0.3
+              65: 0.5
+              75: 0.7
+              85: 1.0
         "1002:7480-2014:8014-0000:1c:00.0":  # BoostR 7600M eGPU
           fan_control_enabled: true  # no gpu_od/fan_ctrl, fallback to hwmon
           fan_control_settings:
