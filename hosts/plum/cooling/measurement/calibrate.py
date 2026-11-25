@@ -22,24 +22,34 @@ SPINUP_SEC      = 60.0  # seconds to wait after setting fan speed high
 SPINDOWN_SEC    = 60.0  # seconds to wait after stalling the fans
 INTERSPEED_SEC  = 15.0  # seconds to wait after changing fans speed a bit
 DELTA_SILENCE   = 0.1   # dB to stop going lower
+SPEED_UP_FACTOR = 1     # change to make testing go faster
 
 SPEEDS = [round(100 * i / K) for i in range(K + 1)]
 
 ALL_GPU_FANS = [(0, 0), (0, 1), (1, 0), (1, 1)]
-ALL_CHANNELS = ['mb1', 'mb2', 'mb3', 'mb4', 'mb5', 'mb6', 'mb7']
 
 # Each target: name, own gpu fans [(gpu,fan),...], own pwm channels [...]
+# Fan names and their channels come from ../mapping.txt
 ALL_TARGETS = [
-    ('gpu0',  [(0, 0), (0, 1)], []),
-    ('gpu1',  [(1, 0), (1, 1)], []),
-    ('mb1',   [], ['mb1']),
-    ('mb2',   [], ['mb2']),
-    ('mb3',   [], ['mb3']),
-    ('mb4',   [], ['mb4']),
-    ('mb5',   [], ['mb5']),
-    ('mb6',   [], ['mb6']),
-    ('mb7',   [], ['mb7']),
+    ('gpu0', [(0, 0), (0, 1)], []),
+    ('gpu1', [(1, 0), (1, 1)], []),
+    ('cin',  [], ['mb2']),
+    ('cou',  [], ['mb5']),
+    ('rto',  [], ['fc7']),
+    ('r4t',  [], ['mb3']),
+    ('r4m',  [], ['mb1']),
+    ('r4b',  [], ['mb4']),
+    ('tre',  [], ['fc6']),
+    ('tfr',  [], ['fc1']),
+    ('fto',  [], ['fc2']),
+    ('fmi',  [], ['fc3']),
+    ('fbo',  [], ['fc4']),
+    ('bma',  [], ['fc5']),
+    ('ble',  [], ['fc10']),
+    ('bri',  [], ['fc9']),
 ]
+ALL_CHANNELS = list(dict.fromkeys(
+    ch for _, _, channels in ALL_TARGETS for ch in channels))
 ALL_TARGET_NAMES = [name for name, *_ in ALL_TARGETS]
 
 args = sys.argv[1:]
@@ -87,7 +97,7 @@ def measure_all_mics():
             print(f' {label}: {db:.2f}', end='', flush=True)
         print()
         if i < N - 1:
-            time.sleep(MEASURE_GAP_SEC)
+            time.sleep(MEASURE_GAP_SEC / SPEED_UP_FACTOR)
     return mic_measurements
 
 
@@ -120,12 +130,12 @@ def set_speed(pct, own_gpu_fans, own_channels):
 
 
 def sleep_countdown(secs, label):
-    print(f' * {label}: waiting {secs}s', end='', flush=True)
+    print(f' * {label}: waiting {secs / SPEED_UP_FACTOR}s', end='', flush=True)
     steps = int(secs) // 2
     for i in range(steps):
-        time.sleep(2)
+        time.sleep(2 / SPEED_UP_FACTOR)
         print('.', end='', flush=True)
-    time.sleep(secs - steps * 2)
+    time.sleep((secs - steps * 2) / SPEED_UP_FACTOR)
     print()
 
 
@@ -176,7 +186,7 @@ for name, own_gpu_fans, own_channels in TARGETS:
         pad = min(silences[label], results[-1] if results else silences[label])
         padded = [pad] * (len(SPEEDS) - len(results)) + results[::-1]
         all_results[label][name] = padded
-        pad = ' ' * (6 - len(name))
+        pad = ' ' * (5 - len(name))
         vals = '[' + ', '.join(f'{v:.2f}' for v in padded) + ']'
         print(f"    '{name}':{pad}{vals},  # [{label}]")
 

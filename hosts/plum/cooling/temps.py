@@ -27,18 +27,18 @@ HDDTEMP_HOST, HDDTEMP_PORT = '127.0.0.1', 7634
 HDD_DEVICE = '/dev/sda'
 
 DB_OVER = 20
-FANS = {  # name: (max_rpm, profile, hwmon, ch), see mapping.txt
-    'cin':  (2000, 'case2', 'nct6799',    2),
-    'rto':  (3000, 'case1', 'arctic_fan', 7),
-    'r4t':  (3300, 'case3', 'nct6799',    3),
-    'r4m':  (3550, 'case3', 'nct6799',    1),
-    'r4b':  (3100, 'case3', 'nct6799',    4),
-    'tre':  (2410, 'case7', 'arctic_fan', 6),
-    'tfr':  (2410, 'case7', 'arctic_fan', 1),
-    'fto':  (3050, 'case2', 'arctic_fan', 2),
-    'fmi':  (2440, 'case5', 'arctic_fan', 3),
-    'fbo':  (2380, 'case6', 'arctic_fan', 4),
-    'bma':  (3000, 'case4', 'arctic_fan', 5),
+FANS = {  # name: (max_rpm, hwmon, ch), see mapping.txt
+    'cin':  (2000, 'nct6799',    2),
+    'rto':  (3000, 'arctic_fan', 7),
+    'r4t':  (3300, 'nct6799',    3),
+    'r4m':  (3550, 'nct6799',    1),
+    'r4b':  (3100, 'nct6799',    4),
+    'tre':  (2410, 'arctic_fan', 6),
+    'tfr':  (2410, 'arctic_fan', 1),
+    'fto':  (3050, 'arctic_fan', 2),
+    'fmi':  (2440, 'arctic_fan', 3),
+    'fbo':  (2380, 'arctic_fan', 4),
+    'bma':  (3000, 'arctic_fan', 5),
 }
 
 
@@ -335,20 +335,18 @@ def fan_arrow_hor(rpm, rpm_max):
     return _hor_arrow(rpm / rpm_max)
 
 
-def fan_hwmon(slot):
-    _, _, hname, _ = FANS[slot]
-    return nct_hwmon if hname == 'nct6799' else arctic_hwmon
+def fan_hwmon(name):
+    return nct_hwmon if FANS[name][1] == 'nct6799' else arctic_hwmon
 
 
-def fan_db(slot):
-    _, profile, _, ch = FANS[slot]
-    pwm = int((fan_hwmon(slot) / f'pwm{ch}').read_text())
-    return pwm_to_db_rel(profile, pwm)
+def fan_db(name):
+    pwm = int((fan_hwmon(name) / f'pwm{FANS[name][2]}').read_text())
+    return pwm_to_db_rel(name, pwm)
 
 
-def fan(slot, vert=True, width=11):
-    top_max = FANS[slot][0]
-    top_rpm = int((fan_hwmon(slot) / f'fan{FANS[slot][3]}_input').read_text())
+def fan(name, vert=True, width=11):
+    top_max, _, ch = FANS[name]
+    top_rpm = int((fan_hwmon(name) / f'fan{ch}_input').read_text())
     if vert:
         arrows = fan_arrows_vert(top_rpm, top_max, width=width)
     else:
