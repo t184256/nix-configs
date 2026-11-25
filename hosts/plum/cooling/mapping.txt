@@ -1,0 +1,24 @@
+CPU fans:
+  inner 120mm: mb2, fan2 on tach, up to 2000, 0 keeps it spinning at ~250
+  outer 120mm: mb5, fan5 on tach, up to 2000, 0 keeps it spinning at ~250
+
+Rear case fans:
+  top 120mm: fc7, fan7 on tach, up to ~3000
+  top 40mm: mb3, fan3 on tach, up to ~3300
+  middle 40mm: mb1, fan1 on tach, up to ~3550
+  bottom 40mm: mb4, fan4 on tach, up to ~3100
+
+Top case fans:
+  rear 140mm: fc6, fan6 on tach, up to ~2410
+  front 140mm: fc1, fan1 on tach, up to ~2410
+
+Front case fans:
+  top 120mm: fc2, fan2 on tach, up to ~3050
+  mid 140mm: fc3, fan3 on tach, up to ~2440
+  bot 140mm: fc4, fan4 on tach, up to ~2380
+
+Bottom case fans:
+  main 120mm: fc5, fan5 on tach, up to ~3000 (ringing above ~2150?)
+  left ~60mm: fc10, fan10 on tach, up to ~2765
+  right ~60mm: fc9, fan9 on tach, up to ~2735
+
