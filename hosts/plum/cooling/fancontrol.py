@@ -38,16 +38,28 @@ CHANNELS = {
     'bri': ('arctic_fan', 9),
 }
 
-EXHAUST = ['rto', 'r4t', 'r4m', 'r4b', 'tre', 'tfr']
-INTAKE  = ['bma', 'ble', 'bri', 'fto', 'fmi', 'fbo']
+# grouping by case position, see ../mapping.txt
+GROUPS = {
+    'top':   ['tre', 'tfr'],
+    'front': ['fto', 'fmi', 'fbo'],
+    'back':  ['bma', 'ble', 'bri'],
+    'rear':  ['rto', 'r4t', 'r4m', 'r4b'],
+}
+EXHAUST = GROUPS['top'] + GROUPS['rear']
+INTAKE  = GROUPS['front'] + GROUPS['back']
 
 COOLER = {'cin': ('nct6799', 2), 'cou': ('nct6799', 5)}
 
+# SuperIO temps that feed the max
+NONGPU_TEMPS = (
+    'CPU', 'CPU Package', 'Motherboard', 'VRM', 'TSI0_TEMP', 'CPUTIN'
+)
+
 SAFE_PWM = 80  # duty left on every controlled channel on exit
 TEMP_MIN = 40  # °C: below this, case fans are off
-TEMP_MAX = 85  # °C: case fans hit their acoustic cap at this temp
+TEMP_MAX = 90  # °C: case fans hit their acoustic cap at this temp
 LOG_EVERY = 10  # seconds between log lines
-DB_OFFSET = 0  # run case fans this many dB quieter than the estimated noise
+DB_OFFSET = .5  # run case fans this many dB quieter than the estimated noise
 
 
 def budget_cap_pct(profile, budget_db):
@@ -79,12 +91,13 @@ def pwm_write(names, value):
 
 def superio_temps():
     out = {}
-    for feature in NCT.get_features():
-        label = NCT.get_label(feature)
-        for sf in NCT.get_all_subfeatures(feature):
-            if sf.name.endswith('_input'):
-                out[label] = int(NCT.get_value(sf.number))
-                break
+    for chip in (NCT, ASUS):
+        for feature in chip.get_features():
+            label = chip.get_label(feature)
+            for sf in chip.get_all_subfeatures(feature):
+                if sf.name.endswith('_input'):
+                    out[label] = int(chip.get_value(sf.number))
+                    break
     return out
 
 
@@ -118,6 +131,7 @@ MANUAL = [HWONS[hwmon] / f'pwm{ch}_enable'
 COOL_PWM = {name: HWONS[hwmon] / f'pwm{ch}'
             for name, (hwmon, ch) in COOLER.items()}
 NCT = next(c for c in sensors.get_detected_chips() if 'nct6799' in str(c))
+ASUS = next(c for c in sensors.get_detected_chips() if 'asusec' in str(c))
 
 
 def cap(name, budget_sid, budget_top):
@@ -144,8 +158,9 @@ last_log = 0.0
 try:
     while True:
         ts = superio_temps()
-        temp = max(gpu_max_temp(gpu0), gpu_max_temp(gpu1),
-                   ts['TSI0_TEMP'], ts['SYSTIN'])
+        t_gpu0 = gpu_max_temp(gpu0)
+        t_gpu1 = gpu_max_temp(gpu1)
+        temp = max(t_gpu0, t_gpu1, *(ts[k] for k in NONGPU_TEMPS))
 
         g0_pct = gpu_fan_pct(gpu0)
         g1_pct = gpu_fan_pct(gpu1)
@@ -191,24 +206,26 @@ try:
         if now - last_log >= LOG_EVERY:
             last_log = now
             print(
-                'budget:  ' + ', '.join(
+                'temps:  ' + ', '.join(
+                    [f'gpu0: {t_gpu0}°C', f'gpu1: {t_gpu1}°C']
+                    + [f'{k}: {ts[k]}°C' for k in NONGPU_TEMPS]
+                ),
+                flush=True,
+            )
+            print(
+                'budget: ' + ', '.join(
                     [f'gpu0: {g0_pct:.0f}%', f'gpu1: {g1_pct:.0f}%']
                     + [f'{n}: {p:.0f}%' for n, p in cool.items()]
                 ) + f', sid={budget_sid:.2f}dB top={budget_top:.2f}dB',
                 flush=True,
             )
-            print(
-                'intake:  ' + ', '.join(
-                    log_fan(name, pwms[name], caps[name]) for name in INTAKE
-                ),
-                flush=True,
-            )
-            print(
-                'exhaust: ' + ', '.join(
-                    log_fan(name, pwms[name], caps[name]) for name in EXHAUST
-                ),
-                flush=True,
-            )
+            for label, names in GROUPS.items():
+                print(
+                    f'{label + ":":<6} ' + ', '.join(
+                        log_fan(name, pwms[name], caps[name]) for name in names
+                    ),
+                    flush=True,
+                )
 
         time.sleep(1)
 finally:
