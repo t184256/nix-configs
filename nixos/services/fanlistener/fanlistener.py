@@ -9,6 +9,7 @@ import numpy as np
 import sounddevice as sd
 
 PORT = int(os.environ.get('PORT', '9271'))
+BIND = os.environ.get('BIND', '127.0.0.1')
 BLOCK_SIZE = 4096
 LOOKBACK_HOURS = 24
 LOOKBACK_MINUTES = LOOKBACK_HOURS * 60
@@ -169,6 +170,6 @@ class Handler(socketserver.BaseRequestHandler):
 
 threading.Thread(target=audio_thread, args=(device,), daemon=True).start()
 
-with socketserver.UDPServer(('', PORT), Handler) as server:
+with socketserver.UDPServer((BIND, PORT), Handler) as server:
     print(f"Loudness daemon listening on port {PORT}")
     server.serve_forever()

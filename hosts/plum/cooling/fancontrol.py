@@ -25,7 +25,7 @@
 import signal
 import time
 import pynvml
-from acoustic_profile import PROFILES_USB, PROFILES_ANALOG
+from acoustic_profile import PROFILES_SID, PROFILES_TOP
 from common import profile_db, K, find_hwmon, gpu_max_temp
 
 EXHAUST = [1, 3, 7]  # top-rear, rear-bottom, top
@@ -76,12 +76,12 @@ def gpu_fan_pct(h):
 def log_fan(name, pwm, cap):
     pct = round(pwm * 100 / 255)
     cap_pct = round(cap * 100 / 255)
-    db_usb = profile_db(PROFILES_USB[name], pct)
-    db_ana = profile_db(PROFILES_ANALOG[name], pct)
-    cap_db_usb = profile_db(PROFILES_USB[name], cap_pct)
-    cap_db_ana = profile_db(PROFILES_ANALOG[name], cap_pct)
+    db_sid = profile_db(PROFILES_SID[name], pct)
+    db_top = profile_db(PROFILES_TOP[name], pct)
+    cap_db_sid = profile_db(PROFILES_SID[name], cap_pct)
+    cap_db_top = profile_db(PROFILES_TOP[name], cap_pct)
     return (f'{name}: {pct}/{cap_pct}% '
-            f'{db_usb:.1f},{db_ana:.1f}->{cap_db_usb:.1f},{cap_db_ana:.1f}dBA')
+            f'{db_sid:.1f},{db_top:.1f}->{cap_db_sid:.1f},{cap_db_top:.1f}dBA')
 
 
 pynvml.nvmlInit()
@@ -90,11 +90,11 @@ gpu1  = pynvml.nvmlDeviceGetHandleByIndex(1)
 hwmon = find_hwmon('nct6799')
 
 
-def cap(name, budget_usb, budget_analog):
+def cap(name, budget_sid, budget_top):
     """Cap using both budgets; the more restrictive one wins."""
-    c_usb = budget_cap_pct(PROFILES_USB[name], budget_usb)
-    c_ana = budget_cap_pct(PROFILES_ANALOG[name], budget_analog)
-    return int(min(c_usb, c_ana) * 255 / 100)
+    c_sid = budget_cap_pct(PROFILES_SID[name], budget_sid)
+    c_top = budget_cap_pct(PROFILES_TOP[name], budget_top)
+    return int(min(c_sid, c_top) * 255 / 100)
 
 
 def restore(sig=None, frame=None):
@@ -119,28 +119,28 @@ try:
 
         # Two independent budgets, one per microphone
         # (GPU-driven; the cpu cooler wasn't mapped TODO: map)
-        budget_usb = (
+        budget_sid = (
             max(
-                profile_db(PROFILES_USB['gpu0'], g0_pct),
-                profile_db(PROFILES_USB['gpu1'], g1_pct),
+                profile_db(PROFILES_SID['gpu0'], g0_pct),
+                profile_db(PROFILES_SID['gpu1'], g1_pct),
             ) - DB_OFFSET
         )
-        budget_analog = (
+        budget_top = (
             max(
-                profile_db(PROFILES_ANALOG['gpu0'], g0_pct),
-                profile_db(PROFILES_ANALOG['gpu1'], g1_pct),
+                profile_db(PROFILES_TOP['gpu0'], g0_pct),
+                profile_db(PROFILES_TOP['gpu1'], g1_pct),
             ) - DB_OFFSET
         )
 
-        cap3 = cap('case3', budget_usb, budget_analog)
-        cap4 = cap('case4', budget_usb, budget_analog)
-        cap5 = cap('case5', budget_usb, budget_analog)
-        cap6 = cap('case6', budget_usb, budget_analog)
+        cap3 = cap('case3', budget_sid, budget_top)
+        cap4 = cap('case4', budget_sid, budget_top)
+        cap5 = cap('case5', budget_sid, budget_top)
+        cap6 = cap('case6', budget_sid, budget_top)
         # top-rear exhaust is capped by matching bottom intake
-        cap1 = min(cap('case1', budget_usb, budget_analog),
+        cap1 = min(cap('case1', budget_sid, budget_top),
                    int(0.95 * cap4))
         # top exhaust (matched pair) is capped by matching front-bottom/mid
-        cap7 = min(cap('case7', budget_usb, budget_analog),
+        cap7 = min(cap('case7', budget_sid, budget_top),
                    int(0.95 * (cap5 + cap6) / 2))
 
         pwm1 = temp_to_pwm(temp, cap1)
@@ -163,7 +163,7 @@ try:
             print(
                 f'gpu0: {g0_pct:.0f}%, '
                 f'gpu1: {g1_pct:.0f}%, '
-                f'budget usb={budget_usb:.2f}dB analog={budget_analog:.2f}dB',
+                f'budget sid={budget_sid:.2f}dB top={budget_top:.2f}dB',
                 flush=True,
             )
             pwms = {1: pwm1, 3: pwm3, 4: pwm4,

@@ -9,10 +9,10 @@ import time
 
 FANCTL_HOST   = '192.168.99.53'
 FANCTL_PORT   = 9272
-LOUDNESS_HOST = '192.168.99.53'
+# the side mic listener binds loopback here, the top one lives on quince
 MICS = [
-    ('usb',    9271),
-    ('analog', 9272),
+    ('sid',  '127.0.0.1',    9271),
+    ('top',  '192.168.98.1', 9271),
 ]
 
 K               = 20    # steps  (produces K+1 speed points)
@@ -67,25 +67,25 @@ def fanctl(cmd):
     return result
 
 
-def measure_db(port, retry=3):
+def measure_db(host, port, retry=3):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.settimeout(2)
-        s.sendto(b'?', (LOUDNESS_HOST, port))
+        s.sendto(b'?', (host, port))
         try:
             data, _ = s.recvfrom(256)
         except TimeoutError:
             if not retry:
                 raise
-            return measure_db(port, retry=retry-1)
+            return measure_db(host, port, retry=retry-1)
         return json.loads(data)['db_avg']
 
 
 def measure_all_mics():
     """Query all mics; return dict  label -> [N readings]."""
-    mic_measurements = {label: [] for label, _ in MICS}
+    mic_measurements = {label: [] for label, _, _ in MICS}
     for i in range(N):
-        for label, port in MICS:
-            db = measure_db(port)
+        for label, host, port in MICS:
+            db = measure_db(host, port)
             mic_measurements[label].append(db)
             print(f' {label}: {db:.2f}', end='', flush=True)
         print()
@@ -133,7 +133,7 @@ def sleep_countdown(secs, label):
 
 
 # Per-mic results:  all_results[label][target_name] = [K+1 dB values]
-all_results = {label: {} for label, _ in MICS}
+all_results = {label: {} for label, _, _ in MICS}
 
 for name, own_gpu_fans, own_pwm_fans in TARGETS:
     # --- silence baseline (all fans off) ---
@@ -151,7 +151,7 @@ for name, own_gpu_fans, own_pwm_fans in TARGETS:
                   for label, sil in silences.items()}
 
     # --- sweep speeds from 100% down ---
-    done = {label: False for label, _ in MICS}
+    done = {label: False for label, _, _ in MICS}
     for i, pct in enumerate(SPEEDS[::-1]):
         if all(done.values()):
             break
@@ -173,7 +173,7 @@ for name, own_gpu_fans, own_pwm_fans in TARGETS:
                 done[label] = True
 
     # Pad each mic's profile so it has len(SPEEDS) entries
-    for label, _ in MICS:
+    for label, _, _ in MICS:
         results = all_results[label].get(name, [])
         # Find floor: min of silence and last measured value for this mic
         pad = min(silences[label], results[-1] if results else silences[label])
@@ -183,9 +183,9 @@ for name, own_gpu_fans, own_pwm_fans in TARGETS:
         vals = '[' + ', '.join(f'{v:.2f}' for v in padded) + ']'
         print(f"    '{name}':{pad}{vals},  # [{label}]")
 
-# --- emit PROFILES_USB = {...} and PROFILES_ANALOG = {...} ---
+# --- emit PROFILES_SID = {...} and PROFILES_TOP = {...} ---
 print()
-for label, _ in MICS:
+for label, _, _ in MICS:
     var = f'PROFILES_{label.upper()}'
     print(f'{var} = {{')
     for name, *_ in TARGETS:

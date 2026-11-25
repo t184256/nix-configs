@@ -15,7 +15,7 @@ from common import (
 
 
 VRAM_GB = 24
-FANLISTENER_HOST, FANLISTENER_PORT = '127.0.0.1', 9271
+LOUDNESS_SID, LOUDNESS_TOP = ('127.0.0.1', 9271), ('192.168.98.1', 9271)
 SGLANG_HOST, SGLANG_PORT = '192.168.99.53', 11111
 ENGINE_TG_TPS_MAX = 150
 ENGINE_PP_TPS_MAX = 200
@@ -39,8 +39,8 @@ FANS = {  # hwmon label: (max_rpm, profile, pwm_n)
 
 
 class LoudnessMonitor:
-    def __init__(self, port):
-        self._port = port
+    def __init__(self, addr):
+        self._addr = addr
         self._lock = threading.Lock()
         self._db = self._base = None
         threading.Thread(target=self._poll, daemon=True).start()
@@ -52,7 +52,7 @@ class LoudnessMonitor:
                 with socket.socket(socket.AF_INET,
                                    socket.SOCK_DGRAM) as s:
                     s.settimeout(1.0)
-                    s.sendto(b'?', (FANLISTENER_HOST, self._port))
+                    s.sendto(b'?', self._addr)
                     data, _ = s.recvfrom(256)
                     parsed = json.loads(data)
                     base = parsed.get('base', parsed['db_ema'])
@@ -398,7 +398,7 @@ def _kfmt(v):
     return f'{v // 1000}k' if v >= 1000 else f'{v:03d}'
 
 
-def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog, disk):
+def get_lines(nct, gpu0, gpu1, engine, loudness_sid, loudness_top, disk):
     sensors_data = chip_data(nct)
     ct = int(sensors_data["TSI0_TEMP"])
     ct = f'{temp_color(ct)}{ct:3d}°{RESET}'
@@ -478,22 +478,22 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog, disk):
         eng1 = f'{gw_color(0)}{int(es.reuse_share):4d}% pc{RESET}'
         eng2 = (f'{gw_color(0)}{int(es.accept_session * 100):3d}% ac{RESET}')
 
-    _db_usb = loudness_usb.db()
-    db_usb = (f'{db_color(_db_usb)}{_db_usb:6.1f} dB{RESET} '
-              if _db_usb is not None else '          ')
-    _base_usb = loudness_usb.base()
-    base_usb = (f'{gw_color(0)}{_base_usb:6.1f} dB{RESET} '
-                if _base_usb is not None else '          ')
+    _db_top = loudness_top.db()
+    mic_top = (f'{db_color(_db_top)}{_db_top:6.1f} dB{RESET} '
+               if _db_top is not None else '          ')
+    _base_top = loudness_top.base()
+    base_top = (f'{gw_color(0)}{_base_top:6.1f} dB{RESET} '
+                if _base_top is not None else '          ')
 
-    _db_analog = loudness_analog.db()
-    db_ana = (f'{db_color(_db_analog)}{_db_analog:6.1f} dB{RESET} '
-              if _db_analog is not None else '          ')
-    _base_analog = loudness_analog.base()
-    base_ana = (f'{gw_color(0)}{_base_analog:6.1f} dB{RESET} '
-                if _base_analog is not None else '          ')
+    _db_sid = loudness_sid.db()
+    mic_sid = (f'{db_color(_db_sid)}{_db_sid:6.1f} dB{RESET} '
+               if _db_sid is not None else '          ')
+    _base_sid = loudness_sid.base()
+    base_sid = (f'{gw_color(0)}{_base_sid:6.1f} dB{RESET} '
+                if _base_sid is not None else '          ')
     return [
-        f'          ┌──{ top_fans}─{ top_fans}──┐           {  db_usb}',
-        f'          │                {top_tx}  {tf}           {base_usb}',
+        f'          ┌──{ top_fans}─{ top_fans}──┐           {mic_top}',
+        f'          │                {top_tx}  {tf}           {base_top}',
         f'          │     ┌────────┐           {tf} {tf_txt}',
         f'         {tr_}  {cpu_line} {cpu_tx}  {tf}',
         f' {tr_txt}{tr_}  └────────┘            │',
@@ -503,8 +503,8 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_usb, loudness_analog, disk):
         f'       {br}├{kv_fill}───────────────┤ │',
         f'       {br}│{r1} {u1}{t1} {f1} {w1} │{bf}',
         f'          │└{bot_fill}──────────────┘{bf} {bf_txt}',
-        f'{  db_ana}│{eng1}{eng2} {bot_tx}  {bf}',
-        f'{base_ana}└──────────────{ bot_fans}──┘',
+        f'{mic_sid}│{eng1}{eng2} {bot_tx}  {bf}',
+        f'{base_sid}└──────────────{ bot_fans}──┘',
     ]
 
 
@@ -516,8 +516,8 @@ try:
     gpu0 = pynvml.nvmlDeviceGetHandleByIndex(0)
     gpu1 = pynvml.nvmlDeviceGetHandleByIndex(1)
     engine = SglangMonitor()
-    loudness_usb = LoudnessMonitor(port=9271)
-    loudness_analog = LoudnessMonitor(port=9272)
+    loudness_sid = LoudnessMonitor(LOUDNESS_SID)
+    loudness_top = LoudnessMonitor(LOUDNESS_TOP)
     disk = HddTempMonitor()
     once = '-1' in sys.argv
     if once:
@@ -525,7 +525,7 @@ try:
     try:
         while True:
             lines = get_lines(nct, gpu0, gpu1, engine,
-                              loudness_usb, loudness_analog, disk)
+                              loudness_sid, loudness_top, disk)
             print('\n'.join(lines))
             if once:
                 break

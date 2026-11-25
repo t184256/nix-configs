@@ -1,30 +1,12 @@
-{ pkgs, ... }:
+_:
 
 {
-  networking.firewall.interfaces."unboiled".allowedUDPPorts = [ 9271 9272 ];
+  imports = [ ../../../nixos/services/fanlistener ];
 
-  systemd.services.fanlistener-usb = {
-    description = "Fan noise measurement daemon (USB mic)";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "alsa-restore.service" ];
-    serviceConfig = {
-      ExecStart =
-        "${pkgs.python3.withPackages (ps: [ ps.sounddevice ps.numpy ])}"
-        + "/bin/python3 ${./fanlistener.py} 'USB Microphone'";
-      Restart = "on-failure";
-    };
-  };
-
-  systemd.services.fanlistener-analog = {
-    description = "Fan noise measurement daemon (analog mic)";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "alsa-restore.service" ];
-    serviceConfig = {
-      Environment = [ "PORT=9272" ];
-      ExecStart =
-        "${pkgs.python3.withPackages (ps: [ ps.sounddevice ps.numpy ])}"
-        + "/bin/python3 ${./fanlistener.py} 'HD-Audio Generic: ALC1220 Analog'";
-      Restart = "on-failure";
-    };
+  # The side microphone lives in this chassis, hence loopback only: nothing
+  # else consumes it, and calibration runs here as well.
+  services.fanlistener = {
+    enable = true;
+    bindAddress = "127.0.0.1";
   };
 }

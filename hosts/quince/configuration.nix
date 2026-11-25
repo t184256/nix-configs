@@ -9,6 +9,7 @@
     ./hardware.nix
     ./network.nix
     ./secureboot.nix
+    ../../nixos/services/fanlistener
     ../../nixos/services/garage.nix
     #../../nixos/services/ipfs/cluster-leader.nix
     #../../nixos/services/ipfs/node.nix
@@ -23,6 +24,12 @@
 
   hardware.cpu.intel.updateMicrocode = true;
   hardware.graphics.extraPackages = [ pkgs.intel-media-driver ];
+
+  services.fanlistener = {
+    enable = true;
+    bindAddress = "192.168.98.1";
+  };
+  networking.firewall.interfaces."enp1s0".allowedUDPPorts = [ 9271 ];
 
   nixpkgs.flake.setNixPath = false;  # save disk space
   nixpkgs.flake.setFlakeRegistry = false;  # save disk space
