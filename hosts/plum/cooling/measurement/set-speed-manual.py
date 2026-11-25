@@ -21,10 +21,15 @@ def fanctl(cmd):
 
 
 args = sys.argv[1:]
-if len(args) < 2 or len(args) % 2:
-    raise SystemExit(__doc__)
+assert len(args) % 2 != 1
 
 pairs = list(zip(args[::2], args[1::2]))
 for ch, duty in pairs:
     fanctl({'cmd': 'set_pwm', 'ch': ch, 'pwm': int(duty)})
 print('  '.join(f'{ch}={duty}' for ch, duty in pairs))
+
+others = [ch for ch in fanctl({'cmd': 'read'})['data']
+          if ch not in dict(pairs)]
+for ch in others:
+    fanctl({'cmd': 'set_pwm', 'ch': ch, 'pwm': 0})
+print(f'stalled: {", ".join(others)}')
