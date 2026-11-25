@@ -27,16 +27,16 @@ HDDTEMP_HOST, HDDTEMP_PORT = '127.0.0.1', 7634
 HDD_DEVICE = '/dev/sda'
 
 DB_OVER = 20
-FANS = {  # slot: (max_rpm, profile, hwmon, ch), see mapping.txt
-    'cpu':   (2000, 'case2', 'nct6799',    2),
-    'top_r': (2410, 'case7', 'arctic_fan', 6),
-    'top_f': (2410, 'case7', 'arctic_fan', 1),
-    'bot':   (3000, 'case4', 'arctic_fan', 5),
-    'tr':    (3000, 'case1', 'arctic_fan', 7),
-    'mf':    (2440, 'case5', 'arctic_fan', 3),
-    'bf':    (2380, 'case6', 'arctic_fan', 4),
-    'tf':    (3050, 'case2', 'arctic_fan', 2),
-    'br':    (3100, 'case3', 'nct6799',    4),
+FANS = {  # name: (max_rpm, profile, hwmon, ch), see mapping.txt
+    'cin':  (2000, 'case2', 'nct6799',    2),
+    'rto':  (3000, 'case1', 'arctic_fan', 7),
+    'r4b':  (3100, 'case3', 'nct6799',    4),
+    'tre':  (2410, 'case7', 'arctic_fan', 6),
+    'tfr':  (2410, 'case7', 'arctic_fan', 1),
+    'fto':  (3050, 'case2', 'arctic_fan', 2),
+    'fmi':  (2440, 'case5', 'arctic_fan', 3),
+    'fbo':  (2380, 'case6', 'arctic_fan', 4),
+    'bma':  (3000, 'case4', 'arctic_fan', 5),
 }
 
 
@@ -418,16 +418,16 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_sid, loudness_top, disk):
     ht = (f'{temp_color(ht_val, 40, 55)}{ht_val:3d}°{RESET}'
           if ht_val is not None else '    ')
 
-    cpu_fans, cpu_tx = fan('cpu', vert=False)  # cpu cooler
+    cpu_fans, cpu_tx = fan('cin', vert=False)  # cpu cooler
     cpu_line = f'{cpu_fans}{cp}{ct}{cpu_fans}'
-    top_r, top_r_tx = fan('top_r')  # top exhaust (2 fans)
-    top_f, _ = fan('top_f')
-    bot_fans, bot_tx = fan('bot', width=11)  # bottom intake
-    tr, tr_txt = fan('tr', vert=False)  # rear-top exhaust
-    mf, mf_txt = fan('mf', vert=False)  # front-mid intake
-    bf, bf_txt = fan('bf', vert=False)  # front-bottom
-    tf, tf_txt = fan('tf', vert=False)  # front-top intake
-    br = fan('br', vert=False)[0]  # rear-bottom exhaust (3 minifans)
+    top_r, top_r_tx = fan('tre')  # top exhaust (2 fans)
+    top_f, _ = fan('tfr')
+    bot_fans, bot_tx = fan('bma', width=11)  # bottom intake
+    tr, tr_txt = fan('rto', vert=False)  # rear-top exhaust
+    mf, mf_txt = fan('fmi', vert=False)  # front-mid intake
+    bf, bf_txt = fan('fbo', vert=False)  # front-bottom
+    tf, tf_txt = fan('fto', vert=False)  # front-top intake
+    br = fan('r4b', vert=False)[0]  # rear-bottom exhaust (3 minifans)
     tf = f' {tf}'
     mf = f' {mf}'
     bf = f' {bf}'
@@ -507,7 +507,7 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_sid, loudness_top, disk):
         f'       {br}├{kv_fill}───────────────┤ │',
         f'       {br}│{r1} {u1}{t1} {f1} {w1} │{bf}',
         f'          │└{bot_fill}──────────────┘{bf} {bf_txt}',
-        f'{mic_sid}│{eng1}{eng2} {bot_tx}  {bf}',
+        f'{ mic_sid}│{eng1}{eng2} {   bot_tx}  {bf}',
         f'{base_sid}└──────────────{ bot_fans}──┘',
     ]
 
