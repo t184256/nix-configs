@@ -30,6 +30,8 @@ DB_OVER = 20
 FANS = {  # name: (max_rpm, profile, hwmon, ch), see mapping.txt
     'cin':  (2000, 'case2', 'nct6799',    2),
     'rto':  (3000, 'case1', 'arctic_fan', 7),
+    'r4t':  (3300, 'case3', 'nct6799',    3),
+    'r4m':  (3550, 'case3', 'nct6799',    1),
     'r4b':  (3100, 'case3', 'nct6799',    4),
     'tre':  (2410, 'case7', 'arctic_fan', 6),
     'tfr':  (2410, 'case7', 'arctic_fan', 1),
@@ -427,12 +429,16 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_sid, loudness_top, disk):
     mf, mf_txt = fan('fmi', vert=False)  # front-mid intake
     bf, bf_txt = fan('fbo', vert=False)  # front-bottom
     tf, tf_txt = fan('fto', vert=False)  # front-top intake
-    br = fan('r4b', vert=False)[0]  # rear-bottom exhaust (3 minifans)
+    r4t_sig, r4t_txt = fan('r4t', vert=False)  # across-GPU rear-top exhaust
+    r4m_sig, r4m_txt = fan('r4m', vert=False)  # across-GPU rear-middle exhaust
+    r4b_sig, r4b_txt = fan('r4b', vert=False)  # across-GPU rear-bottom exhaust
+    r4t = f'{r4t_txt} {r4t_sig}'
+    r4m = f'{r4m_txt} {r4m_sig}'
+    r4b = f'{r4b_txt} {r4b_sig}'
     tf = f' {tf}'
     mf = f' {mf}'
     bf = f' {bf}'
     tr, tr_ = f' {tr}', f' {tr}   '
-    br = f'   {br}'
 
     r0, u0, t0, f0, w0 = gpu(gpu0, 'gpu0')
     r1, u1, t1, f1, w1 = gpu(gpu1, 'gpu1')
@@ -503,9 +509,9 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_sid, loudness_top, disk):
         f' {tr_txt}{tr_}  └────────┘            │',
         f'         {tr}{pp_col}{st} {ht}       {mf}',
         f'          │┌{top_fill}──────────────┐{mf} {mf_txt}',
-        f'       {br}│{r0} {u0}{t0} {f0} {w0} │{mf}',
-        f'       {br}├{kv_fill}───────────────┤ │',
-        f'       {br}│{r1} {u1}{t1} {f1} {w1} │{bf}',
+        f' {     r4t}│{r0} {u0}{t0} {f0} {w0} │{mf}',
+        f' {     r4m}├{kv_fill}───────────────┤ │',
+        f' {     r4b}│{r1} {u1}{t1} {f1} {w1} │{bf}',
         f'          │└{bot_fill}──────────────┘{bf} {bf_txt}',
         f'{ mic_sid}│{eng1}{eng2} {   bot_tx}  {bf}',
         f'{base_sid}└──────────────{ bot_fans}──┘',
