@@ -422,8 +422,8 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_sid, loudness_top, disk):
 
     cpu_fans, cpu_tx = fan('cin', vert=False)  # cpu cooler
     cpu_line = f'{cpu_fans}{cp}{ct}{cpu_fans}'
-    top_r, top_r_tx = fan('tre')  # top exhaust (2 fans)
-    top_f, _ = fan('tfr')
+    tre_sig, tre_tx = fan('tre')  # top exhaust, front
+    tfr_sig, tfr_tx = fan('tfr')  # top exhaust, rear
     bot_fans, bot_tx = fan('bma', width=11)  # bottom intake
     tr, tr_txt = fan('rto', vert=False)  # rear-top exhaust
     mf, mf_txt = fan('fmi', vert=False)  # front-mid intake
@@ -502,8 +502,8 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_sid, loudness_top, disk):
     base_sid = (f'{gw_color(0)}{_base_sid:6.1f} dB{RESET} '
                 if _base_sid is not None else '          ')
     return [
-        f'          ┌──{ top_r}─{ top_f}──┐           {mic_top}',
-        f'          │                {top_r_tx}  {tf}           {base_top}',
+        f'          ┌──{ tre_sig }─{ tfr_sig }──┐             {mic_top}',
+        f'          │    {tre_tx}    {tfr_tx}  {tf}             {base_top}',
         f'          │     ┌────────┐           {tf} {tf_txt}',
         f'         {tr_}  {cpu_line} {cpu_tx}  {tf}',
         f' {tr_txt}{tr_}  └────────┘            │',
