@@ -27,14 +27,16 @@ HDDTEMP_HOST, HDDTEMP_PORT = '127.0.0.1', 7634
 HDD_DEVICE = '/dev/sda'
 
 DB_OVER = 20
-FANS = {  # hwmon label: (max_rpm, profile, pwm_n)
-    'fan1': (3100, 'case1', 1),
-    'fan2': (2010, 'case2', 2),
-    'fan3': (3080, 'case3', 3),
-    'fan4': (3030, 'case4', 4),
-    'fan5': (3000, 'case5', 5),
-    'fan6': (2100, 'case6', 6),
-    'fan7': (2400, 'case7', 7),
+FANS = {  # slot: (max_rpm, profile, hwmon, ch), see mapping.txt
+    'cpu':   (2000, 'case2', 'nct6799',    2),
+    'top_r': (2410, 'case7', 'arctic_fan', 6),
+    'top_f': (2410, 'case7', 'arctic_fan', 1),
+    'bot':   (3000, 'case4', 'arctic_fan', 5),
+    'tr':    (3000, 'case1', 'arctic_fan', 7),
+    'mf':    (2440, 'case5', 'arctic_fan', 3),
+    'bf':    (2380, 'case6', 'arctic_fan', 4),
+    'tf':    (3050, 'case2', 'arctic_fan', 2),
+    'br':    (3100, 'case3', 'nct6799',    4),
 }
 
 
@@ -331,14 +333,20 @@ def fan_arrow_hor(rpm, rpm_max):
     return _hor_arrow(rpm / rpm_max)
 
 
-def fan_db(sensor_name):
-    _, profile, pwm_n = FANS[sensor_name]
-    pwm = int((nct_hwmon / f'pwm{pwm_n}').read_text())
+def fan_hwmon(slot):
+    _, _, hname, _ = FANS[slot]
+    return nct_hwmon if hname == 'nct6799' else arctic_hwmon
+
+
+def fan_db(slot):
+    _, profile, _, ch = FANS[slot]
+    pwm = int((fan_hwmon(slot) / f'pwm{ch}').read_text())
     return pwm_to_db_rel(profile, pwm)
 
 
-def fan(fans, name, vert=True, width=11):
-    top_rpm, top_max = int(fans[name]), FANS[name][0]
+def fan(slot, vert=True, width=11):
+    top_max = FANS[slot][0]
+    top_rpm = int((fan_hwmon(slot) / f'fan{FANS[slot][3]}_input').read_text())
     if vert:
         arrows = fan_arrows_vert(top_rpm, top_max, width=width)
     else:
@@ -410,20 +418,16 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_sid, loudness_top, disk):
     ht = (f'{temp_color(ht_val, 40, 55)}{ht_val:3d}°{RESET}'
           if ht_val is not None else '    ')
 
-    cpu_fans, cpu_tx = fan(sensors_data, 'fan2', vert=False)  # cpu cooler
+    cpu_fans, cpu_tx = fan('cpu', vert=False)  # cpu cooler
     cpu_line = f'{cpu_fans}{cp}{ct}{cpu_fans}'
-    top_fans, top_tx = fan(sensors_data, 'fan7')  # top exhaust (2 fans)
-    bot_fans, bot_tx = fan(sensors_data, 'fan4', width=11)  # bottom intake
-    tr, tr_txt = fan(sensors_data, 'fan1', vert=False)  # rear-top exhaust
-    mf, mf_txt = fan(sensors_data, 'fan5', vert=False)  # front-mid intake
-    bf, bf_txt = fan(sensors_data, 'fan6', vert=False)  # front-bottom
-    # front-top intake shares pwm2 with the cooler and its own tach is
-    # the EC's CPU_Opt; show pwm2 duty as the arrow
-    pwm = int((nct_hwmon / 'pwm2').read_text()) * 100 / 255
-    tf = _hor_arrow((pwm - 20) / (100 - 20))
-    tf_txt = ''
-    # rear-bottom exhaust (3 minifans) via its chip tach
-    br = fan(sensors_data, 'fan3', vert=False)[0]
+    top_r, top_r_tx = fan('top_r')  # top exhaust (2 fans)
+    top_f, _ = fan('top_f')
+    bot_fans, bot_tx = fan('bot', width=11)  # bottom intake
+    tr, tr_txt = fan('tr', vert=False)  # rear-top exhaust
+    mf, mf_txt = fan('mf', vert=False)  # front-mid intake
+    bf, bf_txt = fan('bf', vert=False)  # front-bottom
+    tf, tf_txt = fan('tf', vert=False)  # front-top intake
+    br = fan('br', vert=False)[0]  # rear-bottom exhaust (3 minifans)
     tf = f' {tf}'
     mf = f' {mf}'
     bf = f' {bf}'
@@ -492,8 +496,8 @@ def get_lines(nct, gpu0, gpu1, engine, loudness_sid, loudness_top, disk):
     base_sid = (f'{gw_color(0)}{_base_sid:6.1f} dB{RESET} '
                 if _base_sid is not None else '          ')
     return [
-        f'          ┌──{ top_fans}─{ top_fans}──┐           {mic_top}',
-        f'          │                {top_tx}  {tf}           {base_top}',
+        f'          ┌──{ top_r}─{ top_f}──┐           {mic_top}',
+        f'          │                {top_r_tx}  {tf}           {base_top}',
         f'          │     ┌────────┐           {tf} {tf_txt}',
         f'         {tr_}  {cpu_line} {cpu_tx}  {tf}',
         f' {tr_txt}{tr_}  └────────┘            │',
@@ -513,6 +517,7 @@ try:
     nct = next(c for c in sensors.get_detected_chips()
                if 'nct6799' in str(c))
     nct_hwmon = find_hwmon('nct6799')
+    arctic_hwmon = find_hwmon('arctic_fan')
     gpu0 = pynvml.nvmlDeviceGetHandleByIndex(0)
     gpu1 = pynvml.nvmlDeviceGetHandleByIndex(1)
     engine = SglangMonitor()
