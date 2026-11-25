@@ -22,6 +22,7 @@
     ./llama-cpp-mini.nix
     #./clevis.nix
     #./clevis-highlevel.nix
+    ./cooling/arctic-fan-controller.nix
     ./cooling/lact.nix
     ./cooling/fancontrol.nix
     ./cooling/measurement/calibrate-fancontroller.nix
