@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  py = pkgs.python3.withPackages (ps: [ ps.nvidia-ml-py ]);
+  py = pkgs.python3.withPackages (ps: [ ps.nvidia-ml-py ps.pysensors ]);
   src = pkgs.runCommand "fancontrol-src" { } ''
     mkdir $out
     cp ${./fancontrol.py} $out/fancontrol.py

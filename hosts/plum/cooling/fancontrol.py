@@ -18,6 +18,7 @@ import signal
 import time
 
 import pynvml
+import sensors
 from acoustic_profile import PROFILES_SID, PROFILES_TOP
 from common import K, find_hwmon, gpu_max_temp, profile_db
 
@@ -39,6 +40,8 @@ CHANNELS = {
 
 EXHAUST = ['rto', 'r4t', 'r4m', 'r4b', 'tre', 'tfr']
 INTAKE  = ['bma', 'ble', 'bri', 'fto', 'fmi', 'fbo']
+
+COOLER = {'cin': ('nct6799', 2), 'cou': ('nct6799', 5)}
 
 SAFE_PWM = 80  # duty left on every controlled channel on exit
 TEMP_MIN = 40  # °C: below this, case fans are off
@@ -74,6 +77,17 @@ def pwm_write(names, value):
         PWM[name].write_text(str(value))
 
 
+def superio_temps():
+    out = {}
+    for feature in NCT.get_features():
+        label = NCT.get_label(feature)
+        for sf in NCT.get_all_subfeatures(feature):
+            if sf.name.endswith('_input'):
+                out[label] = int(NCT.get_value(sf.number))
+                break
+    return out
+
+
 def gpu_fan_pct(h):
     fans = range(pynvml.nvmlDeviceGetNumFans(h))
     pcts = [pynvml.nvmlDeviceGetFanSpeed_v2(h, j) for j in fans]
@@ -101,6 +115,9 @@ PWM = {name: HWONS[hwmon] / f'pwm{ch}'
 # motherboard's SuperIO needs manual mode; Arctic controller has no pwm_enable
 MANUAL = [HWONS[hwmon] / f'pwm{ch}_enable'
           for hwmon, ch in CHANNELS.values() if hwmon == 'nct6799']
+COOL_PWM = {name: HWONS[hwmon] / f'pwm{ch}'
+            for name, (hwmon, ch) in COOLER.items()}
+NCT = next(c for c in sensors.get_detected_chips() if 'nct6799' in str(c))
 
 
 def cap(name, budget_sid, budget_top):
@@ -126,23 +143,31 @@ last_log = 0.0
 
 try:
     while True:
-        temp = max(gpu_max_temp(gpu0), gpu_max_temp(gpu1))
+        ts = superio_temps()
+        temp = max(gpu_max_temp(gpu0), gpu_max_temp(gpu1),
+                   ts['TSI0_TEMP'], ts['SYSTIN'])
 
         g0_pct = gpu_fan_pct(gpu0)
         g1_pct = gpu_fan_pct(gpu1)
 
         # Two independent budgets, one per microphone
-        # (GPU-driven; the cpu cooler isn't mapped, TODO: map)
+        # (the loudest of the GPU fans and the EC-driven cpu cooler)
+        cool = {name: int(p.read_text()) * 100 / 255
+                for name, p in COOL_PWM.items()}
         budget_sid = (
             max(
                 profile_db(PROFILES_SID['gpu0'], g0_pct),
                 profile_db(PROFILES_SID['gpu1'], g1_pct),
+                max(profile_db(PROFILES_SID[name], pct) for name, pct
+                    in cool.items()),
             ) - DB_OFFSET
         )
         budget_top = (
             max(
                 profile_db(PROFILES_TOP['gpu0'], g0_pct),
                 profile_db(PROFILES_TOP['gpu1'], g1_pct),
+                max(profile_db(PROFILES_TOP[name], pct) for name, pct
+                    in cool.items()),
             ) - DB_OFFSET
         )
 
@@ -166,9 +191,10 @@ try:
         if now - last_log >= LOG_EVERY:
             last_log = now
             print(
-                f'gpu0: {g0_pct:.0f}%, '
-                f'gpu1: {g1_pct:.0f}%, '
-                f'budget sid={budget_sid:.2f}dB top={budget_top:.2f}dB',
+                'budget:  ' + ', '.join(
+                    [f'gpu0: {g0_pct:.0f}%', f'gpu1: {g1_pct:.0f}%']
+                    + [f'{n}: {p:.0f}%' for n, p in cool.items()]
+                ) + f', sid={budget_sid:.2f}dB top={budget_top:.2f}dB',
                 flush=True,
             )
             print(
