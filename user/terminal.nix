@@ -24,6 +24,7 @@ let
       # small y offsetting as iosevka-t184256 has custom -25% line spacing
       offset = { x = -2; y = -2; };
       glyph_offset = { x = -1; y = -1; };
+      builtin_box_drawing = false;
     };
     colors.primary = { background = "#000000"; foreground = "#ffffff"; };
     bell = { animation = "EaseOutExpo"; duration = 100; color = "#7f7f7f"; };
