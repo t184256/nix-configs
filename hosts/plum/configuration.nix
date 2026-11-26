@@ -98,6 +98,16 @@
     "nix" "bash" "c" "prose" "python" "rust" "typst" "yaml"
   ];
 
+  home-manager.users.monk.dconf.settings = {
+    "org/gnome/desktop/session" = {
+      idle-delay = inputs.home-manager.lib.hm.gvariant.mkUint32 300;  # 5 min
+    };
+    "org/gnome/desktop/screensaver" = {
+      lock-enabled = true;
+      lock-delay = inputs.home-manager.lib.hm.gvariant.mkUint32 600;  # +10 min
+    };
+  };
+
   environment.persistence."/mnt/persist" = {
     directories = [
       "/var/lib/alsa"
