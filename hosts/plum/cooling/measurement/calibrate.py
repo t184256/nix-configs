@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import atexit
 import json
-import os
 import socket
 import statistics
 import sys
@@ -20,7 +19,7 @@ N               = 100   # measurements per step
 MEASURE_GAP_SEC = 2.0   # seconds between measurements
 SPINUP_SEC      = 60.0  # seconds to wait after setting fan speed high
 SPINDOWN_SEC    = 60.0  # seconds to wait after stalling the fans
-INTERSPEED_SEC  = 15.0  # seconds to wait after changing fans speed a bit
+INTERSPEED_SEC  = 20.0  # seconds to wait after changing fans speed a bit
 DELTA_SILENCE   = 0.1   # dB to stop going lower
 SPEED_UP_FACTOR = 1     # change to make testing go faster
 
@@ -187,7 +186,7 @@ for name, own_gpu_fans, own_channels in TARGETS:
         padded = [pad] * (len(SPEEDS) - len(results)) + results[::-1]
         all_results[label][name] = padded
         pad = ' ' * (5 - len(name))
-        vals = '[' + ', '.join(f'{v:.2f}' for v in padded) + ']'
+        vals = '[' + ', '.join(f'{v:0.2f}' for v in padded) + ']'
         print(f"    '{name}':{pad}{vals},  # [{label}]")
 
 # --- emit PROFILES_SID = {...} and PROFILES_TOP = {...} ---
